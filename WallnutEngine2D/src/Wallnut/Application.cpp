@@ -3,7 +3,7 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
 #include "Application.h"
-
+#include "Time.h"
 
 //Wallnut::Application::Application(bool fullscreen)
 //{
@@ -21,6 +21,19 @@ LRESULT Wallnut::Application::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam
 	case WM_LBUTTONUP:
 		//if (currentGameSection) currentGameSection->OnClick(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		break;
+	case WM_SIZE:
+	case WM_SIZING:
+	{
+		if (graphics) {
+			RECT client_rect;
+			GetClientRect(m_hWnd, &client_rect);
+			clientWidth = client_rect.right;
+			clientHeight = client_rect.bottom;
+			graphics->renderTarget->Resize(D2D1::SizeU(client_rect.right, client_rect.bottom));
+			HandleGameLoop();
+		}
+		return 0;
+	}
 	default:
 		return DefWindowProc(m_hWnd, uMsg, wParam, lParam);
 		break;
@@ -60,6 +73,12 @@ Wallnut::Application::~Application()
 int Wallnut::Application::Run()
 {
 	
+#pragma region Init Counter
+
+	Time::Init();
+
+#pragma endregion
+
 #pragma region Check if the Window Class already exists and if not create it
 
 	WNDCLASSEX wc;
@@ -127,14 +146,7 @@ int Wallnut::Application::Run()
 		}
 		else {
 			if (sceneManager.currentScene) {
-				graphics->renderTarget->BeginDraw();
-
-				Render(*graphics);
-
-				sceneManager.Render(*graphics);
-				sceneManager.Update();
-
-				graphics->renderTarget->EndDraw();
+				HandleGameLoop();
 			}
 		}
 	}
@@ -143,6 +155,37 @@ int Wallnut::Application::Run()
 
 	return 0;
 }
+
+void Wallnut::Application::HandleGameLoop() {
+
+	SceneManager& sceneManager = SceneManager::getInstance();
+
+	Time::frameUpdate();
+
+	sceneManager.Update();
+
+	auto renderTarget = graphics->renderTarget;
+	float tmp = (baseCanvas - (baseCanvas - (clientWidth + clientHeight))) / baseCanvas;
+	//std::cout << "Scale: " << tmp << ", DIFF" << (baseCanvas - (baseCanvas - (clientWidth + clientHeight))) << std::endl;
+	renderTarget->SetTransform(D2D1::Matrix3x2F::Scale(D2D1::SizeF(tmp, tmp)));
+
+	graphics->renderTarget->BeginDraw();
+
+	sceneManager.Render(*graphics);
+
+	Render(*graphics);
+
+	graphics->renderTarget->EndDraw();
+
+#pragma region Clean Up
+
+	GameObject::CheckQueue();
+	SceneManager::CheckQueue();
+
+#pragma endregion
+
+}
+
 
 void Wallnut::Application::Quit()
 {

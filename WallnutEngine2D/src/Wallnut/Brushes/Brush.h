@@ -4,17 +4,14 @@
  */
 #pragma once
 
-#include "ObjectComponent.h"
-#include "Wallnut/Core.h"
+#include "pch.h"
 #include "Wallnut/Graphics/Graphics.h"
 
 namespace Wallnut {
-	class WALLNUT_API ObjectBehaviour : public ObjectComponent
+	class Brush
 	{
-	private:
-		void Render(Graphics& g) override { }
-	protected:
-		virtual void Update() override = 0;
+	public:
+		virtual ID2D1Brush* createBrush(Graphics& graphics) = 0;
 	};
-
 }
+

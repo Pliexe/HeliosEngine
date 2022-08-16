@@ -4,10 +4,39 @@
  */
 #pragma once
 
+#include "Wallnut/Graphics/Graphics.h"
+#include "Wallnut/GameObjects/GameObject.h"
+#include "Wallnut/Core.h"
+
 namespace Wallnut {
-	class ObjectComponent
+	class Transform;
+	class GameObject;
+	class WALLNUT_API ObjectComponent
 	{
+	protected:
 
+		virtual void Render(Graphics& graphics) { };
+		virtual void Update() { };
+		virtual void Init(Graphics& graphics) { };
 
+		GameObject* gameObject = NULL;
+		Transform* transform = NULL;
+
+		//const char* type = typeid(this).name();
+
+	public:
+
+		friend class Application;
+		friend class SceneManager;
+		friend class GameObject;
+		friend class Transform;
 	};
+
+	/*class AsyncObjectComponent
+	{
+	private:
+
+
+		friend class Application;
+	};*/
 }

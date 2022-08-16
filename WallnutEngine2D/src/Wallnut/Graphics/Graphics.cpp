@@ -34,3 +34,5 @@ Wallnut::Graphics::~Graphics()
 	SafeRelease(&renderTarget);
 	SafeRelease(&writeFactory);
 }
+
+Wallnut::Graphics* Wallnut::Graphics::instance;

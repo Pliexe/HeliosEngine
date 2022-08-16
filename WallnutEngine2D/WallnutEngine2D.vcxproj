@@ -94,6 +94,8 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);WALLNUT_BUILD_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -110,6 +112,8 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -126,6 +130,8 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);WALLNUT_BUILD_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -142,6 +148,8 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,6 +163,10 @@
     <None Include="WallnutEngine2D.licenseheader" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Wallnut\Brushes\Brush.h" />
+    <ClInclude Include="src\Wallnut\Brushes\SolidBrush.h" />
+    <ClInclude Include="src\Wallnut\GameObjects\Components\Camera.h" />
+    <ClInclude Include="src\Wallnut\GameObjects\Components\RectangleComponent.h" />
     <ClInclude Include="src\Wallnut\Utils\LinkedList.h" />
     <ClInclude Include="src\Wallnut\GameObjects\ObjectComponent.h" />
     <ClInclude Include="src\Wallnut\GameObjects\ObjectBehaviour.h" />
@@ -168,6 +180,10 @@
     <ClInclude Include="src\Wallnut\EntryPoint.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Wallnut.h" />
+    <ClInclude Include="src\Wallnut\Translation\Transform.h" />
+    <ClInclude Include="src\Wallnut\Translation\Vector2D.h" />
+    <ClInclude Include="src\Wallnut\Time.h" />
+    <ClInclude Include="Time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Wallnut\GameObjects\ObjectComponent.cpp" />
@@ -187,6 +203,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="src\Wallnut\Time.cpp" />
+    <ClCompile Include="src\Wallnut\Translation\Transform.cpp" />
+    <ClCompile Include="src\Wallnut\Translation\Vector2D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WallnutEngine2D.rc" />

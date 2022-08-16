@@ -23,9 +23,11 @@ namespace Wallnut {
 		/*void BeginDraw() { renderTarget->BeginDraw(); }
 		void EndDraw() { renderTarget->EndDraw(); }*/
 
+		static Graphics* instance;
+
 	public:
 		Graphics() = delete;
-		Graphics(HWND hWnd) : m_hWnd(hWnd) { };
+		Graphics(HWND hWnd) : m_hWnd(hWnd) { instance = this; };
 		~Graphics();
 
 		ID2D1HwndRenderTarget* getRenderTarget() const { return renderTarget; }
@@ -33,5 +35,6 @@ namespace Wallnut {
 		IDWriteFactory* getWriteFactory() const { return writeFactory; }
 
 		friend class Application;
+		friend class SceneManager;
 	};
 }

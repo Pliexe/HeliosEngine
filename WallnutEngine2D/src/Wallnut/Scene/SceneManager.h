@@ -11,12 +11,14 @@
 
 namespace Wallnut {
 	class Scene;
+	class Camera;
 	class WALLNUT_API SceneManager
 	{
 	private:
 
 		std::map<std::wstring, Scene*> scenes;
 		Scene* currentScene = NULL;
+		static Scene* loadQueue;
 
 		SceneManager() { }
 
@@ -25,6 +27,8 @@ namespace Wallnut {
 			return instance;
 		}
 		//inline Scene* getCurrentScene() const { return currentScene; }
+
+		static void CheckQueue();
 
 	public:
 
@@ -42,6 +46,7 @@ namespace Wallnut {
 
 		friend class Application;
 		friend class GameObject;
+		friend class Transform;
 	};
 }
 

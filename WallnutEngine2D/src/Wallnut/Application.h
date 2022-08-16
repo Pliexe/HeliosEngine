@@ -19,6 +19,8 @@ namespace Wallnut {
 		int clientWidth = 800;
 		int clientHeight = 600;
 
+		float baseCanvas = 3600;
+
 		DWORD dwStyle = WS_OVERLAPPEDWINDOW;
 		DWORD dwExStyle = WS_EX_OVERLAPPEDWINDOW;
 
@@ -31,6 +33,8 @@ namespace Wallnut {
 
 #pragma endregion
 
+		void HandleGameLoop();
+
 	protected:
 
 		HWND getHwnd() const { return m_hWnd; }
@@ -39,6 +43,7 @@ namespace Wallnut {
 		const std::wstring WindowTitle = L"Game";
 		const std::wstring WindowClassName = L"Wallnut Game Window";
 
+		bool fpsCounter = false;
 
 	public:
 

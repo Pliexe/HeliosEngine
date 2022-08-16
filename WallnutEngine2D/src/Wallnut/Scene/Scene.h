@@ -11,10 +11,12 @@
 namespace Wallnut {
 	class SceneManager;
 	class GameObject;
-	class Scene
+	class Camera;
+	class WALLNUT_API Scene
 	{
 	private:
 
+		Camera* currentCamera = NULL;
 		std::function<void(Scene&)> initCallback;
 
 		//LinkedList<std::shared_ptr<GameObject>> gameObjects;
@@ -30,6 +32,7 @@ namespace Wallnut {
 
 		friend class SceneManager;
 		friend class GameObject;
+		friend class Transform;
 	};
 
 
