@@ -17,7 +17,7 @@ public:
 
 			GameObject& obj = Wallnut::GameObject::InstantiateObject();
 
-			obj.AddComponent(*(new RectangleComponent(SolidBrush(255, 255, 255))));
+			obj.AddComponent(*(new RectangleComponent(SolidBrush(164, 212, 53))));
 			obj.getTransform().setSize(500, 500);
 			obj.AddComponent(new CubeCircle());
 
@@ -31,7 +31,7 @@ public:
 
 			obj.AddComponent(*(new RectangleComponent(SolidBrush(255, 255, 255))));
 
-			camObj.AddComponent(cs);
+			obj2.AddComponent(cs);
 
 			Camera* cam = (camObj.GetComponent<Camera>());
 

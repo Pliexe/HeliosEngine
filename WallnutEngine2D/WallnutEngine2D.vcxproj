@@ -167,9 +167,11 @@
     <ClInclude Include="src\Wallnut\Brushes\SolidBrush.h" />
     <ClInclude Include="src\Wallnut\GameObjects\Components\Camera.h" />
     <ClInclude Include="src\Wallnut\GameObjects\Components\RectangleComponent.h" />
+    <ClInclude Include="src\Wallnut\GameObjects\Components\Sprite.h" />
     <ClInclude Include="src\Wallnut\Input\InputManager.h" />
     <ClInclude Include="src\Wallnut\Input\KeyCodes.h" />
     <ClInclude Include="src\Wallnut\Input\Mouse.h" />
+    <ClInclude Include="src\Wallnut\Resources\Bitmap.h" />
     <ClInclude Include="src\Wallnut\Utils\LinkedList.h" />
     <ClInclude Include="src\Wallnut\GameObjects\ObjectComponent.h" />
     <ClInclude Include="src\Wallnut\GameObjects\ObjectBehaviour.h" />
