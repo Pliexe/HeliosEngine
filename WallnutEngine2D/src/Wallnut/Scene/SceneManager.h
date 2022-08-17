@@ -16,27 +16,22 @@ namespace Wallnut {
 	{
 	private:
 
-		std::map<std::wstring, Scene*> scenes;
-		Scene* currentScene = NULL;
+		static std::map<std::wstring, Scene*> scenes;
+		static Scene* currentScene;
 		static Scene* loadQueue;
 
-		SceneManager() { }
-
-		static SceneManager& getInstance() {
-			static SceneManager instance;
-			return instance;
-		}
 		//inline Scene* getCurrentScene() const { return currentScene; }
 
 		static void CheckQueue();
 
 	public:
 
+		SceneManager() = delete;
 		SceneManager(SceneManager const&) = delete;
 		void operator=(SceneManager const&) = delete;
 
-		void Render(Graphics& graphics);
-		void Update();
+		static void Render(Graphics& graphics);
+		static void Update();
 
 		static Scene& AddScene(std::wstring name, Scene* scene);
 		static Scene& AddScene(std::wstring name, std::function<void(Scene&)> callback);

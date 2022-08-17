@@ -55,7 +55,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance /*hahaha 16bit 
 
 	auto app = Wallnut::CreateApplication();
 	int exitCode = app->Run();
-	if (SUCCEEDED(exitCode)) app->Init();
 	delete app;
 	return exitCode;
 }

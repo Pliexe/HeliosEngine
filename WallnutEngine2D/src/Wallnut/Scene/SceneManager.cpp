@@ -7,30 +7,35 @@
 #include "Wallnut/GameObjects/Components/Camera.h"
 
 Wallnut::Scene* Wallnut::SceneManager::loadQueue = NULL;
+Wallnut::Scene* Wallnut::SceneManager::currentScene = NULL;
+std::map<std::wstring, Wallnut::Scene*> Wallnut::SceneManager::scenes;
 
 void Wallnut::SceneManager::Render(Graphics& graphics)
 {
 	auto currentCamera = currentScene->currentCamera;
 	if (currentCamera) {
 		graphics.renderTarget->Clear(currentCamera->backgroundColor);
-		for (auto& x : GameObject::components)
+
+		for (auto& gm : GameObject::gameObjects)
 		{
-			x->Render(graphics);
+			for (auto& oc : gm->components)
+				oc->Render(graphics);
 		}
 	}
 }
 
 void Wallnut::SceneManager::Update()
 {
-	for (auto& x : GameObject::components)
+	for (auto& gm : GameObject::gameObjects)
 	{
-		x->Update();
+		for (auto& oc : gm->components)
+			oc->Update();
 	}
 }
 
 Wallnut::Scene& Wallnut::SceneManager::AddScene(std::wstring name, Scene* scene)
 {
-	SceneManager::getInstance().scenes.insert({ name, scene });
+	scenes.insert({ name, scene });
 	return *scene;
 }
 
@@ -44,18 +49,17 @@ Wallnut::Scene& Wallnut::SceneManager::AddScene(std::wstring name, std::function
 Wallnut::Scene& Wallnut::SceneManager::AddScene(std::wstring name)
 {
 	Scene* scene = new Scene();
-	SceneManager::getInstance().scenes.insert({ name, scene });
+	scenes.insert({ name, scene });
 	return *scene;
 }
 
 bool Wallnut::SceneManager::LoadScene(std::wstring name)
 {
-	SceneManager& sceneManager = SceneManager::getInstance();
-
-	auto pos = sceneManager.scenes.find(name);
-	if (pos == sceneManager.scenes.end()) return false;
+	auto pos = scenes.find(name);
+	if (pos == scenes.end()) return false;
 	else {
 		loadQueue = pos->second;
+		if (currentScene == NULL) CheckQueue();
 		return true;
 	}
 }
@@ -63,14 +67,12 @@ bool Wallnut::SceneManager::LoadScene(std::wstring name)
 void Wallnut::SceneManager::CheckQueue()
 {
 	if (loadQueue) {
-		SceneManager& sceneManager = SceneManager::getInstance();
-		if (sceneManager.currentScene) sceneManager.currentScene->Unload();
-		sceneManager.currentScene = loadQueue;
+		if (currentScene) currentScene->Unload();
+		currentScene = loadQueue;
+		loadQueue = NULL;
 
-		sceneManager.currentScene->Init();
-		for (auto& x : GameObject::components)
-			x->Init(*Graphics::instance);
+		currentScene->Init();
 
-		if (sceneManager.currentScene->currentCamera == NULL) GameObject::CreateMainCamera();
+		if (currentScene->currentCamera == NULL) GameObject::CreateMainCamera();
 	}
 }

@@ -20,6 +20,8 @@ namespace Wallnut {
 		void SetBackgroundColor(int r, int g, int b, float a = 1.0f) { backgroundColor = D2D1::ColorF(r / 255.0f, g / 255.0f, b / 255.0f, a); }
 		void SetBackgroundColor(float r, float  g, float b, float a = 1.0f) { backgroundColor = D2D1::ColorF(r, g, b, a); }
 
+		Vector2D ScreenToWorldPoint(Point mousePosition);
+
 		friend class SceneManager;
 		friend class Transform;
 	};

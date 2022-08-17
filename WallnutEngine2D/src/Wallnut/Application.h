@@ -14,7 +14,10 @@ namespace Wallnut {
 	{
 	private:
 
+		static HWND hWnd;
+
 		HWND m_hWnd = NULL;
+		RAWINPUTDEVICE rid = { };
 
 		int clientWidth = 800;
 		int clientHeight = 600;
@@ -25,6 +28,8 @@ namespace Wallnut {
 		DWORD dwExStyle = WS_EX_OVERLAPPEDWINDOW;
 
 		Graphics* graphics = NULL;
+
+		static Application* instance;
 
 #pragma region WndProc
 
@@ -48,16 +53,21 @@ namespace Wallnut {
 	public:
 
 		Application(const Application& copy) = delete;
-		Application() {  };
+		Application() { };
 		Application(int windowWidth, int windowHeight);
 		~Application();
 
 		void Render(Graphics& graphics) { }
 
 		int Run();
-		void Quit();
+		static void ShoWNessageBox(const wchar_t* title, const wchar_t* text, UINT type = MB_OK, bool pauseGame = true);
+		static void Quit();
 
 		virtual void Init() = 0;
+
+		friend class Mouse;
+		friend class InputManager;
+		friend class Camera;
 	};
 
 	Application* CreateApplication();

@@ -10,19 +10,21 @@
 //	GetMonitorInfo()
 //}
 
+HWND Wallnut::Application::hWnd = NULL;
+Wallnut::Application* Wallnut::Application::instance = NULL;
 
 LRESULT Wallnut::Application::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
-	case WM_DESTROY:
+	case WN_DESTROY:
 		PostQuitMessage(0);
 		return 0;
-	case WM_LBUTTONUP:
+	case WN_LBUTTONUP:
 		//if (currentGameSection) currentGameSection->OnClick(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		break;
-	case WM_SIZE:
-	case WM_SIZING:
+	case WN_SIZE:
+	case WN_SIZING:
 	{
 		if (graphics) {
 			RECT client_rect;
@@ -30,6 +32,12 @@ LRESULT Wallnut::Application::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam
 			clientWidth = client_rect.right;
 			clientHeight = client_rect.bottom;
 			graphics->renderTarget->Resize(D2D1::SizeU(client_rect.right, client_rect.bottom));
+
+			auto renderTarget = graphics->renderTarget;
+			float tmp = (baseCanvas - (baseCanvas - (clientWidth + clientHeight))) / baseCanvas;
+			//std::cout << "Scale: " << tmp << ", DIFF" << (baseCanvas - (baseCanvas - (clientWidth + clientHeight))) << std::endl;
+			renderTarget->SetTransform(D2D1::Matrix3x2F::Scale(D2D1::SizeF(tmp, tmp)));
+
 			HandleGameLoop();
 		}
 		return 0;
@@ -44,7 +52,7 @@ LRESULT Wallnut::Application::StaticWindowProc(HWND hWnd, UINT uMsg, WPARAM wPar
 {
 	Application* pThis = NULL;
 
-	if (uMsg == WM_NCCREATE)
+	if (uMsg == WN_NCCREATE)
 	{
 		CREATESTRUCT* pCreate = (CREATESTRUCT*)lParam;
 		pThis = (Application*)pCreate->lpCreateParams;
@@ -72,6 +80,8 @@ Wallnut::Application::~Application()
 
 int Wallnut::Application::Run()
 {
+
+	Application::instance = this;
 	
 #pragma region Init Counter
 
@@ -108,6 +118,7 @@ int Wallnut::Application::Run()
 		CW_USEDEFAULT, CW_USEDEFAULT, rect.right - rect.left, rect.bottom - rect.top,
 		NULL, NULL, GetModuleHandle(NULL), this
 	);
+	Application::hWnd = m_hWnd;
 
 	if (!m_hWnd) {
 		MessageBox(m_hWnd, L"Failed to Construct Window!", L"Error!", MB_ICONERROR);
@@ -134,20 +145,16 @@ int Wallnut::Application::Run()
 
 #pragma region Game Loop
 
-	SceneManager& sceneManager = SceneManager::getInstance();
-
 	MSG message;
-	message.message = WM_NULL;
+	message.message = WN_NULL;
 
-	while (message.message != WM_QUIT) {
+	while (message.message != WN_QUIT) {
 		if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&message);
 			DispatchMessage(&message);
 		}
 		else {
-			if (sceneManager.currentScene) {
-				HandleGameLoop();
-			}
+			HandleGameLoop();
 		}
 	}
 
@@ -156,38 +163,48 @@ int Wallnut::Application::Run()
 	return 0;
 }
 
+void Wallnut::Application::ShoWNessageBox(const wchar_t* title, const wchar_t* text, UINT type, bool pauseGame)
+{
+	MessageBox(pauseGame ? instance->m_hWnd : NULL, text, title, type);
+}
+
 void Wallnut::Application::HandleGameLoop() {
 
-	SceneManager& sceneManager = SceneManager::getInstance();
-
-	Time::frameUpdate();
-
-	sceneManager.Update();
-
-	auto renderTarget = graphics->renderTarget;
-	float tmp = (baseCanvas - (baseCanvas - (clientWidth + clientHeight))) / baseCanvas;
-	//std::cout << "Scale: " << tmp << ", DIFF" << (baseCanvas - (baseCanvas - (clientWidth + clientHeight))) << std::endl;
-	renderTarget->SetTransform(D2D1::Matrix3x2F::Scale(D2D1::SizeF(tmp, tmp)));
-
-	graphics->renderTarget->BeginDraw();
-
-	sceneManager.Render(*graphics);
-
-	Render(*graphics);
-
-	graphics->renderTarget->EndDraw();
+	if (SceneManager::currentScene) {
 
 #pragma region Clean Up
 
-	GameObject::CheckQueue();
-	SceneManager::CheckQueue();
+		GameObject::CheckQueue(*graphics);
+		SceneManager::CheckQueue();
 
 #pragma endregion
+
+#pragma region Update Loop
+
+		Time::frameUpdate();
+
+		SceneManager::Update();
+
+#pragma endregion
+
+#pragma region Render Loop
+
+		graphics->renderTarget->BeginDraw();
+
+		SceneManager::Render(*graphics);
+
+		Render(*graphics);
+
+		graphics->renderTarget->EndDraw();
+
+#pragma endregion
+
+	}
 
 }
 
 
 void Wallnut::Application::Quit()
 {
-	PostMessage(m_hWnd, WM_CLOSE, 0, 0);
+	PostMessage(Application::instance->m_hWnd, WN_CLOSE, 0, 0);
 }

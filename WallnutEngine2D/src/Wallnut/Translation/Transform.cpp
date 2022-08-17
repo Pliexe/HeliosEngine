@@ -10,7 +10,7 @@ using Wallnut::Transform;
 
 D2D1_RECT_F Transform::getRectF() {
 	auto posOffset = getPosition();
-	auto cam = SceneManager::getInstance().currentScene->currentCamera;
+	auto cam = SceneManager::currentScene->currentCamera;
 	if (cam) posOffset = posOffset + cam->gameObject->getTransform().getPosition();
 	return D2D1::RectF(posOffset.m_x, posOffset.m_y, posOffset.m_x + size.m_x, posOffset.m_y + size.m_y);
 }

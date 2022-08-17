@@ -167,6 +167,9 @@
     <ClInclude Include="src\Wallnut\Brushes\SolidBrush.h" />
     <ClInclude Include="src\Wallnut\GameObjects\Components\Camera.h" />
     <ClInclude Include="src\Wallnut\GameObjects\Components\RectangleComponent.h" />
+    <ClInclude Include="src\Wallnut\Input\InputManager.h" />
+    <ClInclude Include="src\Wallnut\Input\KeyCodes.h" />
+    <ClInclude Include="src\Wallnut\Input\Mouse.h" />
     <ClInclude Include="src\Wallnut\Utils\LinkedList.h" />
     <ClInclude Include="src\Wallnut\GameObjects\ObjectComponent.h" />
     <ClInclude Include="src\Wallnut\GameObjects\ObjectBehaviour.h" />
@@ -186,9 +189,12 @@
     <ClInclude Include="Time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Wallnut\GameObjects\Components\Camera.cpp" />
     <ClCompile Include="src\Wallnut\GameObjects\ObjectComponent.cpp" />
     <ClCompile Include="src\Wallnut\GameObjects\ObjectBehaviour.cpp" />
     <ClCompile Include="src\Wallnut\GameObjects\GameObject.cpp" />
+    <ClCompile Include="src\Wallnut\Input\InputManager.cpp" />
+    <ClCompile Include="src\Wallnut\Input\Mouse.cpp" />
     <ClCompile Include="src\Wallnut\Scene\SceneManager.cpp" />
     <ClCompile Include="src\Wallnut\Scene\Scene.cpp" />
     <ClCompile Include="src\Wallnut\Graphics\Graphics.cpp" />

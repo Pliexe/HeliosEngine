@@ -16,6 +16,8 @@
 #include <unordered_set>
 #include <set>
 #include <type_traits>
+#include <queue>
+#include <deque>
 
 // Windows
 

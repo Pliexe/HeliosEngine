@@ -10,19 +10,69 @@
 
 std::vector<Wallnut::GameObject*> Wallnut::GameObject::gameObjects;
 std::vector<Wallnut::GameObject*> Wallnut::GameObject::globalGameObjects;
-std::vector<Wallnut::ObjectComponent*> Wallnut::GameObject::components;
+
+std::queue<Wallnut::GameObject*> Wallnut::GameObject::objectQueue;
+std::queue<std::pair<Wallnut::GameObject*, Wallnut::ObjectComponent*>> Wallnut::GameObject::objectComponentQueue;
+
+std::unordered_set<Wallnut::ObjectComponent*> Wallnut::GameObject::deletionQueueComponents;
+std::unordered_set<Wallnut::ObjectComponent*> Wallnut::GameObject::initList;
+std::unordered_set<int> Wallnut::GameObject::deletionQueueGlobalGameObjects;
+std::unordered_set<int> Wallnut::GameObject::deletionQueueGameObjects;
+
+
+void Wallnut::GameObject::CheckQueue(Graphics& graphics)
+{
+	for (auto& x : deletionQueueComponents)
+	{
+		auto pos = std::find(x->gameObject->components.begin(), x->gameObject->components.end(), x);
+		if (pos != x->gameObject->components.end())
+		{
+			delete x->gameObject->components[pos - x->gameObject->components.begin()];
+			x->gameObject->components.erase(pos);
+		}
+	}
+	deletionQueueComponents.clear();
+
+	for (auto& i : deletionQueueGameObjects)
+	{
+		delete gameObjects[i];
+		gameObjects.erase(gameObjects.begin() + i);
+	}
+	deletionQueueGameObjects.clear();
+
+	for (auto& i : deletionQueueGlobalGameObjects)
+	{
+		delete globalGameObjects[i];
+		globalGameObjects.erase(globalGameObjects.begin() + i);
+	}
+	deletionQueueGlobalGameObjects.clear();
+
+	while (!objectQueue.empty())
+	{
+		gameObjects.push_back(objectQueue.front());
+		objectQueue.pop();
+	}
+
+	while (!objectComponentQueue.empty())
+	{
+		auto x = objectComponentQueue.front();
+		x.second->Init(graphics);
+		x.first->components.push_back(x.second);
+		objectComponentQueue.pop();
+	}
+}
+
 
 //Wallnut::Transform Wallnut::GameObject::transform = Wallnut::Transform();
 
 void Wallnut::GameObject::AddComponent(ObjectComponent& oc) {
-	oc.gameObject = this;
-	components.push_back(&oc);
+	AddComponent(&oc);
 }
 
 void Wallnut::GameObject::AddComponent(ObjectComponent* oc) {
 	oc->gameObject = this;
 	oc->transform = &this->transform;
-	components.push_back(oc);
+	objectComponentQueue.push(std::make_pair(this, oc));
 }
 
 Wallnut::GameObject& Wallnut::GameObject::CreateMainCamera(Vector2D position) {
@@ -30,7 +80,8 @@ Wallnut::GameObject& Wallnut::GameObject::CreateMainCamera(Vector2D position) {
 	obj->transform.setPosition(position);
 	Camera* cam = new Camera();
 	obj->AddComponent(cam);
-	SceneManager::getInstance().currentScene->currentCamera = cam;
+	SceneManager::currentScene->currentCamera = cam;
+	objectQueue.push(obj);
 	return *obj;
 }
 
@@ -40,28 +91,22 @@ Wallnut::GameObject& Wallnut::GameObject::CreateCamera(Vector2D position)
 	obj->transform.setPosition(position);
 	Camera* cam = new Camera();
 	obj->AddComponent(cam);
+	objectQueue.push(obj);
 	return *obj;
 }
 
-bool Wallnut::GameObject::Destroy(ObjectComponent* oc)
+void Wallnut::GameObject::Destroy(ObjectComponent* oc)
 {
-	std::vector<ObjectComponent*>& components = oc->gameObject->components;
-	auto pos = std::find(components.begin(), components.end(), oc);
-	if (pos != components.end())
-	{
-		//deletionQueueComponents.insert(std::make_pair(oc->gameObject, static_cast<int>(pos - components.begin())));
-		return true;
-	}
-	else return false;
+	deletionQueueComponents.insert(oc);
 }
 
 bool Wallnut::GameObject::DestroyObject(GameObject& gameObject)
 {
 	if (gameObject.isGlobal) {
-		auto position = std::find(globalGameObjects.begin(), globalGameObjects.end(), &globalGameObjects);
+		auto position = std::find(globalGameObjects.begin(), globalGameObjects.end(), &gameObject);
 		if (position != globalGameObjects.end())
 		{
-			deletionQueueGameObjects.insert(position - globalGameObjects.begin());
+			deletionQueueGameObjects.insert(static_cast<int>(position - globalGameObjects.begin()));
 			return true;
 		}
 		else return false;

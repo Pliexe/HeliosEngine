@@ -41,13 +41,30 @@ namespace Wallnut {
 			return D2D1::Matrix3x2F::Translation()
 		}*/
 
+		bool withinExactBounds(Transform& transform) {
+			auto pPos = getPosition();
+			auto otherPos = transform.getPosition();
+			return (
+				((pPos.m_x + size.m_x) > otherPos.m_x) &&
+				((otherPos.m_x + transform.size.m_x) < pPos.m_x) &&
+				((pPos.m_y + size.m_y) > otherPos.m_y) &&
+				((otherPos.m_y + transform.size.m_y) < pPos.m_y)
+			);
+		}
+
 		bool withinBounds(Transform& transform) {
+			auto otherPos = transform.getPosition();
+			return (
+				withinBounds(otherPos) || 
+				withinBounds(otherPos + size)
+			);
+		}
+
+		bool withinBounds(Vector2D vec) {
 			auto pPos = getPosition();
 			return (
-				((pPos.m_x + size.m_x) > transform.position.m_x) &&
-				((transform.position.m_x + transform.size.m_x) < pPos.m_x) &&
-				((pPos.m_y + size.m_y) > transform.position.m_y) &&
-				((transform.position.m_y + transform.size.m_y) < pPos.m_y)
+				(pPos.m_x < vec.m_x) && (pPos.m_x + size.m_x) > vec.m_x ||
+				(pPos.m_y < vec.m_y) && (pPos.m_y + size.m_y) > vec.m_y				
 			);
 		}
 

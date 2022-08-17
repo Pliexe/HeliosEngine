@@ -26,6 +26,8 @@ namespace Wallnut {
 
 	public:
 
+		ObjectComponent() { }
+
 		friend class Application;
 		friend class SceneManager;
 		friend class GameObject;

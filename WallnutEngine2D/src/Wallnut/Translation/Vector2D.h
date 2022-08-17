@@ -42,6 +42,14 @@ namespace Wallnut {
 		friend class Transform;
 	};
 
+	class WALLNUT_API Point : public Vector2D {
+	public:
+		Point(float width, float height) : Vector2D(width, height) { }
+		Point() : Vector2D() { }
+		Point(const Point& size) : Vector2D(size) { }
+		Point(const Vector2D& size) : Vector2D(size) { }
+	};
+
 	class WALLNUT_API Size2D : public Vector2D
 	{
 	public:

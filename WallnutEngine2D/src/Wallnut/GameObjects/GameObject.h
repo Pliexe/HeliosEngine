@@ -19,40 +19,31 @@ namespace Wallnut {
 	{
 	private:
 
-		static std::vector<ObjectComponent*> components;
+		std::vector<ObjectComponent*> components;
 		static std::vector<GameObject*> gameObjects;
 		static std::vector<GameObject*> globalGameObjects;
 
+		//static std::unordered_set<int> 
+
+
+#pragma region Creation Queue
+
+		static std::queue<GameObject*> objectQueue;
+		static std::queue<std::pair<GameObject*, ObjectComponent*>> objectComponentQueue;
+
+#pragma endregion
+
+
 #pragma region Deletion Queue
 
-		//static std::unordered_set<std::pair<GameObject*, int>> deletionQueueComponents;
+		static std::unordered_set<ObjectComponent*> deletionQueueComponents;
+		static std::unordered_set<ObjectComponent*> initList;
 		static std::unordered_set<int> deletionQueueGlobalGameObjects;
 		static std::unordered_set<int> deletionQueueGameObjects;
 
 #pragma endregion
 
-		static void CheckQueue() {
-			/*for (auto& x : deletionQueueComponents)
-			{
-				auto tmp = x.first->components[x.second];
-				x.first->components.erase(x.first->components.begin() + x.second);
-				delete tmp;
-			}
-
-			for (auto& i : deletionQueueGameObjects)
-			{
-				auto tmp = gameObjects[i];
-				gameObjects.erase(gameObjects.begin() + i);
-				delete tmp;
-			}
-
-			for (auto& i : deletionQueueGlobalGameObjects)
-			{
-				auto tmp = globalGameObjects[i];
-				globalGameObjects.erase(globalGameObjects.begin() + i);
-				delete tmp;
-			}*/
-		}
+		static void CheckQueue(Graphics& graphics);
 
 		static void prepare() {
 			gameObjects.reserve(2000);
@@ -79,7 +70,7 @@ namespace Wallnut {
 		}
 
 		template <class T = ObjectComponent>
-		auto GetComponent() -> typename std::enable_if<std::is_base_of<ObjectComponent, T>::value, const T*>::type
+		auto GetComponent() -> typename std::enable_if<std::is_base_of<ObjectComponent, T>::value, T*>::type
 		{
 			static_assert(std::is_base_of<ObjectComponent, T>::value, "T must be a ObjectComponent");
 
@@ -87,9 +78,9 @@ namespace Wallnut {
 				return typeid(T) == typeid(*el);
 			});
 
-			/*if (pos != components.end())
-				return dynamic_cast<T*>(reinterpret_cast<ObjectComponent*>((components[pos - components.begin()])));
-			else */return nullptr;
+			if (pos != components.end())
+				return (reinterpret_cast<T*>((components[pos - components.begin()])));
+			else return nullptr;
 		}
 
 		void AddComponent(ObjectComponent& oc);
@@ -98,7 +89,7 @@ namespace Wallnut {
 
 		static GameObject& InstantiateObject() {
 			GameObject* obj = new GameObject();
-			gameObjects.push_back(obj);
+			objectQueue.push(obj);
 			return *obj;
 		}
 
@@ -116,7 +107,7 @@ namespace Wallnut {
 			else return false;
 		}
 
-		static bool Destroy(ObjectComponent* oc);
+		static void Destroy(ObjectComponent* oc);
 
 		static bool Destroy(GameObject& gameObject) { return DestroyObject(gameObject); }
 		static bool DestroyGameObject(GameObject& gameObject) { return DestroyObject(gameObject); }
