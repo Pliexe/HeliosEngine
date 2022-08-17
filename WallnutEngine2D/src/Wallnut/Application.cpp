@@ -4,6 +4,8 @@
  */
 #include "Application.h"
 #include "Time.h"
+#include "pch.h"
+#include <Windows.h>
 
 //Wallnut::Application::Application(bool fullscreen)
 //{
@@ -17,14 +19,14 @@ LRESULT Wallnut::Application::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam
 {
 	switch (uMsg)
 	{
-	case WN_DESTROY:
+	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
-	case WN_LBUTTONUP:
+	case WM_LBUTTONUP:
 		//if (currentGameSection) currentGameSection->OnClick(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		break;
-	case WN_SIZE:
-	case WN_SIZING:
+	case WM_SIZE:
+	case WM_SIZING:
 	{
 		if (graphics) {
 			RECT client_rect;
@@ -52,7 +54,7 @@ LRESULT Wallnut::Application::StaticWindowProc(HWND hWnd, UINT uMsg, WPARAM wPar
 {
 	Application* pThis = NULL;
 
-	if (uMsg == WN_NCCREATE)
+	if (uMsg == WM_NCCREATE)
 	{
 		CREATESTRUCT* pCreate = (CREATESTRUCT*)lParam;
 		pThis = (Application*)pCreate->lpCreateParams;
@@ -146,9 +148,9 @@ int Wallnut::Application::Run()
 #pragma region Game Loop
 
 	MSG message;
-	message.message = WN_NULL;
+	message.message = WM_NULL;
 
-	while (message.message != WN_QUIT) {
+	while (message.message != WM_QUIT) {
 		if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&message);
 			DispatchMessage(&message);
@@ -206,5 +208,5 @@ void Wallnut::Application::HandleGameLoop() {
 
 void Wallnut::Application::Quit()
 {
-	PostMessage(Application::instance->m_hWnd, WN_CLOSE, 0, 0);
+	PostMessage(Application::instance->m_hWnd, WM_CLOSE, 0, 0);
 }

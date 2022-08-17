@@ -6,3 +6,8 @@
 
 #include "Wallnut/EntryPoint.h"
 #include "Wallnut/Scene/SceneManager.h"
+#include "Wallnut/Input/KeyCodes.h"
+#include "Wallnut/Input/InputManager.h"
+#include "Wallnut/GameObjects/ObjectBehaviour.h"
+#include "Wallnut/GameObjects/GameObject.h"
+#include "Wallnut/Time.h"

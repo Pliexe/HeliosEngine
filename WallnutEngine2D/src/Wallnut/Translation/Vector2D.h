@@ -32,13 +32,25 @@ namespace Wallnut {
 
 		Vector2D normalize();
 
+		static Vector2D right() { return Vector2D(1, 0); }
+		static Vector2D left() { return Vector2D(-1, 0); }
+		static Vector2D up() { return Vector2D(0, 1); }
+		static Vector2D down() { return Vector2D(0, -1); }
+
 		Vector2D operator+(const Vector2D& v) const;
 		Vector2D operator-(const Vector2D& v) const;
 		Vector2D operator+(Vector2D& v);
 		Vector2D operator-(Vector2D& v);
 		Vector2D operator*(float n);
 		Vector2D operator/(float n);
-		
+
+		Vector2D operator+=(const Vector2D& v);
+		Vector2D operator-=(const Vector2D& v);
+		Vector2D operator+=(Vector2D& v);
+		Vector2D operator-=(Vector2D& v);
+		Vector2D operator*=(float n);
+		Vector2D operator/=(float n);
+
 		friend class Transform;
 	};
 

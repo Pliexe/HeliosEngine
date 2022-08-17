@@ -96,6 +96,50 @@ namespace Wallnut {
 
 #pragma endregion
 
+#pragma region Assigment Operators
+
+	Vector2D Vector2D::operator+=(const Vector2D& other)
+	{
+		m_x += other.m_x;
+		m_y += other.m_y;
+		return *this;
+	}
+
+	Vector2D Vector2D::operator-=(const Vector2D& other)
+	{
+		m_x -= other.m_x;
+		m_y -= other.m_y;
+		return *this;
+	}
+
+	Vector2D Vector2D::operator+=(Vector2D& other)
+	{
+		m_x += other.m_x;
+		m_y += other.m_y;
+		return *this;
+	}
+
+	Vector2D Vector2D::operator-=(Vector2D& other)
+	{
+		m_x -= other.m_x;
+		m_y -= other.m_y;
+		return *this;
+	}
+
+	Vector2D Vector2D::operator*=(float n) {
+		m_x *= n;
+		m_y *= n;
+		return *this;
+	}
+
+	Vector2D Vector2D::operator/=(float n) {
+		m_x /= n;
+		m_y /= n;
+		return *this;
+	}
+
+#pragma endregion
+
 #pragma region Size2D
 
 	float Size2D::getWidth() const { return m_x; }

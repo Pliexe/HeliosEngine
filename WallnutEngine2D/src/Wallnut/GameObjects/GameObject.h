@@ -29,7 +29,7 @@ namespace Wallnut {
 #pragma region Creation Queue
 
 		static std::queue<GameObject*> objectQueue;
-		static std::queue<std::pair<GameObject*, ObjectComponent*>> objectComponentQueue;
+		static std::queue<ObjectComponent*> objectComponentQueue;
 
 #pragma endregion
 

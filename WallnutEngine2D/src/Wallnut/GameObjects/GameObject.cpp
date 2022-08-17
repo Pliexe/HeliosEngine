@@ -12,7 +12,7 @@ std::vector<Wallnut::GameObject*> Wallnut::GameObject::gameObjects;
 std::vector<Wallnut::GameObject*> Wallnut::GameObject::globalGameObjects;
 
 std::queue<Wallnut::GameObject*> Wallnut::GameObject::objectQueue;
-std::queue<std::pair<Wallnut::GameObject*, Wallnut::ObjectComponent*>> Wallnut::GameObject::objectComponentQueue;
+std::queue<Wallnut::ObjectComponent*> Wallnut::GameObject::objectComponentQueue;
 
 std::unordered_set<Wallnut::ObjectComponent*> Wallnut::GameObject::deletionQueueComponents;
 std::unordered_set<Wallnut::ObjectComponent*> Wallnut::GameObject::initList;
@@ -56,8 +56,8 @@ void Wallnut::GameObject::CheckQueue(Graphics& graphics)
 	while (!objectComponentQueue.empty())
 	{
 		auto x = objectComponentQueue.front();
-		x.second->Init(graphics);
-		x.first->components.push_back(x.second);
+		x->Init(graphics);
+		x->gameObject->components.push_back(x);
 		objectComponentQueue.pop();
 	}
 }
@@ -72,7 +72,7 @@ void Wallnut::GameObject::AddComponent(ObjectComponent& oc) {
 void Wallnut::GameObject::AddComponent(ObjectComponent* oc) {
 	oc->gameObject = this;
 	oc->transform = &this->transform;
-	objectComponentQueue.push(std::make_pair(this, oc));
+	objectComponentQueue.push(oc);
 }
 
 Wallnut::GameObject& Wallnut::GameObject::CreateMainCamera(Vector2D position) {

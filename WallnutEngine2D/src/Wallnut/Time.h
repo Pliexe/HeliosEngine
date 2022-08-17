@@ -5,9 +5,10 @@
 #pragma once
 
 #include "pch.h"
+#include "Wallnut/Core.h"
 
 namespace Wallnut {
-	class Time {
+	class WALLNUT_API Time {
 	private:
 
 		static __int64 m_lastFrame;

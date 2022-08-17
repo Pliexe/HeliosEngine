@@ -2,6 +2,8 @@
 #include <Wallnut/GameObjects/Components/RectangleComponent.h>
 #include <Wallnut/GameObjects/Components/Camera.h>
 #include <Wallnut/Input/Mouse.h>
+#include "Scripts/CameraMovement.h"
+#include "Scripts/CubeCircle.h"
 
 class Game : public Wallnut::Application
 {
@@ -17,8 +19,20 @@ public:
 
 			obj.AddComponent(*(new RectangleComponent(SolidBrush(255, 255, 255))));
 			obj.getTransform().setSize(500, 500);
+			obj.AddComponent(new CubeCircle());
 
-			auto camObj = GameObject::CreateMainCamera(Vector2D(25.0f, 25.0f));
+			GameObject& obj2 = Wallnut::GameObject::InstantiateObject();
+			obj2.getTransform().setPosition(Vector2D(505, 550));
+			obj2.AddComponent(*(new RectangleComponent(SolidBrush(255, 255, 255))));
+			obj2.getTransform().setSize(54, 100);
+
+			auto& camObj = GameObject::CreateMainCamera(Vector2D(25.0f, 25.0f));
+			auto cs = new CameraMovement();
+
+			obj.AddComponent(*(new RectangleComponent(SolidBrush(255, 255, 255))));
+
+			camObj.AddComponent(cs);
+
 			Camera* cam = (camObj.GetComponent<Camera>());
 
 			std::cout << "Is Null: " << (cam == nullptr) << std::endl;

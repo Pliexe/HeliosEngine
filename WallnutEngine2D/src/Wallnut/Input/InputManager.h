@@ -4,10 +4,12 @@
  */
 #pragma once
 
+#include "Wallnut/Core.h"
+
 namespace Wallnut 
 {
 	class Point;
-	class InputManager {
+	class WALLNUT_API InputManager {
 	public:
 		static bool IsKeyPressed(int key);
 		static bool IsKeyPressedDown(int key);
