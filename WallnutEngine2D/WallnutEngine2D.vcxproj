@@ -136,7 +136,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>User32.lib;D2d1.lib;Dwrite.lib</AdditionalDependencies>
+      <AdditionalDependencies>User32.lib;D2d1.lib;Dwrite.lib;windowscodecs.lib;Ole32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -188,7 +188,6 @@
     <ClInclude Include="src\Wallnut\Translation\Transform.h" />
     <ClInclude Include="src\Wallnut\Translation\Vector2D.h" />
     <ClInclude Include="src\Wallnut\Time.h" />
-    <ClInclude Include="Time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Wallnut\GameObjects\Components\Camera.cpp" />
@@ -197,6 +196,7 @@
     <ClCompile Include="src\Wallnut\GameObjects\GameObject.cpp" />
     <ClCompile Include="src\Wallnut\Input\InputManager.cpp" />
     <ClCompile Include="src\Wallnut\Input\Mouse.cpp" />
+    <ClCompile Include="src\Wallnut\Resources\Bitmap.cpp" />
     <ClCompile Include="src\Wallnut\Scene\SceneManager.cpp" />
     <ClCompile Include="src\Wallnut\Scene\Scene.cpp" />
     <ClCompile Include="src\Wallnut\Graphics\Graphics.cpp" />

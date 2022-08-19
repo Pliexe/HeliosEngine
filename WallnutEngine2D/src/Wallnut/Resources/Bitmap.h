@@ -4,8 +4,20 @@
  */
 #pragma once
 
-namespace Wallnut {
-	class Bitmap {
+#include "pch.h"
+#include "Wallnut/Core.h"
 
+namespace Wallnut {
+	class WALLNUT_API Bitmap {
+	private:
+		ID2D1Bitmap* bitmap = NULL;
+	public:
+		Bitmap() = delete;
+		Bitmap(const wchar_t* path);
+		~Bitmap();
+
+		ID2D1Bitmap *const operator()() {
+			return bitmap;
+		}
 	};
 }

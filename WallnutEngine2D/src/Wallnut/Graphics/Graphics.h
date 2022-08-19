@@ -36,5 +36,6 @@ namespace Wallnut {
 
 		friend class Application;
 		friend class SceneManager;
+		friend class Bitmap;
 	};
 }
