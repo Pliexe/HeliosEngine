@@ -8,16 +8,19 @@
 #include "Wallnut/Core.h"
 
 namespace Wallnut {
+	class Graphics;
+	class Size2D;
 	class WALLNUT_API Bitmap {
 	private:
-		ID2D1Bitmap* bitmap = NULL;
+		std::shared_ptr<ID2D1Bitmap> bitmap;
+		const wchar_t* path = NULL;
 	public:
 		Bitmap() = delete;
 		Bitmap(const wchar_t* path);
-		~Bitmap();
 
-		ID2D1Bitmap *const operator()() {
-			return bitmap;
+		operator ID2D1Bitmap* () { return bitmap.get(); }
+		inline bool isNull() {
+			return bitmap.get() == nullptr;
 		}
 	};
 }

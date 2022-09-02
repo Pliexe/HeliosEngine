@@ -6,6 +6,8 @@
 
 #include "Application.h"
 
+//#ifdef ENGINE_UI
+
 extern Wallnut::Application* Wallnut::CreateApplication();
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance /*hahaha 16bit windows legacy*/, PWSTR pCmdLine, int nCmdShow)
@@ -35,8 +37,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance /*hahaha 16bit 
 	}
 #endif
 
-
-
 	if (!consoleEnabled) {
 
 		FILE* o;
@@ -51,10 +51,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance /*hahaha 16bit 
 
 #pragma endregion
 
-
-
 	auto app = Wallnut::CreateApplication();
 	int exitCode = app->Run();
 	delete app;
 	return exitCode;
 }
+
+//#endif

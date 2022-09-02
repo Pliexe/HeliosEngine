@@ -8,6 +8,7 @@
 
 Wallnut::Vector2D Wallnut::Camera::ScreenToWorldPoint(Point mousePosition)
 {
-    float tmp = (Wallnut::Application::instance->baseCanvas - (Wallnut::Application::instance->baseCanvas - (Wallnut::Application::instance->clientWidth + Wallnut::Application::instance->clientHeight))) / Wallnut::Application::instance->baseCanvas;
-    return mousePosition * tmp + transform->getPosition();
+    /*float tmp = (Wallnut::Application::instance->baseCanvas - (Wallnut::Application::instance->baseCanvas - (Wallnut::Application::instance->clientWidth + Wallnut::Application::instance->clientHeight))) / Wallnut::Application::instance->baseCanvas;
+    return mousePosition * tmp + transform->getPosition();*/
+    return { 0, 0 };
 }

@@ -42,6 +42,8 @@ namespace Wallnut {
 		friend class Application;
 		friend class GameObject;
 		friend class Transform;
+
+		friend class GameEngine;
 	};
 }
 

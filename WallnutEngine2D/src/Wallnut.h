@@ -11,3 +11,4 @@
 #include "Wallnut/GameObjects/ObjectBehaviour.h"
 #include "Wallnut/GameObjects/GameObject.h"
 #include "Wallnut/Time.h"
+#include "Wallnut/Resources/Bitmap.h"

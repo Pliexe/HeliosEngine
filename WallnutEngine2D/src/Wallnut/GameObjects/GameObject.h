@@ -19,6 +19,13 @@ namespace Wallnut {
 	{
 	private:
 
+#pragma region Propeties
+
+		const char* m_name;
+		
+#pragma endregion
+
+
 		std::vector<ObjectComponent*> components;
 		static std::vector<GameObject*> gameObjects;
 		static std::vector<GameObject*> globalGameObjects;
@@ -53,7 +60,8 @@ namespace Wallnut {
 		Transform transform;
 		bool isGlobal = false;
 
-		GameObject(): transform(this) {}
+		GameObject(): transform(this) { }
+
 		
 	public:
 
@@ -87,8 +95,13 @@ namespace Wallnut {
 
 		void AddComponent(ObjectComponent* oc);
 
+
 		static GameObject& InstantiateObject() {
+			return InstantiateObject(("GameObject (" + std::to_string(gameObjects.size() + 1) + ")").c_str());
+		}
+		static GameObject& InstantiateObject(const char* name) {
 			GameObject* obj = new GameObject();
+			obj->m_name = name;
 			objectQueue.push(obj);
 			return *obj;
 		}
@@ -115,6 +128,8 @@ namespace Wallnut {
 
 		friend class Application;
 		friend class SceneManager;
+
+		extern friend class GameEngine;
 	};
 }
 

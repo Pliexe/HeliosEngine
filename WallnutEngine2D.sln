@@ -10,6 +10,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game", "Game\Game.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WallnutEngine2D", "WallnutEngine2D\WallnutEngine2D.vcxproj", "{7A705C04-EC20-4F1D-B96E-008674BDB2EC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EngineUI", "EngineUI\EngineUI.vcxproj", "{E1421A4F-F11C-49B3-829C-F28D20FD6A4E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6F507F55-73A6-4EC5-ABD0-BCC688BA56E5} = {6F507F55-73A6-4EC5-ABD0-BCC688BA56E5}
+		{7A705C04-EC20-4F1D-B96E-008674BDB2EC} = {7A705C04-EC20-4F1D-B96E-008674BDB2EC}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGui", "ImGui\ImGui.vcxproj", "{6F507F55-73A6-4EC5-ABD0-BCC688BA56E5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{5B95D5DB-03AF-4ED1-8361-F0F4431282BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -34,9 +44,28 @@ Global
 		{7A705C04-EC20-4F1D-B96E-008674BDB2EC}.Release|x64.Build.0 = Release|x64
 		{7A705C04-EC20-4F1D-B96E-008674BDB2EC}.Release|x86.ActiveCfg = Release|Win32
 		{7A705C04-EC20-4F1D-B96E-008674BDB2EC}.Release|x86.Build.0 = Release|Win32
+		{E1421A4F-F11C-49B3-829C-F28D20FD6A4E}.Debug|x64.ActiveCfg = Debug|x64
+		{E1421A4F-F11C-49B3-829C-F28D20FD6A4E}.Debug|x64.Build.0 = Debug|x64
+		{E1421A4F-F11C-49B3-829C-F28D20FD6A4E}.Debug|x86.ActiveCfg = Debug|Win32
+		{E1421A4F-F11C-49B3-829C-F28D20FD6A4E}.Debug|x86.Build.0 = Debug|Win32
+		{E1421A4F-F11C-49B3-829C-F28D20FD6A4E}.Release|x64.ActiveCfg = Release|x64
+		{E1421A4F-F11C-49B3-829C-F28D20FD6A4E}.Release|x64.Build.0 = Release|x64
+		{E1421A4F-F11C-49B3-829C-F28D20FD6A4E}.Release|x86.ActiveCfg = Release|Win32
+		{E1421A4F-F11C-49B3-829C-F28D20FD6A4E}.Release|x86.Build.0 = Release|Win32
+		{6F507F55-73A6-4EC5-ABD0-BCC688BA56E5}.Debug|x64.ActiveCfg = Debug|x64
+		{6F507F55-73A6-4EC5-ABD0-BCC688BA56E5}.Debug|x64.Build.0 = Debug|x64
+		{6F507F55-73A6-4EC5-ABD0-BCC688BA56E5}.Debug|x86.ActiveCfg = Debug|Win32
+		{6F507F55-73A6-4EC5-ABD0-BCC688BA56E5}.Debug|x86.Build.0 = Debug|Win32
+		{6F507F55-73A6-4EC5-ABD0-BCC688BA56E5}.Release|x64.ActiveCfg = Release|x64
+		{6F507F55-73A6-4EC5-ABD0-BCC688BA56E5}.Release|x64.Build.0 = Release|x64
+		{6F507F55-73A6-4EC5-ABD0-BCC688BA56E5}.Release|x86.ActiveCfg = Release|Win32
+		{6F507F55-73A6-4EC5-ABD0-BCC688BA56E5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6F507F55-73A6-4EC5-ABD0-BCC688BA56E5} = {5B95D5DB-03AF-4ED1-8361-F0F4431282BC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {931A25C1-F477-40EE-8562-277FBDD7748A}

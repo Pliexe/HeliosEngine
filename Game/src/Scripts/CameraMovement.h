@@ -17,9 +17,9 @@ public:
 		if (InputManager::IsKeyPressedDown(WN_KEY_D))
 			position += (Vector2D::right() * speed * Time::deltaTime());
 		if (InputManager::IsKeyPressedDown(WN_KEY_W))
-			position -= (Vector2D::up() * speed * Time::deltaTime());
+			position += (Vector2D::up() * speed * Time::deltaTime());
 		if (InputManager::IsKeyPressedDown(WN_KEY_S))
-			position -= (Vector2D::down() * speed * Time::deltaTime());
+			position += (Vector2D::down() * speed * Time::deltaTime());
 
 		transform->setPosition(position);
 	}

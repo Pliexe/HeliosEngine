@@ -6,42 +6,58 @@
 
 #include "pch.h"
 #include "Wallnut/GameObjects/ObjectComponent.h"
-#include "Wallnut/Brushes/Brush.h"
-#include "Wallnut/Brushes/SolidBrush.h"
+#include "Wallnut/Resources/Brushes/Brush.h"
+#include "Wallnut/Resources/Brushes/BitmapBrush.h"
+#include "Wallnut/Resources/Brushes/Brush.h"
+
+#ifdef WALLNUT_EDITOR
+#include "Wallnut/EditorGUI.h"
+#endif
 
 namespace Wallnut {
 	class RectangleComponent : public ObjectComponent {
 	private:
 
 		float stroke = 0.0f;
-
 		ID2D1StrokeStyle* strokeStyle = NULL;
-		ID2D1Brush* m_brush = NULL;
-		std::unique_ptr<Brush> m_brushTemplate;
-
-		void Init(Graphics& g) override {
-			m_brush = m_brushTemplate.get()->createBrush(g);
-		}
+		std::unique_ptr<Brush> m_brush;
 
 		void Render(Graphics& g) override {
-			if (m_brush != NULL)
+			if (m_brush->isReady())
 			{
-				if(stroke <= 0.0f)
-					g.getRenderTarget()->FillRectangle(gameObject->getTransform().getRectF(), m_brush);
-				else 
-					g.getRenderTarget()->DrawRectangle(gameObject->getTransform().getRectF(), m_brush, stroke);
+				auto pos = transform->getScreenPosition();
+				if (m_brush->isPainted())
+				{
+					auto brush = dynamic_cast<BitmapBrush*>(m_brush.get());
+					if (brush) {
+						auto size = brush->getSize();
+						(*brush)->SetTransform(
+							D2D1::Matrix3x2F::Scale(D2D1::SizeF((pos.w - pos.x) / size.width(), (pos.h - pos.y) / size.height())) *
+							D2D1::Matrix3x2F::Translation(D2D1::SizeF(pos.x, pos.y))
+						);
+					}
+				}
+
+				if (stroke <= 0.0f)
+					g.getRenderTarget()->FillRectangle(pos, *m_brush);
+				else
+					g.getRenderTarget()->DrawRectangle(pos, *m_brush, stroke);
 			}
 		}
 
 	public:
-
+		  
 		RectangleComponent() = delete;
-		RectangleComponent(SolidBrush brush, float strokeWidth = 0.0f) {
-			m_brushTemplate = std::make_unique<SolidBrush>(brush);
+		template <class T = Brush>
+		RectangleComponent(T brush, float strokeWidth = 0.0f) {
+			static_assert(std::is_base_of<Brush, T>::value, "Type T must be derived from Brush!");
+			m_brush = std::make_unique<T>(brush);
 			this->stroke = strokeWidth;
 		}
 
 		friend class Application;
 		friend class SceneManager;
+
+		extern friend class EditorRectangleComponent;
 	};
 }

@@ -91,16 +91,18 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);WALLNUT_BUILD_DLL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);WALLNUT_BUILD_DLL;WALLNUT_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>User32.lib;D2d1.lib;Dwrite.lib</AdditionalDependencies>
+      <AdditionalDependencies>User32.lib;D3D10_1.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;;ImGui.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -109,34 +111,38 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);WALLNUT_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>User32.lib;D2d1.lib;Dwrite.lib</AdditionalDependencies>
+      <AdditionalDependencies>User32.lib;D3D10_1.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;;ImGui.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);WALLNUT_BUILD_DLL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);WALLNUT_BUILD_DLL;;WALLNUT_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>User32.lib;D2d1.lib;Dwrite.lib;windowscodecs.lib;Ole32.lib</AdditionalDependencies>
+      <AdditionalDependencies>User32.lib;D3D10_1.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;windowscodecs.lib;Ole32.lib;ImGui.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -145,33 +151,44 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);WALLNUT_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>User32.lib;D2d1.lib;Dwrite.lib</AdditionalDependencies>
+      <AdditionalDependencies>User32.lib;D3D10_1.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;;ImGui.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="WallnutEngine2D.licenseheader" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Wallnut\Brushes\Brush.h" />
-    <ClInclude Include="src\Wallnut\Brushes\SolidBrush.h" />
+    <ClInclude Include="src\stb_image.h" />
+    <ClInclude Include="src\Wallnut\EditorGUI.h" />
+    <ClInclude Include="src\Wallnut\GameObjects\Components\EllipseComponent.h" />
+    <ClInclude Include="src\Wallnut\GameObjects\Components\RoundedRectangleComponent.h" />
+    <ClInclude Include="src\Wallnut\Logger.h" />
+    <ClInclude Include="src\Wallnut\Resources\Brushes\BitmapBrush.h" />
+    <ClInclude Include="src\Wallnut\Resources\Brushes\Brush.h" />
+    <ClInclude Include="src\Wallnut\Resources\Brushes\LinearGradientBrush.h" />
+    <ClInclude Include="src\Wallnut\Resources\Brushes\SolidBrush.h" />
     <ClInclude Include="src\Wallnut\GameObjects\Components\Camera.h" />
     <ClInclude Include="src\Wallnut\GameObjects\Components\RectangleComponent.h" />
-    <ClInclude Include="src\Wallnut\GameObjects\Components\Sprite.h" />
+    <ClInclude Include="src\Wallnut\GameObjects\Components\SpriteComponent.h" />
     <ClInclude Include="src\Wallnut\Input\InputManager.h" />
     <ClInclude Include="src\Wallnut\Input\KeyCodes.h" />
     <ClInclude Include="src\Wallnut\Input\Mouse.h" />
     <ClInclude Include="src\Wallnut\Resources\Bitmap.h" />
+    <ClInclude Include="src\Wallnut\Resources\Color.h" />
+    <ClInclude Include="src\Wallnut\Resources\Resource.h" />
     <ClInclude Include="src\Wallnut\Utils\LinkedList.h" />
     <ClInclude Include="src\Wallnut\GameObjects\ObjectComponent.h" />
     <ClInclude Include="src\Wallnut\GameObjects\ObjectBehaviour.h" />
@@ -197,6 +214,10 @@
     <ClCompile Include="src\Wallnut\Input\InputManager.cpp" />
     <ClCompile Include="src\Wallnut\Input\Mouse.cpp" />
     <ClCompile Include="src\Wallnut\Resources\Bitmap.cpp" />
+    <ClCompile Include="src\Wallnut\Resources\Brushes\BitmapBrush.cpp" />
+    <ClCompile Include="src\Wallnut\Resources\Brushes\LinearGradientBrush.cpp" />
+    <ClCompile Include="src\Wallnut\Resources\Brushes\SolidBrush.cpp" />
+    <ClCompile Include="src\Wallnut\Resources\Color.cpp" />
     <ClCompile Include="src\Wallnut\Scene\SceneManager.cpp" />
     <ClCompile Include="src\Wallnut\Scene\Scene.cpp" />
     <ClCompile Include="src\Wallnut\Graphics\Graphics.cpp" />

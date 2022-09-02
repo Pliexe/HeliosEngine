@@ -39,5 +39,6 @@ namespace Wallnut {
 		static const __int64 lastFrame() { return m_lastFrame; }
 		
 		friend class Application;
+		extern friend class EngineScene;
 	};
 }

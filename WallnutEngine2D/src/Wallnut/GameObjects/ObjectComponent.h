@@ -18,6 +18,7 @@ namespace Wallnut {
 		virtual void Render(Graphics& graphics) { };
 		virtual void Update() { };
 		virtual void Init(Graphics& graphics) { };
+		//virtual void OnTranslate() { };
 
 		GameObject* gameObject = NULL;
 		Transform* transform = NULL;
@@ -32,6 +33,8 @@ namespace Wallnut {
 		friend class SceneManager;
 		friend class GameObject;
 		friend class Transform;
+
+		extern friend class GameEngine;
 	};
 
 	/*class AsyncObjectComponent

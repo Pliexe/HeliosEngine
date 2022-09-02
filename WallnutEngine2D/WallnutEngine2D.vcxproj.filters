@@ -60,10 +60,10 @@
     <ClInclude Include="src\Wallnut\GameObjects\Components\RectangleComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Wallnut\Brushes\Brush.h">
+    <ClInclude Include="src\Wallnut\Resources\Brushes\Brush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Wallnut\Brushes\SolidBrush.h">
+    <ClInclude Include="src\Wallnut\Resources\Brushes\SolidBrush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Wallnut\Translation\Transform.h">
@@ -87,10 +87,37 @@
     <ClInclude Include="src\Wallnut\Input\InputManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Wallnut\GameObjects\Components\Sprite.h">
+    <ClInclude Include="src\Wallnut\GameObjects\Components\SpriteComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Wallnut\Resources\Bitmap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Wallnut\Resources\Brushes\BitmapBrush.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Wallnut\Resources\Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Wallnut\Resources\Color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Wallnut\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Wallnut\Resources\Brushes\LinearGradientBrush.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Wallnut\GameObjects\Components\EllipseComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Wallnut\GameObjects\Components\RoundedRectangleComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Wallnut\EditorGUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -138,6 +165,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Wallnut\Resources\Bitmap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Wallnut\Resources\Brushes\SolidBrush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Wallnut\Resources\Brushes\BitmapBrush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Wallnut\Resources\Brushes\LinearGradientBrush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Wallnut\Resources\Color.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

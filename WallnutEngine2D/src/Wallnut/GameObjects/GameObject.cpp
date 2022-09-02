@@ -77,6 +77,7 @@ void Wallnut::GameObject::AddComponent(ObjectComponent* oc) {
 
 Wallnut::GameObject& Wallnut::GameObject::CreateMainCamera(Vector2D position) {
 	GameObject* obj = new GameObject();
+	obj->m_name = "MainCamera";
 	obj->transform.setPosition(position);
 	Camera* cam = new Camera();
 	obj->AddComponent(cam);
@@ -88,6 +89,7 @@ Wallnut::GameObject& Wallnut::GameObject::CreateMainCamera(Vector2D position) {
 Wallnut::GameObject& Wallnut::GameObject::CreateCamera(Vector2D position)
 {
 	GameObject* obj = new GameObject();
+	obj->m_name = "Camera";
 	obj->transform.setPosition(position);
 	Camera* cam = new Camera();
 	obj->AddComponent(cam);

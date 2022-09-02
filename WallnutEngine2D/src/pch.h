@@ -18,15 +18,24 @@
 #include <type_traits>
 #include <queue>
 #include <deque>
+#include <future>
+#include <mutex>
+#include <string_view>
 
 // Windows
-
+#define D3D_DEBUG_INFO
 #include <windowsx.h>
 #include <d2d1.h>
+//#include <d3d10_1.h>
+//#include <d3d10.h>
 #include <dwrite.h>
 #include <wincodec.h>
 
 // Custom
+
+#include <imgui.h>
+#include <imgui_impl_dx10.h>
+#include <imgui_impl_win32.h>
 
 // https://docs.microsoft.com/en-us/windows/win32/medfound/saferelease
 template <class T> void SafeRelease(T** ppT)

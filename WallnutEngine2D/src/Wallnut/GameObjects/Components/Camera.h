@@ -6,23 +6,26 @@
 
 #include "pch.h"
 #include "Wallnut/GameObjects/ObjectComponent.h"
-#include "Wallnut/Core.h"
+#include "Wallnut/Resources/Color.h"
 
 namespace Wallnut {
 	class ObjectComponent;
 	class WALLNUT_API Camera : public ObjectComponent {
 	private:
 
-		D2D1_COLOR_F backgroundColor = D2D1::ColorF(0.0f, 0.0f, 0.0f);
+		Color backgroundColor = Color::Black;
 
 	public:
 
-		void SetBackgroundColor(int r, int g, int b, float a = 1.0f) { backgroundColor = D2D1::ColorF(r / 255.0f, g / 255.0f, b / 255.0f, a); }
-		void SetBackgroundColor(float r, float  g, float b, float a = 1.0f) { backgroundColor = D2D1::ColorF(r, g, b, a); }
+		void SetBackgroundColor(int r, int g, int b, float a = 1.0f) { backgroundColor = Color(r / 255.0f, g / 255.0f, b / 255.0f, a); }
+		Color GetBackgroundColor() const { return backgroundColor; }
+		void SetBackgroundColor(float r, float  g, float b, float a = 1.0f) { backgroundColor = Color(r, g, b, a); }
 
 		Vector2D ScreenToWorldPoint(Point mousePosition);
 
 		friend class SceneManager;
 		friend class Transform;
+
+		extern friend class GameEngine;
 	};
 }

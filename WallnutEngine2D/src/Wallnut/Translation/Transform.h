@@ -22,6 +22,15 @@ namespace Wallnut {
 
 	public:
 
+		typedef struct Matrix2x2 {
+			float x;
+			float y;
+			float w;
+			float h;
+
+			operator D2D1_RECT_F() { return D2D1::RectF(x, y, w, h); }
+		};
+
 		Transform() = delete;
 		Transform(GameObject* gm) : gameObject(gm), position(0, 0), size(50, 50), parent(NULL) { }
 		Transform(GameObject* gm, Vector2D pos, Size2D size) : position(pos), gameObject(gm), size(size), parent(NULL) { }
@@ -45,10 +54,10 @@ namespace Wallnut {
 			auto pPos = getPosition();
 			auto otherPos = transform.getPosition();
 			return (
-				((pPos.m_x + size.m_x) > otherPos.m_x) &&
-				((otherPos.m_x + transform.size.m_x) < pPos.m_x) &&
-				((pPos.m_y + size.m_y) > otherPos.m_y) &&
-				((otherPos.m_y + transform.size.m_y) < pPos.m_y)
+				((pPos.vec2[0] + size.vec2[0]) > otherPos.vec2[0]) &&
+				((otherPos.vec2[0] + transform.size.vec2[0]) < pPos.vec2[0]) &&
+				((pPos.vec2[1] + size.vec2[1]) > otherPos.vec2[1]) &&
+				((otherPos.vec2[1] + transform.size.vec2[1]) < pPos.vec2[1])
 			);
 		}
 
@@ -63,8 +72,8 @@ namespace Wallnut {
 		bool withinBounds(Vector2D vec) {
 			auto pPos = getPosition();
 			return (
-				(pPos.m_x < vec.m_x) && (pPos.m_x + size.m_x) > vec.m_x ||
-				(pPos.m_y < vec.m_y) && (pPos.m_y + size.m_y) > vec.m_y				
+				(pPos.vec2[0] < vec.vec2[0]) && (pPos.vec2[0] + size.vec2[0]) > vec.vec2[0] ||
+				(pPos.vec2[1] < vec.vec2[1]) && (pPos.vec2[1] + size.vec2[1]) > vec.vec2[1]				
 			);
 		}
 
@@ -75,11 +84,13 @@ namespace Wallnut {
 
 		Vector2D getLocalPosition() const { return position; }
 
+		Matrix2x2 getScreenPosition() const;
+
 		void setPosition(Vector2D vec) { position = vec; }
 		void setSize(Size2D size) { this->size = size; }
 
-		void setPosition(float x, float y) { position.m_x = x; position.m_y = y; }
-		void setSize(float width, float height) { size.m_x = width; size.m_y = height; }
+		void setPosition(float x, float y) { position.vec2[0] = x; position.vec2[1] = y; }
+		void setSize(float width, float height) { size.vec2[0] = width; size.vec2[1] = height; }
 
 		friend class GameObject;
 	};

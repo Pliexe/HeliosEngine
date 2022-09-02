@@ -11,7 +11,11 @@ namespace Wallnut {
 	class WALLNUT_API Vector2D
 	{
 	protected:
-		float m_x, m_y;
+		float vec2[2];
+
+		operator float* () {
+			return vec2;
+		}
 
 	public:
 		Vector2D();
@@ -52,6 +56,7 @@ namespace Wallnut {
 		Vector2D operator/=(float n);
 
 		friend class Transform;
+		extern friend class GameEngine;
 	};
 
 	class WALLNUT_API Point : public Vector2D {
@@ -67,7 +72,7 @@ namespace Wallnut {
 	public:
 		Size2D(float width, float height) : Vector2D(width, height) { }
 		Size2D() : Vector2D() {}
-		Size2D(const Size2D& size) : Vector2D(size) { }
+		Size2D(const Size2D& size) : Vector2D(size.vec2[0], size.vec2[1]) { }
 		Size2D(const Vector2D& size) : Vector2D(size) { }
 
 		Vector2D normalize() = delete;
