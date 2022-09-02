@@ -62,15 +62,15 @@ LRESULT Wallnut::Application::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam
 			clientWidth = client_rect.right;
 			clientHeight = client_rect.bottom;
 
-			//graphics->renderTarget->Resize(D2D1::SizeU(client_rect.right, client_rect.bottom));
+			//graphics->m_d2renderTarget->Resize(D2D1::SizeU(client_rect.right, client_rect.bottom));
 
 			WindowCordinates::SetSize(client_rect.right, client_rect.bottom);
 
 			
-			//auto renderTarget = graphics->renderTarget;
+			//auto m_d2renderTarget = graphics->m_d2renderTarget;
 			//float tmp = (baseCanvas - (baseCanvas - (clientWidth + clientHeight))) / baseCanvas;
 			////std::cout << "Scale: " << tmp << ", DIFF" << (baseCanvas - (baseCanvas - (clientWidth + clientHeight))) << std::endl;
-			//renderTarget->SetTransform(D2D1::Matrix3x2F::Scale(D2D1::SizeF(tmp, tmp)));
+			//m_d2renderTarget->SetTransform(D2D1::Matrix3x2F::Scale(D2D1::SizeF(tmp, tmp)));
 
 			//HandleGameLoop();
 		}
@@ -230,13 +230,13 @@ void Wallnut::Application::RenderLoop()
 {
 	if (SceneManager::currentScene)
 	{
-		graphics->renderTarget->BeginDraw();
+		graphics->m_d2renderTarget->BeginDraw();
 
 		SceneManager::Render(*graphics);
 
 		Render(*graphics);
 
-		graphics->renderTarget->EndDraw();
+		graphics->m_d2renderTarget->EndDraw();
 	}
 
 	graphics->ClearRenderTarget(0.5f, 0.0f, 0.5f);

@@ -14,7 +14,7 @@ void Wallnut::SceneManager::Render(Graphics& graphics)
 {
 	auto currentCamera = currentScene->currentCamera;
 	if (currentCamera) {
-		graphics.renderTarget->Clear(currentCamera->backgroundColor);
+		//graphics.m_d2renderTarget->Clear(currentCamera->backgroundColor);
 
 		for (auto& gm : GameObject::gameObjects)
 		{

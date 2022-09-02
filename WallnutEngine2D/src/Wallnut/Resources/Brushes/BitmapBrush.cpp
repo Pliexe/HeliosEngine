@@ -33,7 +33,7 @@ inline Wallnut::Size2D Wallnut::BitmapBrush::getSize() const {
 void Wallnut::BitmapBrush::Load()
 {
 	ID2D1BitmapBrush* tmp = NULL;
-	Graphics::instance->renderTarget->CreateBitmapBrush(*bitmap, &tmp);
+	Graphics::instance->m_d2renderTarget->CreateBitmapBrush(*bitmap, &tmp);
 	brush.reset(tmp, Brush::releaseBrush);
 }
 

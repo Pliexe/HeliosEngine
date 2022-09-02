@@ -4,118 +4,108 @@
  */
 #include "Graphics.h"
 #include "Wallnut/Application.h"
+#include "Wallnut/Utils/ErrorHandling.h"
 
-HRESULT CreateD3DDevice(
-    IDXGIAdapter* pAdapter,
-    D3D10_DRIVER_TYPE driverType,
-    UINT flags,
-    ID3D10Device1** ppDevice
-)
+using namespace Wallnut;
+
+HRESULT Graphics::CreateD3D11Device(D3D_DRIVER_TYPE type)
 {
-    HRESULT hr = S_OK;
-
-    static const D3D10_FEATURE_LEVEL1 levelAttempts[] =
+    static const D3D_FEATURE_LEVEL levelAttempts[] =
     {
-        D3D10_FEATURE_LEVEL_10_1,
-        D3D10_FEATURE_LEVEL_10_0,
-        D3D10_FEATURE_LEVEL_9_3,
-        D3D10_FEATURE_LEVEL_9_2,
-        D3D10_FEATURE_LEVEL_9_1,
+        D3D_FEATURE_LEVEL_11_0,
+        D3D_FEATURE_LEVEL_10_1,
+        D3D_FEATURE_LEVEL_10_0,
+        D3D_FEATURE_LEVEL_9_3,
+        D3D_FEATURE_LEVEL_9_2,
+        D3D_FEATURE_LEVEL_9_1,
     };
 
-    for (UINT level = 0; level < ARRAYSIZE(levelAttempts); level++)
-    {
-        ID3D10Device1* pDevice = NULL;
-        hr = D3D10CreateDevice1(
-            pAdapter,
-            driverType,
-            NULL,
-            flags,
-            levelAttempts[level],
-            D3D10_1_SDK_VERSION,
-            &pDevice
-        );
+    static UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+#ifdef _DEBUG
+    flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif // _DEBUG
 
-        if (SUCCEEDED(hr))
-        {
-            // transfer reference
-            *ppDevice = pDevice;
-            pDevice = NULL;
-            break;
-        }
-    }
+    this->m_device = NULL;
 
-    return hr;
+    return D3D11CreateDevice(
+        NULL,
+        type,
+        NULL,
+        flags,
+        levelAttempts,
+        ARRAYSIZE(levelAttempts),
+        D3D11_SDK_VERSION,
+        &this->m_device,
+        NULL,
+        &this->m_deviceContext
+    );;
+}
+
+HRESULT Wallnut::Graphics::CreateD3D11SwapChain(IDXGIFactory* pFactory, IDXGISwapChain** ppSwapChain)
+{
+    DXGI_SWAP_CHAIN_DESC swapDesc;
+	ZeroMemory(&swapDesc, sizeof(swapDesc));
+
+    swapDesc.BufferDesc.Width = 0;
+    swapDesc.BufferDesc.Height = 0;
+    swapDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    swapDesc.BufferDesc.RefreshRate.Numerator = 60;
+    swapDesc.BufferDesc.RefreshRate.Denominator = 1;
+    swapDesc.SampleDesc.Count = 1;
+    swapDesc.SampleDesc.Quality = 0;
+    swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapDesc.BufferCount = 1;
+	swapDesc.OutputWindow = this->m_hWnd;
+    swapDesc.Windowed = TRUE;
+	
+    return pFactory->CreateSwapChain(this->m_device, &swapDesc, ppSwapChain);
 }
 
 bool Wallnut::Graphics::Init()
 {
     //if (!CreateD3DDevice()) return false;
-    IDXGIAdapter* pAdapter = NULL;
-    IDXGIDevice1* pDXGIDevice = NULL;
+    IDXGIAdapter* pAdapter10 = NULL;
+    IDXGIDevice1* pDXGIDevice10 = NULL;
+    IDXGIFactory* pDXGIFactory10 = NULL;
+
+    IDXGIDevice* pDXGIDevice = NULL;
+    IDXGIAdapter* pDXGIAdapter = NULL;
     IDXGIFactory* pDXGIFactory = NULL;
 
     HRESULT hr;
 
-    // Create device
-    hr = ::CreateD3DDevice(
-        NULL,
-        D3D10_DRIVER_TYPE_HARDWARE,
-        D3D10_CREATE_DEVICE_BGRA_SUPPORT,
-        &m_d3Device
-    );
-
-    if (FAILED(hr))
-    {
-        hr = ::CreateD3DDevice(
-            NULL,
-            D3D10_DRIVER_TYPE_WARP,
-            D3D10_CREATE_DEVICE_BGRA_SUPPORT,
-            &m_d3Device
-        );
+	// Create a new D3D11 device.
+    if (FAILED(hr = CreateD3D11Device(D3D_DRIVER_TYPE_HARDWARE))) {
+		if (FAILED(hr = CreateD3D11Device(D3D_DRIVER_TYPE_WARP))) {
+			MessageBox(m_hWnd, (std::wstring(L"Failed to create Direct3D11 device. Reason: ") + GetErrorAsReadable(hr)).c_str(), L"Graphics Error!", MB_ICONERROR);
+			return false;
+		}
     }
 
-    /*if (SUCCEEDED(hr))
-    {
-        hr = m_d3Device->QueryInterface(&m_d3Device);
-    }*/
-    if (SUCCEEDED(hr))
-    {
-        hr = m_d3Device->QueryInterface(&pDXGIDevice);
-    }
-    if (SUCCEEDED(hr))
-    {
-        hr = pDXGIDevice->GetAdapter(&pAdapter);
-    }
-    if (SUCCEEDED(hr))
-    {
-        hr = pAdapter->GetParent(IID_PPV_ARGS(&pDXGIFactory));
-    }
-    if (SUCCEEDED(hr))
-    {
-        DXGI_SWAP_CHAIN_DESC swapDesc;
-        ::ZeroMemory(&swapDesc, sizeof(swapDesc));
+    // Get DXGI Device for DX11
+	hr = m_device->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDXGIDevice);
+	// Get DXGI Adapter for DX11
+    hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&pDXGIAdapter);
+    // Get DXGI Factory for DX11
+    pDXGIAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&pDXGIFactory);
 
-        swapDesc.BufferDesc.Width = 0;
-        swapDesc.BufferDesc.Height = 0;
-        swapDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-        swapDesc.BufferDesc.RefreshRate.Numerator = 60;
-        swapDesc.BufferDesc.RefreshRate.Denominator = 1;
-        swapDesc.SampleDesc.Count = 1;
-        swapDesc.SampleDesc.Quality = 0;
-        swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapDesc.BufferCount = 1;
-        swapDesc.OutputWindow = m_hWnd;
-        swapDesc.Windowed = TRUE;
+	// Check HRESULT
+	if (FAILED(hr)) {
+		MessageBox(m_hWnd, (std::wstring(L"Failed to get DXGI device or adapter. Reason: ") + GetErrorAsReadable(hr)).c_str(), L"Graphics Error!", MB_ICONERROR);
+		return false;
+	}
 
-        hr = pDXGIFactory->CreateSwapChain(m_d3Device, &swapDesc, &m_pSwapChain);
+	// Create Swap Chain for DX11
+	if (FAILED(hr = CreateD3D11SwapChain(pDXGIFactory, &this->m_pSwapChain))) {
+		MessageBox(m_hWnd, (std::wstring(L"Failed to create swap chain. Reason: ") + GetErrorAsReadable(hr)).c_str(), L"Graphics Error!", MB_ICONERROR);
+		return false;
+	}
+
+	// Create Render Target for DX11
+    if (FAILED(hr = CreateD3D11RenderTarget())) {
+        MessageBox(m_hWnd, (std::wstring(L"Failed to create render target. Reason: ") + GetLastMessageAsReadable()).c_str(), L"Graphics Error!", MB_ICONERROR);
+        return false;
     }
-	
-    //m_d3Device->QueryInterface(&pDXGIDevice);
-    //pDXGIDevice->GetAdapter(&pAdapter);
-    //pAdapter->GetParent(IID_PPV_ARGS(&pDXGIFactory));
-
-    if (!Create3DRenderTarget()) return false;
 
 	if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE::D2D1_FACTORY_TYPE_MULTI_THREADED, &factory))) return false;
 
@@ -134,17 +124,20 @@ bool Wallnut::Graphics::Init()
             D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED)
         );
 
-    //if (Create3DRenderTarget()) return false;
-
     if (FAILED(factory->CreateDxgiSurfaceRenderTarget(
         pBackBuffer,
         &props,
         /*D2D1::HwndRenderTargetProperties(
             m_hWnd, D2D1::SizeU(rect.right, rect.bottom)
         ),*/
-        &renderTarget
+        &m_d2renderTarget
     ))) {
 		std::cout << "Failed to create render target: " << GetLastError() << std::endl;
+        return false;
+    }
+
+    if (FAILED(hr = pBackBuffer->QueryInterface(&d2RenderTargetTexture))) {
+        MessageBox(m_hWnd, (std::wstring(L"Failed to create dxgi texture. Reason: ") + GetLastMessageAsReadable()).c_str(), L"Graphics Error!", MB_ICONERROR);
         return false;
     }
 
@@ -155,7 +148,7 @@ bool Wallnut::Graphics::Init()
 		D2D1::HwndRenderTargetProperties(
 			m_hWnd, D2D1::SizeU(rect.right, rect.bottom)
 		),
-		&renderTarget
+		&m_d2renderTarget
 	))) return false;*/
 
 	if (FAILED(DWriteCreateFactory(
@@ -170,96 +163,37 @@ bool Wallnut::Graphics::Init()
 void Wallnut::Graphics::EndFrame()
 {
     m_pSwapChain->Present(1u, 0u);
+    //m_pSwapChain_10->Present(1u, 0u);
 }
 
 void Wallnut::Graphics::ClearRenderTarget(float r, float g, float b)
 {
     const float color[4] = { r,g,b,1.0f };
-    m_d3Device->ClearRenderTargetView(m_d3RenderTarget, color);
+    this->m_deviceContext->ClearRenderTargetView(m_mainRenderTarget, color);
 }
 
-bool Wallnut::Graphics::Create3DRenderTarget()
+HRESULT Wallnut::Graphics::CreateD3D11RenderTarget()
 {
-    ID3D10Texture2D* pBackBuffer;
-    if (FAILED(m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer)))) return false;
-    if (FAILED(m_d3Device->CreateRenderTargetView(pBackBuffer, NULL, &m_d3RenderTarget))) return false;
-	pBackBuffer->Release();
-    return true;
-}
-
-bool Wallnut::Graphics::CreateD3DDevice()
-{
-    DXGI_SWAP_CHAIN_DESC sd;
-    ::ZeroMemory(&sd, sizeof(sd));
-
-    sd.BufferDesc.Width = 200;
-    sd.BufferDesc.Height = 200;
-    sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    sd.BufferDesc.RefreshRate.Numerator = 60;
-    sd.BufferDesc.RefreshRate.Denominator = 1;
-    //sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    sd.BufferCount = 1;
-    sd.OutputWindow = m_hWnd;
-    sd.SampleDesc.Count = 1;
-    sd.SampleDesc.Quality = 0;
-    sd.Windowed = TRUE;
-    //sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-
-    UINT createDeviceFlags = D3D10_CREATE_DEVICE_BGRA_SUPPORT;
-
-#ifdef _DEBUG
-    createDeviceFlags |= D3D10_CREATE_DEVICE_DEBUG;
-#endif // _DEBUG
-
-	
-    /*if (FAILED(D3D10CreateDeviceAndSwapChain(NULL, D3D10_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, D3D10_SDK_VERSION, &sd, &m_pSwapChain, &m_d3Device)))
-        return false;*/
-
-    Create3DRenderTarget();
-    return true;
-
-    //HRESULT hr = S_OK;
-
-    //static const D3D10_FEATURE_LEVEL1 levelAttempts[] =
-    //{
-    //    D3D10_FEATURE_LEVEL_10_0,
-    //    D3D10_FEATURE_LEVEL_9_3,
-    //    D3D10_FEATURE_LEVEL_9_2,
-    //    D3D10_FEATURE_LEVEL_9_1,
-    //};
-
-    //for (UINT level = 0; level < ARRAYSIZE(levelAttempts); level++)
-    //{
-    //    ID3D10Device1* pDevice = NULL;
-    //    hr = D3D10CreateDevice1(
-    //        pAdapter,
-    //        driverType,
-    //        NULL,
-    //        flags,
-    //        levelAttempts[level],
-    //        D3D10_1_SDK_VERSION,
-    //        &pDevice
-    //    );
-
-    //    if (SUCCEEDED(hr))
-    //    {
-    //        // transfer reference
-    //        *ppDevice = pDevice;
-    //        pDevice = NULL;
-    //        break;
-    //    }
-    //}
-
-    //return hr;
+	// Back Buffer Texture
+	ID3D11Texture2D* pBB = nullptr;
+    HRESULT hr;
+    if (FAILED(hr = this->m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBB)))) return hr;
+	if (FAILED(hr  = this->m_device->CreateRenderTargetView(pBB, NULL, &this->m_mainRenderTarget))) return hr;
+    pBB->Release();
 }
 
 Wallnut::Graphics::~Graphics()
 {
 	SafeRelease(&factory);
-	SafeRelease(&renderTarget);
+	SafeRelease(&m_d2renderTarget);
 	SafeRelease(&writeFactory);
-    SafeRelease(&m_d3Device);
+
+    SafeRelease(&m_deviceContext);
+    SafeRelease(&m_device);
+    SafeRelease(&m_pSwapChain);
+    SafeRelease(&d2RenderTargetTexture);
+
+    SafeRelease(&pTextureView);
 }
 
 Wallnut::Graphics* Wallnut::Graphics::instance = nullptr;

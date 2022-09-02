@@ -63,7 +63,7 @@ Wallnut::Bitmap::Bitmap(const wchar_t* path)
 
 		ID2D1Bitmap* bmp;
 
-		if (FAILED(Graphics::instance->renderTarget->CreateBitmapFromWicBitmap(
+		if (FAILED(Graphics::instance->m_d2renderTarget->CreateBitmapFromWicBitmap(
 			wicConverter,
 			NULL,
 			&bmp

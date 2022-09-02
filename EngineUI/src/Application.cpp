@@ -21,6 +21,7 @@
 //#include <imgui_impl_dx10.h>
 
 #include "Components/CameraInspector.h"
+#include "Wallnut/Utils/ErrorHandling.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -70,7 +71,7 @@ namespace Wallnut {
 			
 			// Setup Platform/Renderer backends
 			ImGui_ImplWin32_Init(m_hWnd);
-			ImGui_ImplDX10_Init(graphics->m_d3Device);
+			ImGui_ImplDX11_Init(graphics->m_device, graphics->m_deviceContext);
 
 			using namespace Wallnut;
 
@@ -89,7 +90,7 @@ namespace Wallnut {
 			if (demo_window)
 				ImGui::ShowDemoWindow(&demo_window);*/
 			
-			static ImGuiIO& io = ImGui::GetIO();
+			/*static ImGuiIO& io = ImGui::GetIO();
 			static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -120,14 +121,14 @@ namespace Wallnut {
 				}
 				
 				ImGui::EndMenuBar();
-			}
+			}*/
 
 			static GameObject* selected = nullptr;
 
 			if (ImGui::Begin("Game"))
 			{
 				if(graphics->pTextureView)
-					ImGui::Image((void*)graphics->pTextureView, ImVec2(100, 100));
+					ImGui::Image((void*)graphics->pTextureView, ImVec2(500, 500));
 			}
 			ImGui::End();
 
@@ -201,7 +202,7 @@ namespace Wallnut {
 				}
 			}
 
-			ImGui::End();
+			//ImGui::End();
 
 			ImGui::End();
 		}
@@ -209,7 +210,7 @@ namespace Wallnut {
 		void RenderLoop() override {
 			static auto& io = ImGui::GetIO();
 
-			ImGui_ImplDX10_NewFrame();
+			ImGui_ImplDX11_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
@@ -217,22 +218,26 @@ namespace Wallnut {
 
 #pragma region Rendering
 			if (SceneManager::currentScene) {
-				graphics->renderTarget->BeginDraw();
+				graphics->m_d2renderTarget->BeginDraw();
 
 				SceneManager::Render(*graphics);
 
 				Render(*graphics);
 
-				graphics->renderTarget->EndDraw();
+				graphics->m_d2renderTarget->EndDraw();
 			}
 #pragma endregion
+
+
+			
 
 			ImGui::EndFrame();
 			ImGui::Render();
 			
-			graphics->m_d3Device->OMSetRenderTargets(1, &graphics->m_d3RenderTarget, NULL);
-			//graphics->ClearRenderTarget(0.5f, 0.0f, 1.0f);
-			ImGui_ImplDX10_RenderDrawData(ImGui::GetDrawData());
+			//graphics->m_d3d10Device1->OMSetRenderTargets(1, &graphics->m_d3renderTarget_10, NULL);
+			graphics->m_deviceContext->OMSetRenderTargets(1, &graphics->m_mainRenderTarget, NULL);
+			graphics->ClearRenderTarget(0.5f, 0.0f, 1.0f);
+			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 			// Update and Render additional Platform Windows
 			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 			{
@@ -240,108 +245,88 @@ namespace Wallnut {
 				ImGui::RenderPlatformWindowsDefault();
 			}
 
-			graphics->EndFrame();
+#pragma region Rendering
+			if (SceneManager::currentScene) {
+				graphics->m_d2renderTarget->BeginDraw();
+
+				SceneManager::Render(*graphics);
+
+				Render(*graphics);
+
+				graphics->m_d2renderTarget->EndDraw();
+			}
+#pragma endregion
+
+			if (InputManager::IsKeyPressedDown(WN_KEY_S) && InputManager::IsKeyPressedDown(WN_KEY_SHIFT_LEFT)) {
+				ID3D11Texture2D* frameBuffer;
+				if (SUCCEEDED(graphics->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(&frameBuffer))))
+				{
+					ID3D11Texture2D* texture;
+					D3D11_TEXTURE2D_DESC textureDesc;
+					ZeroMemory(&textureDesc, sizeof(textureDesc));
+
+					textureDesc.Width = 1000;
+					textureDesc.Height = 1000;
+					textureDesc.MipLevels = 1;
+					textureDesc.ArraySize = 1;
+					textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+					textureDesc.SampleDesc.Count = 1;
+					textureDesc.Usage = D3D11_USAGE_DEFAULT;
+					textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+					textureDesc.CPUAccessFlags = 0;
+					textureDesc.MiscFlags = 0;
+
+					HRESULT hr = graphics->m_device->CreateTexture2D(&textureDesc, NULL, &texture);
 
 
+					if (texture) {
 
-			ID3D10Texture2D* frameBuffer;
-			if (SUCCEEDED(graphics->m_pSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D), reinterpret_cast<LPVOID*>(&frameBuffer))))
-			{
-				if (InputManager::IsKeyPressedDown(WN_KEY_S) && InputManager::IsKeyPressedDown(WN_KEY_SHIFT_LEFT)) {
-					ID3D10Texture2D* pNewTexture = NULL;
+						D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+						renderTargetViewDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+						renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+						renderTargetViewDesc.Texture2D.MipSlice = 0;
 
-					D3D10_TEXTURE2D_DESC desc;
-					frameBuffer->GetDesc(&desc);
-					desc.BindFlags = 0;
-					desc.CPUAccessFlags = D3D10_CPU_ACCESS_READ | D3D10_CPU_ACCESS_WRITE;
-					desc.Usage = D3D10_USAGE_STAGING;
+						static ID3D11RenderTargetView* refRen;
+						graphics->m_device->CreateRenderTargetView(texture, &renderTargetViewDesc, &refRen);
 
-					HRESULT hr = graphics->m_d3Device->CreateTexture2D(&desc, NULL, &pNewTexture);
+						D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+						shaderResourceViewDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+						shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+						shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+						shaderResourceViewDesc.Texture2D.MipLevels = 1;
 
-					if (pNewTexture) {
-						graphics->m_d3Device->CopyResource(pNewTexture, frameBuffer);
-						
-						// Load from disk into a raw RGBA buffer
-						int image_width = 0;
-						int image_height = 0;
-						unsigned char* image_data = stbi_load("resources/unknown.png", &image_width, &image_height, NULL, 4);
-						if (image_data != NULL)
-						{
-							// Create texture
-							D3D10_TEXTURE2D_DESC desc;
-							ZeroMemory(&desc, sizeof(desc));
-							desc.Width = image_width;
-							desc.Height = image_height;
-							desc.MipLevels = 1;
-							desc.ArraySize = 1;
-							desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-							desc.SampleDesc.Count = 1;
-							desc.Usage = D3D10_USAGE_DEFAULT;
-							desc.BindFlags = D3D10_BIND_SHADER_RESOURCE;
-							desc.CPUAccessFlags = 0;
+						graphics->m_deviceContext->CopyResource(texture, frameBuffer);
 
-							ID3D10Texture2D* pTexture = NULL;
-							D3D10_SUBRESOURCE_DATA subResource;
-							subResource.pSysMem = image_data;
-							subResource.SysMemPitch = desc.Width * 4;
-							subResource.SysMemSlicePitch = 0;
-							graphics->m_d3Device->CreateTexture2D(&desc, &subResource, &pTexture);
+						HRESULT hr;
+						if (SUCCEEDED(hr = graphics->m_device->CreateShaderResourceView(texture, &shaderResourceViewDesc, &graphics->pTextureView))) {
+							//MessageBox(getHwnd(), L"SHADER RESOURCE VIEW", L"SUCCESS", MB_ICONERROR);
 
+							//graphics->m_deviceContext->CopyResource(texture, graphics->d2RenderTargetTexture);
 
-							// Create texture view
-							D3D10_SHADER_RESOURCE_VIEW_DESC1 srvDesc;
-							ZeroMemory(&srvDesc, sizeof(srvDesc));
-							srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-							srvDesc.ViewDimension = D3D10_1_SRV_DIMENSION_TEXTURE2D;
-							srvDesc.Texture2D.MipLevels = desc.MipLevels;
-							srvDesc.Texture2D.MostDetailedMip = 0;
+							//graphics->m_deviceContext->OMSetRenderTargets(1, &refRen, NULL);
+							/*float c[4] = { 0.5f, 1.0f, 1.0f, 0.0f };
+							graphics->m_deviceContext->ClearRenderTargetView(refRen, c);*/
 
-							HRESULT hr = graphics->m_d3Device->CreateShaderResourceView1(pNewTexture, &srvDesc, &graphics->pTextureView);
-							if (graphics->pTextureView) {
-								std::cout << "Let's go" << std::endl;
-							}
-							else {
-								if (hr == E_INVALIDARG)
-									std::cout << "It's null: " << "Invalid Params" << std::endl;
-								else
-									std::cout << "It's null: " << hr << std::endl;
-							}
-							pTexture->Release();
+							//graphics->m_deviceContext->CopyResource(texture, frameBuffer);
+
+							//graphics->m_deviceContext->Map()
+
+							/*if (SUCCEEDED(graphics->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(&frameBuffer))))
+							{
+								graphics->m_deviceContext->CopyResource(texture, graphics->d2RenderTargetTexture);
+							}*/
+
 						}
+						else {
+							//MessageBox(getHwnd(), GetErrorAsReadable(hr).c_str(), L"SHADER RESOURCE VIEW FAIL", MB_ICONERROR);
+						}
+						//pTexture->Release();
 
-						
-						pNewTexture->Release();
 					}
 				}
-				
-
-				//D3D10_TEXTURE2D_DESC bbDesc;
-				//frameBuffer->GetDesc(&bbDesc);
-
-				//ID3D10Texture2D* pTexture = NULL;
-				//graphics->m_d3Device->CopyResource(pTexture, frameBuffer);
-				//D3D10_TEXTURE2D_DESC bbDesc2;
-				//pTexture->GetDesc(&bbDesc2);
-
-				//std::cout << "AAA: " << bbDesc.Width << std::endl;
-
-				//// Create texture view
-				//D3D10_SHADER_RESOURCE_VIEW_DESC srv_desc;
-				//ZeroMemory(&srv_desc, sizeof(srv_desc));
-				//srv_desc.ViewDimension = D3D10_SRV_DIMENSION_TEXTURE2D;
-				//srv_desc.Format = bbDesc.Format;
-
-				///*srv_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-				//srv_desc.ViewDimension = D3D10_SRV_DIMENSION_TEXTURE2D;*/
-
-				//HRESULT hr = graphics->m_d3Device->CreateShaderResourceView(frameBuffer, &srv_desc, &graphics->pTextureView);
-				//if (SUCCEEDED(hr)) {
-				//	pTexture->Release();
-				//}
-
-
-				//frameBuffer->Release();
 			}
+
+			graphics->EndFrame();
 
 		}
 		
