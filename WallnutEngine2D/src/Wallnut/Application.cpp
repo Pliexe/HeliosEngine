@@ -54,25 +54,12 @@ LRESULT Wallnut::Application::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam
 		//if (currentGameSection) currentGameSection->OnClick(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		break;
 	case WM_SIZE:
-	case WM_SIZING:
 	{
 		if (graphics) {
-			RECT client_rect;
-			GetClientRect(m_hWnd, &client_rect);
-			clientWidth = client_rect.right;
-			clientHeight = client_rect.bottom;
-
-			//graphics->m_d2renderTarget->Resize(D2D1::SizeU(client_rect.right, client_rect.bottom));
-
-			WindowCordinates::SetSize(client_rect.right, client_rect.bottom);
-
-			
-			//auto m_d2renderTarget = graphics->m_d2renderTarget;
-			//float tmp = (baseCanvas - (baseCanvas - (clientWidth + clientHeight))) / baseCanvas;
-			////std::cout << "Scale: " << tmp << ", DIFF" << (baseCanvas - (baseCanvas - (clientWidth + clientHeight))) << std::endl;
-			//m_d2renderTarget->SetTransform(D2D1::Matrix3x2F::Scale(D2D1::SizeF(tmp, tmp)));
-
-			//HandleGameLoop();
+			SafeRelease(&graphics->m_mainRenderTarget);
+			graphics->m_pSwapChain->ResizeBuffers(0, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam), DXGI_FORMAT_UNKNOWN, 0);
+			graphics->CreateD3D11RenderTarget();
+			GameLoop();
 		}
 		return 0;
 	}
@@ -189,7 +176,7 @@ int Wallnut::Application::Run()
 			TranslateMessage(&message);
 			DispatchMessage(&message);
 		}
-		else HandleGameLoop();
+		else GameLoop();
 	}
 
 #pragma endregion
@@ -202,44 +189,42 @@ void Wallnut::Application::ShowMessageBox(const wchar_t* title, const wchar_t* t
 	MessageBox(pauseGame ? instance->m_hWnd : NULL, text, title, type);
 }
 
-void Wallnut::Application::HandleGameLoop() {
+void Wallnut::Application::GameLoop() {
 
-	if (SceneManager::currentScene) {
+	// Update Delta Time
+	Time::frameUpdate();
+	CheckEngineQueue();
 
-#pragma region Clean Up
-
-		GameObject::CheckQueue(*graphics);
-		SceneManager::CheckQueue();
-
-#pragma endregion
-
-#pragma region Update Loop
-
-		Time::frameUpdate();
-
-		SceneManager::Update();
-
-#pragma endregion
-		
-	}
-
-	RenderLoop();
+	OnUpdate();
+	OnRender();
 }
 
-void Wallnut::Application::RenderLoop()
+void Wallnut::Application::CheckEngineQueue() {
+	if (SceneManager::currentScene) {
+		GameObject::CheckQueue(*graphics);
+		SceneManager::CheckQueue();
+	}
+}
+
+void Wallnut::Application::OnUpdate() {
+	SceneManager::Update();
+}
+
+void Wallnut::Application::OnRender()
 {
+	graphics->ClearRenderTarget(0.0f, 0.0f, 0.5f);
+
 	if (SceneManager::currentScene)
 	{
-		graphics->m_d2renderTarget->BeginDraw();
+		graphics->m_renderTarget2D->BeginDraw();
 
 		SceneManager::Render(*graphics);
 
 		Render(*graphics);
 
-		graphics->m_d2renderTarget->EndDraw();
+		graphics->m_renderTarget2D->EndDraw();
 	}
 
-	graphics->ClearRenderTarget(0.5f, 0.0f, 0.5f);
 	graphics->EndFrame();
 }
 

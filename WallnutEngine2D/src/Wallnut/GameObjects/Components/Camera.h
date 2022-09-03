@@ -14,6 +14,8 @@ namespace Wallnut {
 	private:
 
 		Color backgroundColor = Color::Black;
+		float viewportWidth;
+		float viewportHeight;
 
 	public:
 

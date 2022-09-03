@@ -8,10 +8,13 @@
 #include "Wallnut/Utils/LinkedList.h"
 #include "Wallnut/GameObjects/GameObject.h"
 
+#define SCENE_FILE_VERSION "0.1"
+
 namespace Wallnut {
 	class SceneManager;
 	class GameObject;
 	class Camera;
+	
 	class WALLNUT_API Scene
 	{
 	private:
@@ -23,7 +26,8 @@ namespace Wallnut {
 
 	protected:
 
-
+		void Serialize(const std::string& filepath);
+		void Deserialize(const std::string& filepath);
 
 	public:
 		void Init() { initCallback(*this); }
@@ -33,6 +37,8 @@ namespace Wallnut {
 		friend class SceneManager;
 		friend class GameObject;
 		friend class Transform;
+
+		extern friend class GameEngine;
 	};
 
 

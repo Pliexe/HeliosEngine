@@ -14,6 +14,8 @@
 #include <Wallnut/Resources/Color.h>
 #include <Wallnut/GameObjects/Components/Camera.h>
 
+#include <Wallnut/Utils/ErrorHandling.h>
+
 #include <d2d1_3.h>
 
 //#include <imgui.h>
@@ -23,6 +25,7 @@
 #include "Components/CameraInspector.h"
 #include "Wallnut/Utils/ErrorHandling.h"
 
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 using namespace Wallnut;
@@ -31,13 +34,181 @@ namespace Wallnut {
 	class GameEngine : public Wallnut::Application {
 	private:
 
+		GameObject* InspectorCreateElementsList(Transform* parent = nullptr) {
+			if (ImGui::MenuItem("Create Empty")) {
+				return &GameObject::InstantiateObject("Empty GameObject", parent);
+			}
+			else return nullptr;
+		}
+
+		bool InspectorElement(GameObject* o, GameObject** selected, int count, float width, float indent = 40) {
+			if (o->transform.parent && indent == 40) return false;
+			bool clicked = false;
+			float height = 50;
+			ImGui::PushID("HierarchyElement");
+			ImGui::PushID(indent);
+			ImGui::PushID(count);
+
+			ImGui::PushStyleColor(ImGuiCol_Header, o == *selected ? IM_COL32(255, 255, 255, 25) : IM_COL32(0, 0, 0, 0));
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(0, 0, 0, 0));
+			//ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(255, 255, 255, 100));
+
+			static char buf[100];
+			strcpy_s(buf, o->m_name.c_str());
+
+
+			//ImGui::Text(o->m_name.c_str());
+
+
+
+			//ImGui::Indent();
+
+			static int rename = -1;
+
+			ImGui::BeginGroup();
+			bool is_open;
+			ImGui::PushStyleColor(ImGuiCol_Header, IM_COL32(0, 0, 0, 0));
+			ImGui::PushStyleColor(ImGuiCol_HeaderHovered, IM_COL32(0, 0, 0, 0));
+			is_open = ImGui::TreeNodeEx("##t_gm", o->transform.children.size() > 0 ? ImGuiTreeNodeFlags_Selected : (ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_Leaf));
+			ImGui::PopStyleColor(2);
+
+			//if (rename != count)
+			//{
+			//	ImGui::SameLine();
+
+			//	if (ImGui::Selectable("##s_gm", o == *selected, ImGuiSelectableFlags_AllowItemOverlap)) {
+			//		/*if(ImGui::IsItemClicked() && o == *selected)
+			//			rename = count;*/
+
+			//		(*selected) = o;
+			//	}
+			//}
+
+
+			ImGui::SameLine();
+			static bool firstTimeActive = true;
+			if (rename == count)
+			{
+				char tmp[100];
+				strcpy_s(tmp, o->m_name.c_str());
+				ImGui::SetCursorPosX(indent);
+				if (firstTimeActive) {
+					ImGui::SetKeyboardFocusHere();
+					firstTimeActive = false;
+				}
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 3.5f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2);
+				ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255, 255, 255, 255));
+				if (ImGui::InputText("##editGameobjectName", tmp, 100, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue) || ImGui::IsItemDeactivatedAfterEdit())
+				{
+					if (tmp[0] != '\0') o->m_name = tmp;
+					rename = -1;
+					firstTimeActive = true;
+				}
+				else if (ImGui::IsItemDeactivated()) {
+					rename = -1;
+					firstTimeActive = true;
+				}
+				ImGui::PopStyleColor();
+				ImGui::PopStyleVar(2);
+			}
+			else
+			{
+				ImGui::SetCursorPosX(0);
+				if(ImGui::Selectable("##obj_select", *selected == o, 0, ImVec2(width, 20))) {
+					(*selected) = o;
+				}
+
+				ImGui::SameLine();
+
+				static bool selectedCount = -1;
+				if (*selected == o) selectedCount = count;
+				if (ImGui::IsKeyReleased(ImGuiKey_F2))
+					rename = selectedCount;
+				else {
+					ImGui::OpenPopupOnItemClick("ObjectContext", ImGuiPopupFlags_MouseButtonRight);
+					if (ImGui::BeginPopup("ObjectContext"))
+					{
+						clicked = true;
+						if (ImGui::MenuItem("Rename")) {
+							rename = count;
+						}
+						InspectorCreateElementsList(&o->transform);
+						ImGui::Separator();
+						ImGui::EndPopup();
+					}
+				}
+
+				ImGui::SetCursorPos(ImVec2(indent, ImGui::GetCursorPosY() + 2));
+				ImGui::Text(o->m_name.c_str());
+			}
+
+			if (is_open) {
+				if (o->transform.children.size() > 0)
+				{
+					int i = 0;
+					for (auto& t : o->transform.children)
+					{
+						i++;
+						InspectorElement(t->gameObject, selected, i, width, indent + 10.0f);
+					}
+				}
+
+				ImGui::TreePop();
+			}
+
+			ImGui::EndGroup();
+
+			ImGui::PopStyleColor(2);
+			ImGui::PopID();
+			ImGui::PopID();
+			ImGui::PopID();
+			return clicked;
+		}
+
+		bool inPlayMode = false;
+		
 		LRESULT CALLBACK WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override
 		{
 			if (ImGui_ImplWin32_WndProcHandler(m_hWnd, uMsg, wParam, lParam))
 				return true;
+			if (uMsg == WM_DPICHANGED) {
+				if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
+				{
+					//const int dpi = HIWORD(wParam);
+					//printf("WM_DPICHANGED to %d (%.0f%%)\n", dpi, (float)dpi / 96.0f * 100.0f);
+					const RECT* suggested_rect = (RECT*)lParam;
+					::SetWindowPos(hWnd, NULL, suggested_rect->left, suggested_rect->top, suggested_rect->right - suggested_rect->left, suggested_rect->bottom - suggested_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
+				}
+			}
 			else Application::WindowProc(uMsg, wParam, lParam);
 		}
 		
+		void OpenSaveSceneDialog() {
+			if (inPlayMode) return;
+
+			if (SceneManager::currentScene) {
+				wchar_t file[MAX_PATH];
+				ZeroMemory(file, sizeof(MAX_PATH));
+
+				OPENFILENAMEW props;
+				ZeroMemory(&props, sizeof(props));
+				props.lStructSize = sizeof(props);
+				props.hwndOwner = getHwnd();
+				props.lpstrFilter = L"Scene (*.scene)\0*.scene\0All Files (*.*)\0*.*\0";
+				props.lpstrFile = file;
+				props.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+				props.lpstrDefExt = L"scene";
+				props.nMaxFile = MAX_PATH;
+
+				if (GetSaveFileName(&props)) {
+					std::wstring wstr(file);
+					std::string str(wstr.begin(), wstr.end());
+					SceneManager::currentScene->Serialize(str);
+				}
+			}
+		}
+
 	public:
 
 		GameEngine()
@@ -90,7 +261,7 @@ namespace Wallnut {
 			if (demo_window)
 				ImGui::ShowDemoWindow(&demo_window);*/
 			
-			/*static ImGuiIO& io = ImGui::GetIO();
+			static ImGuiIO& io = ImGui::GetIO();
 			static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -105,15 +276,23 @@ namespace Wallnut {
 			static bool dock_open = true;
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 			ImGui::Begin("Dockspace Demon", &dock_open, window_flags);
-			ImGui::PopStyleVar();
-			ImGui::PopStyleVar(2);
+			ImGui::PopStyleVar(3);
 
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+			if (ImGui::IsKeyReleased(ImGuiKey_S) && ImGui::IsKeyReleased(ImGuiKey_ModCtrl))
+				OpenSaveSceneDialog();
+			
 
 			if (ImGui::BeginMenuBar()) {
 				if (ImGui::BeginMenu("File"))
 				{
+					if (ImGui::MenuItem("Save", "Ctrl+S", false, !this->inPlayMode))
+						OpenSaveSceneDialog();
+
+					if (ImGui::MenuItem("Play", "", this->inPlayMode))
+						this->inPlayMode != this->inPlayMode;
+
 					if (ImGui::MenuItem("Exit")) {
 						Application::Quit();
 					}
@@ -121,32 +300,73 @@ namespace Wallnut {
 				}
 				
 				ImGui::EndMenuBar();
-			}*/
+			}
+
+			ImGui::ShowDemoWindow();
 
 			static GameObject* selected = nullptr;
 
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
 			if (ImGui::Begin("Game"))
 			{
-				if(graphics->pTextureView)
-					ImGui::Image((void*)graphics->pTextureView, ImVec2(500, 500));
+				if (graphics->pTextureView)
+				{
+					ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+					auto currentViewportSize = graphics->m_renderTarget2D->GetSize();
+					if (viewportSize.x != currentViewportSize.width || viewportSize.y != currentViewportSize.height)
+					{
+						SafeRelease(&graphics->m_renderTarget2D);
+						SafeRelease(&graphics->m_renderTarget2Dtexture);
+						SafeRelease(&graphics->pTextureView);
+						graphics->CreateDXGIRenderTarget(viewportSize.x, viewportSize.y);
+						WindowCordinates::SetSize(viewportSize.x, viewportSize.y);
+					}
+					ImGui::Image((void*)graphics->pTextureView, ImVec2(viewportSize));
+				}
+			}
+			ImGui::End();
+			ImGui::PopStyleVar();
+
+			if (ImGui::Begin("Game View 2"))
+			{
+				if (graphics->pTextureView)
+					ImGui::Image((void*)graphics->pTextureViewtest, ImVec2(500, 500));
+			}
+			ImGui::End();
+
+			if (ImGui::Begin("Explorer")) {
+				static bool rootDir = ".";
+				static bool currentDir = ".";
 			}
 			ImGui::End();
 
 			if (ImGui::Begin("Hierarchy"))
 			{
-				for (auto& o : GameObject::gameObjects)
+				const auto& width = ImGui::GetWindowWidth();
+				bool clicked = false;
+
+				for (int i = 0; i < GameObject::gameObjects.size(); i++)
 				{
-					if (ImGui::Selectable(o->m_name, o == selected))
-					{
-						selected = o;
-					}
+					clicked = InspectorElement(GameObject::gameObjects[i], &selected, i, width);
+					//if (ImGui::Selectable(o->m_name.c_str(), o == selected, ImGuiSelectableFlags_AllowDoubleClick))
+					//{
+					//	if (ImGui::GetIO().MouseClicked[0]) {
+					//		/*if (ImGui::BeginPopup("GameObject Editor")) {
+					//			if (ImGui::MenuItem("Delete"))
+					//			{
+					//				GameObject::Destroy(*o);
+					//			}
+					//			ImGui::EndPopup();
+					//		}*/
+
+					//		ShowMessageBox(L"CLICKEDI TEM", std::wstring(o->m_name.begin(), o->m_name.end()).c_str());
+					//	}
+					//	selected = o;
+					//}
 				}
 
-				if (ImGui::BeginPopupContextWindow()) {
-					if (ImGui::MenuItem("Create Empty"))
-					{
-						GameObject::InstantiateObject("Empty");
-					}
+				if (!clicked && ImGui::BeginPopupContextWindow()) {
+					InspectorCreateElementsList();
 					ImGui::EndPopup();
 				}
 
@@ -158,7 +378,40 @@ namespace Wallnut {
 				if (selected == nullptr)
 					ImGui::Text("Nothing Selected!");
 				else {
-					ImGui::Text(selected->m_name);
+
+					/*static bool editing = false;
+					if (editing)
+					{
+						static char buf[100];
+						strcpy_s(buf, selected->m_name.c_str());
+						if (ImGui::InputText("Name", buf, sizeof(buf), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_EnterReturnsTrue))
+						{
+							if (buf[0] != '\0') selected->m_name = buf;
+							editing = false;
+						}
+					}
+					else
+					{
+						ImGui::Text(selected->m_name.c_str());
+						if (ImGui::IsMouseClicked(ImGuiMouseButton_Left, false))
+							editing = true;
+					}*/
+
+					ImGui::Checkbox("##active", &selected->active);
+					ImGui::SameLine();
+					static char buf[100];
+					strcpy_s(buf, selected->m_name.c_str());
+					//ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, ImVec2(0, 0));
+					ImGui::PushItemWidth(-1);
+					if (ImGui::InputText("##label", buf, sizeof(buf), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_EnterReturnsTrue))
+					{
+						if (buf[0] != '\0') selected->m_name = buf;
+					}
+					ImGui::PopItemWidth();
+					//ImGui::PopStyleVar();
+					//ImGui::PopStyleColor(2);
+					
+
 					if (ImGui::CollapsingHeader("Transform"))
 					{
 						float* vec2Pos = selected->getTransform().getPosition();
@@ -172,12 +425,16 @@ namespace Wallnut {
 					for (auto& o : selected->components)
 					{
 
-						/*if (typeid(RectangleComponent) == typeid(*o))
+						if (typeid(RectangleComponent) == typeid(*o))
 						{
 						}
 						else if (typeid(Camera) == typeid(*o)) {
-							CameraInspectorGUI();
-						}*/
+							Camera* cam = (Camera*)o;
+							float *c = cam->backgroundColor;
+							if (ImGui::ColorEdit4("Clear Color", c)) {
+								cam->SetBackgroundColor(c[0], c[1], c[2], c[3]);
+							}
+						}
 					}
 
 					ImVec2 lastSize = ImGui::GetWindowSize();
@@ -202,39 +459,27 @@ namespace Wallnut {
 				}
 			}
 
-			//ImGui::End();
+			ImGui::End();
 
 			ImGui::End();
 		}
 
-		void RenderLoop() override {
+		void OnUpdate() override {
+			if (this->inPlayMode) Application::OnUpdate();
+		}
+
+		void OnRender() override {
 			static auto& io = ImGui::GetIO();
 
 			ImGui_ImplDX11_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			OnGUI();
-
-#pragma region Rendering
-			if (SceneManager::currentScene) {
-				graphics->m_d2renderTarget->BeginDraw();
-
-				SceneManager::Render(*graphics);
-
-				Render(*graphics);
-
-				graphics->m_d2renderTarget->EndDraw();
-			}
-#pragma endregion
-
-
-			
+			OnGUI();		
 
 			ImGui::EndFrame();
 			ImGui::Render();
 			
-			//graphics->m_d3d10Device1->OMSetRenderTargets(1, &graphics->m_d3renderTarget_10, NULL);
 			graphics->m_deviceContext->OMSetRenderTargets(1, &graphics->m_mainRenderTarget, NULL);
 			graphics->ClearRenderTarget(0.5f, 0.0f, 1.0f);
 			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -247,84 +492,15 @@ namespace Wallnut {
 
 #pragma region Rendering
 			if (SceneManager::currentScene) {
-				graphics->m_d2renderTarget->BeginDraw();
+				graphics->m_renderTarget2D->BeginDraw();
 
 				SceneManager::Render(*graphics);
 
 				Render(*graphics);
 
-				graphics->m_d2renderTarget->EndDraw();
+				graphics->m_renderTarget2D->EndDraw();
 			}
 #pragma endregion
-
-			if (InputManager::IsKeyPressedDown(WN_KEY_S) && InputManager::IsKeyPressedDown(WN_KEY_SHIFT_LEFT)) {
-				ID3D11Texture2D* frameBuffer;
-				if (SUCCEEDED(graphics->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(&frameBuffer))))
-				{
-					ID3D11Texture2D* texture;
-					D3D11_TEXTURE2D_DESC textureDesc;
-					ZeroMemory(&textureDesc, sizeof(textureDesc));
-
-					textureDesc.Width = 1000;
-					textureDesc.Height = 1000;
-					textureDesc.MipLevels = 1;
-					textureDesc.ArraySize = 1;
-					textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-					textureDesc.SampleDesc.Count = 1;
-					textureDesc.Usage = D3D11_USAGE_DEFAULT;
-					textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-					textureDesc.CPUAccessFlags = 0;
-					textureDesc.MiscFlags = 0;
-
-					HRESULT hr = graphics->m_device->CreateTexture2D(&textureDesc, NULL, &texture);
-
-
-					if (texture) {
-
-						D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-						renderTargetViewDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-						renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-						renderTargetViewDesc.Texture2D.MipSlice = 0;
-
-						static ID3D11RenderTargetView* refRen;
-						graphics->m_device->CreateRenderTargetView(texture, &renderTargetViewDesc, &refRen);
-
-						D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
-						shaderResourceViewDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-						shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-						shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-						shaderResourceViewDesc.Texture2D.MipLevels = 1;
-
-						graphics->m_deviceContext->CopyResource(texture, frameBuffer);
-
-						HRESULT hr;
-						if (SUCCEEDED(hr = graphics->m_device->CreateShaderResourceView(texture, &shaderResourceViewDesc, &graphics->pTextureView))) {
-							//MessageBox(getHwnd(), L"SHADER RESOURCE VIEW", L"SUCCESS", MB_ICONERROR);
-
-							//graphics->m_deviceContext->CopyResource(texture, graphics->d2RenderTargetTexture);
-
-							//graphics->m_deviceContext->OMSetRenderTargets(1, &refRen, NULL);
-							/*float c[4] = { 0.5f, 1.0f, 1.0f, 0.0f };
-							graphics->m_deviceContext->ClearRenderTargetView(refRen, c);*/
-
-							//graphics->m_deviceContext->CopyResource(texture, frameBuffer);
-
-							//graphics->m_deviceContext->Map()
-
-							/*if (SUCCEEDED(graphics->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(&frameBuffer))))
-							{
-								graphics->m_deviceContext->CopyResource(texture, graphics->d2RenderTargetTexture);
-							}*/
-
-						}
-						else {
-							//MessageBox(getHwnd(), GetErrorAsReadable(hr).c_str(), L"SHADER RESOURCE VIEW FAIL", MB_ICONERROR);
-						}
-						//pTexture->Release();
-
-					}
-				}
-			}
 
 			graphics->EndFrame();
 

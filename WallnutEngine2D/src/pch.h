@@ -21,6 +21,7 @@
 #include <future>
 #include <mutex>
 #include <string_view>
+#include <fstream>
 
 // Windows
 #define D3D_DEBUG_INFO
@@ -32,12 +33,20 @@
 #include <dwrite.h>
 #include <wincodec.h>
 
-// Custom
+// ImGUI
 
 #include <imgui.h>
+
+#include <imgui_stdlib.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_dx10.h>
 #include <imgui_impl_win32.h>
+
+// Yaml
+
+#include <yaml-cpp/yaml.h>
+
+// Custom
 
 // https://docs.microsoft.com/en-us/windows/win32/medfound/saferelease
 template <class T> void SafeRelease(T** ppT)

@@ -15,13 +15,15 @@
 namespace Wallnut {
 	class ObjectComponent;
 	class Camera;
+	void SerializeObject(YAML::Emitter& out, GameObject& o);
 	class WALLNUT_API GameObject
 	{
 	private:
 
 #pragma region Propeties
 
-		const char* m_name;
+		bool active = true;
+		std::string m_name;
 		
 #pragma endregion
 
@@ -77,6 +79,9 @@ namespace Wallnut {
 			return transform;
 		}
 
+		inline bool IsActive() const { return this->active; }
+		void SetActive(bool active) { this->active = active; }
+
 		template <class T = ObjectComponent>
 		auto GetComponent() -> typename std::enable_if<std::is_base_of<ObjectComponent, T>::value, T*>::type
 		{
@@ -91,6 +96,18 @@ namespace Wallnut {
 			else return nullptr;
 		}
 
+		template <class T = ObjectComponent>
+		auto HasComponent() -> typename std::enable_if<std::is_base_of<ObjectComponent, T>::value, bool>::type
+		{
+			static_assert(std::is_base_of<ObjectComponent, T>::value, "T must be a ObjectComponent");
+
+			auto pos = std::find_if(components.begin(), components.end(), [](ObjectComponent* el) {
+				return typeid(T) == typeid(*el);
+				});
+
+			return pos != components.end();
+		}
+
 		void AddComponent(ObjectComponent& oc);
 
 		void AddComponent(ObjectComponent* oc);
@@ -99,9 +116,10 @@ namespace Wallnut {
 		static GameObject& InstantiateObject() {
 			return InstantiateObject(("GameObject (" + std::to_string(gameObjects.size() + 1) + ")").c_str());
 		}
-		static GameObject& InstantiateObject(const char* name) {
+		static GameObject& InstantiateObject(const char* name, Transform* parent = nullptr) {
 			GameObject* obj = new GameObject();
 			obj->m_name = name;
+			if(parent) obj->transform.setParent(*parent);
 			objectQueue.push(obj);
 			return *obj;
 		}
@@ -128,6 +146,8 @@ namespace Wallnut {
 
 		friend class Application;
 		friend class SceneManager;
+		friend class Scene;
+		friend void SerializeObject(YAML::Emitter& out, GameObject& o);
 
 		extern friend class GameEngine;
 	};

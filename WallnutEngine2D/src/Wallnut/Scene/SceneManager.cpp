@@ -14,11 +14,13 @@ void Wallnut::SceneManager::Render(Graphics& graphics)
 {
 	auto currentCamera = currentScene->currentCamera;
 	if (currentCamera) {
-		//graphics.m_d2renderTarget->Clear(currentCamera->backgroundColor);
+		graphics.m_renderTarget2D->Clear(currentCamera->backgroundColor);
 
 		for (auto& gm : GameObject::gameObjects)
 		{
+			if(gm->IsActive())
 			for (auto& oc : gm->components)
+				if (oc->IsActive())
 				oc->Render(graphics);
 		}
 	}
@@ -28,7 +30,9 @@ void Wallnut::SceneManager::Update()
 {
 	for (auto& gm : GameObject::gameObjects)
 	{
+		if (gm->IsActive())
 		for (auto& oc : gm->components)
+			if (oc->IsActive())
 			oc->Update();
 	}
 }

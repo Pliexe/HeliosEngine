@@ -90,14 +90,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);ENGINE_UI;;WALLNUT_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);ENGINE_UI;;WALLNUT_EDITOR;WALLNUT_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)WallnutEngine2D\src;$(SolutionDir)ImGui\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)WallnutEngine2D\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>User32.lib;WallnutEngine2D.lib;ImGui.lib</AdditionalDependencies>
+      <AdditionalDependencies>User32.lib;WallnutEngine2D.lib;ImGui.lib;Comdlg32.lib</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\WallnutEngine2D\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\</AdditionalLibraryDirectories>
@@ -113,16 +113,16 @@ xcopy /y /d  "$(SolutionDir)Dependencies\bass_x86*.dll" "$(TargetDir)"</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);ENGINE_UI;WALLNUT_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);ENGINE_UI;WALLNUT_EDITOR;WALLNUT_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)WallnutEngine2D\src;$(SolutionDir)ImGui\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)WallnutEngine2D\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>User32.lib;WallnutEngine2D.lib;ImGui.lib</AdditionalDependencies>
+      <AdditionalDependencies>User32.lib;WallnutEngine2D.lib;ImGui.lib;Comdlg32.lib</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\WallnutEngine2D\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\</AdditionalLibraryDirectories>
@@ -136,14 +136,14 @@ xcopy /y /d  "$(SolutionDir)Dependencies\bass_x86*.dll" "$(TargetDir)"</Command>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);ENGINE_UI;ENGINE_UI;;WALLNUT_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);ENGINE_UI;ENGINE_UI;;WALLNUT_EDITOR;WALLNUT_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)WallnutEngine2D\src;$(SolutionDir)ImGui\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)WallnutEngine2D\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>User32.lib;WallnutEngine2D.lib;ImGui.lib</AdditionalDependencies>
+      <AdditionalDependencies>User32.lib;WallnutEngine2D.lib;ImGui.lib;Comdlg32.lib</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\WallnutEngine2D\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\</AdditionalLibraryDirectories>
@@ -158,16 +158,16 @@ xcopy /y /d  "$(SolutionDir)Dependencies\bass_x86*.dll" "$(TargetDir)"</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);ENGINE_UI;WALLNUT_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);ENGINE_UI;WALLNUT_EDITOR;WALLNUT_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)WallnutEngine2D\src;$(SolutionDir)ImGui\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)WallnutEngine2D\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>User32.lib;WallnutEngine2D.lib;ImGui.lib</AdditionalDependencies>
+      <AdditionalDependencies>User32.lib;WallnutEngine2D.lib;ImGui.lib;Comdlg32.lib</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\WallnutEngine2D\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\</AdditionalLibraryDirectories>

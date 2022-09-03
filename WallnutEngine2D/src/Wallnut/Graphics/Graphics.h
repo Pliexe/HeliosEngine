@@ -22,11 +22,15 @@ namespace Wallnut {
 		
 		ID3D11Texture2D * d2RenderTargetTexture			= NULL;
 		
-		ID2D1Factory* factory							= NULL;
-		ID2D1RenderTarget* m_d2renderTarget				= NULL;
-		IDWriteFactory* writeFactory					= NULL;
+		ID2D1Factory*			factory					= nullptr;
+		ID2D1RenderTarget*		m_renderTarget2D		= nullptr;
+		IDWriteFactory*			writeFactory			= nullptr;
+		ID3D11Texture2D*		m_renderTarget2Dtexture = nullptr;
+		ID3D11Texture2D* m_renderTarget2DtextureTest = nullptr;
+		
 		
 		ID3D11ShaderResourceView* pTextureView = nullptr;
+		ID3D11ShaderResourceView* pTextureViewtest = nullptr;
 		ID3D11Texture2D* pRenderTexture = nullptr;
 		ID3D11RenderTargetView* pRenderTargetRef = nullptr;
 		
@@ -34,12 +38,14 @@ namespace Wallnut {
 
 		bool Init();
 
-		/*void BeginDraw() { m_d2renderTarget->BeginDraw(); }
-		void EndDraw() { m_d2renderTarget->EndDraw(); }*/
+		/*void BeginDraw() { m_renderTarget2D->BeginDraw(); }
+		void EndDraw() { m_renderTarget2D->EndDraw(); }*/
 
 		HRESULT CreateD3D11Device(D3D_DRIVER_TYPE type);
 		HRESULT CreateD3D11SwapChain(IDXGIFactory* pFactory, IDXGISwapChain** ppSwapChain);
 		HRESULT CreateD3D11RenderTarget();
+
+		HRESULT CreateDXGIRenderTarget(UINT width, UINT height);
 
 		static Graphics* instance;
 
@@ -51,7 +57,7 @@ namespace Wallnut {
 		void ClearRenderTarget(float r, float g, float b);
 		void EndFrame();
 
-		ID2D1RenderTarget* getRenderTarget() const { return m_d2renderTarget; }
+		ID2D1RenderTarget* getRenderTarget() const { return m_renderTarget2D; }
 		ID2D1Factory* getFactory() const { return factory; }
 		IDWriteFactory* getWriteFactory() const { return writeFactory; }
 

@@ -11,7 +11,7 @@
 
 namespace Wallnut {
 
-	class WindowCordinates {
+	class WALLNUT_API WindowCordinates {
 	private:
 		static float width;
 		static float height;
@@ -63,8 +63,7 @@ namespace Wallnut {
 
 #pragma endregion
 
-		void HandleGameLoop();
-		virtual void RenderLoop();
+		void GameLoop();
 
 	protected:
 
@@ -84,6 +83,10 @@ namespace Wallnut {
 		~Application();
 
 		void Render(Graphics& graphics) { }
+
+		virtual void OnRender();
+		virtual void OnUpdate();
+		void CheckEngineQueue();
 
 		int Run();
 		static void ShowMessageBox(const wchar_t* title, const wchar_t* text, UINT type = MB_OK, bool pauseGame = true);

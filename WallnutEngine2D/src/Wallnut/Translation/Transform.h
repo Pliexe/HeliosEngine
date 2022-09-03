@@ -93,5 +93,7 @@ namespace Wallnut {
 		void setSize(float width, float height) { size.vec2[0] = width; size.vec2[1] = height; }
 
 		friend class GameObject;
+
+		extern friend class GameEngine;
 	};
 }

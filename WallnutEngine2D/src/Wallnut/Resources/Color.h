@@ -6,7 +6,9 @@
 namespace Wallnut {
     class WALLNUT_API Color {
     private:
+        
         float m_r, m_g, m_b, m_a;
+
     public:
         
 #pragma region Static Colors

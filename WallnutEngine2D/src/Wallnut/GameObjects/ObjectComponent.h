@@ -23,9 +23,14 @@ namespace Wallnut {
 		GameObject* gameObject = NULL;
 		Transform* transform = NULL;
 
+		bool active = true;
+
 		//const char* type = typeid(this).name();
 
 	public:
+
+		inline bool IsActive() const { return this->active; }
+		void SetActive(bool active) { this->active = active; }
 
 		ObjectComponent() { }
 
