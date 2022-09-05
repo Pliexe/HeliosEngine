@@ -60,7 +60,7 @@ CODE
 // [SECTION] USER FACING STRUCTURES (ImGuiStyle, ImGuiIO)
 // [SECTION] MISC HELPERS/UTILITIES (Geometry functions)
 // [SECTION] MISC HELPERS/UTILITIES (String, Format, Hash functions)
-// [SECTION] MISC HELPERS/UTILITIES (File functions)
+// [SECTION] MISC HELPERS/UTILITIES (ShowFileOrFolder functions)
 // [SECTION] MISC HELPERS/UTILITIES (ImText* functions)
 // [SECTION] MISC HELPERS/UTILITIES (Color functions)
 // [SECTION] ImGuiStorage
@@ -1857,7 +1857,7 @@ ImGuiID ImHashStr(const char* data_p, size_t data_size, ImU32 seed)
 }
 
 //-----------------------------------------------------------------------------
-// [SECTION] MISC HELPERS/UTILITIES (File functions)
+// [SECTION] MISC HELPERS/UTILITIES (ShowFileOrFolder functions)
 //-----------------------------------------------------------------------------
 
 // Default file functions
@@ -5040,7 +5040,7 @@ static void ImGui::RenderDimmedBackgroundBehindWindow(ImGuiWindow* window, ImU32
     {
         // We've already called AddWindowToDrawData() which called DrawList->ChannelsMerge() on DockNodeHost windows,
         // and draw list have been trimmed already, hence the explicit recreation of a draw command if missing.
-        // FIXME: This is creating complication, might be simpler if we could inject a drawlist in drawdata at a given position and not attempt to manipulate ImDrawCmd order.
+        // FIXME: This is create_item complication, might be simpler if we could inject a drawlist in drawdata at a given position and not attempt to manipulate ImDrawCmd order.
         ImDrawList* draw_list = window->RootWindowDockTree->DrawList;
         if (draw_list->CmdBuffer.Size == 0)
             draw_list->AddDrawCmd();
@@ -7023,7 +7023,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
 
         // Lock down maximum scrolling
         // The value of ScrollMax are ahead from ScrollbarX/ScrollbarY which is intentionally using InnerRect from previous rect in order to accommodate
-        // for right/bottom aligned items without creating a scrollbar.
+        // for right/bottom aligned items without create_item a scrollbar.
         window->ScrollMax.x = ImMax(0.0f, window->ContentSize.x + window->WindowPadding.x * 2.0f - window->InnerRect.GetWidth());
         window->ScrollMax.y = ImMax(0.0f, window->ContentSize.y + window->WindowPadding.y * 2.0f - window->InnerRect.GetHeight());
 
@@ -7191,7 +7191,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         }
 
         // We fill last item data based on Title Bar/Tab, in order for IsItemHovered() and IsItemActive() to be usable after Begin().
-        // This is useful to allow creating context menus on title bar only, etc.
+        // This is useful to allow create_item context menus on title bar only, etc.
         if (window->DockIsActive)
             SetLastItemData(window->MoveId, g.CurrentItemFlags, window->DockTabItemStatusFlags, window->DockTabItemRect);
         else
@@ -15089,12 +15089,12 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
         return;
     }
 
-    // In some circumstance we will defer creating the host window (so everything will be kept hidden),
+    // In some circumstance we will defer create_item the host window (so everything will be kept hidden),
     // while the expected visible window is resizing itself.
     // This is important for first-time (no ini settings restored) single window when io.ConfigDockingAlwaysTabBar is enabled,
     // otherwise the node ends up using the minimum window size. Effectively those windows will take an extra frame to show up:
     //   N+0: Begin(): window created (with no known size), node is created
-    //   N+1: DockNodeUpdate(): node skip creating host window / Begin(): window size applied, not visible
+    //   N+1: DockNodeUpdate(): node skip create_item host window / Begin(): window size applied, not visible
     //   N+2: DockNodeUpdate(): node can create host window / Begin(): window becomes visible
     // We could remove this frame if we could reliably calculate the expected window size during node update, before the Begin() code.
     // It would require a generalization of CalcWindowExpectedSize(), probably extracting code away from Begin().

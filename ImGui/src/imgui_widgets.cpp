@@ -740,7 +740,7 @@ bool ImGui::SmallButton(const char* label)
 }
 
 // Tip: use ImGui::PushID()/PopID() to push indices or pointers in the ID stack.
-// Then you can keep 'str_id' empty or the same for all your buttons (instead of creating a string based on a non-string id)
+// Then you can keep 'str_id' empty or the same for all your buttons (instead of create_item a string based on a non-string id)
 bool ImGui::InvisibleButton(const char* str_id, const ImVec2& size_arg, ImGuiButtonFlags flags)
 {
     ImGuiContext& g = *GImGui;

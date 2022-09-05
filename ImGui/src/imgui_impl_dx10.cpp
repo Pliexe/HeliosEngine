@@ -591,7 +591,7 @@ void ImGui_ImplDX10_NewFrame()
 //--------------------------------------------------------------------------------------------------------
 // MULTI-VIEWPORT / PLATFORM INTERFACE SUPPORT
 // This is an _advanced_ and _optional_ feature, allowing the backend to create and handle multiple viewports simultaneously.
-// If you are new to dear imgui or creating a new binding for dear imgui, it is recommended that you completely ignore this section first..
+// If you are new to dear imgui or create_item a new binding for dear imgui, it is recommended that you completely ignore this section first..
 //--------------------------------------------------------------------------------------------------------
 
 // Helper structure we store in the void* RenderUserData field of each ImGuiViewport to easily retrieve our backend data.

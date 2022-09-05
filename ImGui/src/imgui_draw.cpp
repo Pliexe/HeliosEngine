@@ -4090,7 +4090,7 @@ static unsigned int stb_decompress(unsigned char *output, const unsigned char *i
 // MIT license (see License.txt in http://www.upperbounds.net/download/ProggyClean.ttf.zip)
 // Download and more information at http://upperbounds.net
 //-----------------------------------------------------------------------------
-// File: 'ProggyClean.ttf' (41208 bytes)
+// ShowFileOrFolder: 'ProggyClean.ttf' (41208 bytes)
 // Exported using misc/fonts/binary_to_compressed_c.cpp (with compression + base85 string encoding).
 // The purpose of encoding as base85 instead of "0x00,0x01,..." style is only save on _source code_ size.
 //-----------------------------------------------------------------------------

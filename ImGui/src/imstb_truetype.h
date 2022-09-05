@@ -956,7 +956,7 @@ STBTT_DEF unsigned char * stbtt_GetCodepointSDF(const stbtt_fontinfo *info, floa
 // in a single-channel texture, sampling with bilinear filtering, and testing against
 // larger than some threshold to produce scalable fonts.
 //        info              --  the font
-//        scale             --  controls the size of the resulting SDF bitmap, same as it would be creating a regular bitmap
+//        scale             --  controls the size of the resulting SDF bitmap, same as it would be create_item a regular bitmap
 //        glyph/codepoint   --  the character to generate the SDF for
 //        padding           --  extra "pixels" around the character which are filled with the distance to the character (not 0),
 //                                 which allows effects like bit outlines

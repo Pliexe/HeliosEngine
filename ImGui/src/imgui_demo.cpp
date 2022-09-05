@@ -4980,7 +4980,7 @@ static void ShowDemoWindowTables()
         ImGui::TreePop();
     }
 
-    // Demonstrate creating custom context menus inside columns, while playing it nice with context menus provided by TableHeadersRow()/TableHeader()
+    // Demonstrate create_item custom context menus inside columns, while playing it nice with context menus provided by TableHeadersRow()/TableHeader()
     if (open_action != -1)
         ImGui::SetNextItemOpen(open_action != 0);
     IMGUI_DEMO_MARKER("Tables/Context menus");
@@ -5087,7 +5087,7 @@ static void ShowDemoWindowTables()
         ImGui::TreePop();
     }
 
-    // Demonstrate creating multiple tables with the same ID
+    // Demonstrate create_item multiple tables with the same ID
     if (open_action != -1)
         ImGui::SetNextItemOpen(open_action != 0);
     IMGUI_DEMO_MARKER("Tables/Synced instances");
@@ -6489,7 +6489,7 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
 // - ShowExampleMenuFile()
 //-----------------------------------------------------------------------------
 
-// Demonstrate creating a "main" fullscreen menu bar and populating it.
+// Demonstrate create_item a "main" fullscreen menu bar and populating it.
 // Note the difference between BeginMainMenuBar() and BeginMenuBar():
 // - BeginMenuBar() = menu-bar inside current window (which needs the ImGuiWindowFlags_MenuBar flag!)
 // - BeginMainMenuBar() = helper to create menu-bar-sized window at the top of the main viewport + call BeginMenuBar() into it.
@@ -6602,7 +6602,7 @@ static void ShowExampleMenuFile()
 // [SECTION] Example App: Debug Console / ShowExampleAppConsole()
 //-----------------------------------------------------------------------------
 
-// Demonstrate creating a simple console window, with scrolling, filtering, completion and history.
+// Demonstrate create_item a simple console window, with scrolling, filtering, completion and history.
 // For the console example, we are using a more C++ like approach of declaring a class to hold both data and functions.
 struct ExampleAppConsole
 {
@@ -7085,7 +7085,7 @@ struct ExampleAppLog
     }
 };
 
-// Demonstrate creating a simple log window with basic filtering.
+// Demonstrate create_item a simple log window with basic filtering.
 static void ShowExampleAppLog(bool* p_open)
 {
     static ExampleAppLog log;
@@ -7333,7 +7333,7 @@ static void ShowExampleAppLongText(bool* p_open)
 // [SECTION] Example App: Auto Resize / ShowExampleAppAutoResize()
 //-----------------------------------------------------------------------------
 
-// Demonstrate creating a window which gets auto-resized according to its content.
+// Demonstrate create_item a window which gets auto-resized according to its content.
 static void ShowExampleAppAutoResize(bool* p_open)
 {
     if (!ImGui::Begin("Example: Auto-resizing window", p_open, ImGuiWindowFlags_AlwaysAutoResize))
@@ -7358,7 +7358,7 @@ static void ShowExampleAppAutoResize(bool* p_open)
 // [SECTION] Example App: Constrained Resize / ShowExampleAppConstrainedResize()
 //-----------------------------------------------------------------------------
 
-// Demonstrate creating a window with custom resize constraints.
+// Demonstrate create_item a window with custom resize constraints.
 static void ShowExampleAppConstrainedResize(bool* p_open)
 {
     struct CustomConstraints
@@ -7414,7 +7414,7 @@ static void ShowExampleAppConstrainedResize(bool* p_open)
 // [SECTION] Example App: Simple overlay / ShowExampleAppSimpleOverlay()
 //-----------------------------------------------------------------------------
 
-// Demonstrate creating a simple static window with no decoration
+// Demonstrate create_item a simple static window with no decoration
 // + a context-menu to choose which corner of the screen to use.
 static void ShowExampleAppSimpleOverlay(bool* p_open)
 {
@@ -7464,7 +7464,7 @@ static void ShowExampleAppSimpleOverlay(bool* p_open)
 // [SECTION] Example App: Fullscreen window / ShowExampleAppFullscreen()
 //-----------------------------------------------------------------------------
 
-// Demonstrate creating a window covering the entire screen/viewport
+// Demonstrate create_item a window covering the entire screen/viewport
 static void ShowExampleAppFullscreen(bool* p_open)
 {
     static bool use_work_area = true;

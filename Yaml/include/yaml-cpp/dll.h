@@ -7,7 +7,7 @@
 #pragma once
 #endif
 
-// The following ifdef block is the standard way of creating macros which make
+// The following ifdef block is the standard way of create_item macros which make
 // exporting from a DLL simpler. All files within this DLL are compiled with the
 // yaml_cpp_EXPORTS symbol defined on the command line. This symbol should not
 // be defined on any project that uses this DLL. This way any other project

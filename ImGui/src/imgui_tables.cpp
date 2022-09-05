@@ -3134,7 +3134,7 @@ void ImGui::TableDrawContextMenu(ImGuiTable* table)
 //-------------------------------------------------------------------------
 // [SECTION] Tables: Settings (.ini data)
 //-------------------------------------------------------------------------
-// FIXME: The binding/finding/creating flow are too confusing.
+// FIXME: The binding/finding/create_item flow are too confusing.
 //-------------------------------------------------------------------------
 // - TableSettingsInit() [Internal]
 // - TableSettingsCalcChunkSize() [Internal]
