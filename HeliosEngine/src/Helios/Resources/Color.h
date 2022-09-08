@@ -1,13 +1,13 @@
 #pragma once
 
 #include "pch.h"
-#include "Helios/Core.h"
+#include "Helios/Core/Base.h"
 
 namespace Helios {
     class HELIOS_API Color {
     private:
         
-        float m_r, m_g, m_b, m_a;
+        float m_color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     public:
         
@@ -162,23 +162,20 @@ namespace Helios {
         static const UINT32 sc_greenMask = 0xff << sc_greenShift;
         static const UINT32 sc_blueMask = 0xff << sc_blueShift;
 
-        Color() : m_r(1.0f), m_g(1.0f), m_b(1.0f), m_a(1.0f) { }
+        Color() = default;
         Color(UINT32 rgb, float alpha = 1.0f) {
-            m_r = static_cast<FLOAT>((rgb & sc_redMask) >> sc_redShift) / 255.f;
-            m_g = static_cast<FLOAT>((rgb & sc_greenMask) >> sc_greenShift) / 255.f;
-            m_b = static_cast<FLOAT>((rgb & sc_blueMask) >> sc_blueShift) / 255.f;
-            m_a = alpha;
+            m_color[0] = static_cast<FLOAT>((rgb & sc_redMask) >> sc_redShift) / 255.f;
+            m_color[1] = static_cast<FLOAT>((rgb & sc_greenMask) >> sc_greenShift) / 255.f;
+            m_color[2] = static_cast<FLOAT>((rgb & sc_blueMask) >> sc_blueShift) / 255.f;
+            m_color[3] = alpha;
         }
-        Color(float r, float g, float b, float alpha = 1.0f) : m_r(r), m_g(g), m_b(b), m_a(alpha) { }
-        Color(int r, int g, int b, float alpha = 1.0f) : m_r(r / 255.0f), m_g(g / 255.0f), m_b(b / 255.0f), m_a(alpha) { }
+        Color(float r, float g, float b, float alpha = 1.0f) { m_color[0] = r; m_color[1] = g; m_color[2] = b; m_color[3] = alpha; }
+        Color(int r, int g, int b, float alpha = 1.0f) { m_color[0] = r / 255.0f; m_color[1] = g / 255.0f; m_color[2] = b / 255.0f; m_color[3] = alpha; }
 
         operator D2D1_COLOR_F () {
-            return D2D1::ColorF(m_r, m_g, m_b, m_a);
+            return D2D1::ColorF(m_color[0], m_color[1], m_color[2], m_color[3]);
         }
 
-        operator float* () {
-            float c[4] = { m_r, m_g, m_b, m_a };
-            return c;
-        }
+        operator float* () { return m_color; }
     };
 }

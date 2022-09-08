@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ObjectComponent.h"
-#include "Helios/Core.h"
+#include "Helios/Core/Base.h"
 #include "Helios/Graphics/Graphics.h"
 
 namespace Helios {

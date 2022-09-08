@@ -40,7 +40,7 @@ namespace ProjectSelector
         {
             int result;
             if ((result = ProjectManager.IsValidProject(project_path.Text)) == 0)
-                Process.Start("HeliosEditor.exe", project_path.Text);
+                Process.Start("HeliosEditor.exe", $"\"{project_path.Text}\"");
             else
             {
                 switch((InvalidReason)result)

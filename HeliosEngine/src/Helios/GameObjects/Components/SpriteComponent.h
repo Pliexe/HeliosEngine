@@ -28,4 +28,4 @@ namespace Helios {
 
 		friend class SceneManager;
 	};
-}
+} 

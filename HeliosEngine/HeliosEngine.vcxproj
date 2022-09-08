@@ -72,28 +72,28 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)\bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)\bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)\bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)\bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)\bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(ProjectDir)vendor\entt\include;$(ProjectDir)vendor\stb\include</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -101,7 +101,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>windowscodecs.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;ImGui.lib</AdditionalDependencies>
+      <AdditionalDependencies>windowscodecs.lib;D3DCompiler.lib;WindowsApp.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;ImGui.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\Yaml\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -111,9 +111,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(ProjectDir)vendor\entt\include;$(ProjectDir)vendor\stb\include</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -123,7 +123,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>windowscodecs.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;ImGui.lib</AdditionalDependencies>
+      <AdditionalDependencies>windowscodecs.lib;D3DCompiler.lib;WindowsApp.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;ImGui.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\Yaml\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -131,9 +131,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(ProjectDir)vendor\entt\include;$(ProjectDir)vendor\stb\include</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -141,7 +141,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>windowscodecs.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;windowscodecs.lib;Ole32.lib;ImGui.lib</AdditionalDependencies>
+      <AdditionalDependencies>windowscodecs.lib;D3DCompiler.lib;WindowsApp.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;windowscodecs.lib;Ole32.lib;ImGui.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\Yaml\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -151,9 +151,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(ProjectDir)vendor\entt\include;$(ProjectDir)vendor\stb\include</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -163,7 +163,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>windowscodecs.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;ImGui.lib</AdditionalDependencies>
+      <AdditionalDependencies>windowscodecs.lib;D3DCompiler.lib;WindowsApp.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;ImGui.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\Yaml\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -171,12 +171,13 @@
     <None Include="HeliosEngine.licenseheader" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Helios\ExitCodes.h" />
-    <ClInclude Include="src\stb_image.h" />
-    <ClInclude Include="src\Helios\EditorGUI.h" />
+    <ClInclude Include="src\Helios\Core\Asserts.h" />
+    <ClInclude Include="src\Helios\Core\ExitCodes.h" />
+    <ClInclude Include="src\Helios\Renderer\Renderer2D.h" />
+    <ClInclude Include="src\Helios\Scene\Components.h" />
     <ClInclude Include="src\Helios\GameObjects\Components\EllipseComponent.h" />
     <ClInclude Include="src\Helios\GameObjects\Components\RoundedRectangleComponent.h" />
-    <ClInclude Include="src\Helios\Logger.h" />
+    <ClInclude Include="src\Helios\Core\Logger.h" />
     <ClInclude Include="src\Helios\Resources\Brushes\BitmapBrush.h" />
     <ClInclude Include="src\Helios\Resources\Brushes\Brush.h" />
     <ClInclude Include="src\Helios\Resources\Brushes\LinearGradientBrush.h" />
@@ -195,25 +196,26 @@
     <ClInclude Include="src\Helios\Utils\LinkedList.h" />
     <ClInclude Include="src\Helios\GameObjects\ObjectComponent.h" />
     <ClInclude Include="src\Helios\GameObjects\ObjectBehaviour.h" />
-    <ClInclude Include="src\Helios\GameObjects\GameObject.h" />
+    <ClInclude Include="src\Helios\Scene\GameObject.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\Helios\Scene\SceneManager.h" />
     <ClInclude Include="src\Helios\Scene\Scene.h" />
     <ClInclude Include="src\Helios\Graphics\Graphics.h" />
-    <ClInclude Include="src\Helios\Application.h" />
-    <ClInclude Include="src\Helios\Core.h" />
-    <ClInclude Include="src\Helios\EntryPoint.h" />
+    <ClInclude Include="src\Helios\Core\Application.h" />
+    <ClInclude Include="src\Helios\Core\Base.h" />
+    <ClInclude Include="src\Helios\Core\EntryPoint.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Helios.h" />
     <ClInclude Include="src\Helios\Translation\Transform.h" />
     <ClInclude Include="src\Helios\Translation\Vector2D.h" />
-    <ClInclude Include="src\Helios\Time.h" />
+    <ClInclude Include="src\Helios\Core\Time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Helios\GameObjects\Components\Camera.cpp" />
     <ClCompile Include="src\Helios\GameObjects\ObjectComponent.cpp" />
     <ClCompile Include="src\Helios\GameObjects\ObjectBehaviour.cpp" />
-    <ClCompile Include="src\Helios\GameObjects\GameObject.cpp" />
+    <ClCompile Include="src\Helios\Renderer\Renderer2D.cpp" />
+    <ClCompile Include="src\Helios\Scene\GameObject.cpp" />
     <ClCompile Include="src\Helios\Input\InputManager.cpp" />
     <ClCompile Include="src\Helios\Input\Mouse.cpp" />
     <ClCompile Include="src\Helios\Resources\Bitmap.cpp" />
@@ -225,7 +227,7 @@
     <ClCompile Include="src\Helios\Scene\SceneManager.cpp" />
     <ClCompile Include="src\Helios\Scene\Scene.cpp" />
     <ClCompile Include="src\Helios\Graphics\Graphics.cpp" />
-    <ClCompile Include="src\Helios\Application.cpp" />
+    <ClCompile Include="src\Helios\Core\Application.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pch.h</PrecompiledHeaderFile>
@@ -236,12 +238,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="src\Helios\Time.cpp" />
+    <ClCompile Include="src\Helios\Core\Time.cpp" />
     <ClCompile Include="src\Helios\Translation\Transform.cpp" />
     <ClCompile Include="src\Helios\Translation\Vector2D.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="WallnutEngine2D.rc" />
+    <ResourceCompile Include="Helios.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

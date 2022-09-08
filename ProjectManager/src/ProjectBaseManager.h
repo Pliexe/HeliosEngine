@@ -29,6 +29,5 @@ namespace Helios {
 		PROJECT_MANAGER_API int CreateStartupConfig(std::filesystem::path path);
 		PROJECT_MANAGER_API void SerializeStartupConfig(const char* path, StartupConfig& config);
 		PROJECT_MANAGER_API StartupConfig& DeserializeStartupConfig(const char* path);
-		
 	}
 }

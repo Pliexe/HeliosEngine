@@ -24,7 +24,7 @@ bool Helios::SolidBrush::isPainted() const
 	return false;
 }
 
-Helios::Brush::BrushType Helios::SolidBrush::getType() const
+Helios::BrushType Helios::SolidBrush::getType() const
 {
 	return BrushType::Solid;
 }

@@ -1,10 +1,11 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+;/* Copyright (c) 2022 Szabadi László Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
 #include "Graphics.h"
-#include "Helios/Application.h"
+#include "Helios/Core/Application.h"
 #include "Helios/Utils/ErrorHandling.h"
+#include "Helios/Renderer/Renderer2D.h"
 
 using namespace Helios;
 
@@ -53,6 +54,8 @@ bool Helios::Graphics::Init()
         MessageBox(m_hWnd, (std::wstring(L"Failed to create render target! Reason: ") + GetLastMessageAsReadable()).c_str(), L"Graphics Error!", MB_ICONERROR);
         return false;
     }
+
+    if (!Renderer2D::Init()) return false;
 
     if (FAILED(hr = D2D1CreateFactory(D2D1_FACTORY_TYPE::D2D1_FACTORY_TYPE_MULTI_THREADED, &factory))) {
         MessageBox(m_hWnd, (std::wstring(L"Failed to create D2D1 Factory! Reason: ") + GetLastMessageAsReadable()).c_str(), L"Graphics Error!", MB_ICONERROR);

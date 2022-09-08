@@ -1,7 +1,10 @@
 #pragma once
 
-#include <Helios/ExitCodes.h>
+
+#include <Helios/Core/ExitCodes.h>
 #include <iostream>
+#include <string_view>
+#include <string>
 
 // VERSION NUMBER
 
@@ -13,6 +16,18 @@
 #define VERSION_PATCH 0
 #define VERSION_FULL		STRING(VERSION_MAJOR.VERSION_MINOR.VERSION_PATCH) 
 //#define VERSION_FULL_NUMER  VERSION_MAJOR\VERSION_MINOR\VERSION_PATCH 
+
+// STRING TOOLS
+
+static bool ENDS_WITH(std::string_view str, std::string_view condition)
+{
+	return str.size() >= condition.size() && 0 == str.compare(str.size() - condition.size(), condition.size(), condition);
+}
+
+static bool STARTS_WITH(std::string_view str, std::string_view condition)
+{
+	return str.size() >= condition.size() && 0 == str.compare(0, condition.size(), condition);
+}
 
 // DEFAULT CONFIG
 struct StartupConfig {

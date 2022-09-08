@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -106,6 +106,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.cso" "$(TargetDir)"
 xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -117,7 +118,7 @@ xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dl
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -132,6 +133,7 @@ xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dl
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.cso" "$(TargetDir)"
 xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -141,7 +143,7 @@ xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dl
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -154,6 +156,7 @@ xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dl
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.cso" "$(TargetDir)"
 xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -165,7 +168,7 @@ xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dl
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -180,23 +183,56 @@ xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dl
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.cso" "$(TargetDir)"
 xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Application.cpp" />
-    <ClCompile Include="src\Components\CameraInspector.h" />
-    <ClCompile Include="src\Components\RectangleInspector.h" />
     <ClCompile Include="src\EditorGUI.cpp" />
+    <ClCompile Include="src\Panels\BasePanel.cpp" />
+    <ClCompile Include="src\Panels\ExplorerPanel.cpp" />
+    <ClCompile Include="src\Panels\HierarchyPanel.cpp" />
+    <ClCompile Include="src\Panels\InspectorPanel.cpp" />
     <ClCompile Include="src\Panels\ProjectExplorer.cpp" />
+    <ClCompile Include="src\ProjectManager.cpp" />
+    <ClCompile Include="src\SceneFileManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\HeliosEditor_Macros.h" />
     <ClInclude Include="src\Icons.h" />
+    <ClInclude Include="src\Panels\BasePanel.h" />
+    <ClInclude Include="src\Panels\ExplorerPanel.h" />
+    <ClInclude Include="src\Panels\HierarchyPanel.h" />
+    <ClInclude Include="src\Panels\InspectorPanel.h" />
     <ClInclude Include="src\Panels\ProjectExplorer.h" />
+    <ClInclude Include="src\ProjectManager.h" />
+    <ClInclude Include="src\SceneFileManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HeliosEditor.licenseheader" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\PixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\VertexShader.hlsl">
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

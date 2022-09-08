@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include "Helios/Core.h"
+#include "Helios/Core/Base.h"
 
 namespace Helios 
 {

@@ -6,19 +6,19 @@
 
 #include "pch.h"
 #include "Vector2D.h"
-#include "Helios/Core.h"
+#include "Helios/Core/Base.h"
 
 namespace Helios {
 	class GameObject;
-	class HELIOS_API Transform {
+	class HELIOS_API __OLD__Transform {
 	private:
 
 		Vector2D position;
 		Size2D size;
 
-		Transform* parent;
+		__OLD__Transform* parent;
 		GameObject* gameObject;
-		std::set<Transform*> children;
+		std::set<__OLD__Transform*> children;
 
 	public:
 
@@ -31,14 +31,14 @@ namespace Helios {
 			operator D2D1_RECT_F() { return D2D1::RectF(x, y, w, h); }
 		};
 
-		Transform() = delete;
-		Transform(GameObject* gm) : gameObject(gm), position(0, 0), size(50, 50), parent(NULL) { }
-		Transform(GameObject* gm, Vector2D pos, Size2D size) : position(pos), gameObject(gm), size(size), parent(NULL) { }
-		Transform(GameObject* gm, float x, float y, float width, float height) : gameObject(gm), position(x, y), size(width, height), parent(NULL) { }
+		__OLD__Transform() = delete;
+		__OLD__Transform(GameObject* gm) : gameObject(gm), position(0, 0), size(50, 50), parent(NULL) { }
+		__OLD__Transform(GameObject* gm, Vector2D pos, Size2D size) : position(pos), gameObject(gm), size(size), parent(NULL) { }
+		__OLD__Transform(GameObject* gm, float x, float y, float width, float height) : gameObject(gm), position(x, y), size(width, height), parent(NULL) { }
 
-		void setParent(Transform& transform) {
-			parent = &transform;
-			transform.children.insert(this);
+		void setParent(__OLD__Transform& __OLD__Transform) {
+			parent = &__OLD__Transform;
+			__OLD__Transform.children.insert(this);
 		}
 
 		void removeParent() {
@@ -46,23 +46,23 @@ namespace Helios {
 			parent = NULL;
 		}
 
-		/*D2D1_RECT_F getTransform() {
+		/*D2D1_RECT_F get__OLD__Transform() {
 			return D2D1::Matrix3x2F::Translation()
 		}*/
 
-		bool withinExactBounds(Transform& transform) {
+		bool withinExactBounds(__OLD__Transform& __OLD__Transform) {
 			auto pPos = getPosition();
-			auto otherPos = transform.getPosition();
+			auto otherPos = __OLD__Transform.getPosition();
 			return (
-				((pPos.vec2[0] + size.vec2[0]) > otherPos.vec2[0]) &&
-				((otherPos.vec2[0] + transform.size.vec2[0]) < pPos.vec2[0]) &&
-				((pPos.vec2[1] + size.vec2[1]) > otherPos.vec2[1]) &&
-				((otherPos.vec2[1] + transform.size.vec2[1]) < pPos.vec2[1])
+				((pPos[0] + size[0]) > otherPos[0]) &&
+				((otherPos[0] + __OLD__Transform.size[0]) < pPos[0]) &&
+				((pPos[1] + size[1]) > otherPos[1]) &&
+				((otherPos[1] + __OLD__Transform.size[1]) < pPos[1])
 			);
 		}
 
-		bool withinBounds(Transform& transform) {
-			auto otherPos = transform.getPosition();
+		bool withinBounds(__OLD__Transform& __OLD__Transform) {
+			auto otherPos = __OLD__Transform.getPosition();
 			return (
 				withinBounds(otherPos) || 
 				withinBounds(otherPos + size)
@@ -72,25 +72,25 @@ namespace Helios {
 		bool withinBounds(Vector2D vec) {
 			auto pPos = getPosition();
 			return (
-				(pPos.vec2[0] < vec.vec2[0]) && (pPos.vec2[0] + size.vec2[0]) > vec.vec2[0] ||
-				(pPos.vec2[1] < vec.vec2[1]) && (pPos.vec2[1] + size.vec2[1]) > vec.vec2[1]				
+				(pPos[0] < vec[0]) && (pPos[0] + size[0]) > vec[0] ||
+				(pPos[1] < vec[1]) && (pPos[1] + size[1]) > vec[1]				
 			);
 		}
 
-		D2D1_RECT_F getRectF();
+		//D2D1_RECT_F getRectF();
 
 		Vector2D getPosition() const { return parent == NULL ? (position) : (position + parent->position); }
 		Size2D getSize() const { return size; }
 
 		Vector2D getLocalPosition() const { return position; }
 
-		Matrix2x2 getScreenPosition() const;
+		//Matrix2x2 getScreenPosition() const;
 
 		void setPosition(Vector2D vec) { position = vec; }
 		void setSize(Size2D size) { this->size = size; }
 
-		void setPosition(float x, float y) { position.vec2[0] = x; position.vec2[1] = y; }
-		void setSize(float width, float height) { size.vec2[0] = width; size.vec2[1] = height; }
+		void setPosition(float x, float y) { position[0] = x; position[1] = y; }
+		void setSize(float width, float height) { size[0] = width; size[1] = height; }
 
 		friend class GameObject;
 

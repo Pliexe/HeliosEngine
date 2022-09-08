@@ -6,25 +6,30 @@
 
 #include "pch.h"
 #include "Scene.h"
-#include "Helios/Core.h"
+#include "GameObject.h"
+#include "Helios/Core/Base.h"
 #include "Helios/Graphics/Graphics.h"
 
 namespace Helios {
 	class Scene;
 	class Camera;
+
 	class HELIOS_API SceneManager
 	{
 	private:
 
-		static std::map<std::wstring, Scene*> scenes;
-		static Scene* currentScene;
-		static Scene* loadQueue;
+		static std::map<std::string, Ref<Scene>> scenes;
+		static Ref<Scene> currentScene;
+		static Ref<Scene> loadQueue;
 
 		//inline Scene* getCurrentScene() const { return currentScene; }
 
 		static void CheckQueue();
 
 	public:
+
+		inline static const WeakRef<Scene>& GetCurrentScene() { return currentScene; }
+		inline static bool HasCurrentScene() { return currentScene != nullptr; }
 
 		SceneManager() = delete;
 		SceneManager(SceneManager const&) = delete;
@@ -33,17 +38,17 @@ namespace Helios {
 		static void Render(Graphics& graphics);
 		static void Update();
 
-		static Scene& AddScene(std::wstring name, Scene* scene);
-		static Scene& AddScene(std::wstring name, std::function<void(Scene&)> callback);
-		static Scene& AddScene(std::wstring name);
+		static const WeakRef<Scene>& AddScene(std::string name, std::function<void(Scene&)> callback);
+		static const WeakRef<Scene>& AddScene(std::string name);
 
-		static bool LoadScene(std::wstring name);
+		static bool LoadScene(std::string name);
 
 		friend class Application;
 		friend class GameObject;
 		friend class Transform;
 
 		friend class GameEngine;
+
 	};
 }
 

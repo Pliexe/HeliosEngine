@@ -37,7 +37,7 @@ void Helios::BitmapBrush::Load()
 	brush.reset(tmp, Brush::releaseBrush);
 }
 
-Helios::Brush::BrushType Helios::BitmapBrush::getType() const
+Helios::BrushType Helios::BitmapBrush::getType() const
 {
 	return BrushType::Bitmap;
 }

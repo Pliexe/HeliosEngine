@@ -10,10 +10,6 @@
 #include "Helios/Resources/Brushes/BitmapBrush.h"
 #include "Helios/Resources/Brushes/Brush.h"
 
-#ifdef HELIOS_EDITOR
-#include "Helios/EditorGUI.h"
-#endif
-
 namespace Helios {
 	class RectangleComponent : public ObjectComponent {
 	private:
@@ -23,7 +19,7 @@ namespace Helios {
 		std::unique_ptr<Brush> m_brush;
 
 		void Render(Graphics& g) override {
-			if (m_brush->isReady())
+			/*if (m_brush->isReady())
 			{
 				auto pos = transform->getScreenPosition();
 				if (m_brush->isPainted())
@@ -42,7 +38,7 @@ namespace Helios {
 					g.getRenderTarget()->FillRectangle(pos, *m_brush);
 				else
 					g.getRenderTarget()->DrawRectangle(pos, *m_brush, stroke);
-			}
+			}*/
 		}
 
 	public:
@@ -59,5 +55,7 @@ namespace Helios {
 		friend class SceneManager;
 
 		extern friend class EditorRectangleComponent;
+
+		extern friend class InspectorPanel;
 	};
 }

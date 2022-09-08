@@ -5,7 +5,7 @@
 #pragma once
 
 #include "pch.h"
-#include "Helios/Core.h"
+#include "Helios/Core/Base.h"
 
 namespace Helios {
 	class HELIOS_API Graphics
@@ -26,8 +26,7 @@ namespace Helios {
 		ID2D1RenderTarget*		m_renderTarget2D		= nullptr;
 		IDWriteFactory*			writeFactory			= nullptr;
 		ID3D11Texture2D*		m_renderTarget2Dtexture = nullptr;
-		ID3D11Texture2D* m_renderTarget2DtextureTest = nullptr;
-		
+		ID3D11Texture2D* m_renderTarget2DtextureTest = nullptr;		
 		
 		ID3D11ShaderResourceView* pTextureView = nullptr;
 		ID3D11ShaderResourceView* pTextureViewtest = nullptr;
@@ -63,6 +62,11 @@ namespace Helios {
 
 		friend class Application;
 		friend class SceneManager;
+		friend class Scene;
+
+		friend class Renderer;
+		friend class Renderer2D;
+		friend class UIRenderer;
 
 #pragma region Resources
 
@@ -74,8 +78,9 @@ namespace Helios {
 
 #pragma endregion
 
-		extern friend class GameEngine;
+
 
 		friend class EngineTexture;
+		extern friend class GameEngine;
 	};
 }

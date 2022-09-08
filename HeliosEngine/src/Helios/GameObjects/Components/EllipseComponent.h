@@ -4,7 +4,7 @@
 #include "Helios/GameObjects/ObjectComponent.h"
 #include "Helios/Resources/Brushes/Brush.h"
 #include "Helios/Resources/Brushes/BitmapBrush.h"
-#include "Helios/Core.h"
+#include "Helios/Core/Base.h"
 
 namespace Helios {
 	class HELIOS_API EllipseComponent : public ObjectComponent{
@@ -17,7 +17,7 @@ namespace Helios {
 		void Render(Graphics& g) override {
 			if (m_brush->isReady())
 			{
-				auto pos = transform->getScreenPosition();
+				/*auto pos = transform->getScreenPosition();
 				if (m_brush->isPainted())
 				{
 					auto brush = dynamic_cast<BitmapBrush*>(m_brush.get());
@@ -33,7 +33,7 @@ namespace Helios {
 				if (stroke <= 0.0f)
 					g.getRenderTarget()->FillEllipse(D2D1::Ellipse(D2D1::Point2F(pos.x + transform->getSize().width() / 2.0f, pos.y + transform->getSize().height() / 2.0f), transform->getSize().width(), transform->getSize().height()), *m_brush);
 				else
-					g.getRenderTarget()->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(pos.x + transform->getSize().width() / 2.0f, pos.y + transform->getSize().height() / 2.0f), transform->getSize().width(), transform->getSize().height()), *m_brush, stroke);
+					g.getRenderTarget()->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(pos.x + transform->getSize().width() / 2.0f, pos.y + transform->getSize().height() / 2.0f), transform->getSize().width(), transform->getSize().height()), *m_brush, stroke);*/
 			}
 		}
 

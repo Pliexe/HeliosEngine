@@ -4,16 +4,7 @@
  */
 #pragma once
 
-// Entry Point
-#include "Helios/EntryPoint.h"
+#include "Helios/Core/EntryPoint.h"
+#include "Helios/Core/Application.h"
 
-// Needs cleanup
-
-#include "Helios/EntryPoint.h"
-#include "Helios/Scene/SceneManager.h"
-#include "Helios/Input/KeyCodes.h"
-#include "Helios/Input/InputManager.h"
-#include "Helios/GameObjects/ObjectBehaviour.h"
-#include "Helios/GameObjects/GameObject.h"
-#include "Helios/Time.h"
-#include "Helios/Resources/Bitmap.h"
+#include "Helios/Core/Time.h"

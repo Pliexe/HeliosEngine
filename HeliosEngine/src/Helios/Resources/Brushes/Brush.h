@@ -5,7 +5,7 @@
 #pragma once
 
 #include "pch.h"
-#include "Helios/Core.h"
+#include "Helios/Core/Base.h"
 
 namespace Helios {
 
@@ -19,6 +19,13 @@ namespace Helios {
 		operator ID2D1StrokeStyle* () { return style; }
 	};
 
+	enum class BrushType {
+		Solid,
+		LinearGradient,
+		RadialGradient,
+		Bitmap
+	};
+
 	class HELIOS_API Brush
 	{
 	protected:
@@ -26,17 +33,11 @@ namespace Helios {
 		static void releaseBrush(ID2D1Brush* b) { b->Release(); }
 	public:
 
-		enum class BrushType {
-			Solid,
-			LinearGradient,
-			RadialGradient,
-			Bitmap
-		};
-
 		inline bool isReady() { return brush.get() != nullptr; }
 		operator ID2D1Brush* () { return brush.get(); }
 		ID2D1Brush *operator -> () {
 			return brush.get();
+
 		}
 
 		virtual inline bool isPainted() const = 0;

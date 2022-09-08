@@ -5,9 +5,9 @@
 #pragma once
 
 #include "pch.h"
-#include "Core.h"
-#include "Graphics/Graphics.h"
-#include "Scene/SceneManager.h"
+#include "Base.h"
+#include "Helios/Graphics/Graphics.h"
+#include "Helios/Scene/SceneManager.h"
 
 namespace Helios {
 
@@ -67,7 +67,6 @@ namespace Helios {
 
 	protected:
 
-		HWND getHwnd() const { return m_hWnd; }
 		Graphics* getGraphics() const { return graphics; }
 
 		static const wchar_t* WindowTitle() { return L"Game"; };
@@ -76,6 +75,7 @@ namespace Helios {
 		bool fpsCounter = false;
 
 	public:
+		static const HWND GetHwnd() { return instance->m_hWnd; }
 
 		Application(const Application& copy) = delete;
 		Application() { };

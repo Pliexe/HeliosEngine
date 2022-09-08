@@ -1,6 +1,5 @@
 //#include "pch.h"
 
-#include <Helios/EditorGUI.h>
 #include <Helios/Translation//Vector2D.h>
 #include <Helios/Resources/Brushes/SolidBrush.h>
 

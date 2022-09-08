@@ -1,4 +1,5 @@
-#include "ProjectManager.h"
+
+#include "ProjectBaseManager.h"
 
 #include <filesystem>
 #include <fstream>
@@ -28,12 +29,14 @@ namespace Helios {
 			}
 
 			fclose(file_handle);
+			
 			return true;
 		}
 
 		int IsValidProject(const char* path)
 		{
 			if (!std::filesystem::is_directory(path)) return PROJECT_MANAGER_EXIT_INVALID_PATH;
+			if (!std::filesystem::is_directory(std::filesystem::path(path) / "Assets")) return PROJECT_MANAGER_EXIT_INVALID_PATH;
 			if (!is_file_writable(path)) return PROJECT_MANAGER_EXIT_NO_READ_WRITE_PERMISSIONS;
 			if (!std::filesystem::exists((std::filesystem::path(path) / "Settings" / "Version.txt"))) return PROJECT_MANAGER_EXIT_INVALID_PROJECT;
 				
@@ -61,6 +64,15 @@ namespace Helios {
 			else
 				std::filesystem::create_directory(settings_folder);
 
+			std::filesystem::path assets_folder = (std::filesystem::path(path) / "Assets");
+			if (std::filesystem::exists(assets_folder))
+			{
+				if (!std::filesystem::is_directory(assets_folder))
+					return PROJECT_MANAGER_EXIT_INVALID_PATH;
+			}
+			else
+				std::filesystem::create_directory(assets_folder);
+
 
 			std::filesystem::path version_file = (std::filesystem::path(path) / "Settings" / "Version.txt");
 			if (std::filesystem::exists(version_file)) return PROJECT_MANAGER_EXIT_PROJECT_ALREADY_EXISTS;
@@ -74,7 +86,8 @@ namespace Helios {
 
 			int code;
 
-			if((code = CreateStartupConfig(path)) < 0) return code;
+			if (!std::filesystem::exists((std::filesystem::path(path) / "Settings" / "Startup.config")))
+				if((code = CreateStartupConfig(path)) < 0) return code;
 
 			return PROJECT_MANAGER_EXIT_OK;
 		}

@@ -4,7 +4,7 @@
  */
 #include "Camera.h"
 #include "Helios/Translation/Vector2D.h"
-#include "Helios/Application.h"
+#include "Helios/Core/Application.h"
 
 Helios::Vector2D Helios::Camera::ScreenToWorldPoint(Point mousePosition)
 {

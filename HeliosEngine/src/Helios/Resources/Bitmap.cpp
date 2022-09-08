@@ -1,7 +1,7 @@
 #include "Bitmap.h"
-#include "Helios/Application.h"
+#include "Helios/Core/Application.h"
 #include "Helios/Graphics/Graphics.h"
-#include "Helios/Logger.h"
+#include "Helios/Core/Logger.h"
 #include "Helios/Translation/Vector2D.h"
 
 Helios::Bitmap::Bitmap(const wchar_t* path)

@@ -4,8 +4,14 @@
  */
 #pragma once
 
+#ifdef _DEBUG
+#define HL_DEBUG
+#endif
+
 #ifdef HELIOS_BUILD_DLL
 #define HELIOS_API __declspec(dllexport)
 #else
 #define HELIOS_API __declspec(dllimport)
 #endif
+
+#define HL_DEBUGBREAK __debugbreak

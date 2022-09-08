@@ -1,19 +1,19 @@
 #pragma once
 
 #include "Brush.h"
-#include "Helios/Core.h"
+#include "Helios/Core/Base.h"
 #include "Helios/Translation/Vector2D.h"
  
 namespace Helios {
 	//class Size2D;
 	class Bitmap;
-	class Transform;
+	class Transform2D;
 	class HELIOS_API BitmapBrush : public Brush {
 	private:
 		std::shared_ptr<Bitmap> bitmap;
 		void Load();
 
-		//Transform* transform;
+		//Transform2D* transform;
 	public:
 		BitmapBrush() = delete;
 		BitmapBrush(Bitmap& image);

@@ -6,6 +6,8 @@
 
 using Helios::Time;
 
+__int64 Time::m_firstFrame = 0;
 __int64 Time::m_lastFrame = 0;
 float Time::m_deltaTime = 0.0f;
+
 double Time::PCFreq = 0.0;

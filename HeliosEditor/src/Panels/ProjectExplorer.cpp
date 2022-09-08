@@ -1,7 +1,8 @@
 #include "ProjectExplorer.h"
 #include <queue>
-#include <Helios/Application.h>
+#include <Helios/Core/Application.h>
 #include "Icons.h"
+#include "ProjectManager.h"
 
 #define ITEM_SIZE 100.0f
 #define ITEM_PADDING 20.0f
@@ -154,6 +155,7 @@ ImTextureID GetFileIcon(std::filesystem::path file) {
 	else if (ext == ".h") return *ICON_FILE_H;
 	else if (ext == ".png") return *ICON_FILE_IMAGE;
 	else if (ext == ".txt") return *ICON_FILE_TXT;
+	else if (ext == ".scene") return *ICON_FILE_SCENE;
 	else if (ext == ".ttf") return *ICON_FILE_FONT;
 	else return *ICON_FILE_UNKNOWN;
 }
@@ -222,7 +224,6 @@ void FileNameOrEdit(std::filesystem::path entry, int i) {
 void ShowFileOrFolder(std::filesystem::path entry, int i, int maxElements) {
 	bool is_dir = std::filesystem::is_directory(entry);
 
-
 	ImGui::SetCursorPos(ImVec2((i % maxElements) * (ITEM_SIZE + ITEM_PADDING) + 20, trunc(i / maxElements) * (ITEM_SIZE + ITEM_PADDING + 20) + 20));
 	ImGui::PushID(i);
 	ImGui::SetNextItemWidth(200);
@@ -240,7 +241,12 @@ void ShowFileOrFolder(std::filesystem::path entry, int i, int maxElements) {
 		if (is_dir)
 			currentPath /= entry;
 		else
-			ShellExecute(0, 0, entry.wstring().c_str(), 0, 0, SW_SHOW);
+		{
+			if(entry.filename().extension() == ".scene")
+				Helios::Project::TryLoad(entry);
+			else
+				ShellExecute(0, 0, entry.wstring().c_str(), 0, 0, SW_SHOW);
+		}
 	} else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
 	{
 		if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl))
@@ -367,12 +373,13 @@ void ProjectExplorer_RightClickMenu(std::filesystem::path path, int count, bool 
 	}
 }
 
-void SetCurrentPath(std::filesystem::path projectPath) { currentPath = projectPath; }
+void SetCurrentPath(std::filesystem::path assetsPath) { currentPath = assetsPath; }
 
-void ProjectExplorerWindow(std::filesystem::path projectPath)
+void ProjectExplorerWindow(std::filesystem::path assetsPath)
 {
 	if (ImGui::Begin("Explorer")) {
-		//currentPath = projectPath;
+
+		//currentPath = assetsPath;
 
 		/*if (ImGui::BeginMenuBar()) {
 			ImGui::Text(currentPath.string().c_str());
@@ -381,18 +388,21 @@ void ProjectExplorerWindow(std::filesystem::path projectPath)
 
 		}*/
 
-		if (ImGui::Button(projectPath.filename().string().c_str())) currentPath = projectPath;
-		for (auto& x : currentPath.lexically_relative(projectPath))
+		if (ImGui::Button(assetsPath.filename().string().c_str())) currentPath = assetsPath;
+		std::filesystem::path tmp = assetsPath;
+		for (auto& x : currentPath.lexically_relative(assetsPath))
 		{
 			if (x.generic_string() != ".") {
+				tmp /= x;
 				ImGui::SameLine();
 				ImGui::Text(">");
 				ImGui::SameLine();
 				if (ImGui::Button(x.string().c_str())) {
-					currentPath = x;
+					currentPath = tmp;
 				}
 			}
 		}
+
 
 		ImGui::BeginChild("FileExplorer");
 
@@ -400,55 +410,57 @@ void ProjectExplorerWindow(std::filesystem::path projectPath)
 		static int itemSize = 100;
 		static int itemPadd = 20;
 		int maxElements = (ImGui::GetWindowContentRegionMax().x - 20) / (itemSize + itemPadd);
+		if (maxElements != 0) {
+			//ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0,0,0,0));
 
-		//ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0,0,0,0));
-
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-
-
-
-		if (!currentPath.empty()) {
-			std::set<std::filesystem::path> folders;
-			std::set<std::filesystem::path> files;
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
 
 
-			for (const auto& entry : std::filesystem::directory_iterator(currentPath))
-				if (entry.is_directory()) folders.insert(entry);
-				else files.insert(entry);
+
+			if (std::filesystem::exists(currentPath) && !currentPath.empty()) {
+				std::set<std::filesystem::path> folders;
+				std::set<std::filesystem::path> files;
 
 
-			for (const auto& entry : folders)
-			{
-				ShowFileOrFolder(entry, i, maxElements);
-				i++;
+				for (const auto& entry : std::filesystem::directory_iterator(currentPath))
+					if (entry.is_directory()) folders.insert(entry);
+					else files.insert(entry);
+
+
+				for (const auto& entry : folders)
+				{
+					ShowFileOrFolder(entry, i, maxElements);
+					i++;
+				}
+
+				for (const auto& entry : files)
+				{
+					ShowFileOrFolder(entry, i, maxElements);
+					i++;
+				}
+
+				if (create_item != FileType::None)
+					ShowFileOrFolder(currentPath, i, maxElements);
+
+				/*if (selection.GetLowest() < maxElements && ImGui::IsKeyReleased(ImGuiKey_RightArrow)) {
+					selection.SelectNext();
+				}
+				else if (selection.GetLowest() > 0 && ImGui::IsKeyReleased(ImGuiKey_LeftArrow)) {
+					selection.SelectPrevious();
+				}
+				else if (selection.GetLowest() + (folders.size() + files.size()) > 0 && ImGui::IsKeyReleased(ImGuiKey_UpArrow))
+					selection.SelectUp(maxElements);
+				else if (selection.GetLowest() + (folders.size() + files.size()) > 0 && ImGui::IsKeyReleased(ImGuiKey_UpArrow))
+					selection.SelectDown(maxElements);*/
+
 			}
 
-			for (const auto& entry : files)
-			{
-				ShowFileOrFolder(entry, i, maxElements);
-				i++;
-			}
-
-			if (create_item != FileType::None)
-				ShowFileOrFolder(currentPath, i, maxElements);
-
-			/*if (selection.GetLowest() < maxElements && ImGui::IsKeyReleased(ImGuiKey_RightArrow)) {
-				selection.SelectNext();
-			}
-			else if (selection.GetLowest() > 0 && ImGui::IsKeyReleased(ImGuiKey_LeftArrow)) {
-				selection.SelectPrevious();
-			}
-			else if (selection.GetLowest() + (folders.size() + files.size()) > 0 && ImGui::IsKeyReleased(ImGuiKey_UpArrow))
-				selection.SelectUp(maxElements);
-			else if (selection.GetLowest() + (folders.size() + files.size()) > 0 && ImGui::IsKeyReleased(ImGuiKey_UpArrow))
-				selection.SelectDown(maxElements);*/
-
+			ProjectExplorer_RightClickMenu(currentPath, i, true);
+			ImGui::PopStyleVar();
 		}
+		
 
-		ProjectExplorer_RightClickMenu(currentPath, i, true);
 
-
-		ImGui::PopStyleVar();
 		ImGui::EndChild();
 	}
 	ImGui::End();

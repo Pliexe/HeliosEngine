@@ -6,35 +6,16 @@
 #include "Time.h"
 #include "pch.h"
 #include <Windows.h>
+#include "Logger.h"
+
+#include "Helios/Scene/GameObject.h"
 
 //Helios::Application::Application(bool fullscreen)
 //{
 //	GetMonitorInfo()
 //}
 
-std::wstring GetLastErrorAsWString()
-{
-	//Get the error message ID, if any.
-	DWORD errorMessageID = ::GetLastError();
-	if (errorMessageID == 0) {
-		return std::wstring(); //No error message has been recorded
-	}
 
-	LPSTR messageBuffer = nullptr;
-
-	//Ask Win32 to give us the string version of that message ID.
-	//The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message string will be).
-	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
-
-	//Copy the error message into a std::string.
-	std::string message(messageBuffer, size);
-
-	//Free the Win32's string's buffer.
-	LocalFree(messageBuffer);
-
-	return std::wstring(message.begin(), message.end());
-}
 
 HWND Helios::Application::hWnd = NULL;
 Helios::Application* Helios::Application::instance = NULL;
@@ -57,7 +38,7 @@ LRESULT Helios::Application::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		if (graphics) {
 			SafeRelease(&graphics->m_mainRenderTarget);
-			graphics->m_pSwapChain->ResizeBuffers(0, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam), DXGI_FORMAT_UNKNOWN, 0);
+			graphics->m_pSwapChain->ResizeBuffers(1, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam), DXGI_FORMAT_UNKNOWN, 0);
 			graphics->CreateD3D11RenderTarget();
 			GameLoop();
 		}
@@ -153,15 +134,13 @@ int Helios::Application::Run()
 
 	graphics = new Graphics(m_hWnd);
 	if (!graphics->Init()) {		
-		this->ShowMessageBox(L"Error initializing graphics!", (GetLastErrorAsWString() + L" : " + std::to_wstring(GetLastError())).c_str(), MB_ICONERROR);
+		ShowMessage("Error initializing graphics!", (GetLastErrorAsString() + " : " + std::to_string(GetLastError())).c_str(), MB_ICONERROR);
 		return -3;
 	}
 
 #pragma endregion
 
 	Init();
-
-	GameObject::prepare(); // increase reserved space
 
 	ShowWindow(m_hWnd, SW_SHOW);
 
@@ -221,7 +200,6 @@ void Helios::Application::GameLoop() {
 
 void Helios::Application::CheckEngineQueue() {
 	if (SceneManager::currentScene) {
-		GameObject::CheckQueue(*graphics);
 		SceneManager::CheckQueue();
 	}
 }

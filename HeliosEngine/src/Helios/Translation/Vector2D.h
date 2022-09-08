@@ -5,7 +5,7 @@
 #pragma once
 
 #include "pch.h"
-#include "Helios/Core.h"
+#include "Helios/Core/Base.h"
 
 namespace Helios {
 	class HELIOS_API Vector2D
@@ -13,11 +13,12 @@ namespace Helios {
 	protected:
 		float vec2[2];
 
+	public:
+
 		operator float* () {
 			return vec2;
 		}
 
-	public:
 		Vector2D();
 		Vector2D(float x, float y);
 		Vector2D(const Vector2D&);

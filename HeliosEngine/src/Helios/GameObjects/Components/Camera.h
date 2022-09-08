@@ -19,15 +19,16 @@ namespace Helios {
 
 	public:
 
-		void SetBackgroundColor(int r, int g, int b, float a = 1.0f) { backgroundColor = Color(r / 255.0f, g / 255.0f, b / 255.0f, a); }
+		void SetBackgroundColor(int r, int g, int b, float a = 1.0f) { backgroundColor = { r / 255.0f, g / 255.0f, b / 255.0f, a }; }
 		Color GetBackgroundColor() const { return backgroundColor; }
-		void SetBackgroundColor(float r, float  g, float b, float a = 1.0f) { backgroundColor = Color(r, g, b, a); }
+		void SetBackgroundColor(float r, float  g, float b, float a = 1.0f) { backgroundColor = { r, g, b, a }; }
 
 		Vector2D ScreenToWorldPoint(Point mousePosition);
 
 		friend class SceneManager;
-		friend class Transform;
+		friend class Transform2D;
 
 		extern friend class GameEngine;
+		extern friend class InspectorPanel;
 	};
 }

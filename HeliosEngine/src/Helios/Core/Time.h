@@ -5,12 +5,13 @@
 #pragma once
 
 #include "pch.h"
-#include "Helios/Core.h"
+#include "Helios/Core/Base.h"
 
 namespace Helios {
 	class HELIOS_API Time {
 	private:
 
+		static __int64 m_firstFrame;
 		static __int64 m_lastFrame;
 		static float m_deltaTime;
 		static double PCFreq;
@@ -23,6 +24,7 @@ namespace Helios {
 				exit(-9000);
 			}
 			PCFreq = double(li.QuadPart);
+			m_firstFrame = li.QuadPart;
 		}
 
 		static const void frameUpdate() {
@@ -37,6 +39,7 @@ namespace Helios {
 		static const float deltaTime() { return m_deltaTime; }
 		static const float getFPS() { return CLOCKS_PER_SEC / (m_deltaTime * 1000.0f); }
 		static const __int64 lastFrame() { return m_lastFrame; }
+		static const long float passedTime() { return (m_lastFrame - m_firstFrame) / PCFreq; }
 		
 		friend class Application;
 		extern friend class EngineScene;

@@ -3,80 +3,79 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
 #include "SceneManager.h"
-#include "Helios/GameObjects/GameObject.h"
+#include "Helios/Scene/GameObject.h"
 #include "Helios/GameObjects/Components/Camera.h"
 
-Helios::Scene* Helios::SceneManager::loadQueue = NULL;
-Helios::Scene* Helios::SceneManager::currentScene = NULL;
-std::map<std::wstring, Helios::Scene*> Helios::SceneManager::scenes;
+namespace Helios {
+	Ref<Scene> SceneManager::loadQueue;
+	Ref<Scene> SceneManager::currentScene;
+	std::map<std::string, Ref<Scene>> SceneManager::scenes;
 
-void Helios::SceneManager::Render(Graphics& graphics)
-{
-	auto currentCamera = currentScene->currentCamera;
-	if (currentCamera) {
-		graphics.m_renderTarget2D->Clear(currentCamera->backgroundColor);
+	void SceneManager::Render(Graphics& graphics)
+	{
+		/*auto currentCamera = currentScene->currentCamera;
+		if (currentCamera) {
+			graphics.m_renderTarget2D->Clear(currentCamera->backgroundColor);
 
-		for (auto& gm : GameObject::gameObjects)
+			for (auto& gm : GameObject::gameObjects)
+			{
+				if (gm->IsActive())
+					for (auto& oc : gm->components)
+						if (oc->IsActive())
+							oc->Render(graphics);
+			}
+		}*/
+
+		if(currentScene) currentScene->RenderScene();
+	}
+
+	void SceneManager::Update()
+	{
+		/*for (auto& gm : GameObject::gameObjects)
 		{
-			if(gm->IsActive())
-			for (auto& oc : gm->components)
-				if (oc->IsActive())
-				oc->Render(graphics);
+			if (gm->IsActive())
+				for (auto& oc : gm->components)
+					if (oc->IsActive())
+						oc->Update();
+		}*/
+	}
+
+	const WeakRef<Scene>& SceneManager::AddScene(std::string name, std::function<void(Scene&)> onInitialization)
+	{
+		const WeakRef<Scene>& scene = AddScene(name);
+		scene.lock()->initCallback = onInitialization;
+		return scene;
+	}
+
+	const WeakRef<Scene>& SceneManager::AddScene(std::string name)
+	{
+		Ref<Scene> scene = CreateRef<Scene>();
+		scenes.insert({ name, scene });
+		return scene;
+	}
+
+	bool SceneManager::LoadScene(std::string name)
+	{
+		auto pos = scenes.find(name);
+		if (pos == scenes.end()) return false;
+		else {
+			loadQueue = pos->second;
+			if (currentScene == NULL) CheckQueue();
+			return true;
 		}
 	}
-}
 
-void Helios::SceneManager::Update()
-{
-	for (auto& gm : GameObject::gameObjects)
+	void SceneManager::CheckQueue()
 	{
-		if (gm->IsActive())
-		for (auto& oc : gm->components)
-			if (oc->IsActive())
-			oc->Update();
+		if (loadQueue) {
+			if (currentScene) currentScene->Unload();
+			currentScene = loadQueue;
+			loadQueue = NULL;
+
+			currentScene->Init();
+
+			if (currentScene->currentCamera == NULL) GameObject::CreateMainCamera();
+		}
 	}
-}
 
-Helios::Scene& Helios::SceneManager::AddScene(std::wstring name, Scene* scene)
-{
-	scenes.insert({ name, scene });
-	return *scene;
-}
-
-Helios::Scene& Helios::SceneManager::AddScene(std::wstring name, std::function<void(Scene&)> onInitialization)
-{
-	Scene& scene = AddScene(name);
-	scene.initCallback = onInitialization;
-	return scene;
-}
-
-Helios::Scene& Helios::SceneManager::AddScene(std::wstring name)
-{
-	Scene* scene = new Scene();
-	scenes.insert({ name, scene });
-	return *scene;
-}
-
-bool Helios::SceneManager::LoadScene(std::wstring name)
-{
-	auto pos = scenes.find(name);
-	if (pos == scenes.end()) return false;
-	else {
-		loadQueue = pos->second;
-		if (currentScene == NULL) CheckQueue();
-		return true;
-	}
-}
-
-void Helios::SceneManager::CheckQueue()
-{
-	if (loadQueue) {
-		if (currentScene) currentScene->Unload();
-		currentScene = loadQueue;
-		loadQueue = NULL;
-
-		currentScene->Init();
-
-		if (currentScene->currentCamera == NULL) GameObject::CreateMainCamera();
-	}
 }
