@@ -8,78 +8,107 @@
 #include "Helios/Core/Base.h"
 
 namespace Helios {
-	class HELIOS_API Vector2D
-	{
-	protected:
-		float vec2[2];
 
-	public:
+	struct HELIOS_API Vector2 {
+		float x;
+		float y;
 
-		operator float* () {
-			return vec2;
-		}
+		Vector2() : x(0.0f), y(0.0f) { };
+		Vector2(float x, float y) : x(x), y(y) { };
 
-		Vector2D();
-		Vector2D(float x, float y);
-		Vector2D(const Vector2D&);
+		operator float* () { return &x; }
 
-		inline float getX() const;
-		inline float getY() const;
+		static Vector2 right()	{ return {  1.0f,  0.0f }; }
+		static Vector2 left()	{ return { -1.0f,  0.0f }; }
+		static Vector2 up()		{ return {  0.0f,  1.0f }; }
+		static Vector2 down()	{ return {  0.0f, -1.0f }; }
 
-		inline float x() const;
-		inline float y() const;
+		float length();
+		Vector2 normalize();
 
-		void setX(float x);
-		void setY(float y);
+		Vector2 operator+(const Vector2& other) const;
+		Vector2 operator-(const Vector2& other) const;
 
-		void setXY(float x, float y);
-		void setXY(const Vector2D);
+		Vector2 operator+(Vector2& other);
+		Vector2 operator-(Vector2& other);
 
-		Vector2D normalize();
+		Vector2 operator*(float n) const;
+		Vector2 operator/(float n) const;
 
-		static Vector2D right() { return Vector2D(1, 0); }
-		static Vector2D left() { return Vector2D(-1, 0); }
-		static Vector2D up() { return Vector2D(0, 1); }
-		static Vector2D down() { return Vector2D(0, -1); }
+		Vector2 operator*(float n);
+		Vector2 operator/(float n);
 
-		Vector2D operator+(const Vector2D& v) const;
-		Vector2D operator-(const Vector2D& v) const;
-		Vector2D operator+(Vector2D& v);
-		Vector2D operator-(Vector2D& v);
-		Vector2D operator*(float n);
-		Vector2D operator/(float n);
+		Vector2& operator+=(const Vector2& other);
+		Vector2& operator-=(const Vector2& other);
+		
+		Vector2& operator+=(Vector2& other);
+		Vector2& operator-=(Vector2& other);
+		
+		Vector2& operator*=(float n);
+		Vector2& operator/=(float n);
 
-		Vector2D operator+=(const Vector2D& v);
-		Vector2D operator-=(const Vector2D& v);
-		Vector2D operator+=(Vector2D& v);
-		Vector2D operator-=(Vector2D& v);
-		Vector2D operator*=(float n);
-		Vector2D operator/=(float n);
-
-		friend class Transform;
-		extern friend class GameEngine;
+		Vector2& operator=(Vector2& other);
 	};
 
-	class HELIOS_API Point : public Vector2D {
-	public:
-		Point(float width, float height) : Vector2D(width, height) { }
-		Point() : Vector2D() { }
-		Point(const Point& size) : Vector2D(size) { }
-		Point(const Vector2D& size) : Vector2D(size) { }
+	struct HELIOS_API Vector3 : Vector2 {
+		float z;
+
+		Vector3() : Vector2(0.0f, 0.0f), z(0.0f) { };
+		Vector3(float x, float y, float z) : Vector2(x, y), z(z) { };
+
+		static Vector3 right()		{ return {  1.0f,  0.0f,  0.0f }; }
+		static Vector3 left()		{ return { -1.0f,  0.0f,  0.0f }; }
+		static Vector3 up()			{ return {  0.0f,  1.0f,  0.0f }; }
+		static Vector3 down()		{ return {  0.0f, -1.0f,  0.0f }; }
+
+		static Vector3 forward()	{ return {  0.0f,  0.0f,  1.0f }; }
+		static Vector3 backwards()	{ return {  0.0f,  0.0f, -1.0f }; }
+
+		float length();
+		Vector3 normalize();
+
+		Vector3 operator+(const Vector3& other) const;
+		Vector3 operator-(const Vector3& other) const;
+			  
+		Vector3 operator+(Vector3& other);
+		Vector3 operator-(Vector3& other);
+			  
+		Vector3 operator*(float n) const;
+		Vector3 operator/(float n) const;
+			  
+		Vector3 operator*(float n);
+		Vector3 operator/(float n);
+
+		Vector3& operator+=(const Vector3& other);
+		Vector3& operator-=(const Vector3& other);
+			  
+		Vector3& operator+=(Vector3& other);
+		Vector3& operator-=(Vector3& other);
+			  
+		Vector3& operator*=(float n);
+		Vector3& operator/=(float n);
+
+		Vector3& operator=(Vector3& other);
 	};
 
-	class HELIOS_API Size2D : public Vector2D
+	struct HELIOS_API Point : public Vector2 {
+	public:
+		Point(float x, float y) : Vector2(x, y) { }
+		Point() : Vector2() { }
+		Point(const Point& size) : Vector2(size) { }
+		Point(const Vector2& size) : Vector2(size) { }
+	};
+
+	class HELIOS_API Size2D : public Vector2
 	{
 	public:
-		Size2D(float width, float height) : Vector2D(width, height) { }
-		Size2D() : Vector2D() {}
-		Size2D(const Size2D& size) : Vector2D(size.vec2[0], size.vec2[1]) { }
-		Size2D(const Vector2D& size) : Vector2D(size) { }
+		Size2D(float width, float height) : Vector2(width, height) { }
+		Size2D() : Vector2() {}
+		Size2D(const Size2D& size) : Vector2(size) { }
+		Size2D(const Vector2& size) : Vector2(size) { }
 
-		Vector2D normalize() = delete;
-
-		inline float getWidth() const;
-		inline float getHeight() const;
+		Vector2 normalize() = delete;
+		float length() = delete;
 
 		inline float width() const;
 		inline float height() const;
