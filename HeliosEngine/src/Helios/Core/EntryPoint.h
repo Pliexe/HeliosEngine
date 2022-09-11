@@ -1,4 +1,4 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
@@ -61,9 +61,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance /*hahaha 16bit 
 	if (result < 0) return result;
 #endif // HELIOS_EDITOR
 
-	auto app = Helios::CreateApplication();
-	result = app->Run();
-	delete app;
+	try {
+		auto app = Helios::CreateApplication();
+		result = app->Run();
+		delete app;
+	} catch(Helios::HeliosExceptin e) {
+		e.what(false);
+		return -1;
+	}
 	std::cout << "Application closed! Code: " << result << std::endl;
 	return result;
 }

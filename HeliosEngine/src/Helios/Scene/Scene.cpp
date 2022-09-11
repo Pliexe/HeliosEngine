@@ -1,4 +1,4 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
@@ -58,10 +58,12 @@ namespace Helios {
 						{
 							Components::Transform tmp = trans;
 							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
-							Renderer2D::DrawSprite(tmp, spriteRenderer);
+							// Renderer2D::DrawSprite(tmp, spriteRenderer);
+							Renderer2D::DrawCube(trans, spriteRenderer);
 						}
 						else
-							Renderer2D::DrawSprite(trans, spriteRenderer);
+							Renderer2D::DrawCube(trans, spriteRenderer);
+							// Renderer2D::DrawSprite(trans, spriteRenderer);
 					}
 					catch (HeliosExceptin ex) {
 						switch (ex.what())

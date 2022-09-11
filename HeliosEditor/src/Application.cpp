@@ -27,6 +27,7 @@
 #include <imgui_impl_win32.cpp>
 #include <imgui_impl_dx11.cpp>
 #include "Helios/Translation/Matrix.h"
+#include <Helios/Translation/Quanterion.h>
 #include <sstream>
 
 static std::filesystem::path currentScene;
@@ -523,25 +524,25 @@ namespace Helios {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			Vector3 rot;
+			// Vector3 rot;
 
-			rot.x = 0.9f;
-			rot.y = -1.0;
-			rot.z = -0.3f;
+			// rot.x = -0.9f;
+			// rot.y = 0.3;
+			// rot.z = -0.6f;
 
-			Quanterion q = Quanterion::EulerRads(rot);
+			// Quanterion q = Quanterion::EulerRads(rot);
 
-			std::stringstream str;
+			// std::stringstream str;
 
-			str << "Euler: " << "x: " << rot.x << ", y: " << rot.y << ", z: " << rot.z << std::endl << std::endl;
+			// str << "Euler: " << "x: " << rot.x << ", y: " << rot.y << ", z: " << rot.z << std::endl << std::endl;
 
-			str << "Quanterion: " << "x: " << q.x << ", y: " << q.y << ", z: " << q.z << ", w: " << q.w << std::endl << std::endl;
+			// str << "Quanterion: " << "x: " << q.x << ", y: " << q.y << ", z: " << q.z << ", w: " << q.w << std::endl << std::endl;
 
-			Vector3 euler = q.euler();
+			// Vector3 euler = q.euler();
 
-			str << "Converted Euler: " << "x: " << euler.x << ", y: " << euler.y << ", z: " << euler.z << std::endl << std::endl;
+			// str << "Converted Euler: " << "x: " << euler.x << ", y: " << euler.y << ", z: " << euler.z << std::endl << std::endl;
 
-			ShowMessage("Quanterion", str.str());
+			// ShowMessage("Quanterion", str.str());
 
 			OnGUI();
 
@@ -555,8 +556,8 @@ namespace Helios {
 			if (SceneManager::currentScene) {
 				//graphics->m_renderTarget2D->BeginDraw();
 
-				//SceneManager::currentScene->OnUpdateRuntime();
-				SceneManager::currentScene->OnUpdateEditor(cameraTransform, cameraPropeties);
+				SceneManager::currentScene->OnUpdateRuntime();
+				//SceneManager::currentScene->OnUpdateEditor(cameraTransform, cameraPropeties);
 
 				//SceneManager::Render(*graphics);
 

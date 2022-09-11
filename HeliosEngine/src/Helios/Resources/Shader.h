@@ -35,7 +35,7 @@ namespace Helios {
 			Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 
 			std::string pixelShaderPath = (filepath + "PixelShader.cso");
-
+			
 			HL_EXCEPTION(
 				FAILED(D3DReadFileToBlob(std::wstring(pixelShaderPath.begin(), pixelShaderPath.end()).c_str(), &pBlob)),
 				"Failed to read pixel shader file!\n" + pixelShaderPath

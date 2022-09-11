@@ -230,6 +230,7 @@
     <ClCompile Include="src\Helios\Scene\Scene.cpp" />
     <ClCompile Include="src\Helios\Graphics\Graphics.cpp" />
     <ClCompile Include="src\Helios\Core\Application.cpp" />
+    <ClCompile Include="src\Helios\Translation\Quanterion.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pch.h</PrecompiledHeaderFile>

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Vector.h"
+#include "Helios/Core/Base.h"
 
 namespace Helios {
-	
-	struct Quanterion
+	struct HELIOS_API Quanterion
 	{
         union {
             float q[4];
@@ -55,10 +55,7 @@ namespace Helios {
             };
         }
 
-        Vector3 euler()
-        {
-            return { 0.0f, 0.0f, 0.0f };
-        }
+        Vector3 euler();
         
         // Multiply by vector
 

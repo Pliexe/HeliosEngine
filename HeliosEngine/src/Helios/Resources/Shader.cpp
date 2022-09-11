@@ -9,6 +9,7 @@ namespace Helios
 		Graphics::instance->m_deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0u);
 		
 		Graphics::instance->m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//Graphics::instance->m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		Graphics::instance->m_deviceContext->IASetInputLayout(m_inputLayout.Get());
 	}
 }

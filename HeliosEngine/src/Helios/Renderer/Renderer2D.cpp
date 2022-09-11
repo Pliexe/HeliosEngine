@@ -27,8 +27,9 @@ namespace Helios {
 	Ref<VertexBuffer> spriteVertexBuffer;
 	Ref<IndexBuffer> spriteIndexBuffer;
 	Ref<Shader> spriteShader;
+	Ref<Shader> cubeShader;
 
-	DirectX::XMMATRIX projectionMatrix;
+	Matrix4x4 projectionMatrix;
 
 	bool Renderer2D::CreateRenderTarget(UINT width, UINT height)
 	{
@@ -92,6 +93,11 @@ namespace Helios {
 		spriteShader = CreateRef<Shader>(Shader("Sprite", {
 			{ "Position", Shader::DataType::Float2 },
 			{ "Color", Shader::DataType::Float4 }
+			}));
+
+		cubeShader = CreateRef<Shader>(Shader("Cube", {
+			{ "Position", Shader::DataType::Float3 },
+			{ "Color", Shader::DataType::Float4 }
 		}));
 		
 		return CreateRenderTarget(300, 300);
@@ -111,16 +117,20 @@ namespace Helios {
 		/*DirectX::XMVECTOR
 		DirectX::XMFLOAT4(trans.rotation.x, trans.rotation.y, trans.rotation.z, trans.rotation.w)*/
 
-		auto eulerRotation = trans.rotation.euler();
+		//auto eulerRotation = trans.rotation.euler();
 
+		Matrix4x4::Translation(trans.position);
+		
 		projectionMatrix = (
-			DirectX::XMMatrixTranslation(trans.position.x, trans.position.z, trans.position.y) *
-			DirectX::XMMatrixRotationRollPitchYaw(eulerRotation.x * 3.14f / 180.0f, -eulerRotation.y * 3.14f / 180.0f, eulerRotation.z * 3.14f / 180.0f) *
-			(cam.ortographic ?
-				DirectX::XMMatrixOrthographicRH(cam.size, cam.size * ((float)Renderer2D::height / (float)Renderer2D::width), cam.near_z, cam.far_z)
-				:
-				DirectX::XMMatrixPerspectiveFovRH(cam.fov * 3.14f / 180.0f, ((float)Renderer2D::width / (float)Renderer2D::height), cam.near_z, cam.far_z)
-			) 
+			
+			Matrix4x4::Translation(trans.position) *
+			Matrix4x4::Rotation(trans.rotation) *
+			(cam.ortographic ? (
+				Matrix4x4::OrthographicLH(cam.size, cam.size * ((float)Renderer2D::height / (float)Renderer2D::width), cam.near_z, cam.far_z)
+				) : (
+					Matrix4x4::PerspectiveLH(cam.fov * 3.14f / 180.0f, ((float)Renderer2D::width / (float)Renderer2D::height), cam.near_z, cam.far_z)
+			))
+			
 		);
 	}
 	
@@ -149,6 +159,154 @@ namespace Helios {
 		ZeroMemory(&desc, sizeof(desc));
 		s_renderTargetTexture->GetDesc(&desc);
 		return { (float)desc.Width, (float)desc.Height };
+	}
+
+	void Renderer2D::DrawCube(Components::Transform transform, Components::SpriteRenderer sprite)
+	{
+		
+
+		struct Vertex
+		{
+			float x;
+			float y;
+			float z;
+			float r;
+			float g;
+			float b;
+			float a;
+		};
+
+		// cube
+
+		const ImVec2 viewportSize = GetRenderTargetSize();
+
+		// Cube vertices and indecies with color DirectX
+
+
+		Vertex cubeVertices[] = {
+			// Front
+			{ -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f },
+			{  0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f },
+			{ -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f },
+			{  0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f },
+			// Back
+			{ -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f },
+			{  0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f },
+			{ -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f },
+			{  0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f },
+		};
+
+		unsigned short cubeIndices[] = {
+			0,2,1, 2,3,1,
+			1,3,5, 3,7,5,
+			2,6,3, 3,6,7,
+			4,5,7, 4,7,6,
+			0,4,2, 2,4,6,
+			0,1,4, 1,5,4,
+		};
+
+		// const Vertex vertices[] = {
+		// 	// front
+		// 	{  0.5f,  0.5f, 0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+		// 	{ -0.5f,  0.5f, 0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+		// 	{ -0.5f, -0.5f, 0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+		// 	{  0.5f, -0.5f, 0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+		// 	// back
+		// 	{ -0.5f,  0.5f, -0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+		// 	{  0.5f,  0.5f, -0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+		// 	{  0.5f, -0.5f, -0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+		// 	{ -0.5f, -0.5f, -0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+		// };
+
+		// const unsigned short indecies[] = {
+		// 	//// front
+		// 	0, 1, 2,
+		// 	2, 3, 0,
+		// 	// back
+		// 	/*4, 6, 5,
+		// 	4, 7, 6,*/
+		// 	//// left
+		// 	/*1, 5, 6,
+		// 	1, 6, 2,*/
+		// 	//// right
+		// 	/*4, 7, 3,
+		// 	4, 3, 0,*/
+		// 	//// top
+		// 	/*3, 6, 2,
+		// 	3, 7, 6,*/
+		// 	//// bottom
+		// 	//4, 1, 0,
+		// 	//4, 5, 1,
+		// };
+
+		Ref<VertexBuffer> cubeVertexBuffer = VertexBuffer::Create(cubeVertices, std::size(cubeVertices));
+		cubeVertexBuffer->Bind();
+
+		auto cubeIndexBuffer = IndexBuffer::Create(cubeIndices, std::size(cubeIndices));
+		cubeIndexBuffer->Bind();
+		
+		cubeShader->Bind();
+
+		
+		struct ConstantBuffer
+		{
+			Matrix4x4 transform;
+		};
+
+		auto euler = transform.rotation.euler();
+
+		const ConstantBuffer cb =
+		{
+			{
+				Matrix4x4::Transpose(
+					Matrix4x4::Scale(transform.scale) *
+					Matrix4x4::Rotation(transform.rotation) *
+					Matrix4x4::Translation(transform.position) *
+					projectionMatrix
+				)
+			}
+		};
+
+		Microsoft::WRL::ComPtr<ID3D11Buffer> pConstantBuffer;
+		D3D11_BUFFER_DESC cbd;
+		cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		cbd.Usage = D3D11_USAGE_DYNAMIC;
+		cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		cbd.MiscFlags = 0u;
+		cbd.ByteWidth = sizeof(cb);
+		cbd.StructureByteStride = 0u;
+		D3D11_SUBRESOURCE_DATA csd = {};
+		csd.pSysMem = &cb;
+		//Graphics::instance->m_device->CreateBuffer(&cbd, &csd, &pConstantBuffer);
+		HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateBuffer(&cbd, &csd, &pConstantBuffer)), "Failed to create constant buffer!\n" + GetLastErrorAsString());
+	
+		// bind
+		Graphics::instance->m_deviceContext->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+
+		/*spriteShader.reset();
+		spriteShader = CreateRef<Shader>(Shader(std::string("Sprite"), {
+			{ "Position", Shader::DataType::Float2 },
+			{ "Color", Shader::DataType::Float4 }
+		}));
+
+		spriteShader->Bind();*/
+
+
+		Graphics::instance->m_deviceContext->OMSetRenderTargets(1u, s_renderTarget.GetAddressOf(), nullptr);
+
+
+		D3D11_VIEWPORT vp;
+		vp.Width = viewportSize.x;
+		vp.Height = viewportSize.y;
+		vp.MinDepth = 0;
+		vp.MaxDepth = 1;
+		vp.TopLeftX = 0;
+		vp.TopLeftY = 0;
+		Graphics::instance->m_deviceContext->RSSetViewports(1u, &vp);
+
+
+		Graphics::instance->m_deviceContext->DrawIndexed((UINT)std::size(cubeIndices), 0u, 0u);
+		HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(GetLastError()), GetLastErrorAsString());
 	}
 	
 	void Renderer2D::DrawSprite(Components::Transform transform, Components::SpriteRenderer sprite)
@@ -190,7 +348,7 @@ namespace Helios {
 		
 		struct ConstantBuffer
 		{
-			DirectX::XMMATRIX transform;
+			Matrix4x4 transform;
 		};
 
 		auto euler = transform.rotation.euler();
@@ -198,30 +356,12 @@ namespace Helios {
 		const ConstantBuffer cb =
 		{
 			{
-				DirectX::XMMatrixTranspose(
-					//DirectX::XMMATRIX { Matrix4x4::Scale(transform.scale.x, transform.scale.y, transform.scale.z).matrix } *
-					(transform.typeSwitch ? (
-						DirectX::XMMATRIX { Matrix4x4::Rotation(transform.rotation).matrix }
-						) : (
-						DirectX::XMMatrixRotationQuaternion({
-							transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w
-						})
-					)) *
-
-
-					//(transform.typeSwitch ? (
-					//	DirectX::XMMATRIX { Matrix4x4::Rotation(transform.rotationVec).matrix }
-					//	//DirectX::XMMATRIX { Matrix4x4::Rotation(transform.rotationVec).matrix }
-					//	) : (
-					//	DirectX::XMMatrixRotationRollPitchYaw(
-					//		transform.rotationVec.x, transform.rotationVec.y, transform.rotationVec.z
-					//	)
-					//)) *
-
-					//DirectX::XMMatrixRotationRollPitchYaw(euler.x, euler.y, euler.z) *
-					DirectX::XMMATRIX { Matrix4x4::Translation(transform.position.x, transform.position.y, transform.position.z).matrix }
-					 *
+				Matrix4x4::Transpose(
+					Matrix4x4::Scale(transform.scale) *
+					Matrix4x4::Rotation(transform.rotation) *
+					Matrix4x4::Translation(transform.position) *
 					projectionMatrix
+					
 				)
 			}
 		};

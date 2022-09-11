@@ -31,6 +31,7 @@ namespace Helios {
 		static inline ImTextureID GetImGuiTexture();
 		static ImVec2 GetRenderTargetSize();
 		
+		static void DrawCube(Components::Transform transform, Components::SpriteRenderer sprite);
 		static void DrawSprite(Components::Transform transform, Components::SpriteRenderer sprite);
 		static void DrawTriangle(Vector2 position);
 		static void DrawPolygon(int sides);
