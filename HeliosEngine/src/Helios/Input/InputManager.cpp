@@ -3,7 +3,7 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
 #include "InputManager.h"
-#include "Helios/Translation/Vector2D.h"
+#include "Helios/Translation/Vector.h"
 #include "Helios/Core/Application.h"
 #include "pch.h"
 

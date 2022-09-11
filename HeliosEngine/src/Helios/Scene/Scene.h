@@ -6,6 +6,7 @@
 
 #include "pch.h"
 #include "Helios/Core/Base.h"
+#include "Components.h"
 
 namespace Helios {
 	class GameObject;
@@ -19,17 +20,23 @@ namespace Helios {
 		entt::registry m_components;
 		static entt::registry s_components;
 
-		Camera* currentCamera = NULL;
 		std::function<void(Scene&)> initCallback;
 
-		//LinkedList<std::shared_ptr<GameObject>> gameObjects;
+		entt::entity primaryCamera = entt::null;
 
 	public:
 
 		Scene();
 		~Scene();
 
-		void RenderScene();
+		inline Components::Camera& GetPrimaryCamera();
+		inline bool IsPrimaryCamera(entt::entity other) const { return other == primaryCamera; }
+		inline bool IsPrimaryCameraSet() const { return entt::null != primaryCamera; }
+		inline void SetPrimaryCamera(GameObject& obj);
+		inline void ResetPrimaryCamera();
+
+		void OnUpdateRuntime();
+		void OnUpdateEditor(Components::Transform cameraTransform, Components::Camera cameraPropeties);
 
 		void Init() { initCallback(*this); }
 

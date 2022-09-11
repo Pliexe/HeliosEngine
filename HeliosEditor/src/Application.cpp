@@ -26,11 +26,16 @@
 #include "HeliosEditor_Macros.h"
 #include <imgui_impl_win32.cpp>
 #include <imgui_impl_dx11.cpp>
+#include "Helios/Translation/Matrix.h"
+#include <sstream>
 
 static std::filesystem::path currentScene;
 StartupConfig startupConfig;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+static Helios::Components::Transform cameraTransform;
+static Helios::Components::Camera cameraPropeties;
 
 using namespace Helios;
 
@@ -241,6 +246,41 @@ namespace Helios {
 			}
 
 			io.FontDefault = io.Fonts->AddFontFromFileTTF("fonts/NotoSans/NotoSans-Regular.ttf", 17.0f);
+
+			auto add_col = [](ImVec4 col, float offset) {
+				return ImVec4 { col.x + offset, col.y + offset, col.z + offset, 1.0f };
+			};
+
+			auto& colors = ImGui::GetStyle().Colors;
+			colors[ImGuiCol_WindowBg] = ImVec4(0.25f, 0.25f, 0.27f, 1.0f);
+			
+			// Headers
+			colors[ImGuiCol_Header] = { 0.141f, 0.149f, 0.145f, 1.0f };
+			colors[ImGuiCol_HeaderHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
+			colors[ImGuiCol_HeaderActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+
+			// Buttons
+			colors[ImGuiCol_Button] = { 0.078f, 0.078f, 0.078f, 1.0f };
+			colors[ImGuiCol_ButtonHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
+			colors[ImGuiCol_ButtonActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+
+			// Frame BG
+			colors[ImGuiCol_FrameBg] = { 0.133f, 0.141f, 0.137f, 1.0f };
+			colors[ImGuiCol_FrameBgHovered] = add_col(colors[ImGuiCol_FrameBg], 0.1f);
+			colors[ImGuiCol_FrameBgActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+
+			// Tabs
+			colors[ImGuiCol_Tab] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+			colors[ImGuiCol_TabHovered] = ImVec4{ 0.38f, 0.3805f, 0.381f, 1.0f };
+			colors[ImGuiCol_TabActive] = ImVec4{ 0.28f, 0.2805f, 0.281f, 1.0f };
+			colors[ImGuiCol_TabUnfocused] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+			colors[ImGuiCol_TabUnfocusedActive] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+
+			// Title
+			colors[ImGuiCol_TitleBg] = { 0.105f, 0.105f, 0.109f, 1.0f };
+			colors[ImGuiCol_TitleBgActive] = { 0.212f, 0.208f, 0.220f, 1.0f };
+			colors[ImGuiCol_TitleBgCollapsed] = { 0.212f, 0.208f, 0.220f, 1.0f };
+			
 		}
 
 		// Inherited via Application
@@ -380,10 +420,11 @@ namespace Helios {
 			}
 			ImGui::End();
 
+
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
 			if (ImGui::Begin("Game"))
 			{
-				//if (graphics->pTextureView)
+				if (graphics->pTextureView)
 				{
 					ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 					auto currentViewportSize = Renderer2D::GetRenderTargetSize();
@@ -395,9 +436,76 @@ namespace Helios {
 					//ImGui::Image((void*)graphics->pTextureView, ImVec2(viewportSize));
 					ImGui::Image(Renderer2D::GetImGuiTexture(), ImVec2(viewportSize));
 				}
+
+				static bool notf = true;
+
+				if (!SceneManager::GetCurrentScene().lock()->IsPrimaryCameraSet()) {
+					if (notf) {
+						auto pos = ImGui::GetWindowPos();
+						auto size = ImGui::GetWindowSize();
+						ImGui::SetNextWindowFocus();
+						ImGui::SetNextWindowBgAlpha(1.0f);
+						ImGui::SetWindowFontScale(2);
+						ImGui::SetNextWindowPos(ImVec2(pos.x + (size.x / 2.0f) - 200.0f, pos.y + (size.y / 2.0f) - 100.0f));
+						ImGui::BeginChild("MissingCameraText", ImVec2(400, 200), true);
+						//ImGui::Button("Test");
+						//ImGui::SetCursorPos(ImVec2(0, 0));
+						ImGui::Text("No Camera Present for rendering!");
+						if (ImGui::Button("Close")) {
+							notf = false;
+						}
+						ImGui::EndChild();
+					}
+				}
+				else notf = true;
+
+				if (ImGui::IsWindowHovered())
+				{
+					static ImVec2 origin = ImGui::GetMousePos();
+
+					if(ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
+						ImVec2 current = ImGui::GetMousePos();
+
+						auto difference = Vector2(origin.x, origin.y) - Vector2(current.x, current.y);
+						auto normalizedCordinates = (Vector2(origin.x, origin.y) - Vector2(current.x, current.y)).normalize();
+
+						//cameraTransform.rotation += (Vector2(-origin.y, origin.x) - Vector2(-current.y, current.x)).normalize() * Time::deltaTime() * 100.0f;
+						
+						std::cout << "Diffrence: x: " << difference.x << ", y: " << difference.y << std::endl;
+						std::cout << "Normal: x: " << normalizedCordinates.x << ", y: " << normalizedCordinates.y << std::endl;
+
+
+
+						if(ImGui::IsKeyDown(ImGuiKey_W))
+							cameraTransform.position += Vector3::up() * Time::deltaTime() * 10.0f;
+
+						
+						//origin = ImGui::GetMousePos();
+						SetCursorPos(origin.x, origin.y);
+					}
+					else if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
+						ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+					}
+					else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+					{
+						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+						origin = ImGui::GetMousePos();
+						std::cout << "Start" << std::endl;
+					}
+				}
+
+				if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(ImGuiKey_R)) {
+					cameraTransform.position = Vector3::zero();
+					cameraTransform.rotation = Quanterion::zero();
+				}
+				
 			}
 			ImGui::End();
 			ImGui::PopStyleVar();
+
+
+			
+			
 
 			ProjectExplorerWindow(Project::GetAssetsPath());
 
@@ -415,9 +523,27 @@ namespace Helios {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			OnGUI();		
+			Vector3 rot;
 
+			rot.x = 0.9f;
+			rot.y = -1.0;
+			rot.z = -0.3f;
 
+			Quanterion q = Quanterion::EulerRads(rot);
+
+			std::stringstream str;
+
+			str << "Euler: " << "x: " << rot.x << ", y: " << rot.y << ", z: " << rot.z << std::endl << std::endl;
+
+			str << "Quanterion: " << "x: " << q.x << ", y: " << q.y << ", z: " << q.z << ", w: " << q.w << std::endl << std::endl;
+
+			Vector3 euler = q.euler();
+
+			str << "Converted Euler: " << "x: " << euler.x << ", y: " << euler.y << ", z: " << euler.z << std::endl << std::endl;
+
+			ShowMessage("Quanterion", str.str());
+
+			OnGUI();
 
 			ImGui::EndFrame();
 			ImGui::Render();
@@ -429,9 +555,12 @@ namespace Helios {
 			if (SceneManager::currentScene) {
 				//graphics->m_renderTarget2D->BeginDraw();
 
-				SceneManager::Render(*graphics);
+				//SceneManager::currentScene->OnUpdateRuntime();
+				SceneManager::currentScene->OnUpdateEditor(cameraTransform, cameraPropeties);
 
-				Render(*graphics);
+				//SceneManager::Render(*graphics);
+
+				//Render(*graphics);
 
 				//graphics->m_renderTarget2D->EndDraw();
 			}

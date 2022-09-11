@@ -1,6 +1,6 @@
 //#include "pch.h"
 
-#include <Helios/Translation//Vector2D.h>
+#include <Helios/Translation//Vector.h>
 #include <Helios/Resources/Brushes/SolidBrush.h>
 
 //using namespace HeliosEditor;
@@ -21,14 +21,14 @@
 //		brush->SetColor({ c[0], c[1], c[2], c[3] });
 //}
 //
-//void EditorGUI::DragVector2D(const char* label, Helios::Vector2D* vec)
+//void EditorGUI::DragVector2(const char* label, Helios::Vector2* vec)
 //{
 //	float c[2] = { vec->x(), vec->y() };
 //	if (ImGui::DragFloat2(label, c))
 //		*vec = { c[0], c[1] };
 //}
 //
-//void EditorGUI::DragVector2D(const char* label, Helios::Vector2D& vec)
+//void EditorGUI::DragVector2(const char* label, Helios::Vector2& vec)
 //{
 //	float c[2] = { vec.x(), vec.y() };
 //	if (ImGui::DragFloat2(label, c))

@@ -1,7 +1,7 @@
 #include "BitmapBrush.h"
 #include "Helios/Graphics/Graphics.h"
 #include "Helios/Resources/Bitmap.h"
-#include "Helios/Translation/Vector2D.h"
+#include "Helios/Translation/Vector.h"
 
 Helios::BitmapBrush::BitmapBrush(const wchar_t* path)
 {

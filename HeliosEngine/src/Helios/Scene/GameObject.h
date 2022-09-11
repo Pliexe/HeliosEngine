@@ -30,6 +30,7 @@ namespace Helios {
 		template <typename T>
 		bool HasComponent()
 		{
+			HL_CORE_ASSERT_WITH_MSG(m_entityHandle != entt::null, "entity handle is invalid!")
 			if (m_global) {
 				return Scene::s_components.any_of<T>(m_entityHandle);
 			}
@@ -65,8 +66,8 @@ namespace Helios {
 
 #pragma region GameObject Creation Helpers
 
-		static GameObject& CreateMainCamera(Vector2D position = Vector2D(0.0f, 0.0f));
-		static GameObject& CreateCamera(Vector2D position = Vector2D(0.0f, 0.0f));
+		static GameObject& CreateMainCamera(Vector2 position = Vector2(0.0f, 0.0f));
+		static GameObject& CreateCamera(Vector2 position = Vector2(0.0f, 0.0f));
 
 #pragma endregion
 

@@ -15,10 +15,24 @@ namespace Helios {
 			{
 				GameObject obj = GameObject(item);
 				GameObject::InstantiateObject(obj);
-				ImGui::Text(GameObject(item).GetName().c_str());
+				InspectorPanel::GetInstance() << (entt::entity)obj;
 			}
 			else
-				GameObject::InstantiateObject();
+				InspectorPanel::GetInstance() << (entt::entity)GameObject::InstantiateObject();
+		}
+
+		if (ImGui::MenuItem("Create PrimaryCamera")) {
+			GameObject::CreateMainCamera();
+		}
+
+		if (ImGui::MenuItem("Create Camera")) {
+			GameObject::CreateCamera();
+		}
+
+		if (ImGui::MenuItem("Create Object With Sprite")) {
+			auto obj = GameObject::InstantiateObject("Sprite");
+			obj.AddComponent<Components::SpriteRenderer>();
+			InspectorPanel::GetInstance() << (entt::entity)obj;
 		}
 		
 	}

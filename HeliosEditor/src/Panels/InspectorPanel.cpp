@@ -2,12 +2,12 @@
 
 #include <imgui.h>
 
-#include <Helios/GameObjects/Components/Camera.h>
 #include <Helios/Resources/Brushes/Brush.h>
 #include <Helios/Resources/Brushes/SolidBrush.h>
 #include <Helios/GameObjects/Components/RectangleComponent.h>
 #include <Helios/Scene/Components.h>
 
+#include "ImGuiCustomControls.h"
 
 namespace Helios {
 
@@ -20,7 +20,10 @@ namespace Helios {
 		{
 		case SelectedType::GameObject:
 		{
-			GameObject gm = std::any_cast<entt::entity>(handle);
+			entt::entity entity = std::any_cast<entt::entity>(handle);
+			if (entity == entt::null) return;
+			GameObject gm = entity;
+
 
 			/*ImGui::Checkbox("##active", &gm.active);
 			ImGui::SameLine();*/
@@ -37,25 +40,81 @@ namespace Helios {
 					gm.GetName() = name;
 			}
 
+			ImGui::Spacing();
+
 			if (gm.HasComponent<Components::Transform2D>())
 			{
 
 				if (ImGui::CollapsingHeader("Transform2D")) {
+					ImGui::Text("X:");
+					ImGui::SameLine();
 					Components::Transform2D& transform = gm.GetComponent<Components::Transform2D>();
 					float* vec2Pos = transform.position;
 					ImGui::DragFloat2("Position", vec2Pos);
 					transform.position = { vec2Pos[0], vec2Pos[1] };
 
+					ImGui::Text("Y:");
+					ImGui::SameLine();
 					float* vec2Size = transform.size;
 					ImGui::DragFloat2("Size", vec2Size);
 					transform.size = { vec2Size[0], vec2Size[1] };
 				}
 			}
 
+			if (gm.HasComponent<Components::Transform>())
+			{
+				if (ImGui::CollapsingHeader("Transform")) {
+					auto& transform = gm.GetComponent<Components::Transform>();
+
+					ImGui::EditVector3("Position", transform.position);
+					
+					ImGui::EditQuanterionEuler("Rotation Euler", transform.rotation);
+					ImGui::EditQuanterion("Rotation", transform.rotation, 0.01, -1.0f, 1.0f);
+
+					//ImGui::EditVector3("Rotation", transform.rotationVec);
+
+					ImGui::EditVector3("Scale", transform.scale);
+
+
+					ImGui::Checkbox("Switch implementation: ", &transform.typeSwitch);
+				}
+			}
+
 			if (gm.HasComponent<Components::Camera>())
 			{
 				if (ImGui::CollapsingHeader("Camera")) {
-					ImGui::ColorEdit4("Clear Color", gm.GetComponent<Components::Camera>().clear_color);
+					auto& cam = gm.GetComponent<Components::Camera>();
+					ImGui::ColorEdit4("Clear Color", cam.clear_color);
+
+					if (!SceneManager::GetCurrentScene().lock()->IsPrimaryCamera(gm) && ImGui::Button("Make Primary")) {
+						SceneManager::GetCurrentScene().lock()->SetPrimaryCamera(gm);
+					}
+
+					int selected = cam.ortographic;
+					static const char* items[] = { "Perspective", "Ortographic"  };
+					if (ImGui::Combo("Perspective: ", &selected, items, 2)) {
+						cam.ortographic = selected;
+					}
+					
+					if (cam.ortographic) {
+						ImGui::DragFloat("Size", &cam.size, 0.2f);
+					}
+					else {
+						ImGui::SliderFloat("Fov", &cam.fov, 1e-04f, 180.0f);
+					}
+
+					ImGui::Text("Clipping Planes: ");
+					ImGui::DragFloat("Near", &cam.near_z);
+					ImGui::DragFloat("Far", &cam.far_z);
+				}
+			}
+
+			if (gm.HasComponent<Components::SpriteRenderer>())
+			{
+				if (ImGui::CollapsingHeader("SpriteRenderer")) {
+					auto& sRenderer = gm.GetComponent<Components::SpriteRenderer>();
+
+					ImGui::ColorEdit4("Color", sRenderer.color);
 				}
 			}
 
@@ -73,9 +132,6 @@ namespace Helios {
 			ImGui::SetNextWindowSize(ImVec2(800.0f, 500.0f));
 				ImGui::OpenPopup("Add Component");
 			}
-
-			pos = ImGui::GetCursorPos();
-			ImGui::Text("Test");
 
 			pos.x += ImGui::GetWindowPos().x + (lastSize.x / 2) - 100.0f;
 			pos.y += ImGui::GetWindowPos().y;

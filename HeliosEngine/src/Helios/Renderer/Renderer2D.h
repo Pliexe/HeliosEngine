@@ -14,22 +14,25 @@ namespace Helios {
 		static Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> s_shaderResourceView;
 		static Microsoft::WRL::ComPtr<ID3D11Texture2D> s_renderTargetTexture;
 
+		static unsigned int width;
+		static unsigned int height;
+
 		static bool CreateRenderTarget(UINT width, UINT height);
 
 	public:
 		static bool Init();
 		static void Shutdown();
 
-		static void BeginScene(Components::Camera& cam);
+		static void BeginScene(Components::Transform& trans, Components::Camera& cam);
 		static void EndScene();
 
 		static void Resize(unsigned int width, unsigned int height);
 
 		static inline ImTextureID GetImGuiTexture();
 		static ImVec2 GetRenderTargetSize();
-
-
-		static void DrawTriangle(Vector2D position);
-		static void DrawHexagon(int sides);
+		
+		static void DrawSprite(Components::Transform transform, Components::SpriteRenderer sprite);
+		static void DrawTriangle(Vector2 position);
+		static void DrawPolygon(int sides);
 	};
 }

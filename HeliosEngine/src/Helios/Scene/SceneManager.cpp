@@ -4,7 +4,6 @@
  */
 #include "SceneManager.h"
 #include "Helios/Scene/GameObject.h"
-#include "Helios/GameObjects/Components/Camera.h"
 
 namespace Helios {
 	Ref<Scene> SceneManager::loadQueue;
@@ -26,7 +25,7 @@ namespace Helios {
 			}
 		}*/
 
-		if(currentScene) currentScene->RenderScene();
+		//if(currentScene) currentScene->RenderScene();
 	}
 
 	void SceneManager::Update()
@@ -74,7 +73,7 @@ namespace Helios {
 
 			currentScene->Init();
 
-			if (currentScene->currentCamera == NULL) GameObject::CreateMainCamera();
+			if (!currentScene->IsPrimaryCameraSet()) GameObject::CreateMainCamera();
 		}
 	}
 

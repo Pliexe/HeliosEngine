@@ -28,7 +28,7 @@ namespace Helios {
 
 		static inline const float getScale() { return scale; }
 
-		static inline Vector2D getSize() { return { width, height }; }
+		static inline Vector2 getSize() { return { width, height }; }
 
 		static inline const float getWidth() { return width; }
 		static inline const float getHeight() { return height; }

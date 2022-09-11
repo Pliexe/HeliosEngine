@@ -3,14 +3,32 @@
 #include "Helios/Graphics/Graphics.h"
 #include "Helios/Core/Asserts.h"
 #include <d3dcompiler.h>
+#include <DirectXMath.h>
 
 #include "Helios/Core/Time.h"
+
+#include "Helios/Resources/Shader.h"
+
+#include "Helios/Renderer/Buffer.h"
+
+#include "Helios/Translation/Matrix.h"
 
 namespace Helios {
 
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> Renderer2D::s_renderTarget;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Renderer2D::s_shaderResourceView;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> Renderer2D::s_renderTargetTexture;
+
+
+	unsigned int Renderer2D::width;
+	unsigned int Renderer2D::height;
+
+
+	Ref<VertexBuffer> spriteVertexBuffer;
+	Ref<IndexBuffer> spriteIndexBuffer;
+	Ref<Shader> spriteShader;
+
+	DirectX::XMMATRIX projectionMatrix;
 
 	bool Renderer2D::CreateRenderTarget(UINT width, UINT height)
 	{
@@ -20,6 +38,9 @@ namespace Helios {
 
 		ZeroMemory(&textureDesc, sizeof(textureDesc));
 
+		Renderer2D::width = width;
+		Renderer2D::height = height;
+		
 		textureDesc.Width = width;
 		textureDesc.Height = height;
 		textureDesc.MipLevels = 1;
@@ -63,6 +84,16 @@ namespace Helios {
 
 	bool Renderer2D::Init()
 	{
+		/*spriteShader = CreateRef<Shader>(Shader(std::string("Sprite"), {
+			{ "Position", Shader::DataType::Float2 },
+			{ "Color", Shader::DataType::Float4 }
+		}));*/
+
+		spriteShader = CreateRef<Shader>(Shader("Sprite", {
+			{ "Position", Shader::DataType::Float2 },
+			{ "Color", Shader::DataType::Float4 }
+		}));
+		
 		return CreateRenderTarget(300, 300);
 	}
 
@@ -72,10 +103,25 @@ namespace Helios {
 		s_renderTarget.Reset();
 		s_renderTargetTexture.Reset();
 	}
-	void Renderer2D::BeginScene(Components::Camera& cam)
+	void Renderer2D::BeginScene(Components::Transform& trans, Components::Camera& cam)
 	{
 		Graphics::instance->m_deviceContext->OMSetRenderTargets(1, s_renderTarget.GetAddressOf(), NULL);
 		Graphics::instance->m_deviceContext->ClearRenderTargetView(s_renderTarget.Get(), cam.clear_color);
+
+		/*DirectX::XMVECTOR
+		DirectX::XMFLOAT4(trans.rotation.x, trans.rotation.y, trans.rotation.z, trans.rotation.w)*/
+
+		auto eulerRotation = trans.rotation.euler();
+
+		projectionMatrix = (
+			DirectX::XMMatrixTranslation(trans.position.x, trans.position.z, trans.position.y) *
+			DirectX::XMMatrixRotationRollPitchYaw(eulerRotation.x * 3.14f / 180.0f, -eulerRotation.y * 3.14f / 180.0f, eulerRotation.z * 3.14f / 180.0f) *
+			(cam.ortographic ?
+				DirectX::XMMatrixOrthographicRH(cam.size, cam.size * ((float)Renderer2D::height / (float)Renderer2D::width), cam.near_z, cam.far_z)
+				:
+				DirectX::XMMatrixPerspectiveFovRH(cam.fov * 3.14f / 180.0f, ((float)Renderer2D::width / (float)Renderer2D::height), cam.near_z, cam.far_z)
+			) 
+		);
 	}
 	
 	void Renderer2D::EndScene()
@@ -87,6 +133,8 @@ namespace Helios {
 	{
 		// No need to Release render target since it's using ComPtr where refrencing it by & will automatically release it!
 		//Graphics::instance->m_pSwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+		Renderer2D::width = width;
+		Renderer2D::height = height;
 		Shutdown();
 		CreateRenderTarget(width, height);
 	}
@@ -102,8 +150,126 @@ namespace Helios {
 		s_renderTargetTexture->GetDesc(&desc);
 		return { (float)desc.Width, (float)desc.Height };
 	}
+	
+	void Renderer2D::DrawSprite(Components::Transform transform, Components::SpriteRenderer sprite)
+	{
+		
+		spriteShader->Bind();
 
-	void Renderer2D::DrawHexagon(int sides)
+		struct Vertex
+		{
+			float x;
+			float y;
+			float r;
+			float g;
+			float b;
+			float a;
+		};
+
+		// cube
+
+		const ImVec2 viewportSize = GetRenderTargetSize();
+
+		const Vertex vertices[] = {
+			{ -0.5f,  0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+			{  0.5f,  0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+			{  0.5f, -0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+			{ -0.5f, -0.5f, sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a }
+		};
+		const unsigned short indices[] = {
+			0, 2, 3,
+			0, 1, 2,
+		};
+
+		spriteVertexBuffer = VertexBuffer::Create(vertices, std::size(vertices));
+		spriteVertexBuffer->Bind();
+
+		auto spriteIndexBuffer = IndexBuffer::Create(indices, std::size(indices));
+		spriteIndexBuffer->Bind();
+
+		
+		struct ConstantBuffer
+		{
+			DirectX::XMMATRIX transform;
+		};
+
+		auto euler = transform.rotation.euler();
+
+		const ConstantBuffer cb =
+		{
+			{
+				DirectX::XMMatrixTranspose(
+					//DirectX::XMMATRIX { Matrix4x4::Scale(transform.scale.x, transform.scale.y, transform.scale.z).matrix } *
+					(transform.typeSwitch ? (
+						DirectX::XMMATRIX { Matrix4x4::Rotation(transform.rotation).matrix }
+						) : (
+						DirectX::XMMatrixRotationQuaternion({
+							transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w
+						})
+					)) *
+
+
+					//(transform.typeSwitch ? (
+					//	DirectX::XMMATRIX { Matrix4x4::Rotation(transform.rotationVec).matrix }
+					//	//DirectX::XMMATRIX { Matrix4x4::Rotation(transform.rotationVec).matrix }
+					//	) : (
+					//	DirectX::XMMatrixRotationRollPitchYaw(
+					//		transform.rotationVec.x, transform.rotationVec.y, transform.rotationVec.z
+					//	)
+					//)) *
+
+					//DirectX::XMMatrixRotationRollPitchYaw(euler.x, euler.y, euler.z) *
+					DirectX::XMMATRIX { Matrix4x4::Translation(transform.position.x, transform.position.y, transform.position.z).matrix }
+					 *
+					projectionMatrix
+				)
+			}
+		};
+
+		Microsoft::WRL::ComPtr<ID3D11Buffer> pConstantBuffer;
+		D3D11_BUFFER_DESC cbd;
+		cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		cbd.Usage = D3D11_USAGE_DYNAMIC;
+		cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		cbd.MiscFlags = 0u;
+		cbd.ByteWidth = sizeof(cb);
+		cbd.StructureByteStride = 0u;
+		D3D11_SUBRESOURCE_DATA csd = {};
+		csd.pSysMem = &cb;
+		//Graphics::instance->m_device->CreateBuffer(&cbd, &csd, &pConstantBuffer);
+		HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateBuffer(&cbd, &csd, &pConstantBuffer)), "Failed to create constant buffer!\n" + GetLastErrorAsString());
+	
+		// bind
+		Graphics::instance->m_deviceContext->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+
+		/*spriteShader.reset();
+		spriteShader = CreateRef<Shader>(Shader(std::string("Sprite"), {
+			{ "Position", Shader::DataType::Float2 },
+			{ "Color", Shader::DataType::Float4 }
+		}));
+
+		spriteShader->Bind();*/
+
+
+		Graphics::instance->m_deviceContext->OMSetRenderTargets(1u, s_renderTarget.GetAddressOf(), nullptr);
+
+
+		D3D11_VIEWPORT vp;
+		vp.Width = viewportSize.x;
+		vp.Height = viewportSize.y;
+		vp.MinDepth = 0;
+		vp.MaxDepth = 1;
+		vp.TopLeftX = 0;
+		vp.TopLeftY = 0;
+		Graphics::instance->m_deviceContext->RSSetViewports(1u, &vp);
+
+
+		Graphics::instance->m_deviceContext->DrawIndexed((UINT)std::size(indices), 0u, 0u);
+		HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(GetLastError()), GetLastErrorAsString());
+	}
+
+
+	void Renderer2D::DrawPolygon(int sides)
 	{
 		struct Vertex
 		{
@@ -203,7 +369,6 @@ namespace Helios {
 
 		Graphics::instance->m_deviceContext->IASetInputLayout(pInputLayout.Get());
 
-		Graphics::instance->m_deviceContext->OMSetRenderTargets(1u, s_renderTarget.GetAddressOf(), nullptr);
 
 		Graphics::instance->m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 		//Graphics::instance->m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -227,7 +392,7 @@ namespace Helios {
 		delete[] indecies;
 	}
 	
-	void Renderer2D::DrawTriangle(Vector2D position)
+	void Renderer2D::DrawTriangle(Vector2 position)
 	{
 		struct Vertex
 		{

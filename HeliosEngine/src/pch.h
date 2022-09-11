@@ -4,6 +4,10 @@
  */
 #pragma once
 
+#ifdef _DEBUG
+#define HL_DEBUG
+#endif
+
 // Standard Library
 
 #include <iostream>
@@ -36,7 +40,7 @@
 #include <wincodec.h>
 
 #include <wrl.h>
-
+#include <corecrt_math_defines.h>
 
 #ifdef HELIOS_EDITOR
 

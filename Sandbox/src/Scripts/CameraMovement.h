@@ -13,13 +13,13 @@ public:
 	void Update() override {
 		auto position = transform->getPosition();
 		if (InputManager::IsKeyPressedDown(WN_KEY_A))
-			position += (Vector2D::left() * speed * Time::deltaTime());
+			position += (Vector2::left() * speed * Time::deltaTime());
 		if (InputManager::IsKeyPressedDown(WN_KEY_D))
-			position += (Vector2D::right() * speed * Time::deltaTime());
+			position += (Vector2::right() * speed * Time::deltaTime());
 		if (InputManager::IsKeyPressedDown(WN_KEY_W))
-			position += (Vector2D::up() * speed * Time::deltaTime());
+			position += (Vector2::up() * speed * Time::deltaTime());
 		if (InputManager::IsKeyPressedDown(WN_KEY_S))
-			position += (Vector2D::down() * speed * Time::deltaTime());
+			position += (Vector2::down() * speed * Time::deltaTime());
 
 		transform->setPosition(position);
 	}

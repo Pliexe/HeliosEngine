@@ -11,6 +11,8 @@ extern Helios::Application* Helios::CreateApplication();
 extern int ValidateInit();
 #endif // HELIOS_EDITOR
 
+#include "Asserts.h"
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance /*hahaha 16bit windows legacy*/, PWSTR pCmdLine, int nCmdShow)
 {
 

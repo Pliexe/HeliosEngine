@@ -30,7 +30,7 @@ namespace Helios
 		HL_CORE_ASSERT_WITH_MSG(!currentScene.expired(), "Can't instantiate object without a scene being loaded!");
 		GameObject obj = currentScene.lock()->m_components.create();
 		obj.AddComponent<Components::InfoComponent>(name);
-		obj.AddComponent<Components::Transform2D>();
+		obj.AddComponent<Components::Transform>();
 		obj.AddComponent<Components::Relationship>();
 		return obj;
 	}
@@ -41,6 +41,7 @@ namespace Helios
 		HL_CORE_ASSERT_WITH_MSG(!currentScene.expired(), "Can't instantiate object without a scene being loaded!");
 		GameObject obj = currentScene.lock()->m_components.create();
 		obj.AddComponent<Components::InfoComponent>(name);
+		obj.AddComponent<Components::Transform>();
 		obj.AddComponent<Components::Relationship>(currentScene.lock()->m_components, obj, parent);
 		return obj;
 	}
@@ -69,15 +70,16 @@ namespace Helios
 
 	//Transform2D GameObject::relationship = Transform2D();
 
-	GameObject& GameObject::CreateMainCamera(Vector2D position) {
+	GameObject& GameObject::CreateMainCamera(Vector2 position) {
 		GameObject gameObject = InstantiateObject("MainCamera");
 		gameObject.AddComponent<Components::Camera>();
+		SceneManager::currentScene->SetPrimaryCamera(gameObject);
 		// TODO
 		// SET MAIN CAMERA 
 		return gameObject;
 	}
 
-	GameObject& GameObject::CreateCamera(Vector2D position)
+	GameObject& GameObject::CreateCamera(Vector2 position)
 	{
 		GameObject gameObject = InstantiateObject("MainCamera");
 		gameObject.AddComponent<Components::Camera>();
@@ -99,6 +101,8 @@ namespace Helios
 			if (gameObject.HasComponent<Components::Relationship>())
 				gameObject.GetComponent<Components::Relationship>().Reset(scene.lock()->m_components);
 
+			if(scene.lock()->IsPrimaryCamera(gameObject))
+				scene.lock()->ResetPrimaryCamera();
 			scene.lock()->m_components.destroy(gameObject);
 		}
 	}

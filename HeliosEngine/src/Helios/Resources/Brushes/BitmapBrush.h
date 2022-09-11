@@ -2,7 +2,7 @@
 
 #include "Brush.h"
 #include "Helios/Core/Base.h"
-#include "Helios/Translation/Vector2D.h"
+#include "Helios/Translation/Vector.h"
  
 namespace Helios {
 	//class Size2D;

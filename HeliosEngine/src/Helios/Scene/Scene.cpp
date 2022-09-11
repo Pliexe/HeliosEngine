@@ -2,9 +2,10 @@
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
-#include "Helios/Translation/Transform.h"
-#include "Helios/Translation/Vector2D.h"
+#include "Helios/Translation/Vector.h"
+#include "Helios/Core/Application.h"
 #include "Helios/Scene/GameObject.h"
+#include "Helios/Core/Asserts.h"
 #include "Helios/Renderer/Renderer2D.h"
 #include "Scene.h"
 #include "Helios/Core/Time.h"
@@ -19,46 +20,119 @@ namespace Helios {
 	}
 	
 	entt::registry Scene::s_components;
-
-	void Scene::RenderScene()
+	
+	inline Helios::Components::Camera& Scene::GetPrimaryCamera()
 	{
-		Components::Camera camera;
-		Components::Transform2D transform;
-
-		
-		auto view = m_components.view<Components::Transform2D, Components::Camera>();
-		for (auto entity : view)
-		{
-			auto [t_transform, t_camera] = view.get<Components::Transform2D, Components::Camera>(entity);
-
-			camera = t_camera;
-			transform = t_transform;
-		}
-
-		Renderer2D::BeginScene(camera);
-
-		{
-
-			auto view = m_components.view<Components::Transform2D, Components::Relationship, Components::SpriteRenderer>();
-			for (auto entity : view)
-			{
-				auto [trans, relt, spriteRenderer] = view.get<Components::Transform2D, Components::Relationship, Components::SpriteRenderer>(entity);
-				
-				//Renderer2D::DrawTriangle(trans.position);
-			}
-
-			//Renderer2D::DrawTriangle(Vector2D());
-			Renderer2D::DrawHexagon((sin(Time::passedTime()) + 1) * 50);
-
-			//Graphics::instance->m_renderTarget2D->Clear(camera.clear_color);
-
-			//auto group = m_components.group <Components::Transform, Components::
-		}
-
-		Renderer2D::EndScene();
+		HL_CORE_ASSERT_WITH_MSG(primaryCamera != entt::null, "Primary Camera is entt::null while trying to get it!!!");
+		return m_components.get<Components::Camera>(primaryCamera);
 	}
 
-	Vector2D DeserializeVector(std::string prefixX, std::string prefixY, YAML::Node in);
+	inline  void Scene::SetPrimaryCamera(GameObject& obj)
+	{
+		HL_CORE_ASSERT_WITH_MSG(obj.HasComponent<Components::Camera>(), "The Object has no Camera component!");
+		primaryCamera = obj;
+	}
+
+	inline void Scene::ResetPrimaryCamera() { primaryCamera = entt::null; }
+
+	void Scene::OnUpdateRuntime()
+	{
+		if (primaryCamera != entt::null) {
+			auto& camera = GameObject(primaryCamera).GetComponent<Components::Camera>();
+			auto& transform = GameObject(primaryCamera).GetComponent<Components::Transform>();
+			auto& relationship = GameObject(primaryCamera).GetComponent<Components::Relationship>();
+
+			Renderer2D::BeginScene(transform, camera);
+
+			{
+				//Renderer2D::DrawPolygon((sin(Time::passedTime()) + 1) * 50);
+
+				auto view = m_components.view<Components::Transform, Components::Relationship, Components::SpriteRenderer>();
+				for (auto entity : view)
+				{
+					auto [trans, relt, spriteRenderer] = view.get<Components::Transform, Components::Relationship, Components::SpriteRenderer>(entity);
+
+				retry:
+					try {
+						if (relt.parent_handle != entt::null)
+						{
+							Components::Transform tmp = trans;
+							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
+							Renderer2D::DrawSprite(tmp, spriteRenderer);
+						}
+						else
+							Renderer2D::DrawSprite(trans, spriteRenderer);
+					}
+					catch (HeliosExceptin ex) {
+						switch (ex.what())
+						{
+						case IDRETRY: goto retry;
+						case IDABORT: Application::Quit(); break;
+						}
+					}
+
+					//Renderer2D::DrawTriangle(trans.position);
+				}
+
+				//Renderer2D::DrawTriangle(Vector2());
+
+				//Graphics::instance->m_renderTarget2D->Clear(camera.clear_color);
+
+				//auto group = m_components.group <Components::Transform, Components::
+			}
+
+			Renderer2D::EndScene();
+		}
+	}
+
+	void Scene::OnUpdateEditor(Components::Transform cameraTransform, Components::Camera cameraPropeties)
+	{
+		if (primaryCamera != entt::null) {
+
+			Renderer2D::BeginScene(cameraTransform, cameraPropeties);
+
+			{
+				//Renderer2D::DrawPolygon((sin(Time::passedTime()) + 1) * 50);
+
+				auto view = m_components.view<Components::Transform, Components::Relationship, Components::SpriteRenderer>();
+				for (auto entity : view)
+				{
+					auto [trans, relt, spriteRenderer] = view.get<Components::Transform, Components::Relationship, Components::SpriteRenderer>(entity);
+
+				retry:
+					try {
+						if (relt.parent_handle != entt::null)
+						{
+							Components::Transform tmp = trans;
+							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
+							Renderer2D::DrawSprite(tmp, spriteRenderer);
+						}
+						else
+							Renderer2D::DrawSprite(trans, spriteRenderer);
+					}
+					catch (HeliosExceptin ex) {
+						switch (ex.what())
+						{
+						case IDRETRY: goto retry;
+						case IDABORT: Application::Quit(); break;
+						}
+					}
+
+					//Renderer2D::DrawTriangle(trans.position);
+				}
+
+				//Renderer2D::DrawTriangle(Vector2());
+
+				//Graphics::instance->m_renderTarget2D->Clear(camera.clear_color);
+
+				//auto group = m_components.group <Components::Transform, Components::
+			}
+
+			Renderer2D::EndScene();
+		}
+	}
+
+	Vector2 DeserializeVector(std::string prefixX, std::string prefixY, YAML::Node in);
 	void SerializeTransform(YAML::Emitter& out, Components::Transform2D& transform);
 
 	void SerializeObject(YAML::Emitter& out, GameObject& o)
@@ -97,16 +171,16 @@ namespace Helios {
 	{
 		out << YAML::Key << "Transform" << YAML::BeginMap;
 
-		out << YAML::Key << "Position_X" << YAML::Value << transform.position.getX();
-		out << YAML::Key << "Position_Y" << YAML::Value << transform.position.getY();
+		out << YAML::Key << "Position_X" << YAML::Value << transform.position.x;
+		out << YAML::Key << "Position_Y" << YAML::Value << transform.position.y;
 
-		out << YAML::Key << "Size_Width" << YAML::Value << transform.size.getX();
-		out << YAML::Key << "Size_Height" << YAML::Value << transform.size.getY();
+		out << YAML::Key << "Size_Width" << YAML::Value << transform.size.x;
+		out << YAML::Key << "Size_Height" << YAML::Value << transform.size.y;
 
 		out << YAML::EndMap;
 	}
 
-	Vector2D DeserializeVector(std::string prefixX, std::string prefixY, YAML::Node in)
+	Vector2 DeserializeVector(std::string prefixX, std::string prefixY, YAML::Node in)
 	{
 		try {
 			return { in[prefixX].as<float>(), in[prefixY].as<float>() };

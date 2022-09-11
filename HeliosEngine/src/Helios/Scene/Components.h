@@ -2,7 +2,8 @@
 
 #include "Helios/Core/Base.h"
 
-#include "Helios/Translation/Vector2D.h"
+#include "Helios/Translation/Vector.h"
+#include "Helios/Translation/Quanterion.h"
 #include "Helios/Resources/Color.h"
 
 namespace Helios::Components {
@@ -75,14 +76,32 @@ namespace Helios::Components {
 		InfoComponent(const std::string& name) : name(name) { }
 	};
 
+	struct HELIOS_API Transform
+	{
+		Vector3		position = { 0.0f, 0.0f, 0.0f };
+		Quanterion	rotation = { 0.0f, 0.0f, 0.0f, 0.0f };
+		Vector3	 rotationVec = { 0.0f, 0.0f, 0.0f };
+		Vector3		scale	 = { 1.0f, 1.0f, 1.0f };
+		bool typeSwitch = false;
+
+		Transform() = default;
+		Transform(const Transform&) = default;
+		Transform(const Vector3& position) : position(position) { }
+		Transform(const Vector3& position, const Vector3& rotation) : position(position), rotation(rotation) { }
+		Transform(const Vector3& position, const Vector3& rotation, const Vector3& scale) : position(position), rotation(rotation), scale(scale) { }
+
+		Vector3 forward() { return rotation * Vector3::forward(); }
+	};
+
 	struct HELIOS_API Transform2D
 	{
-		Vector2D	position = { 0.0f,	0.0f };
-		Size2D		size	 = { 50.0f, 50.0f };
+		Vector2	position	= { 0.0f, 0.0f };
+		Vector2 rotation	= { 0.0f, 0.0f };
+		Size2D		size	= { 50.0f, 50.0f };
 		
 		Transform2D() = default;
 		Transform2D(const Transform2D&) = default;
-		Transform2D(const Vector2D& position, const Size2D& size = { 50.0f, 50.0f }) : position(position), size(size) { }
+		Transform2D(const Vector2& position, const Size2D& size = { 50.0f, 50.0f }) : position(position), size(size) { }
 	};
 
 	struct HELIOS_API SpriteRenderer
@@ -96,7 +115,12 @@ namespace Helios::Components {
 
 	struct HELIOS_API Camera
 	{
-		Color clear_color = { 255, 255, 255, 1.0f };
+		float near_z = 0.5f;
+		float far_z = 1000.0f;
+		float size = 1.0f;
+		float fov = 60.0f;
+		Color clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		bool ortographic = false;
 
 		Camera() = default;
 		Camera(const Camera&) = default;

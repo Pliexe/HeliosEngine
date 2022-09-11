@@ -4,13 +4,22 @@
 #include "Helios/Core/Base.h"
 
 namespace Helios {
-    class HELIOS_API Color {
-    private:
-        
-        float m_color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    public:
+    static const UINT32 sc_redShift = 16;
+    static const UINT32 sc_greenShift = 8;
+    static const UINT32 sc_blueShift = 0;
+
+    static const UINT32 sc_redMask = 0xff << sc_redShift;
+    static const UINT32 sc_greenMask = 0xff << sc_greenShift;
+    static const UINT32 sc_blueMask = 0xff << sc_blueShift;
+
+    struct HELIOS_API Color {
         
+        float r = 1.0f;
+        float g = 1.0f;
+        float b = 1.0f;
+        float a = 1.0f;
+		
 #pragma region Static Colors
         const static Color AliceBlue;
         const static Color AntiqueWhite;
@@ -154,28 +163,23 @@ namespace Helios {
         const static Color YellowGreen;
 #pragma endregion
 
-        static const UINT32 sc_redShift = 16;
-        static const UINT32 sc_greenShift = 8;
-        static const UINT32 sc_blueShift = 0;
-
-        static const UINT32 sc_redMask = 0xff << sc_redShift;
-        static const UINT32 sc_greenMask = 0xff << sc_greenShift;
-        static const UINT32 sc_blueMask = 0xff << sc_blueShift;
+        
 
         Color() = default;
+        Color(const Color&) = default;
         Color(UINT32 rgb, float alpha = 1.0f) {
-            m_color[0] = static_cast<FLOAT>((rgb & sc_redMask) >> sc_redShift) / 255.f;
-            m_color[1] = static_cast<FLOAT>((rgb & sc_greenMask) >> sc_greenShift) / 255.f;
-            m_color[2] = static_cast<FLOAT>((rgb & sc_blueMask) >> sc_blueShift) / 255.f;
-            m_color[3] = alpha;
+            r = static_cast<FLOAT>((rgb & sc_redMask) >> sc_redShift) / 255.f;
+            g = static_cast<FLOAT>((rgb & sc_greenMask) >> sc_greenShift) / 255.f;
+            b = static_cast<FLOAT>((rgb & sc_blueMask) >> sc_blueShift) / 255.f;
+            a = alpha;
         }
-        Color(float r, float g, float b, float alpha = 1.0f) { m_color[0] = r; m_color[1] = g; m_color[2] = b; m_color[3] = alpha; }
-        Color(int r, int g, int b, float alpha = 1.0f) { m_color[0] = r / 255.0f; m_color[1] = g / 255.0f; m_color[2] = b / 255.0f; m_color[3] = alpha; }
+        Color(float r, float g, float b, float alpha = 1.0f) { this->r = r; this->g = g; this->b = b; a = alpha; }
+        Color(int r, int g, int b, float alpha = 1.0f) { this->r = r / 255.0f; this->g = g / 255.0f; this->b = b / 255.0f; a = alpha; }
 
         operator D2D1_COLOR_F () {
-            return D2D1::ColorF(m_color[0], m_color[1], m_color[2], m_color[3]);
+            return D2D1::ColorF(r, g, b, a);
         }
 
-        operator float* () { return m_color; }
+        operator float* () { return &r; }
     };
 }

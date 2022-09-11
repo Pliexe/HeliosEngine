@@ -18,7 +18,7 @@ public:
 
 		time += Time::deltaTime() * speed;
 
-		auto vec = (Vector2D(sin(time), cos(time)) * radius);
+		auto vec = (Vector2(sin(time), cos(time)) * radius);
 
 		transform->setPosition(vec);
 	}

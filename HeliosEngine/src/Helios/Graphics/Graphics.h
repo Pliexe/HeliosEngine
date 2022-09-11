@@ -76,6 +76,11 @@ namespace Helios {
 		friend class RadialGradientBrush;
 		friend class BitmapBrush;
 
+		friend class Shader;
+		friend class VertexBuffer;
+		friend class IndexBuffer;
+		friend class ConstantBuffer;
+		
 #pragma endregion
 
 

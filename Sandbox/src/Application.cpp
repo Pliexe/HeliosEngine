@@ -31,11 +31,11 @@ public:
 			obj.AddComponent(new CubeCircle());
 
 			GameObject& obj2 = Helios::GameObject::InstantiateObject();
-			obj2.getTransform().setPosition(Vector2D(505, 550));
+			obj2.getTransform().setPosition(Vector2(505, 550));
 			obj2.AddComponent(*(new RectangleComponent(SolidBrush(255, 255, 255))));
 			obj2.getTransform().setSize(54, 100);
 
-			auto& camObj = GameObject::CreateMainCamera(Vector2D(25.0f, 25.0f));
+			auto& camObj = GameObject::CreateMainCamera(Vector2(25.0f, 25.0f));
 			auto cs = new CameraMovement();
 
 			obj.AddComponent(*(new RectangleComponent(SolidBrush(255, 255, 255))));
