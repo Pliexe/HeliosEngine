@@ -6,7 +6,8 @@
 #include "Helios/Core/Application.h"
 #include "Helios/Scene/GameObject.h"
 #include "Helios/Core/Asserts.h"
-#include "Helios/Renderer/Renderer2D.h"
+#include "Helios/Graphics/Renderer.h"
+#include "Helios/Graphics/Renderer2D.h"
 #include "Scene.h"
 #include "Helios/Core/Time.h"
 
@@ -59,10 +60,10 @@ namespace Helios {
 							Components::Transform tmp = trans;
 							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
 							// Renderer2D::DrawSprite(tmp, spriteRenderer);
-							Renderer2D::DrawCube(trans, spriteRenderer);
+							Renderer2D::DrawSprite(trans, spriteRenderer);
 						}
 						else
-							Renderer2D::DrawCube(trans, spriteRenderer);
+							Renderer2D::DrawSprite(trans, spriteRenderer);
 							// Renderer2D::DrawSprite(trans, spriteRenderer);
 					}
 					catch (HeliosExceptin ex) {
@@ -84,6 +85,35 @@ namespace Helios {
 			}
 
 			Renderer2D::EndScene();
+
+			Renderer::BeginScene(transform, camera);
+
+			{
+				auto view = m_components.view<Components::Transform, Components::Relationship, Components::MeshRenderer>();
+				for (auto entity : view)
+				{
+					auto [trans, relt, meshRenderer] = view.get<Components::Transform, Components::Relationship, Components::MeshRenderer>(entity);
+
+				retry4:
+					try {
+						if (relt.parent_handle != entt::null)
+						{
+							Components::Transform tmp = trans;
+							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
+							Renderer::DrawMesh(tmp, meshRenderer);
+						}
+						else
+							Renderer::DrawMesh(trans, meshRenderer);
+					}
+					catch (HeliosExceptin ex) {
+						switch (ex.what())
+						{
+						case IDRETRY: goto retry4;
+						case IDABORT: Application::Quit(); break;
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -101,7 +131,7 @@ namespace Helios {
 				{
 					auto [trans, relt, spriteRenderer] = view.get<Components::Transform, Components::Relationship, Components::SpriteRenderer>(entity);
 
-				retry:
+				retry2d:
 					try {
 						if (relt.parent_handle != entt::null)
 						{
@@ -115,7 +145,7 @@ namespace Helios {
 					catch (HeliosExceptin ex) {
 						switch (ex.what())
 						{
-						case IDRETRY: goto retry;
+						case IDRETRY: goto retry2d;
 						case IDABORT: Application::Quit(); break;
 						}
 					}
@@ -131,6 +161,36 @@ namespace Helios {
 			}
 
 			Renderer2D::EndScene();
+
+
+			Renderer::BeginScene(cameraTransform, cameraPropeties);
+
+			{
+				auto view = m_components.view<Components::Transform, Components::Relationship, Components::MeshRenderer>();
+				for (auto entity : view)
+				{
+					auto [trans, relt, meshRenderer] = view.get<Components::Transform, Components::Relationship, Components::MeshRenderer>(entity);
+
+					retry:
+					try {
+						if (relt.parent_handle != entt::null)
+						{
+							Components::Transform tmp = trans;
+							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
+							Renderer::DrawMesh(tmp, meshRenderer);
+						}
+						else
+							Renderer::DrawMesh(trans, meshRenderer);
+					}
+					catch (HeliosExceptin ex) {
+						switch (ex.what())
+						{
+						case IDRETRY: goto retry;
+						case IDABORT: Application::Quit(); break;
+						}
+					}
+				}
+			}
 		}
 	}
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
@@ -204,7 +204,7 @@ namespace Helios {
 	Vector4 Vector4::normalize()
 	{
 		float length = this->length();
-		if (length == 0.0f) return Vector4::zero();
+		if (length == 0.0f) return Vector4::Zero();
 		else return { x / length, y / length, z / length, w / length };
 	}
 
@@ -287,16 +287,16 @@ namespace Helios {
 #pragma endregion
 
 
-#pragma region Size2D
+#pragma region Size
 	
-	float Size2D::width()	const { return x; }
-	float Size2D::height()	const { return y; }
+	float Size::width()	const { return x; }
+	float Size::height()	const { return y; }
 
-	void Size2D::setWidth(float width) { x = width; }
-	void Size2D::setHeight(float height) { y = height; }
-	void Size2D::setSize(float width, float height) { x = width; y = height; }
+	void Size::setWidth(float width) { x = width; }
+	void Size::setHeight(float height) { y = height; }
+	void Size::setSize(float width, float height) { x = width; y = height; }
 
-	void Size2D::setSize(const Size2D size)
+	void Size::setSize(const Size size)
 	{
 		x = size.x;
 		y = size.y;

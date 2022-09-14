@@ -5,7 +5,7 @@
 #include "Helios/Translation/Vector.h"
  
 namespace Helios {
-	//class Size2D;
+	//class Size;
 	class Bitmap;
 	class Transform2D;
 	class HELIOS_API BitmapBrush : public Brush {
@@ -19,7 +19,7 @@ namespace Helios {
 		BitmapBrush(Bitmap& image);
 		BitmapBrush(const wchar_t* path);
 
-		inline Size2D getSize() const;
+		inline Size getSize() const;
 
 
 

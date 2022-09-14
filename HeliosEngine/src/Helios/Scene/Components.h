@@ -5,6 +5,7 @@
 #include "Helios/Translation/Vector.h"
 #include "Helios/Translation/Quanterion.h"
 #include "Helios/Resources/Color.h"
+#include "Helios/Resources/Mesh.h"
 
 namespace Helios::Components {
 
@@ -78,9 +79,9 @@ namespace Helios::Components {
 
 	struct HELIOS_API Transform
 	{
-		Vector3		position = { 0.0f, 0.0f, 0.0f };
-		Quanterion	rotation = { 0.0f, 0.0f, 0.0f, 0.0f };
-		Vector3	 rotationVec = { 0.0f, 0.0f, 0.0f };
+		Vector3		position = Vector3::Zero();
+		Quanterion	rotation = Quanterion::Identity();
+		// Vector3	 rotationVec = { 0.0f, 0.0f, 0.0f };
 		Vector3		scale	 = { 1.0f, 1.0f, 1.0f };
 		bool typeSwitch = false;
 
@@ -90,18 +91,25 @@ namespace Helios::Components {
 		Transform(const Vector3& position, const Vector3& rotation) : position(position), rotation(rotation) { }
 		Transform(const Vector3& position, const Vector3& rotation, const Vector3& scale) : position(position), rotation(rotation), scale(scale) { }
 
-		Vector3 forward() { return rotation * Vector3::forward(); }
+		void Rotate(const Vector3& euler) {
+			rotation = rotation * Quanterion::Euler(euler);
+		}
+		void RotateRads(const Vector3& euler) { this->rotation = this->rotation * Quanterion::EulerRads(euler); }
+		
+		Vector3 forward() { return rotation.forward(); }
+		//Vector3 forward() { return rotation * Vector3::Forward(); }
+		Vector3 right() { return rotation * Vector3::Right(); }
 	};
 
 	struct HELIOS_API Transform2D
 	{
 		Vector2	position	= { 0.0f, 0.0f };
 		Vector2 rotation	= { 0.0f, 0.0f };
-		Size2D		size	= { 50.0f, 50.0f };
+		Size		size	= { 50.0f, 50.0f };
 		
 		Transform2D() = default;
 		Transform2D(const Transform2D&) = default;
-		Transform2D(const Vector2& position, const Size2D& size = { 50.0f, 50.0f }) : position(position), size(size) { }
+		Transform2D(const Vector2& position, const Size& size = { 50.0f, 50.0f }) : position(position), size(size) { }
 	};
 
 	struct HELIOS_API SpriteRenderer
@@ -111,6 +119,15 @@ namespace Helios::Components {
 		SpriteRenderer() = default;
 		SpriteRenderer(const SpriteRenderer&) = default;
 		SpriteRenderer(const Color& color) : color(color) { };
+	};
+
+	struct HELIOS_API MeshRenderer
+	{
+		Ref<Mesh> mesh;
+	
+		MeshRenderer() = default;
+		MeshRenderer(const MeshRenderer&) = default;
+		MeshRenderer(const Ref<Mesh>& mesh) : mesh(mesh) { }
 	};
 
 	struct HELIOS_API Camera

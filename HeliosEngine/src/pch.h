@@ -33,8 +33,6 @@
 #define D3D_DEBUG_INFO
 #include <windowsx.h>
 #include <d2d1.h>
-#include <d3d10_1.h>
-#include <d3d10.h>
 #include <d3d11.h>
 #include <dwrite.h>
 #include <wincodec.h>

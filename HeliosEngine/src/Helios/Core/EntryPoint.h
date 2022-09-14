@@ -13,6 +13,9 @@ extern int ValidateInit();
 
 #include "Asserts.h"
 
+#include "Helios/Translation/Matrix.h"
+#include "Helios/Translation/Vector.h"
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance /*hahaha 16bit windows legacy*/, PWSTR pCmdLine, int nCmdShow)
 {
 

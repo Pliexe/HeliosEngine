@@ -16,7 +16,7 @@ namespace Helios {
             };
         };
 
-		Quanterion() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) { };
+		Quanterion() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) { };
 		Quanterion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) { };
 		Quanterion(const Vector4& other) : x(other.x), y(other.y), z(other.z), w(other.w) { };
         Quanterion(const Quanterion& other) : x(other.x), y(other.y), z(other.z), w(other.w) { };
@@ -29,13 +29,13 @@ namespace Helios {
         // Operator check if Quanterion is equal using Dot product
 
 
-        static const Quanterion zero() { return { 0.0f, 0.0f, 0.0f, 0.0f }; }
+        static const Quanterion Identity() { return { 0.0f, 0.0f, 0.0f, 1.0f }; }
 
         static Quanterion Euler(Vector3 vec) { return EulerRads(vec * ((float)M_PI / 180.0f)); }
         static Quanterion Euler(float x, float y, float z) { return EulerRads(x * ((float)M_PI / 180.0f), y * ((float)M_PI / 180.0f), z * ((float)M_PI / 180.0f)); }
         static Quanterion EulerRads(Vector3 vec) { return EulerRads(vec.x, vec.y, vec.z); }
         // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-        static Quanterion EulerRads(float x, float y, float z)
+        static Quanterion EulerRads(float x, float y, float z) // YXZ
         {
             // Convert Euler Rotation (radians) to Quanterion Rotation and return it
 
@@ -50,37 +50,60 @@ namespace Helios {
             return {
                 s1 * c2 * c3 + c1 * s2 * s3,
                 c1 * s2 * c3 - s1 * c2 * s3,
-                c1 * c2 * s3 + s1 * s2 * c3,
-                c1 * c2 * c3 - s1 * s2 * s3,
+                c1 * c2 * s3 - s1 * s2 * c3,
+                c1 * c2 * c3 + s1 * s2 * s3,
+            };
+        }
+        
+        static Quanterion Conjugate(const Quanterion& quat)
+        {
+            return { -quat.x, -quat.y, -quat.z, quat.w };
+        }
+
+        Vector3 eulerRads();
+        Vector3 euler() { return eulerRads() * (180.0f / (float)M_PI); }
+
+        Quanterion operator/(float other) const
+        {
+            return { x / other, y / other, z / other, w / other };
+        }
+
+        Quanterion operator*(const Quanterion& rhs)
+        {
+            return {
+                this->w * rhs.x + this->x * rhs.w + this->y * rhs.z - this->z * rhs.y,
+                this->w * rhs.y + this->y * rhs.w + this->z * rhs.x - this->x * rhs.z,
+                this->w * rhs.z + this->z * rhs.w + this->x * rhs.y - this->y * rhs.x,
+                this->w * rhs.w - this->x * rhs.x - this->y * rhs.y - this->z * rhs.z
             };
         }
 
-        Vector3 euler();
-        
-        // Multiply by vector
-
-        Vector3 operator*(const Vector3& rhs) const
+        Quanterion operator*= (const Quanterion& rhs)
         {
-            // https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
-            // https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/transforms/index.htm
-
-            // Vector3 qvec = { x, y, z };
-            // Vector3 uv = Vector3::Cross(qvec, rhs);
-            // Vector3 uuv = Vector3::Cross(qvec, uv);
-            // uv *= (2.0f * w);
-            // uuv *= 2.0f;
-
-            // return rhs + uv + uuv;
-
-            // https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/transforms/index.htm
-
-            Vector3 qvec = { x, y, z };
-            Vector3 uv = Vector3::Cross(qvec, rhs);
-            Vector3 uuv = Vector3::Cross(qvec, uv);
-            uv *= (2.0f * w);
-            uuv *= 2.0f;
-
-            return rhs + uv + uuv;
+            *this = *this * rhs;
+            return *this;
         }
+
+        Vector3 operator*(Vector3 point)
+        {
+            // Multiply by XYZ direction
+
+            Quanterion q = *this * Quanterion(point.x, point.y, point.z, 0.0f) * Quanterion::Conjugate(*this);
+            return { q.x, q.y, q.z };
+        }
+
+        Vector3 forward()
+        {
+            return {
+                2 * (x * z + w * y),
+                2 * (y * z - w * x),
+                1 - 2 * (x * x + y * y)
+            };
+        }
+
+        // void Rotate(const Vector3& vec)
+        // {
+        //     *this = Euler(vec) * *this;
+        // }
 	};
 }

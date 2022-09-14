@@ -1,16 +1,24 @@
-;/* Copyright (c) 2022 Szabadi László Zsolt
+;/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
 #include "Graphics.h"
 #include "Helios/Core/Application.h"
 #include "Helios/Utils/ErrorHandling.h"
-#include "Helios/Renderer/Renderer2D.h"
+
+#include "Renderer2D.h"
+#include "Renderer.h"
 
 using namespace Helios;
 
+Graphics::API Graphics::s_API = API::None;
+
+Size Graphics::s_currentSize;
+
 bool Helios::Graphics::Init()
 {
+    
+
     //if (!CreateD3DDevice()) return false;
     IDXGIAdapter* pAdapter10 = NULL;
     IDXGIDevice1* pDXGIDevice10 = NULL;
@@ -56,6 +64,7 @@ bool Helios::Graphics::Init()
     }
 
     if (!Renderer2D::Init()) return false;
+    if (!Renderer::Init()) return false;
 
     if (FAILED(hr = D2D1CreateFactory(D2D1_FACTORY_TYPE::D2D1_FACTORY_TYPE_MULTI_THREADED, &factory))) {
         MessageBox(m_hWnd, (std::wstring(L"Failed to create D2D1 Factory! Reason: ") + GetLastMessageAsReadable()).c_str(), L"Graphics Error!", MB_ICONERROR);
@@ -131,7 +140,8 @@ HRESULT Helios::Graphics::CreateD3D11SwapChain(IDXGIFactory* pFactory, IDXGISwap
 
 void Helios::Graphics::EndFrame()
 {
-    m_pSwapChain->Present(1u, 0u);
+    // m_pSwapChain->Present(1u, 0u);
+    m_pSwapChain->Present(0u, 0u);
     //m_pSwapChain_10->Present(1u, 0u);
 }
 

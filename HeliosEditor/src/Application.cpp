@@ -6,7 +6,7 @@
 #include <Helios.h>
 #include <Helios/Resources/EngineTexture.h>
 #include <Helios/Resources/Color.h>
-#include <Helios/Renderer/Renderer2D.h>
+#include <Helios/Graphics/Renderer2D.h>
 
 #include <Helios/Utils/ErrorHandling.h>
 
@@ -29,6 +29,7 @@
 #include "Helios/Translation/Matrix.h"
 #include <Helios/Translation/Quanterion.h>
 #include <sstream>
+#include <Helios/Graphics/Framebuffer.h>
 
 static std::filesystem::path currentScene;
 StartupConfig startupConfig;
@@ -38,7 +39,16 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 static Helios::Components::Transform cameraTransform;
 static Helios::Components::Camera cameraPropeties;
 
+
 using namespace Helios;
+
+static Ref<Framebuffer> editorFrame;
+static Ref<Framebuffer> gameFrame;
+
+static Vector2 editorCameraRotation = { 0.0f, 0.0f };
+
+bool isGameSceneActive = false;
+bool isEditorSceneActive = false;
 
 int ValidateInit() {
 
@@ -307,10 +317,13 @@ namespace Helios {
 				exit(-100);
 			}
 
-			
+			editorFrame = Framebuffer::Create(300, 300);
+			gameFrame = Framebuffer::Create(300, 300);
+
 			// Setup Platform/Renderer backends
 			ImGui_ImplWin32_Init(m_hWnd);
 			ImGui_ImplDX11_Init(graphics->m_device, graphics->m_deviceContext);
+
 
 			using namespace Helios;
 
@@ -351,6 +364,7 @@ namespace Helios {
 				Project::SaveScene(ImGui::IsKeyReleased(ImGuiKey_LeftShift) || ImGui::IsKeyReleased(ImGuiKey_RightShift));			
 
 			static GameObject* selected = nullptr;
+
 
 			if (ImGui::BeginMenuBar()) {
 				if (ImGui::BeginMenu("File"))
@@ -414,28 +428,27 @@ namespace Helios {
 				ImGui::End();
 			}
 
-			if (ImGui::Begin("Game View 2"))
-			{
-				if (graphics->pTextureView)
-					ImGui::Image((void*)graphics->pTextureViewtest, ImVec2(500, 500));
-			}
-			ImGui::End();
+			auto euler = cameraTransform.rotation.forward();
+			std::cout << "Forward Current : x: " << euler.x << ", y: " << euler.y << ", z: " << euler.z << std::endl;
 
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
-			if (ImGui::Begin("Game"))
+			if (ImGui::Begin("Scene"))
 			{
-				if (graphics->pTextureView)
+				if (editorFrame->IsSet())
 				{
 					ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-					auto currentViewportSize = Renderer2D::GetRenderTargetSize();
-					if (viewportSize.x != currentViewportSize.x|| viewportSize.y != currentViewportSize.y)
+					auto currentViewportSize = editorFrame->GetSize();
+					if (viewportSize.x != currentViewportSize.x || viewportSize.y != currentViewportSize.y)
 					{
-						Renderer2D::Resize(viewportSize.x, viewportSize.y);
-						WindowCordinates::SetSize(viewportSize.x, viewportSize.y);
+						 editorFrame->Resize(viewportSize.x, viewportSize.y);
 					}
-					//ImGui::Image((void*)graphics->pTextureView, ImVec2(viewportSize));
-					ImGui::Image(Renderer2D::GetImGuiTexture(), ImVec2(viewportSize));
+					ImGui::Image(editorFrame->GetTextureID(), ImVec2(viewportSize));
+
+					//ImVec2(viewportSize)
+
+					//ImGui::Image((void*)editorFrame->GetTextureID(), );
+					// ImGui::Image((void*)editorFrame->GetTextureID(), ImVec2(300, 300));
 				}
 
 				static bool notf = true;
@@ -468,19 +481,32 @@ namespace Helios {
 						ImVec2 current = ImGui::GetMousePos();
 
 						auto difference = Vector2(origin.x, origin.y) - Vector2(current.x, current.y);
-						auto normalizedCordinates = (Vector2(origin.x, origin.y) - Vector2(current.x, current.y)).normalize();
+						auto normalizedCordinates = -(Vector2(origin.y, origin.x) - Vector2(current.y, current.x)).normalize();
 
-						//cameraTransform.rotation += (Vector2(-origin.y, origin.x) - Vector2(-current.y, current.x)).normalize() * Time::deltaTime() * 100.0f;
+						// cameraTransform.rotation += (Vector2(-origin.y, origin.x) - Vector2(-current.y, current.x)).normalize() * Time::deltaTime() * 100.0f;
+
+						editorCameraRotation += normalizedCordinates * Time::deltaTime() * 100.0f;
+
 						
-						std::cout << "Diffrence: x: " << difference.x << ", y: " << difference.y << std::endl;
-						std::cout << "Normal: x: " << normalizedCordinates.x << ", y: " << normalizedCordinates.y << std::endl;
+						cameraTransform.rotation = Quanterion::Euler(editorCameraRotation);
+						
+						/*std::cout << "Diffrence: x: " << difference.x << ", y: " << difference.y << std::endl;
+						std::cout << "Normal: x: " << normalizedCordinates.x << ", y: " << normalizedCordinates.y << std::endl;*/
 
-
+						
 
 						if(ImGui::IsKeyDown(ImGuiKey_W))
-							cameraTransform.position += Vector3::up() * Time::deltaTime() * 10.0f;
-
+							cameraTransform.position += cameraTransform.forward() * Time::deltaTime() * 10.0f;
 						
+						if (ImGui::IsKeyDown(ImGuiKey_S))
+							cameraTransform.position -= cameraTransform.forward() * Time::deltaTime() * 10.0f;
+
+						if (ImGui::IsKeyDown(ImGuiKey_D))
+							cameraTransform.position += cameraTransform.right() * Time::deltaTime() * 10.0f;
+
+						if (ImGui::IsKeyDown(ImGuiKey_A))
+							cameraTransform.position -= cameraTransform.right() * Time::deltaTime() * 10.0f;
+
 						//origin = ImGui::GetMousePos();
 						SetCursorPos(origin.x, origin.y);
 					}
@@ -496,16 +522,33 @@ namespace Helios {
 				}
 
 				if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(ImGuiKey_R)) {
-					cameraTransform.position = Vector3::zero();
-					cameraTransform.rotation = Quanterion::zero();
+					cameraTransform.position = Vector3::Zero();
+					cameraTransform.rotation = Quanterion::Identity();
 				}
-				
-			}
+				isEditorSceneActive = true;
+			} else isEditorSceneActive = false;
 			ImGui::End();
 			ImGui::PopStyleVar();
 
 
-			
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
+			if (ImGui::Begin("Game"))
+			{
+				if (editorFrame->IsSet())
+				{
+					ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+					auto currentViewportSize = gameFrame->GetSize();
+					if (viewportSize.x != currentViewportSize.x || viewportSize.y != currentViewportSize.y)
+					{
+						 gameFrame->Resize(viewportSize.x, viewportSize.y);
+					}
+					ImGui::Image(gameFrame->GetTextureID(), ImVec2(viewportSize));
+				}
+
+				isGameSceneActive = true;
+			} else isGameSceneActive = false;
+			ImGui::End();
+			ImGui::PopStyleVar();
 			
 
 			ProjectExplorerWindow(Project::GetAssetsPath());
@@ -524,48 +567,40 @@ namespace Helios {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			// Vector3 rot;
-
-			// rot.x = -0.9f;
-			// rot.y = 0.3;
-			// rot.z = -0.6f;
-
-			// Quanterion q = Quanterion::EulerRads(rot);
-
-			// std::stringstream str;
-
-			// str << "Euler: " << "x: " << rot.x << ", y: " << rot.y << ", z: " << rot.z << std::endl << std::endl;
-
-			// str << "Quanterion: " << "x: " << q.x << ", y: " << q.y << ", z: " << q.z << ", w: " << q.w << std::endl << std::endl;
-
-			// Vector3 euler = q.euler();
-
-			// str << "Converted Euler: " << "x: " << euler.x << ", y: " << euler.y << ", z: " << euler.z << std::endl << std::endl;
-
-			// ShowMessage("Quanterion", str.str());
-
 			OnGUI();
 
 			ImGui::EndFrame();
 			ImGui::Render();
 			
-			graphics->m_deviceContext->OMSetRenderTargets(2, &graphics->m_mainRenderTarget, NULL);
+			graphics->m_deviceContext->OMSetRenderTargets(1, &graphics->m_mainRenderTarget, NULL);
 			graphics->ClearRenderTarget(0.5f, 0.0f, 1.0f);
 
-#pragma region Rendering
-			if (SceneManager::currentScene) {
-				//graphics->m_renderTarget2D->BeginDraw();
 
-				SceneManager::currentScene->OnUpdateRuntime();
-				//SceneManager::currentScene->OnUpdateEditor(cameraTransform, cameraPropeties);
+			if(isGameSceneActive) {
+				gameFrame->Bind();
+				gameFrame->ClearColor({ 0.0f, 0.0f, 0.0f });
 
-				//SceneManager::Render(*graphics);
+				if (SceneManager::currentScene)
+					SceneManager::currentScene->OnUpdateRuntime();
 
-				//Render(*graphics);
-
-				//graphics->m_renderTarget2D->EndDraw();
+				gameFrame->Unbind();
 			}
-#pragma endregion
+
+			if(isEditorSceneActive) {
+				editorFrame->Bind();
+				editorFrame->ClearColor({ 0.0f, 0.0f, 0.0f });
+
+	#pragma region Rendering
+				if (SceneManager::currentScene) {
+					SceneManager::currentScene->OnUpdateEditor(cameraTransform, cameraPropeties);
+				}
+	#pragma endregion
+
+				editorFrame->Unbind();
+			}
+
+
+			graphics->m_deviceContext->OMSetRenderTargets(1, &graphics->m_mainRenderTarget, NULL);
 
 			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 			// Update and Render additional Platform Windows

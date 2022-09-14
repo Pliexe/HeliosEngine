@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Quanterion.h"
+#include "Vector.h"
 
 namespace Helios
 {
@@ -61,22 +62,11 @@ namespace Helios
 		}
 		static Matrix4x4 Rotation(Vector3 vec)
 		{
-			return RotationZ(vec.z) * RotationY(vec.y) * RotationX(vec.x);
+			return RotationX(vec.x) * RotationZ(vec.z) * RotationY(vec.y);
 		}
 		
 		static Matrix4x4 Rotation(Quanterion rotation)
 		{
-
-			// Create a 4x4 rotation matrix from a quaternion
-
-			/*return {
-				1.0f - 2.0f * (rotation.y * rotation.y + rotation.z * rotation.z), 2.0f * (rotation.x * rotation.y + rotation.z * rotation.w), 2.0f * (rotation.x * rotation.z - rotation.y * rotation.w), 0.0f,
-				2.0f * (rotation.x * rotation.y - rotation.z * rotation.w), 1.0f - 2.0f * (rotation.x * rotation.x + rotation.z * rotation.z), 2.0f * (rotation.y * rotation.z + rotation.x * rotation.w), 0.0f,
-				2.0f * (rotation.x * rotation.z + rotation.y * rotation.w), 2.0f * (rotation.y * rotation.z - rotation.x * rotation.w), 1.0f - 2.0f * (rotation.x * rotation.x + rotation.y * rotation.y), 0.0f,
-				0.0f, 0.0f, 0.0f, 1.0f
-			};*/
-
-
 			// Create a 4x4 rotation matrix from a quaternion in row major 
 
 			return {
@@ -85,23 +75,52 @@ namespace Helios
 				2.0f * (rotation.x * rotation.z + rotation.y * rotation.w), 2.0f * (rotation.y * rotation.z - rotation.x * rotation.w), 1.0f - 2.0f * (rotation.x * rotation.x + rotation.y * rotation.y), 0.0f,
 				0.0f, 0.0f, 0.0f, 1.0f
 			};
+		}
 
+		static Matrix4x4 RotationColumn(Quanterion rotation)
+		{
+			// Create a 4x4 rotation matrix from a quaternion in column major
 
-			// return {
-			// 	1.0f - 2.0f * (rotation.y * rotation.y + rotation.z * rotation.z), 2.0f * (rotation.x * rotation.y + rotation.z * rotation.w), 2.0f * (rotation.x * rotation.z - rotation.y * rotation.w), 0.0f,
-			// 	2.0f * (rotation.x * rotation.y - rotation.z * rotation.w), 1.0f - 2.0f * (rotation.x * rotation.x + rotation.z * rotation.z), 2.0f * (rotation.y * rotation.z + rotation.x * rotation.w), 0.0f,
-			// 	2.0f * (rotation.x * rotation.z + rotation.y * rotation.w), 2.0f * (rotation.y * rotation.z - rotation.x * rotation.w), 1.0f - 2.0f * (rotation.x * rotation.x + rotation.y * rotation.y), 0.0f,
-			// 	0.0f, 0.0f, 0.0f, 1.0f
-			// };
-
-			// https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html
-			
-			/*return {
-				rotation.q[0] * rotation.q[0] + rotation.q[1] * rotation.q[1] - rotation.q[2] * rotation.q[2] - rotation.q[3] * rotation.q[3],2 * rotation.q[1] * rotation.q[2] - 2 * rotation.q[0] * rotation.q[3], 2 * rotation.q[1] * rotation.q[3] + 2 * rotation.q[0] * rotation.q[2], 0.0f,
-				2 * rotation.q[1] * rotation.q[2] + 2 * rotation.q[0] * rotation.q[3], rotation.q[0] * rotation.q[0] - rotation.q[1] * rotation.q[1] + rotation.q[2] * rotation.q[2] - rotation.q[3] * rotation.q[3], 2 * rotation.q[2] * rotation.q[3] - 2 * rotation.q[0] * rotation.q[1], 0.0f,
-				2 * rotation.q[1] * rotation.q[3] - 2 * rotation.q[0] * rotation.q[2], 2 * rotation.q[2] * rotation.q[3] + 2 * rotation.q[0] * rotation.q[1], rotation.q[0] * rotation.q[0] - rotation.q[1] * rotation.q[1] - rotation.q[2] * rotation.q[2] + rotation.q[3] * rotation.q[3], 0.0f,
+			return {
+				1.0f - 2.0f * (rotation.y * rotation.y + rotation.z * rotation.z), 2.0f * (rotation.x * rotation.y - rotation.z * rotation.w), 2.0f * (rotation.x * rotation.z + rotation.y * rotation.w), 0.0f,
+				2.0f * (rotation.x * rotation.y + rotation.z * rotation.w), 1.0f - 2.0f * (rotation.x * rotation.x + rotation.z * rotation.z), 2.0f * (rotation.y * rotation.z - rotation.x * rotation.w), 0.0f,
+				2.0f * (rotation.x * rotation.z - rotation.y * rotation.w), 2.0f * (rotation.y * rotation.z + rotation.x * rotation.w), 1.0f - 2.0f * (rotation.x * rotation.x + rotation.y * rotation.y), 0.0f,
 				0.0f, 0.0f, 0.0f, 1.0f
-			};*/
+			};
+		}
+
+		static Matrix4x4 Inverse(Matrix4x4 matrix)
+		{
+			Matrix4x4 result = matrix;
+
+			float det = 1.0f / (
+				result._11 * (result._22 * result._33 * result._44 - result._22 * result._34 * result._43 - result._32 * result._23 * result._44 + result._32 * result._24 * result._43 + result._42 * result._23 * result._34 - result._42 * result._24 * result._33) -
+				result._21 * (result._12 * result._33 * result._44 - result._12 * result._34 * result._43 - result._32 * result._13 * result._44 + result._32 * result._14 * result._43 + result._42 * result._13 * result._34 - result._42 * result._14 * result._33) +
+				result._31 * (result._12 * result._23 * result._44 - result._12 * result._24 * result._43 - result._22 * result._13 * result._44 + result._22 * result._14 * result._43 + result._42 * result._13 * result._24 - result._42 * result._14 * result._23) -
+				result._41 * (result._12 * result._23 * result._34 - result._12 * result._24 * result._33 - result._22 * result._13 * result._34 + result._22 * result._14 * result._33 + result._32 * result._13 * result._24 - result._32 * result._14 * result._23)
+				);
+
+			result._11 = (result._22 * result._33 * result._44 - result._22 * result._34 * result._43 - result._32 * result._23 * result._44 + result._32 * result._24 * result._43 + result._42 * result._23 * result._34 - result._42 * result._24 * result._33) * det;
+			result._12 = -(result._12 * result._33 * result._44 - result._12 * result._34 * result._43 - result._32 * result._13 * result._44 + result._32 * result._14 * result._43 + result._42 * result._13 * result._34 - result._42 * result._14 * result._33) * det;
+			result._13 = (result._12 * result._23 * result._44 - result._12 * result._24 * result._43 - result._22 * result._13 * result._44 + result._22 * result._14 * result._43 + result._42 * result._13 * result._24 - result._42 * result._14 * result._23) * det;
+			result._14 = -(result._12 * result._23 * result._34 - result._12 * result._24 * result._33 - result._22 * result._13 * result._34 + result._22 * result._14 * result._33 + result._32 * result._13 * result._24 - result._32 * result._14 * result._23) * det;
+
+			result._21 = -(result._21 * result._33 * result._44 - result._21 * result._34 * result._43 - result._31 * result._23 * result._44 + result._31 * result._24 * result._43 + result._41 * result._23 * result._34 - result._41 * result._24 * result._33) * det;
+			result._22 = (result._11 * result._33 * result._44 - result._11 * result._34 * result._43 - result._31 * result._13 * result._44 + result._31 * result._14 * result._43 + result._41 * result._13 * result._34 - result._41 * result._14 * result._33) * det;
+			result._23 = -(result._11 * result._23 * result._44 - result._11 * result._24 * result._43 - result._21 * result._13 * result._44 + result._21 * result._14 * result._43 + result._41 * result._13 * result._24 - result._41 * result._14 * result._23) * det;
+			result._24 = (result._11 * result._23 * result._34 - result._11 * result._24 * result._33 - result._21 * result._13 * result._34 + result._21 * result._14 * result._33 + result._31 * result._13 * result._24 - result._31 * result._14 * result._23) * det;
+
+			result._31 = (result._21 * result._32 * result._44 - result._21 * result._34 * result._42 - result._31 * result._22 * result._44 + result._31 * result._24 * result._42 + result._41 * result._22 * result._34 - result._41 * result._24 * result._32) * det;
+			result._32 = -(result._11 * result._32 * result._44 - result._11 * result._34 * result._42 - result._31 * result._12 * result._44 + result._31 * result._14 * result._42 + result._41 * result._12 * result._34 - result._41 * result._14 * result._32) * det;
+			result._33 = (result._11 * result._22 * result._44 - result._11 * result._24 * result._42 - result._21 * result._12 * result._44 + result._21 * result._14 * result._42 + result._41 * result._12 * result._24 - result._41 * result._14 * result._22) * det;
+			result._34 = -(result._11 * result._22 * result._34 - result._11 * result._24 * result._32 - result._21 * result._12 * result._34 + result._21 * result._14 * result._32 + result._31 * result._12 * result._24 - result._31 * result._14 * result._22) * det;
+
+			result._41 = -(result._21 * result._32 * result._43 - result._21 * result._33 * result._42 - result._31 * result._22 * result._43 + result._31 * result._23 * result._42 + result._41 * result._22 * result._33 - result._41 * result._23 * result._32) * det;
+			result._42 = (result._11 * result._32 * result._43 - result._11 * result._33 * result._42 - result._31 * result._12 * result._43 + result._31 * result._13 * result._42 + result._41 * result._12 * result._33 - result._41 * result._13 * result._32) * det;
+			result._43 = -(result._11 * result._22 * result._43 - result._11 * result._23 * result._42 - result._21 * result._12 * result._43 + result._21 * result._13 * result._42 + result._41 * result._12 * result._23 - result._41 * result._13 * result._22) * det;
+			result._44 = (result._11 * result._22 * result._33 - result._11 * result._23 * result._32 - result._21 * result._12 * result._33 + result._21 * result._13 * result._32 + result._31 * result._12 * result._23 - result._31 * result._13 * result._22) * det;
+
+			return result;
 		}
 
 		static Matrix4x4 Translation(float x, float y, float z)

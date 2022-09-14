@@ -29,6 +29,16 @@ namespace Helios {
 			GameObject::CreateCamera();
 		}
 
+		if (ImGui::BeginMenu("3D Objects"))
+		{
+			if (ImGui::MenuItem("Cube")) {
+				auto obj = GameObject::InstantiateObject("Cube");
+				obj.AddComponent<Components::MeshRenderer>().mesh = Mesh::GetCubeMesh();
+				InspectorPanel::GetInstance() << (entt::entity)obj;
+			}
+			ImGui::EndMenu();
+		}
+
 		if (ImGui::MenuItem("Create Object With Sprite")) {
 			auto obj = GameObject::InstantiateObject("Sprite");
 			obj.AddComponent<Components::SpriteRenderer>();

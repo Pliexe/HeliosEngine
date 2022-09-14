@@ -1,4 +1,4 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
@@ -6,11 +6,32 @@
 
 #include "pch.h"
 #include "Helios/Core/Base.h"
+#include "Helios/Translation/Vector.h"
 
 namespace Helios {
 	class HELIOS_API Graphics
 	{
+	public:
+
+		enum class API
+		{
+			None = 0,
+			DirectX = 1,
+			// OpenGL = 2
+		};
+
+		static API GetAPI() { return s_API; }
+
+		static Size s_currentSize;
+
 	private:
+
+		static Size GetCurrentSize() { return s_currentSize; }
+
+		static API s_API;
+
+		// TODO: Cleanup this mess
+
 		IDXGISwapChain*			m_pSwapChain			= NULL;
 		
 		ID3D11DeviceContext*	m_deviceContext			= NULL;
@@ -50,7 +71,7 @@ namespace Helios {
 
 	public:
 		Graphics() = delete;
-		Graphics(HWND hWnd) : m_hWnd(hWnd) { instance = this; };
+		Graphics(HWND hWnd) : m_hWnd(hWnd) { instance = this; s_API = API::DirectX; };
 		~Graphics();
 
 		void ClearRenderTarget(float r, float g, float b);
@@ -77,13 +98,13 @@ namespace Helios {
 		friend class BitmapBrush;
 
 		friend class Shader;
-		friend class VertexBuffer;
 		friend class IndexBuffer;
-		friend class ConstantBuffer;
+		friend class DirectXVertexBuffer;
+		friend class DirectXConstantBuffer;
 		
 #pragma endregion
 
-
+		friend class DirectXFramebuffer;
 
 		friend class EngineTexture;
 		extern friend class GameEngine;

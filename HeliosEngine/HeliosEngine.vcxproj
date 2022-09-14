@@ -173,8 +173,13 @@
   <ItemGroup>
     <ClInclude Include="src\Helios\Core\Asserts.h" />
     <ClInclude Include="src\Helios\Core\ExitCodes.h" />
-    <ClInclude Include="src\Helios\Renderer\Buffer.h" />
-    <ClInclude Include="src\Helios\Renderer\Renderer2D.h" />
+    <ClInclude Include="src\Helios\Graphics\Framebuffer.h" />
+    <ClInclude Include="src\Helios\Resources\Buffer.h" />
+    <ClInclude Include="src\Helios\Renderer\Framebuffer.h" />
+    <ClInclude Include="src\Helios\Renderer\Mesh.h" />
+    <ClInclude Include="src\Helios\Graphics\Renderer.h" />
+    <ClInclude Include="src\Helios\Graphics\Renderer2D.h" />
+    <ClInclude Include="src\Helios\Resources\Mesh.h" />
     <ClInclude Include="src\Helios\Resources\Shader.h" />
     <ClInclude Include="src\Helios\Scene\Components.h" />
     <ClInclude Include="src\Helios\GameObjects\Components\EllipseComponent.h" />
@@ -211,11 +216,18 @@
     <ClInclude Include="src\Helios.h" />
     <ClInclude Include="src\Helios\Translation\Vector.h" />
     <ClInclude Include="src\Helios\Core\Time.h" />
+    <ClInclude Include="src\Platform\DirectX\DirectXConstantBuffer.h" />
+    <ClInclude Include="src\Platform\DirectX\DirectXFramebuffer.h" />
+    <ClInclude Include="src\Platform\DirectX\DirectXVertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Helios\GameObjects\ObjectComponent.cpp" />
     <ClCompile Include="src\Helios\GameObjects\ObjectBehaviour.cpp" />
-    <ClCompile Include="src\Helios\Renderer\Renderer2D.cpp" />
+    <ClCompile Include="src\Helios\Resources\Buffer.cpp" />
+    <ClCompile Include="src\Helios\Graphics\Framebuffer.cpp" />
+    <ClCompile Include="src\Helios\Resources\Mesh.cpp" />
+    <ClCompile Include="src\Helios\Graphics\Renderer.cpp" />
+    <ClCompile Include="src\Helios\Graphics\Renderer2D.cpp" />
     <ClCompile Include="src\Helios\Resources\Shader.cpp" />
     <ClCompile Include="src\Helios\Scene\GameObject.cpp" />
     <ClCompile Include="src\Helios\Input\InputManager.cpp" />
@@ -243,6 +255,9 @@
     </ClCompile>
     <ClCompile Include="src\Helios\Core\Time.cpp" />
     <ClCompile Include="src\Helios\Translation\Vector.cpp" />
+    <ClCompile Include="src\Platform\DirectX\DirectXConstantBuffer.cpp" />
+    <ClCompile Include="src\Platform\DirectX\DirectXFramebuffer.cpp" />
+    <ClCompile Include="src\Platform\DirectX\DirectXVertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Helios.rc" />

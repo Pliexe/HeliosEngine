@@ -34,7 +34,7 @@ namespace ImGui {
 	void EditQuanterionEuler(const char* label, Helios::Quanterion& quanterion, float speed = 0.1f, float min = 0.0f, float max = 0.0f) {
 
 		ImVec2 size = ImGui::GetContentRegionAvail();
-		static Helios::Vector3 euler = quanterion.euler() * (180.0f / (float)M_PI);
+		static Helios::Vector3 euler = quanterion.euler();
 		bool is_changed = false;
 
 		ImGui::PushID(label);

@@ -24,10 +24,10 @@ bool Helios::BitmapBrush::isPainted() const
 	return true;
 }
 
-inline Helios::Size2D Helios::BitmapBrush::getSize() const { 
+inline Helios::Size Helios::BitmapBrush::getSize() const { 
 	if (bitmap->isNull()) return { 0, 0 };
 	D2D1_SIZE_F s = ((ID2D1Bitmap*)(*bitmap))->GetSize();
-	return Size2D(s.width, s.height);
+	return Size(s.width, s.height);
 }
 
 void Helios::BitmapBrush::Load()

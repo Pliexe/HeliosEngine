@@ -18,12 +18,22 @@ namespace Helios {
 
 			UInt8 = DXGI_FORMAT_R8G8B8A8_UINT,
 			UInt8Norm = DXGI_FORMAT_R8G8B8A8_UNORM,
+
+			Matrix4x4,
 		};
 
 		struct ShaderElement
 		{
+			enum class InputClassification {
+				PerVertex = 0,
+				PerInstance = 1
+			};
+
 			const char* name;
 			DataType type;
+			uint32_t slot = 0u;
+			uint32_t instanceStepRate = 0u;
+			InputClassification inputClassification = InputClassification::PerVertex;
 		};
 
 		Shader() = delete;
@@ -58,25 +68,76 @@ namespace Helios {
 				"Failed to create vertex shader!\n" + vertexShaderPath
 			);
 
-			D3D11_INPUT_ELEMENT_DESC ied[N]{};
+			int size = 0;
 
 			for (int i = 0; i < N; i++)
+				if (elements[i].type == DataType::Matrix4x4)
+					size+=4;
+				else size++;
+				
+			D3D11_INPUT_ELEMENT_DESC* ied = new D3D11_INPUT_ELEMENT_DESC[size];
+
+			unsigned int is = 0;
+			unsigned int index = 0;
+			for (int i = 0; i < N; i++)
 			{
-				ied[i] = {
-					elements[i].name,
-					0,
-					(DXGI_FORMAT)elements[i].type,
-					0,
-					D3D11_APPEND_ALIGNED_ELEMENT,
-					D3D11_INPUT_PER_VERTEX_DATA,
-					0
-				};
+				if (elements[i].type == DataType::Matrix4x4) {
+					ied[index] = {
+						elements[i].name,
+						is,
+						DXGI_FORMAT_R32G32B32A32_FLOAT,
+						elements[i].slot,
+						D3D11_APPEND_ALIGNED_ELEMENT,
+						(D3D11_INPUT_CLASSIFICATION)elements[i].inputClassification,
+						elements[i].instanceStepRate
+					};
+					is++;
+					if(is < 4)
+						i--;
+				}
+				else {
+					is = 0;
+					ied[index] = {
+						elements[i].name,
+						0,
+						(DXGI_FORMAT)elements[i].type,
+						elements[i].slot,
+						D3D11_APPEND_ALIGNED_ELEMENT,
+						(D3D11_INPUT_CLASSIFICATION)elements[i].inputClassification,
+						elements[i].instanceStepRate
+					};
+				}
+				index++;
+			}
+
+#ifdef _DEBUG
+			std::stringstream ss;
+			ss << "ARRAY:\n";
+
+			for (int i = 0; i < index; i++)
+			{
+				ss << "Name: " << ied[i].SemanticName << "\n";
+				ss << "SemanticIndex: " << ied[i].SemanticIndex << "\n";
+				ss << "Slot: " << ied[i].InputSlot << "\n";
+				ss << "Format: " << ied[i].Format << "\n";
+				ss << "Aligned: " << ied[i].AlignedByteOffset << "\n";
+				ss << "Classification: " << ied[i].InputSlotClass << "\n";
+				ss << "InstanceStepRate: " << ied[i].InstanceDataStepRate << "\n";
+				ss << "-----------------------\n";
 			}
 
 			HL_EXCEPTION(
-				FAILED(Graphics::instance->m_device->CreateInputLayout(ied, (UINT)N, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &m_inputLayout)),
+				FAILED(Graphics::instance->m_device->CreateInputLayout(ied, (UINT)index, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &m_inputLayout)),
+				"Failed to create input layout!\n" + vertexShaderPath + "\n" + ss.str()
+			);
+#else
+			HL_EXCEPTION(
+				FAILED(Graphics::instance->m_device->CreateInputLayout(ied, (UINT)index, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &m_inputLayout)),
 				"Failed to create input layout!\n" + vertexShaderPath
 			);
+#endif // DEBUG
+
+			delete[] ied;
 		}
 		Shader(const Shader& other) = default;
 

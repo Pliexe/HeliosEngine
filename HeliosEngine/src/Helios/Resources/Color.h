@@ -15,10 +15,15 @@ namespace Helios {
 
     struct HELIOS_API Color {
         
-        float r = 1.0f;
-        float g = 1.0f;
-        float b = 1.0f;
-        float a = 1.0f;
+        union {
+            float c[4];
+            struct {
+                float r;
+                float g;
+                float b;
+                float a;
+            };
+        };
 		
 #pragma region Static Colors
         const static Color AliceBlue;
@@ -165,7 +170,7 @@ namespace Helios {
 
         
 
-        Color() = default;
+		Color() : r(1.0f), g(1.0f), b(1.0f), a(1.0f) {}
         Color(const Color&) = default;
         Color(UINT32 rgb, float alpha = 1.0f) {
             r = static_cast<FLOAT>((rgb & sc_redMask) >> sc_redShift) / 255.f;
@@ -175,6 +180,7 @@ namespace Helios {
         }
         Color(float r, float g, float b, float alpha = 1.0f) { this->r = r; this->g = g; this->b = b; a = alpha; }
         Color(int r, int g, int b, float alpha = 1.0f) { this->r = r / 255.0f; this->g = g / 255.0f; this->b = b / 255.0f; a = alpha; }
+        //Color(const Color&) = default;
 
         operator D2D1_COLOR_F () {
             return D2D1::ColorF(r, g, b, a);

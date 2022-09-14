@@ -1,4 +1,4 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
@@ -19,12 +19,13 @@ namespace Helios {
 
 		operator float* () { return &x; }
 
-		static Vector2 right()	{ return {  1.0f,  0.0f }; }
-		static Vector2 left()	{ return { -1.0f,  0.0f }; }
-		static Vector2 up()		{ return {  0.0f,  1.0f }; }
-		static Vector2 down()	{ return {  0.0f, -1.0f }; }
+		static inline Vector2 Right()	{ return {  1.0f,  0.0f }; }
+		static inline Vector2 Left()	{ return { -1.0f,  0.0f }; }
+		static inline Vector2 Up()		{ return {  0.0f,  1.0f }; }
+		static inline Vector2 Down()	{ return {  0.0f, -1.0f }; }
 		
-		static Vector2 zero()	{ return {  0.0f,  0.0f }; }
+		static inline Vector2 Zero()	{ return {  0.0f,  0.0f }; }
+		static inline Vector2 One()		{ return {  1.0f,  1.0f }; }
 
 		static inline float Dot(Vector2 lhv, Vector2 rhv);
 		static inline float Length(Vector2 a);
@@ -74,16 +75,16 @@ namespace Helios {
 		Vector3(const Vector2& other) : Vector2(other), z(0.0f) { };
 		Vector3(const Vector3& other) : Vector2(other.x, other.y), z(other.z) { };
 
-		static Vector3 right()		{ return {  1.0f,  0.0f,  0.0f }; }
-		static Vector3 left()		{ return { -1.0f,  0.0f,  0.0f }; }
-		static Vector3 up()			{ return {  0.0f,  1.0f,  0.0f }; }
-		static Vector3 down()		{ return {  0.0f, -1.0f,  0.0f }; }
+		static inline Vector3 Right()		{ return {  1.0f,  0.0f,  0.0f }; }
+		static inline Vector3 Left()		{ return { -1.0f,  0.0f,  0.0f }; }
+		static inline Vector3 Up()			{ return {  0.0f,  1.0f,  0.0f }; }
+		static inline Vector3 Down()		{ return {  0.0f, -1.0f,  0.0f }; }
 
-		static Vector3 forward()	{ return {  0.0f,  0.0f,  1.0f }; }
-		static Vector3 backwards()	{ return {  0.0f,  0.0f, -1.0f }; }
+		static inline Vector3 Forward()		{ return {  0.0f,  0.0f,  1.0f }; }
+		static inline Vector3 Backwards()	{ return {  0.0f,  0.0f, -1.0f }; }
 
-		static Vector3 zero()		{ return {  0.0f,  0.0f,  0.0f }; }
-		static Vector3 one()		{ return {  1.0f,  1.0f,  1.0f }; }
+		static inline Vector3 Zero()		{ return {  0.0f,  0.0f,  0.0f }; }
+		static inline Vector3 One()			{ return {  1.0f,  1.0f,  1.0f }; }
 
 		static inline float Dot(Vector3 lhv, Vector3 rhv);
 		static inline float Length(Vector3 a);
@@ -138,8 +139,8 @@ namespace Helios {
 		Vector4(const Vector3& other) : Vector3(other), w(0.0f) { };
 		Vector4(const Vector4& other) : Vector3(other.x, other.y, other.z), w(other.w) { };
 		
-		static Vector4 one() { return { 1.0f, 1.0f, 1.0f, 1.0f }; }
-		static Vector4 zero() { return { 0.0f, 0.0f, 0.0f, 0.0f }; }
+		static inline Vector4 Zero() { return { 0.0f, 0.0f, 0.0f, 0.0f }; }
+		static inline Vector4 One()  { return { 1.0f, 1.0f, 1.0f, 1.0f }; }
 
 		static inline float Dot(Vector4 lhv, Vector4 rhv);
 		static inline float Length(Vector4 a);
@@ -194,13 +195,13 @@ namespace Helios {
 		Point(const Vector2& size) : Vector2(size) { }
 	};
 
-	class HELIOS_API Size2D : public Vector2
+	class HELIOS_API Size : public Vector2
 	{
 	public:
-		Size2D(float width, float height) : Vector2(width, height) { }
-		Size2D() : Vector2() {}
-		Size2D(const Size2D& size) : Vector2(size) { }
-		Size2D(const Vector2& size) : Vector2(size) { }
+		Size(float width, float height) : Vector2(width, height) { }
+		Size() : Vector2() {}
+		Size(const Size& size) : Vector2(size) { }
+		Size(const Vector2& size) : Vector2(size) { }
 
 		Vector2 normalize() = delete;
 		float length() = delete;
@@ -211,7 +212,7 @@ namespace Helios {
 		void setWidth(float width);
 		void setHeight(float height);
 		void setSize(float width, float height);
-		void setSize(const Size2D size);
+		void setSize(const Size size);
 
 		friend class Transform;
 	};

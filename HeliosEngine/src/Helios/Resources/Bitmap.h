@@ -1,4 +1,4 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
@@ -9,7 +9,7 @@
 
 namespace Helios {
 	class Graphics;
-	class Size2D;
+	class Size;
 	class HELIOS_API Bitmap {
 	private:
 		std::shared_ptr<ID2D1Bitmap> bitmap;
