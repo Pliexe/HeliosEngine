@@ -6,6 +6,7 @@
 #include "Helios/Translation/Quanterion.h"
 #include "Helios/Resources/Color.h"
 #include "Helios/Resources/Mesh.h"
+#include "Helios/Resources/Texture.h"
 
 namespace Helios::Components {
 
@@ -115,6 +116,7 @@ namespace Helios::Components {
 	struct HELIOS_API SpriteRenderer
 	{
 		Color color;
+		Ref<Texture2D> texture;
 
 		SpriteRenderer() = default;
 		SpriteRenderer(const SpriteRenderer&) = default;

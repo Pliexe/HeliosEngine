@@ -181,6 +181,7 @@
     <ClInclude Include="src\Helios\Graphics\Renderer2D.h" />
     <ClInclude Include="src\Helios\Resources\Mesh.h" />
     <ClInclude Include="src\Helios\Resources\Shader.h" />
+    <ClInclude Include="src\Helios\Resources\Texture.h" />
     <ClInclude Include="src\Helios\Scene\Components.h" />
     <ClInclude Include="src\Helios\GameObjects\Components\EllipseComponent.h" />
     <ClInclude Include="src\Helios\GameObjects\Components\RoundedRectangleComponent.h" />
@@ -218,6 +219,7 @@
     <ClInclude Include="src\Helios\Core\Time.h" />
     <ClInclude Include="src\Platform\DirectX\DirectXConstantBuffer.h" />
     <ClInclude Include="src\Platform\DirectX\DirectXFramebuffer.h" />
+    <ClInclude Include="src\Platform\DirectX\DirectXTexture2D.h" />
     <ClInclude Include="src\Platform\DirectX\DirectXVertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -229,6 +231,7 @@
     <ClCompile Include="src\Helios\Graphics\Renderer.cpp" />
     <ClCompile Include="src\Helios\Graphics\Renderer2D.cpp" />
     <ClCompile Include="src\Helios\Resources\Shader.cpp" />
+    <ClCompile Include="src\Helios\Resources\Texture.cpp" />
     <ClCompile Include="src\Helios\Scene\GameObject.cpp" />
     <ClCompile Include="src\Helios\Input\InputManager.cpp" />
     <ClCompile Include="src\Helios\Input\Mouse.cpp" />
@@ -257,6 +260,7 @@
     <ClCompile Include="src\Helios\Translation\Vector.cpp" />
     <ClCompile Include="src\Platform\DirectX\DirectXConstantBuffer.cpp" />
     <ClCompile Include="src\Platform\DirectX\DirectXFramebuffer.cpp" />
+    <ClCompile Include="src\Platform\DirectX\DirectXTexture2D.cpp" />
     <ClCompile Include="src\Platform\DirectX\DirectXVertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>

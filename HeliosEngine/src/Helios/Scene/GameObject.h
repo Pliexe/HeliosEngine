@@ -31,10 +31,8 @@ namespace Helios {
 		bool HasComponent()
 		{
 			HL_CORE_ASSERT_WITH_MSG(m_entityHandle != entt::null, "entity handle is invalid!")
-			if (m_global) {
-				return Scene::s_components.any_of<T>(m_entityHandle);
-			}
-			else if (auto tmp = SceneManager::GetCurrentScene().lock())
+			
+			if (auto tmp = SceneManager::GetCurrentScene().lock())
 			{
 				return tmp->m_components.any_of<T>(m_entityHandle);
 			}
@@ -45,14 +43,14 @@ namespace Helios {
 		T& AddComponent(Args&&... args)
 		{
 			HL_CORE_ASSERT_WITH_MSG(!HasComponent<T>(), "GameObject does not have the component!");
-			return (m_global ? Scene::s_components : SceneManager::GetCurrentScene().lock()->m_components).emplace<T>(m_entityHandle, std::forward<Args>(args)...);
+			return SceneManager::GetCurrentScene().lock()->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
 		}
 
 		template <typename T>
 		T& GetComponent()
 		{
 			HL_CORE_ASSERT_WITH_MSG(HasComponent<T>(), "GameObject does not have the component!");
-			return (m_global ? Scene::s_components : SceneManager::GetCurrentScene().lock()->m_components).get<T>(m_entityHandle);
+			return SceneManager::GetCurrentScene().lock()->m_components.get<T>(m_entityHandle);
 		}
 
 		operator entt::entity() const { return m_entityHandle; }

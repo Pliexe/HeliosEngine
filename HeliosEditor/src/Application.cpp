@@ -16,7 +16,7 @@
 #include <filesystem>
 
 #include <Panels/ProjectExplorer.h>
-#include <ProjectManager.h>
+#include "ProjectManager.h"
 
 #include "Icons.h"
 #include "Panels/BasePanel.h"
@@ -30,6 +30,8 @@
 #include <Helios/Translation/Quanterion.h>
 #include <sstream>
 #include <Helios/Graphics/Framebuffer.h>
+
+#include "AssetRegistry.h"
 
 static std::filesystem::path currentScene;
 StartupConfig startupConfig;
@@ -324,6 +326,7 @@ namespace Helios {
 			ImGui_ImplWin32_Init(m_hWnd);
 			ImGui_ImplDX11_Init(graphics->m_device, graphics->m_deviceContext);
 
+			AssetRegistry::Init();
 
 			using namespace Helios;
 
@@ -427,10 +430,9 @@ namespace Helios {
 				}
 				ImGui::End();
 			}
-
-			auto euler = cameraTransform.rotation.forward();
-			std::cout << "Forward Current : x: " << euler.x << ", y: " << euler.y << ", z: " << euler.z << std::endl;
-
+			
+			AssetRegistry::ShowRegistryWindow();
+			AssetRegistry::ShowTextureSelect();
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
 			if (ImGui::Begin("Scene"))
@@ -483,17 +485,10 @@ namespace Helios {
 						auto difference = Vector2(origin.x, origin.y) - Vector2(current.x, current.y);
 						auto normalizedCordinates = -(Vector2(origin.y, origin.x) - Vector2(current.y, current.x)).normalize();
 
-						// cameraTransform.rotation += (Vector2(-origin.y, origin.x) - Vector2(-current.y, current.x)).normalize() * Time::deltaTime() * 100.0f;
-
 						editorCameraRotation += normalizedCordinates * Time::deltaTime() * 100.0f;
-
-						
+												
 						cameraTransform.rotation = Quanterion::Euler(editorCameraRotation);
-						
-						/*std::cout << "Diffrence: x: " << difference.x << ", y: " << difference.y << std::endl;
-						std::cout << "Normal: x: " << normalizedCordinates.x << ", y: " << normalizedCordinates.y << std::endl;*/
-
-						
+												
 
 						if(ImGui::IsKeyDown(ImGuiKey_W))
 							cameraTransform.position += cameraTransform.forward() * Time::deltaTime() * 10.0f;

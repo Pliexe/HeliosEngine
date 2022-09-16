@@ -6,7 +6,7 @@
 #include <Helios/Resources/Brushes/SolidBrush.h>
 #include <Helios/GameObjects/Components/RectangleComponent.h>
 #include <Helios/Scene/Components.h>
-
+#include "../AssetRegistry.h"
 #include "ImGuiCustomControls.h"
 
 namespace Helios {
@@ -115,6 +115,18 @@ namespace Helios {
 					auto& sRenderer = gm.GetComponent<Components::SpriteRenderer>();
 
 					ImGui::ColorEdit4("Color", sRenderer.color);
+
+					if (sRenderer.texture == nullptr)
+						ImGui::Text("Texture: None");
+					else
+						ImGui::Text("Texture: Unknown Name!");
+
+					if (ImGui::Button("Select")) {
+						GameObject selectedGm = gm;
+						AssetRegistry::OpenTextureSelect([selectedGm](Ref<Texture2D> nTexture) mutable {
+							auto& renderer = selectedGm.GetComponent<Components::SpriteRenderer>().texture = nTexture;
+						});
+					}
 				}
 			}
 

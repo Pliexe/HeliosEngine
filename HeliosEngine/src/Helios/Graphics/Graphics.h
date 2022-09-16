@@ -101,6 +101,7 @@ namespace Helios {
 		friend class IndexBuffer;
 		friend class DirectXVertexBuffer;
 		friend class DirectXConstantBuffer;
+		friend class DirectXTexture2D;
 		
 #pragma endregion
 

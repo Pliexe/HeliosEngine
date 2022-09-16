@@ -1,0 +1,18 @@
+#include "Texture.h"
+#include "Helios/Graphics/Graphics.h"
+#include "Helios/Core/Asserts.h"
+#include "Platform/DirectX/DirectXTexture2D.h"
+
+namespace Helios
+{
+    Ref<Texture2D> Texture2D::Create(const std::string& path)
+    {
+        switch (Graphics::GetAPI())
+        {
+        case Graphics::API::DirectX: return CreateRef<DirectXTexture2D>(path);
+        }
+
+        HL_CORE_ASSERT_WITH_MSG(false, "Unknown Graphics API!");
+        return nullptr;
+    }
+}

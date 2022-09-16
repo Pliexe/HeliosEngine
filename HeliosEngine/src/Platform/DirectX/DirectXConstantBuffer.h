@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Helios/Renderer/Buffer.h"
+#include "Helios/Resources/Buffer.h"
 
 namespace Helios
 {

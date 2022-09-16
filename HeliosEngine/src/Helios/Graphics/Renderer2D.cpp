@@ -22,16 +22,18 @@ namespace Helios {
 
 	struct Renderer2DData
 	{
-		static const uint32_t MaxQuads = 10000;
-
+		static const uint16_t MaxQuads = 10000;
+		static const uint8_t MaxTextureSlots = 128;
 
 		struct QuadVertex
 		{
 			Vector2 position;
+			Vector2 texCoord;
 		};
 
 		struct QuadInstanceData
 		{
+			uint8_t textureIndex;
 			Color color;
 			Matrix4x4 transform;
 		};
@@ -41,6 +43,8 @@ namespace Helios {
 			Matrix4x4 viewProjection;
 		};
 
+		std::array<Ref<Texture2D>, MaxTextureSlots> textureSlots;
+		uint8_t textureSlotIndex = 0;
 		 
 		QuadInstanceData* quadInstanceData = new QuadInstanceData[MaxQuads];
 		QuadInstanceData* quadInstanceDataPtr = quadInstanceData;
@@ -56,6 +60,8 @@ namespace Helios {
 
 	Renderer2DData s_Data;
 
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
+
 	struct Vertex
 	{
 		float x;
@@ -70,20 +76,31 @@ namespace Helios {
 	{
 		s_Data.quadShader = CreateRef<Shader>(Shader("Sprite", {
 			{ "Position", Shader::DataType::Float2 },
+			{ "TexCoord", Shader::DataType::Float2 },
 
+			{ "TextureID", Shader::DataType::UInt8, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "World", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 		}));
 
+		// const Renderer2DData::QuadVertex vertices[] = {
+		// 	{ { -0.5f,  0.5f } },
+		// 	{ {  0.5f,  0.5f } },
+		// 	{ {  0.5f, -0.5f } },
+		// 	{ { -0.5f, -0.5f } }
+		// };
+
+
 		const Renderer2DData::QuadVertex vertices[] = {
-			{ { -0.5f,  0.5f } },
-			{ {  0.5f,  0.5f } },
-			{ {  0.5f, -0.5f } },
-			{ { -0.5f, -0.5f } }
+			{ { -0.5f,  0.5f }, { 0.0f, 0.0f } },
+			{ {  0.5f,  0.5f }, { 1.0f, 0.0f } },
+			{ {  0.5f, -0.5f }, { 1.0f, 1.0f } },
+			{ { -0.5f, -0.5f }, { 0.0f, 1.0f } },
 		};
+
 		const unsigned short indices[] = {
-			0, 2, 3,
 			0, 1, 2,
+			0, 2, 3
 		};
 
 		s_Data.quadVertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));
@@ -93,6 +110,16 @@ namespace Helios {
 		s_Data.quadInstanceBuffer->SetStride<Renderer2DData::QuadInstanceData>();
 
 		s_Data.viewProjBuffer = ConstantBuffer::Create(sizeof(Renderer2DData::TransformData));
+
+		D3D11_SAMPLER_DESC samplerDesc = {};
+		ZeroMemory(&samplerDesc, sizeof(samplerDesc));
+
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		
+		Graphics::instance->m_device->CreateSamplerState(&samplerDesc, &sampler);
 
 		return true;
 	}
@@ -109,7 +136,7 @@ namespace Helios {
 		Renderer2DData::TransformData data = {
 			(
 				Matrix4x4::Transpose(
-					Matrix4x4::Translation(-trans.position) *
+					Matrix4x4::Translation(trans.position) *
 					(
 						Matrix4x4::RotationColumn(trans.rotation)
 					) *
@@ -141,9 +168,17 @@ namespace Helios {
 			s_Data.quadIndexBuffer->Bind();
 			s_Data.quadInstanceBuffer->Bind(1u);
 			s_Data.viewProjBuffer->Bind(0u);
+
+			for (uint8_t i = 0; i < s_Data.textureSlotIndex; i++)
+			{
+				s_Data.textureSlots[i]->Bind(i);
+			}
+
+			Graphics::instance->m_deviceContext->PSSetSamplers(0u, 1u, sampler.GetAddressOf());
 			
 			Graphics::instance->m_deviceContext->DrawIndexedInstanced(6u, (s_Data.quadInstanceDataPtr - s_Data.quadInstanceData), 0u, 0u, 0u);
 			s_Data.quadInstanceDataPtr = s_Data.quadInstanceData;
+			s_Data.textureSlotIndex = 0;
 		}
 	}
 
@@ -152,16 +187,39 @@ namespace Helios {
 		if ((s_Data.quadInstanceDataPtr - s_Data.quadInstanceData) > Renderer2DData::MaxQuads)
 			Flush();
 
-		*s_Data.quadInstanceDataPtr = {
-			{ sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
-			{
-				Matrix4x4::Transpose(
-					Matrix4x4::Scale(transform.scale) *
-					Matrix4x4::RotationColumn(transform.rotation) *
-					Matrix4x4::Translation(transform.position)
-				)
-			}
-		};
+		if(sprite.texture == nullptr)
+		{
+			*s_Data.quadInstanceDataPtr = {
+				128u,
+				{ sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+				{
+					Matrix4x4::Transpose(
+						Matrix4x4::Scale(transform.scale) *
+						Matrix4x4::Rotation(transform.rotation) *
+						Matrix4x4::Translation(transform.position)
+					)
+				}
+			};
+		}
+		else
+		{
+			if(s_Data.textureSlotIndex >= Renderer2DData::MaxTextureSlots)
+				Flush();
+
+			s_Data.textureSlots[s_Data.textureSlotIndex] = sprite.texture;
+			*s_Data.quadInstanceDataPtr = {
+				s_Data.textureSlotIndex,
+				{ sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
+				{
+					Matrix4x4::Transpose(
+						Matrix4x4::Scale(transform.scale) *
+						Matrix4x4::Rotation(transform.rotation) *
+						Matrix4x4::Translation(transform.position)
+					)
+				}
+			};
+			s_Data.textureSlotIndex++;
+		}
 
 		/*s_Data.quadInstanceDataPtr->transform = (Matrix4x4::Scale(transform.scale) * Matrix4x4::RotationColumn(transform.rotation) * Matrix4x4::Translation(transform.position)).matrix*/;
 		//s_Data.quadInstanceDataPtr->color = sprite.color.c;

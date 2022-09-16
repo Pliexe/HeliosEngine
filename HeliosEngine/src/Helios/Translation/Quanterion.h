@@ -84,6 +84,11 @@ namespace Helios {
             return *this;
         }
 
+        Quanterion operator * (float n)
+        {
+			return { x * n, y * n, z * n, w * n };
+        }
+
         Vector3 operator*(Vector3 point)
         {
             // Multiply by XYZ direction
