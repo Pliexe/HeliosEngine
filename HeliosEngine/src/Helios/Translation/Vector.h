@@ -131,8 +131,7 @@ namespace Helios {
 
 	struct HELIOS_API Vector4 : public Vector3 {
 		float w;
-
-
+		
 		Vector4() : Vector3(0.0f, 0.0f, 0.0f), w(0.0f) { };
 		Vector4(float x, float y, float z, float w) : Vector3(x, y, z), w(w) { };
 		Vector4(const Vector2& other) : Vector3(other), w(0.0f) { };
