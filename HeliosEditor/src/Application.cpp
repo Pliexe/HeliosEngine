@@ -39,7 +39,7 @@ StartupConfig startupConfig;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static Helios::Components::Transform cameraTransform;
+static Helios::Components::Transform cameraTransform = { { 0.0f, 0.0f, -5.0f } };
 static Helios::Components::Camera cameraPropeties;
 
 
