@@ -22,7 +22,7 @@ namespace Helios
 		{
 			auto ext = file.extension().string();
 
-			if (ext == ".png")
+			if (ext == ".png" || ext == ".jpg")
 			{
 				if (std::filesystem::exists(file))
 				{

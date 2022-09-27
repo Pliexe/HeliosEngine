@@ -154,6 +154,7 @@ ImTextureID GetFileIcon(std::filesystem::path file) {
 	else if (ext == ".c") return *ICON_FILE_C;
 	else if (ext == ".h") return *ICON_FILE_H;
 	else if (ext == ".png") return *ICON_FILE_IMAGE;
+	else if (ext == ".jpg") return *ICON_FILE_IMAGE;
 	else if (ext == ".txt") return *ICON_FILE_TXT;
 	else if (ext == ".scene") return *ICON_FILE_SCENE;
 	else if (ext == ".ttf") return *ICON_FILE_FONT;
