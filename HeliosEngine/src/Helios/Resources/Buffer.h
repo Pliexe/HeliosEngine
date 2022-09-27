@@ -13,7 +13,7 @@ namespace Helios {
 		Dynamic
 	};
 
-	class ConstantBuffer
+	class HELIOS_API ConstantBuffer
 	{
 	public:
 
@@ -29,7 +29,7 @@ namespace Helios {
 	};
 	
 	
-	class VertexBuffer
+	class HELIOS_API VertexBuffer
 	{
 	protected:
 		BufferUsage m_Usage;
@@ -49,7 +49,7 @@ namespace Helios {
 
 	};
 
-	class IndexBuffer
+	class HELIOS_API IndexBuffer
 	{
 
 	public:

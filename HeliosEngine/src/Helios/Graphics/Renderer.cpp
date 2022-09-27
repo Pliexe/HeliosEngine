@@ -8,7 +8,7 @@ namespace Helios
 	struct RendererData
 	{
 		Matrix4x4 projectionMatrix;
-		struct CBD { Matrix4x4 transform; };
+		struct CBD { Matrix4x4 transform; Color color; };
 		Ref<ConstantBuffer> transformBuffer;
 	};
 
@@ -49,11 +49,13 @@ namespace Helios
 	void Renderer::DrawMesh(Components::Transform& transform, Components::MeshRenderer& meshRenderer)
 	{
 		static Ref<Shader> shader = CreateRef<Shader>(Shader("Standard", {
-			{ "Position", Shader::DataType::Float3 }
+			{ "Position", Shader::DataType::Float3 },
+			{ "TexCoord", Shader::DataType::Float2 }
 		}));
 
 		shader->Bind();
 		meshRenderer.mesh->Bind();
+		meshRenderer.material->Bind(0u);
 
 		const RendererData::CBD cb =
 		{
@@ -64,11 +66,14 @@ namespace Helios
 					Matrix4x4::Translation(transform.position) *
 					rendereData.projectionMatrix
 				)
-			}
+			},
+			meshRenderer.material->Color
 		};
+
 
 		rendereData.transformBuffer->SetData(&cb, sizeof(cb));
 		rendereData.transformBuffer->Bind(0);
+
 
 		Graphics::instance->m_deviceContext->DrawIndexed(meshRenderer.mesh->GetIndexCount(), 0u, 0u);
 	}

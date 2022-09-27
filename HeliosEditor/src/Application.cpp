@@ -32,6 +32,7 @@
 #include <Helios/Graphics/Framebuffer.h>
 
 #include "AssetRegistry.h"
+#include <Helios/Resources/Shader.h>
 
 static std::filesystem::path currentScene;
 StartupConfig startupConfig;
@@ -51,6 +52,38 @@ static Vector2 editorCameraRotation = { 0.0f, 0.0f };
 
 bool isGameSceneActive = false;
 bool isEditorSceneActive = false;
+
+struct TransformVertex
+{
+	Vector3 position;
+	Color color;
+};
+
+static const TransformVertex transformMoveVertices[] = {
+	{ {  0.0f, 1.0f,  0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+	{ {  0.2f, 0.8f,  0.2f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+	{ { -0.2f, 0.8f,  0.2f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+	{ {  0.2f, 0.8f, -0.2f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+	{ { -0.2f, 0.8f, -0.2f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+};
+
+static const unsigned short transformMoveIndecies[] = {
+	0, 1, 2
+};
+
+static Ref<VertexBuffer> transformMoveVertexBuffer;
+static Ref<IndexBuffer> transformMoveIndexBuffer;
+static Ref<Shader> transformShader;
+
+void InitTransformBuffers()
+{
+	transformMoveVertexBuffer = VertexBuffer::Create(&transformMoveVertices, std::size(transformMoveVertices) * sizeof(TransformVertex), Helios::BufferUsage::Dynamic);
+	transformMoveIndexBuffer = IndexBuffer::Create((const unsigned short*)&transformMoveIndecies, std::size(transformMoveIndecies));
+	transformShader = CreateRef<Shader>(Shader("Transform", {
+		{ "Position", Shader::DataType::Float3 },
+		{ "Color", Shader::DataType::Float4 },
+	}));
+}
 
 int ValidateInit() {
 
@@ -73,141 +106,6 @@ namespace Helios {
 		HierarchyPanel hierarchy;
 
 		std::vector<Editor::IPanel*> panels;
-
-		/*GameObject* InspectorCreateElementsList(Transform2D* parent = nullptr) {
-			if (ImGui::MenuItem("Create Empty")) {
-
-
-				return &GameObject::InstantiateObject("Empty GameObject", parent);
-			}
-			else return nullptr;
-		}*/
-
-		//bool InspectorElement(GameObject* o, GameObject** selected, int count, float width, float indent = 40) {
-		//	if (o->transform.parent && indent == 40) return false;
-		//	bool clicked = false;
-		//	float height = 50;
-		//	ImGui::PushID("HierarchyElement");
-		//	ImGui::PushID(indent);
-		//	ImGui::PushID(count);
-
-		//	ImGui::PushStyleColor(ImGuiCol_Header, o == *selected ? IM_COL32(255, 255, 255, 25) : IM_COL32(0, 0, 0, 0));
-		//	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(0, 0, 0, 0));
-		//	//ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(255, 255, 255, 100));
-
-		//	static char buf[100];
-		//	strcpy_s(buf, o->GetName().c_str());
-
-
-		//	//ImGui::Text(o->m_name.c_str());
-
-
-
-		//	//ImGui::Indent();
-
-		//	static int rename = -1;
-
-		//	ImGui::BeginGroup();
-		//	bool is_open;
-		//	ImGui::PushStyleColor(ImGuiCol_Header, IM_COL32(0, 0, 0, 0));
-		//	ImGui::PushStyleColor(ImGuiCol_HeaderHovered, IM_COL32(0, 0, 0, 0));
-		//	is_open = ImGui::TreeNodeEx("##t_gm", o->transform.children.size() > 0 ? ImGuiTreeNodeFlags_Selected : (ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_Leaf));
-		//	ImGui::PopStyleColor(2);
-
-		//	//if (rename != count)
-		//	//{
-		//	//	ImGui::SameLine();
-
-		//	//	if (ImGui::Selectable("##s_gm", o == *selected, ImGuiSelectableFlags_AllowItemOverlap)) {
-		//	//		/*if(ImGui::IsItemClicked() && o == *selected)
-		//	//			rename = count;*/
-
-		//	//		(*selected) = o;
-		//	//	}
-		//	//}
-
-
-		//	ImGui::SameLine();
-		//	static bool firstTimeActive = true;
-		//	if (rename == count)
-		//	{
-		//		char tmp[100];
-		//		strcpy_s(tmp, o->m_name.c_str());
-		//		ImGui::SetCursorPosX(indent);
-		//		if (firstTimeActive) {
-		//			ImGui::SetKeyboardFocusHere();
-		//			firstTimeActive = false;
-		//		}
-		//		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 3.5f));
-		//		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2);
-		//		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255, 255, 255, 255));
-		//		if (ImGui::InputText("##editGameobjectName", tmp, 100, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue) || ImGui::IsItemDeactivatedAfterEdit())
-		//		{
-		//			if (tmp[0] != '\0') o->m_name = tmp;
-		//			rename = -1;
-		//			firstTimeActive = true;
-		//		}
-		//		else if (ImGui::IsItemDeactivated()) {
-		//			rename = -1;
-		//			firstTimeActive = true;
-		//		}
-		//		ImGui::PopStyleColor();
-		//		ImGui::PopStyleVar(2);
-		//	}
-		//	else
-		//	{
-		//		ImGui::SetCursorPosX(0);
-		//		if(ImGui::Selectable("##obj_select", *selected == o, 0, ImVec2(width, 20))) {
-		//			(*selected) = o;
-		//			inspector.SetSelected<InspectorPanel::SelectedType::GameObject>(o);
-		//		}
-
-		//		ImGui::SameLine();
-
-		//		static bool selectedCount = -1;
-		//		if (*selected == o) selectedCount = count;
-		//		if (ImGui::IsKeyReleased(ImGuiKey_F2))
-		//			rename = selectedCount;
-		//		else {
-		//			ImGui::OpenPopupOnItemClick("ObjectContext", ImGuiPopupFlags_MouseButtonRight);
-		//			if (ImGui::BeginPopup("ObjectContext"))
-		//			{
-		//				clicked = true;
-		//				if (ImGui::MenuItem("Rename")) {
-		//					rename = count;
-		//				}
-		//				//InspectorCreateElementsList(&o->transform);
-		//				ImGui::Separator();
-		//				ImGui::EndPopup();
-		//			}
-		//		}
-
-		//		ImGui::SetCursorPos(ImVec2(indent, ImGui::GetCursorPosY() + 2));
-		//		ImGui::Text(o->m_name.c_str());
-		//	}
-
-		//	if (is_open) {
-		//		if (o->transform.children.size() > 0)
-		//		{
-		//			int i = 0;
-		//			for (auto& t : o->transform.children)
-		//			{
-		//				i++;
-		//				InspectorElement(t->gameObject, selected, i, width, indent + 10.0f);
-		//			}
-		//		}
-
-		//		ImGui::TreePop();
-		//	}
-
-		//	ImGui::EndGroup();
-
-		//	ImGui::PopStyleColor(2);
-		//	ImGui::PopID();
-		//	ImGui::PopID();
-		//	ImGui::PopID();
-		//	return clicked;
-		//}
 
 		bool inPlayMode = false;
 		
@@ -322,9 +220,13 @@ namespace Helios {
 			editorFrame = Framebuffer::Create(300, 300);
 			gameFrame = Framebuffer::Create(300, 300);
 
+			InitTransformBuffers();
+
 			// Setup Platform/Renderer backends
 			ImGui_ImplWin32_Init(m_hWnd);
 			ImGui_ImplDX11_Init(graphics->m_device, graphics->m_deviceContext);
+
+			
 
 			AssetRegistry::Init();
 
@@ -590,6 +492,12 @@ namespace Helios {
 					SceneManager::currentScene->OnUpdateEditor(cameraTransform, cameraPropeties);
 				}
 	#pragma endregion
+
+				transformMoveVertexBuffer->Bind();
+				transformMoveIndexBuffer->Bind();
+				transformShader->Bind();
+
+				Graphics::instance->m_deviceContext->DrawIndexed(std::size(transformMoveIndecies), 0u, 0u);
 
 				editorFrame->Unbind();
 			}
