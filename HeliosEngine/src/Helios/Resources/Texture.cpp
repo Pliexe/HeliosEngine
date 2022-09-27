@@ -15,4 +15,15 @@ namespace Helios
         HL_CORE_ASSERT_WITH_MSG(false, "Unknown Graphics API!");
         return nullptr;
     }
+
+    Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
+    {
+        switch (Graphics::GetAPI())
+        {
+        case Graphics::API::DirectX: return CreateRef<DirectXTexture2D>(width, height);
+        }
+
+        HL_CORE_ASSERT_WITH_MSG(false, "Unknown Graphics API!");
+        return nullptr;
+    }
 }

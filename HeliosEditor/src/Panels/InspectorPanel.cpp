@@ -130,6 +130,27 @@ namespace Helios {
 				}
 			}
 
+			if (gm.HasComponent<Components::MeshRenderer>())
+			{
+				if (ImGui::CollapsingHeader("MeshRenderer")) {
+					auto& sRenderer = gm.GetComponent<Components::MeshRenderer>();
+
+					ImGui::ColorEdit4("Color", sRenderer.material->Color);
+
+					if (sRenderer.material->texture == nullptr)
+						ImGui::Text("Texture: None");
+					else
+						ImGui::Text("Texture: Unknown Name!");
+
+					if (ImGui::Button("Select")) {
+						GameObject selectedGm = gm;
+						AssetRegistry::OpenTextureSelect([selectedGm](Ref<Texture2D> nTexture) mutable {
+							auto& renderer = selectedGm.GetComponent<Components::MeshRenderer>().material->texture = nTexture;
+							});
+					}
+				}
+			}
+
 			ImVec2 lastSize = ImGui::GetWindowSize();
 			ImVec2 lastPos = ImGui::GetWindowPos();
 			
