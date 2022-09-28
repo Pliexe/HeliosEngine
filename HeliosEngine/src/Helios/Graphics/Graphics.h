@@ -17,7 +17,7 @@ namespace Helios {
 		{
 			None = 0,
 			DirectX = 1,
-			// OpenGL = 2
+			OpenGL = 2,
 		};
 
 		static API GetAPI() { return s_API; }
@@ -102,6 +102,7 @@ namespace Helios {
 		friend class DirectXVertexBuffer;
 		friend class DirectXConstantBuffer;
 		friend class DirectXTexture2D;
+		friend class DirectXMaterial;
 		
 #pragma endregion
 

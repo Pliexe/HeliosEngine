@@ -7,6 +7,7 @@
 #include "Helios/Resources/Color.h"
 #include "Helios/Resources/Mesh.h"
 #include "Helios/Resources/Texture.h"
+#include "Helios/Resources/Material.h"
 
 namespace Helios::Components {
 
@@ -126,6 +127,7 @@ namespace Helios::Components {
 	struct HELIOS_API MeshRenderer
 	{
 		Ref<Mesh> mesh;
+		Ref<Material> material;
 	
 		MeshRenderer() = default;
 		MeshRenderer(const MeshRenderer&) = default;

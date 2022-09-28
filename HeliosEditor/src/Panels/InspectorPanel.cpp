@@ -63,11 +63,11 @@ namespace Helios {
 
 			if (gm.HasComponent<Components::Transform>())
 			{
-				if (ImGui::CollapsingHeader("Transform")) {
+				if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 					auto& transform = gm.GetComponent<Components::Transform>();
 
 					ImGui::EditVector3("Position", transform.position);
-					
+
 					ImGui::EditQuanterionEuler("Rotation Euler", transform.rotation);
 					ImGui::EditQuanterion("Rotation", transform.rotation, 0.01, -1.0f, 1.0f);
 
@@ -82,7 +82,7 @@ namespace Helios {
 
 			if (gm.HasComponent<Components::Camera>())
 			{
-				if (ImGui::CollapsingHeader("Camera")) {
+				if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen)) {
 					auto& cam = gm.GetComponent<Components::Camera>();
 					ImGui::ColorEdit4("Clear Color", cam.clear_color);
 
@@ -91,11 +91,11 @@ namespace Helios {
 					}
 
 					int selected = cam.ortographic;
-					static const char* items[] = { "Perspective", "Ortographic"  };
+					static const char* items[] = { "Perspective", "Ortographic" };
 					if (ImGui::Combo("Perspective: ", &selected, items, 2)) {
 						cam.ortographic = selected;
 					}
-					
+
 					if (cam.ortographic) {
 						ImGui::DragFloat("Size", &cam.size, 0.2f);
 					}
@@ -111,7 +111,7 @@ namespace Helios {
 
 			if (gm.HasComponent<Components::SpriteRenderer>())
 			{
-				if (ImGui::CollapsingHeader("SpriteRenderer")) {
+				if (ImGui::CollapsingHeader("SpriteRenderer", ImGuiTreeNodeFlags_DefaultOpen)) {
 					auto& sRenderer = gm.GetComponent<Components::SpriteRenderer>();
 
 					ImGui::ColorEdit4("Color", sRenderer.color);
@@ -126,6 +126,27 @@ namespace Helios {
 						AssetRegistry::OpenTextureSelect([selectedGm](Ref<Texture2D> nTexture) mutable {
 							auto& renderer = selectedGm.GetComponent<Components::SpriteRenderer>().texture = nTexture;
 						});
+					}
+				}
+			}
+
+			if (gm.HasComponent<Components::MeshRenderer>())
+			{
+				if (ImGui::CollapsingHeader("MeshRenderer", ImGuiTreeNodeFlags_DefaultOpen)) {
+					auto& sRenderer = gm.GetComponent<Components::MeshRenderer>();
+
+					ImGui::ColorEdit4("Color", sRenderer.material->Color);
+
+					if (sRenderer.material->texture == nullptr)
+						ImGui::Text("Texture: None");
+					else
+						ImGui::Text("Texture: Unknown Name!");
+
+					if (ImGui::Button("Select")) {
+						GameObject selectedGm = gm;
+						AssetRegistry::OpenTextureSelect([selectedGm](Ref<Texture2D> nTexture) mutable {
+							auto& renderer = selectedGm.GetComponent<Components::MeshRenderer>().material->texture = nTexture;
+							});
 					}
 				}
 			}

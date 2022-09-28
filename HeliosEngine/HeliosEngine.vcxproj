@@ -179,6 +179,7 @@
     <ClInclude Include="src\Helios\Renderer\Mesh.h" />
     <ClInclude Include="src\Helios\Graphics\Renderer.h" />
     <ClInclude Include="src\Helios\Graphics\Renderer2D.h" />
+    <ClInclude Include="src\Helios\Resources\Material.h" />
     <ClInclude Include="src\Helios\Resources\Mesh.h" />
     <ClInclude Include="src\Helios\Resources\Shader.h" />
     <ClInclude Include="src\Helios\Resources\Texture.h" />
@@ -219,6 +220,7 @@
     <ClInclude Include="src\Helios\Core\Time.h" />
     <ClInclude Include="src\Platform\DirectX\DirectXConstantBuffer.h" />
     <ClInclude Include="src\Platform\DirectX\DirectXFramebuffer.h" />
+    <ClInclude Include="src\Platform\DirectX\DirectXMaterial.h" />
     <ClInclude Include="src\Platform\DirectX\DirectXTexture2D.h" />
     <ClInclude Include="src\Platform\DirectX\DirectXVertexBuffer.h" />
   </ItemGroup>
@@ -227,6 +229,7 @@
     <ClCompile Include="src\Helios\GameObjects\ObjectBehaviour.cpp" />
     <ClCompile Include="src\Helios\Resources\Buffer.cpp" />
     <ClCompile Include="src\Helios\Graphics\Framebuffer.cpp" />
+    <ClCompile Include="src\Helios\Resources\Material.cpp" />
     <ClCompile Include="src\Helios\Resources\Mesh.cpp" />
     <ClCompile Include="src\Helios\Graphics\Renderer.cpp" />
     <ClCompile Include="src\Helios\Graphics\Renderer2D.cpp" />
@@ -260,6 +263,7 @@
     <ClCompile Include="src\Helios\Translation\Vector.cpp" />
     <ClCompile Include="src\Platform\DirectX\DirectXConstantBuffer.cpp" />
     <ClCompile Include="src\Platform\DirectX\DirectXFramebuffer.cpp" />
+    <ClCompile Include="src\Platform\DirectX\DirectXMaterial.cpp" />
     <ClCompile Include="src\Platform\DirectX\DirectXTexture2D.cpp" />
     <ClCompile Include="src\Platform\DirectX\DirectXVertexBuffer.cpp" />
   </ItemGroup>

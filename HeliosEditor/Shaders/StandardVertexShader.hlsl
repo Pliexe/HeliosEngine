@@ -1,9 +1,23 @@
 cbuffer Cbuf
 {
     matrix transform;
+    float4 color;
 };
 
-float4 main( float3 pos : Position ) : SV_Position
+struct VSOut
 {
-	return mul( float4( pos, 1.0f ), transform );
+    float4 color : Color;
+    float2 texCoord : TexCoord;
+    float4 position : SV_Position;
+};
+
+VSOut main( float3 pos : Position, float2 texCoord : TexCoord )
+{
+    VSOut vout;
+    
+    vout.position = mul( float4( pos, 1.0f ), transform );
+    vout.texCoord = texCoord;
+    vout.color = color;
+    
+    return vout;
 }

@@ -6,7 +6,7 @@
 #include <d3dcompiler.h>
 
 namespace Helios {
-	class Shader
+	class HELIOS_API Shader
 	{
 	public:
 
@@ -15,6 +15,10 @@ namespace Helios {
 			Float2 = DXGI_FORMAT_R32G32_FLOAT,
 			Float3 = DXGI_FORMAT_R32G32B32_FLOAT,
 			Float4 = DXGI_FORMAT_R32G32B32A32_FLOAT,
+
+			Vector2 = DXGI_FORMAT_R32G32_FLOAT,
+			Vector3 = DXGI_FORMAT_R32G32B32_FLOAT,
+			Vector4 = DXGI_FORMAT_R32G32B32A32_FLOAT,
 
 			UInt8 = DXGI_FORMAT_R8_UINT,
 			UInt16 = DXGI_FORMAT_R16_UINT,

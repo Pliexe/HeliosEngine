@@ -33,7 +33,9 @@ namespace Helios {
 		{
 			if (ImGui::MenuItem("Cube")) {
 				auto obj = GameObject::InstantiateObject("Cube");
-				obj.AddComponent<Components::MeshRenderer>().mesh = Mesh::GetCubeMesh();
+				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
+				meshRenderer.mesh = Mesh::GetCubeMesh();
+				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << (entt::entity)obj;
 			}
 			ImGui::EndMenu();

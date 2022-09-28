@@ -8,7 +8,8 @@ namespace Helios
 {
     struct MeshVertexData
     {
-        float position[3];
+        Vector3 position;
+        Vector2 texCoord;
     };
 
     class HELIOS_API Mesh
@@ -22,6 +23,7 @@ namespace Helios
         static void Destroy(std::string name);
 
         static Ref<Mesh> GetCubeMesh();
+        static Ref<Mesh> GetTransformMoveMesh();
 
         void Bind();
 		inline uint32_t GetIndexCount() const { return m_IndexBuffer->GetCount(); }

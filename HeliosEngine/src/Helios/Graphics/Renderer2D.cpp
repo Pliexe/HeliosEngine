@@ -136,7 +136,7 @@ namespace Helios {
 		Renderer2DData::TransformData data = {
 			(
 				Matrix4x4::Transpose(
-					Matrix4x4::Translation(trans.position) *
+					Matrix4x4::Translation(-trans.position) *
 					(
 						Matrix4x4::RotationColumn(trans.rotation)
 					) *

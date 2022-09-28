@@ -5,25 +5,48 @@ namespace Helios
 	Ref<Mesh> Mesh::GetCubeMesh()
 	{
 		static const MeshVertexData cubeVertices[] = {
-			// Front
-			{ {-0.5f, -0.5f, -0.5f} },
-			{ { 0.5f, -0.5f, -0.5f} },
-			{ {-0.5f,  0.5f, -0.5f} },
-			{ { 0.5f,  0.5f, -0.5f} },
-			// Back
-			{ {-0.5f, -0.5f,  0.5f} },
-			{ { 0.5f, -0.5f,  0.5f} },
-			{ {-0.5f,  0.5f,  0.5f} },
-			{ { 0.5f,  0.5f,  0.5f} },
+			// Front Face
+			{ {-0.5f, -0.5f, -0.5f}, { 0.0f, 1.0f } },
+			{ { 0.5f, -0.5f, -0.5f}, { 1.0f, 1.0f } },
+			{ {-0.5f,  0.5f, -0.5f}, { 0.0f, 0.0f } },
+			{ { 0.5f,  0.5f, -0.5f}, { 1.0f, 0.0f } },
+
+			// Back Face
+			{ {-0.5f, -0.5f,  0.5f}, { 1.0f, 1.0f } },
+			{ { 0.5f, -0.5f,  0.5f}, { 0.0f, 1.0f } },
+			{ {-0.5f,  0.5f,  0.5f}, { 1.0f, 0.0f } },
+			{ { 0.5f,  0.5f,  0.5f}, { 0.0f, 0.0f } },
+
+			// Right Face
+			{ { 0.5f,  0.5f,  0.5f}, { 1.0f, 0.0f } },
+			{ { 0.5f, -0.5f,  0.5f}, { 1.0f, 1.0f } },
+			{ { 0.5f,  0.5f, -0.5f}, { 0.0f, 0.0f } },
+			{ { 0.5f, -0.5f, -0.5f}, { 0.0f, 1.0f } },
+
+			// Left Face
+			{ {-0.5f, -0.5f, -0.5f}, { 1.0f, 1.0f } },
+			{ {-0.5f, -0.5f,  0.5f}, { 0.0f, 1.0f } },
+			{ {-0.5f,  0.5f, -0.5f}, { 1.0f, 0.0f } },
+			{ {-0.5f,  0.5f,  0.5f}, { 0.0f, 0.0f } },
+
+			// Top Face
+			/*{ {-0.5f,  0.5f, -0.5f}, { 0.0f, 0.0f } },
+			{ {-0.5f,  0.5f,  0.5f}, { 1.0f, 0.0f } },
+			{ { 0.5f,  0.5f, -0.5f}, { 1.0f, 0.0f } },
+			{ { 0.5f,  0.5f,  0.5f}, { 0.0f, 0.0f } },*/
+
+			// Bottom face
 		};
 
+		// TODO: create more vertecies for UV data so the cube is rendered properly.
+
 		static const unsigned short cubeIndices[] = {
-			0,2,1, 2,3,1,
-			1,3,5, 3,7,5,
-			2,6,3, 3,6,7,
-			4,5,7, 4,7,6,
-			0,4,2, 2,4,6,
-			0,1,4, 1,5,4,
+			0 ,2 ,1, 2 ,3,1, // front face
+			4 ,5 ,7, 4 ,7,6, // back face
+			11,10,9, 10,8,9, // right face
+			12 ,13 ,14, 14 ,13,15, // left face
+			2 ,6 ,3, 3 ,6,7, // top face
+			0 ,1 ,4, 1 ,5,4, // bottom face
 		};
 
 		return Mesh::Create("Cube", cubeVertices, std::size(cubeVertices), cubeIndices, std::size(cubeIndices));
