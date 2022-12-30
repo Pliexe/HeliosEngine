@@ -57,7 +57,7 @@ namespace ImGui {
 		ImGui::SetNextItemWidth(size.x / 7.0f);
 		if (ImGui::DragFloat((std::string("##z") + label).c_str(), &euler.z, speed, min, max)) is_changed = true;
 		ImGui::PopID();
-		if (is_changed) quanterion = Helios::Quanterion::Euler(euler);
+		if (is_changed) quanterion = Helios::Quanterion::FromEuler(euler);
 	}
 
 	void EditQuanterion(const char* label, Helios::Quanterion& quanterion, float speed = 0.1f, float min = 0.0f, float max = 0.0f) {

@@ -1,3 +1,5 @@
+Texture2D<float4> tex : register(t25);
+
 cbuffer Cbuf
 {
     matrix transform;
@@ -14,8 +16,7 @@ struct VSOut
 VSOut main( float3 pos : Position, float2 texCoord : TexCoord )
 {
     VSOut vout;
-    
-    vout.position = mul( float4( pos, 1.0f ), transform );
+    vout.position = mul( float4(pos, 1.0f), transform );
     vout.texCoord = texCoord;
     vout.color = color;
     

@@ -25,6 +25,8 @@ namespace Helios {
 
 		const std::any GetHandle() { return handle; }
 
+		static void Reset() { instance->handle = nullptr; instance->type = SelectedType::None; }
+
 		enum class SelectedType {
 			None,
 			GameObject
@@ -40,7 +42,7 @@ namespace Helios {
 		template <typename type>
 		bool operator != (type anything) {
 			return *this != anything;
-		}		
+		}
 
 		template <typename T>
 		typename std::enable_if<std::is_same<T, entt::entity>::value, InspectorPanel&>::type

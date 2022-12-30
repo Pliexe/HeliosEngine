@@ -86,6 +86,8 @@ namespace Helios {
 
 #pragma region Vector3
 	
+	const Vector3 Vector3::right = { 1.0f, 0.0f, 0.0f };
+
 	Vector3 Vector3::normalize()
 	{
 		float length = this->length();

@@ -49,6 +49,16 @@ namespace Helios
 
 	public:
 
+		static std::unordered_map<std::string, Ref<Texture2D>>& GetTextures() { return s_Textures; }
+
+		static Ref<Texture2D> GetTexture(std::string path)
+		{
+			if (s_Textures.find(path) != s_Textures.end())
+				return s_Textures[path];
+			else
+				return nullptr;
+		}
+
 		static inline bool CheckForChangesEnabled() { return s_CheckForChanges; }
 
 		static void Init()

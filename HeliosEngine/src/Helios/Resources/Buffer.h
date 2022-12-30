@@ -26,6 +26,8 @@ namespace Helios {
 
 		static Ref<ConstantBuffer> Create(uint32_t size);
 		static Ref<ConstantBuffer> Create(const void* data, uint32_t size);
+		/*static Ref<ConstantBuffer> Create(uint32_t size, BufferUsage usage);
+		static Ref<ConstantBuffer> Create(const void* data, uint32_t size, BufferUsage usage);*/
 	};
 	
 	

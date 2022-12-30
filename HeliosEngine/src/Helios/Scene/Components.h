@@ -94,13 +94,14 @@ namespace Helios::Components {
 		Transform(const Vector3& position, const Vector3& rotation, const Vector3& scale) : position(position), rotation(rotation), scale(scale) { }
 
 		void Rotate(const Vector3& euler) {
-			rotation = rotation * Quanterion::Euler(euler);
+			//rotation *= Quanterion::Euler(euler);
+			rotation = Quanterion::FromEuler(rotation.euler() + euler);
 		}
-		void RotateRads(const Vector3& euler) { this->rotation = this->rotation * Quanterion::EulerRads(euler); }
+		void RotateRads(const Vector3& euler) { this->rotation = this->rotation * Quanterion::FromEulerRads(euler); }
 		
-		Vector3 forward() { return rotation.forward(); }
+		inline Vector3 forward() { return rotation.forward(); }
 		//Vector3 forward() { return rotation * Vector3::Forward(); }
-		Vector3 right() { return rotation * Vector3::Right(); }
+		inline Vector3 right() { return rotation * Vector3::Right(); }
 	};
 
 	struct HELIOS_API Transform2D

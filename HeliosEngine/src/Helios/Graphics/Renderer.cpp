@@ -30,21 +30,9 @@ namespace Helios
 	{
 	}
 
-	void Renderer::BeginScene(Components::Transform& trans, Components::Camera& cam)
+	void Renderer::BeginScene(Matrix4x4 projection)
 	{
-		auto size = Graphics::GetCurrentSize();
-
-		rendererData.projectionMatrix = (
-			Matrix4x4::Translation(-trans.position) *
-			(
-				Matrix4x4::RotationColumn(trans.rotation)
-			) *
-			(cam.ortographic ? (
-				Matrix4x4::OrthographicLH(cam.size, cam.size * ((float)size.y / (float)size.x), cam.near_z, cam.far_z)
-			) : (
-				Matrix4x4::PerspectiveLH(cam.fov * 3.14f / 180.0f, ((float)size.x / (float)size.y), cam.near_z, cam.far_z)
-			))
-		);
+		rendererData.projectionMatrix = projection;
 	}
 
 	void Renderer::EndScene()
@@ -68,12 +56,10 @@ namespace Helios
 		const RendererData::CBD cb =
 		{
 			{
-				Matrix4x4::Transpose(
-					Matrix4x4::Scale(transform.scale) *
-					Matrix4x4::Rotation(transform.rotation) *
-					Matrix4x4::Translation(transform.position) *
-					rendererData.projectionMatrix
-				)
+				rendererData.projectionMatrix* // Projection is column major
+				Matrix4x4::TranslationColumn(transform.position)*
+				Matrix4x4::RotationColumn(transform.rotation)*
+				Matrix4x4::Scale(transform.scale)
 			},
 			meshRenderer.material->Color
 		};

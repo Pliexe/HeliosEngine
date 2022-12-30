@@ -39,11 +39,24 @@ namespace Helios {
 	void Scene::OnUpdateRuntime()
 	{
 		if (primaryCamera != entt::null) {
-			auto& camera = GameObject(primaryCamera).GetComponent<Components::Camera>();
-			auto& transform = GameObject(primaryCamera).GetComponent<Components::Transform>();
 			auto& relationship = GameObject(primaryCamera).GetComponent<Components::Relationship>();
 
-			Renderer2D::BeginScene(transform, camera);
+			Matrix4x4 projection;
+
+			if (relationship.parent_handle != entt::null)
+			{
+				auto parent = GameObject(relationship.parent_handle);
+
+				projection = SceneCamera::GetProjection(
+					GameObject(primaryCamera).GetComponent<Components::Transform>(),
+					GameObject(primaryCamera).GetComponent<Components::Camera>()
+				);
+			} else projection = SceneCamera::GetProjection(
+				GameObject(primaryCamera).GetComponent<Components::Transform>(),
+				GameObject(primaryCamera).GetComponent<Components::Camera>()
+			);
+
+			Renderer2D::BeginScene(projection);
 
 			{
 				//Renderer2D::DrawPolygon((sin(Time::passedTime()) + 1) * 50);
@@ -86,7 +99,7 @@ namespace Helios {
 
 			Renderer2D::EndScene();
 
-			Renderer::BeginScene(transform, camera);
+			Renderer::BeginScene(projection);
 
 			{
 				auto view = m_components.view<Components::Transform, Components::Relationship, Components::MeshRenderer>();
@@ -117,11 +130,13 @@ namespace Helios {
 		}
 	}
 
-	void Scene::OnUpdateEditor(Components::Transform cameraTransform, Components::Camera cameraPropeties)
+	void Scene::OnUpdateEditor(SceneCamera camera)
 	{
 		if (primaryCamera != entt::null) {
 
-			Renderer2D::BeginScene(cameraTransform, cameraPropeties);
+			auto projection = camera.GetProjection();
+
+			Renderer2D::BeginScene(projection);
 
 			{
 				//Renderer2D::DrawPolygon((sin(Time::passedTime()) + 1) * 50);
@@ -163,7 +178,7 @@ namespace Helios {
 			Renderer2D::EndScene();
 
 
-			Renderer::BeginScene(cameraTransform, cameraPropeties);
+			Renderer::BeginScene(projection);
 
 			{
 				auto view = m_components.view<Components::Transform, Components::Relationship, Components::MeshRenderer>();

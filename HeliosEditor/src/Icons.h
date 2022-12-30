@@ -18,3 +18,7 @@ inline Ref<Helios::EngineTexture> ICON_FILE_HPP			= nullptr;
 inline Ref<Helios::EngineTexture> ICON_FILE_IMAGE		= nullptr;
 inline Ref<Helios::EngineTexture> ICON_FILE_FONT		= nullptr;
 inline Ref<Helios::EngineTexture> ICON_FILE_SCENE		= nullptr;
+
+inline Ref<Helios::EngineTexture> ICON_PLAY_WHITE		= nullptr;
+inline Ref<Helios::EngineTexture> ICON_PAUSE_WHITE		= nullptr;
+inline Ref<Helios::EngineTexture> ICON_STOP_WHITE		= nullptr;

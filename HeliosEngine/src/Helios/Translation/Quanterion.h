@@ -31,11 +31,11 @@ namespace Helios {
 
         static const Quanterion Identity() { return { 0.0f, 0.0f, 0.0f, 1.0f }; }
 
-        static Quanterion Euler(Vector3 vec) { return EulerRads(vec * ((float)M_PI / 180.0f)); }
-        static Quanterion Euler(float x, float y, float z) { return EulerRads(x * ((float)M_PI / 180.0f), y * ((float)M_PI / 180.0f), z * ((float)M_PI / 180.0f)); }
-        static Quanterion EulerRads(Vector3 vec) { return EulerRads(vec.x, vec.y, vec.z); }
+        static Quanterion FromEuler(Vector3 vec) { return FromEulerRads(vec * ((float)M_PI / 180.0f)); }
+        static Quanterion FromEuler(float x, float y, float z) { return FromEulerRads(x * ((float)M_PI / 180.0f), y * ((float)M_PI / 180.0f), z * ((float)M_PI / 180.0f)); }
+        static Quanterion FromEulerRads(Vector3 vec) { return FromEulerRads(vec.x, vec.y, vec.z); }
         // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-        static Quanterion EulerRads(float x, float y, float z) // YXZ
+        static Quanterion FromEulerRads(float x, float y, float z) // YXZ
         {
             // Convert Euler Rotation (radians) to Quanterion Rotation and return it
 

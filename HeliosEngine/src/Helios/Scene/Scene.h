@@ -7,6 +7,7 @@
 #include "pch.h"
 #include "Helios/Core/Base.h"
 #include "Components.h"
+#include "SceneCamera.h"
 
 namespace Helios {
 	class GameObject;
@@ -36,7 +37,7 @@ namespace Helios {
 		inline void ResetPrimaryCamera();
 
 		void OnUpdateRuntime();
-		void OnUpdateEditor(Components::Transform cameraTransform, Components::Camera cameraPropeties);
+		void OnUpdateEditor(SceneCamera camera);
 
 		void Init() { initCallback(*this); }
 

@@ -174,6 +174,7 @@
     <ClInclude Include="src\Helios\Core\Asserts.h" />
     <ClInclude Include="src\Helios\Core\ExitCodes.h" />
     <ClInclude Include="src\Helios\Graphics\Framebuffer.h" />
+    <ClInclude Include="src\Helios\Graphics\GizmosRenderer.h" />
     <ClInclude Include="src\Helios\Resources\Buffer.h" />
     <ClInclude Include="src\Helios\Renderer\Framebuffer.h" />
     <ClInclude Include="src\Helios\Renderer\Mesh.h" />
@@ -200,6 +201,7 @@
     <ClInclude Include="src\Helios\Resources\Color.h" />
     <ClInclude Include="src\Helios\Resources\EngineTexture.h" />
     <ClInclude Include="src\Helios\Resources\Resource.h" />
+    <ClInclude Include="src\Helios\Scene\SceneCamera.h" />
     <ClInclude Include="src\Helios\Translation\Matrix.h" />
     <ClInclude Include="src\Helios\Translation\Quanterion.h" />
     <ClInclude Include="src\Helios\Utils\ErrorHandling.h" />
@@ -227,6 +229,7 @@
   <ItemGroup>
     <ClCompile Include="src\Helios\GameObjects\ObjectComponent.cpp" />
     <ClCompile Include="src\Helios\GameObjects\ObjectBehaviour.cpp" />
+    <ClCompile Include="src\Helios\Graphics\GizmosRenderer.cpp" />
     <ClCompile Include="src\Helios\Resources\Buffer.cpp" />
     <ClCompile Include="src\Helios\Graphics\Framebuffer.cpp" />
     <ClCompile Include="src\Helios\Resources\Material.cpp" />
@@ -244,6 +247,7 @@
     <ClCompile Include="src\Helios\Resources\Brushes\SolidBrush.cpp" />
     <ClCompile Include="src\Helios\Resources\Color.cpp" />
     <ClCompile Include="src\Helios\Resources\EngineTexture.cpp" />
+    <ClCompile Include="src\Helios\Scene\SceneCamera.cpp" />
     <ClCompile Include="src\Helios\Scene\SceneManager.cpp" />
     <ClCompile Include="src\Helios\Scene\Scene.cpp" />
     <ClCompile Include="src\Helios\Graphics\Graphics.cpp" />

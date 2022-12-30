@@ -129,25 +129,9 @@ namespace Helios {
 		
 	}
 	
-	void Renderer2D::BeginScene(Components::Transform& trans, Components::Camera& cam)
+	void Renderer2D::BeginScene(Matrix4x4 projection)
 	{
-		auto size = Graphics::GetCurrentSize();
-
-		Renderer2DData::TransformData data = {
-			(
-				Matrix4x4::Transpose(
-					Matrix4x4::Translation(-trans.position) *
-					(
-						Matrix4x4::RotationColumn(trans.rotation)
-					) *
-					(cam.ortographic ? (
-						Matrix4x4::OrthographicLH(cam.size, cam.size * ((float)size.y / (float)size.x), cam.near_z, cam.far_z)
-					) : (
-						Matrix4x4::PerspectiveLH(cam.fov * 3.14f / 180.0f, ((float)size.x / (float)size.y), cam.near_z, cam.far_z)
-					))
-				)
-			)
-		};
+		Renderer2DData::TransformData data = { projection };
 
 		s_Data.viewProjBuffer->SetData(&data, sizeof(Renderer2DData::TransformData));
 	}
@@ -159,7 +143,6 @@ namespace Helios {
 
 	void Renderer2D::Flush()
 	{
-		std::cout << "Quad: " << s_Data.quadInstanceDataPtr - s_Data.quadInstanceData << std::endl;
 		if ((s_Data.quadInstanceDataPtr - s_Data.quadInstanceData) > 0)
 		{
 			s_Data.quadInstanceBuffer->SetData(s_Data.quadInstanceData, (s_Data.quadInstanceDataPtr - s_Data.quadInstanceData) * sizeof(Renderer2DData::QuadInstanceData));

@@ -86,6 +86,19 @@ namespace Helios {
 		static inline Vector3 Zero()		{ return {  0.0f,  0.0f,  0.0f }; }
 		static inline Vector3 One()			{ return {  1.0f,  1.0f,  1.0f }; }
 
+		static const Vector3 right;
+
+		//Vector3 raaa = Vector3 { 1.0f,  0.0f,  0.0f };
+		/*static inline const Vector3 Left { -1.0f,  0.0f,  0.0f }; }
+		static inline const Vector3 Up { 0.0f,  1.0f,  0.0f }; }
+		static inline const Vector3 Down { 0.0f, -1.0f,  0.0f }; }
+					  
+		static inline const Vector3 Forward { 0.0f,  0.0f,  1.0f }; }
+		static inline const Vector3 Backwards { 0.0f,  0.0f, -1.0f }; }
+					  
+		static lVector3 Zero { 0.0f,  0.0f,  0.0f }; }*/
+		//static inline const Vector3 One { 1.0f,  1.0f,  1.0f }; }
+
 		static inline float Dot(Vector3 lhv, Vector3 rhv);
 		static inline float Length(Vector3 a);
 		static inline float SqrLength(Vector3 a);

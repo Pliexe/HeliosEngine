@@ -30,6 +30,36 @@ namespace Helios
 			};
 		}
 
+		static Matrix4x4 TranslationColumn(const Vector3& translation)
+		{
+			return {
+				1.0f, 0.0f, 0.0f, translation.x,
+				0.0f, 1.0f, 0.0f, translation.y,
+				0.0f, 0.0f, 1.0f, translation.z,
+				0.0f, 0.0f, 0.0f, 1.0f
+			};
+		}
+
+		static Matrix4x4 Translation(float x, float y, float z)
+		{
+			return {
+				1.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f,
+				x,	  y,    z,    1.0f
+			};
+		}
+
+		static Matrix4x4 Translation(const Vector3& translation)
+		{
+			return {
+				1.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f,
+				translation.x, translation.y, translation.z, 1.0f
+			};
+		}
+
 
 		static Matrix4x4 RotationX(float x)
 		{
@@ -121,26 +151,6 @@ namespace Helios
 			result._44 = (result._11 * result._22 * result._33 - result._11 * result._23 * result._32 - result._21 * result._12 * result._33 + result._21 * result._13 * result._32 + result._31 * result._12 * result._23 - result._31 * result._13 * result._22) * det;
 
 			return result;
-		}
-
-		static Matrix4x4 Translation(float x, float y, float z)
-		{
-			return {
-				1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f,
-				x,	  y,    z,    1.0f
-			};
-		}
-
-		static Matrix4x4 Translation(const Vector3& translation)
-		{
-			return {
-				1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f,
-				translation.x, translation.y, translation.z, 1.0f
-			};
 		}
 
 		static Matrix4x4 Scale(float x, float y, float z)

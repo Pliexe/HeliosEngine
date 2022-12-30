@@ -39,16 +39,23 @@ StartupConfig startupConfig;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static Helios::Components::Transform cameraTransform = { { 0.0f, 0.0f, -5.0f } };
-static Helios::Components::Camera cameraPropeties;
-
-
 using namespace Helios;
+
+static SceneCamera editorCamera({ { 0.0f, 0.0f, -5.0f } });
 
 static Ref<Framebuffer> editorFrame;
 static Ref<Framebuffer> gameFrame;
 
 static Vector2 editorCameraRotation = { 0.0f, 0.0f };
+
+enum class EditorMode
+{
+	Editor,
+	Paused,
+	Playing
+};
+
+static EditorMode currentMode = EditorMode::Editor;
 
 bool isGameSceneActive = false;
 bool isEditorSceneActive = false;
@@ -106,8 +113,6 @@ namespace Helios {
 		HierarchyPanel hierarchy;
 
 		std::vector<Editor::IPanel*> panels;
-
-		bool inPlayMode = false;
 		
 		LRESULT CALLBACK WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override
 		{
@@ -211,6 +216,10 @@ namespace Helios {
 				ICON_FILE_FONT = std::make_shared<EngineTexture>(EngineTexture("resources/ttf_file.png"));
 				ICON_FILE_SCENE = std::make_shared<EngineTexture>(EngineTexture("resources/scene-file.png"));
 				ICON_FILE_IMAGE = std::make_shared<EngineTexture>(EngineTexture("resources/image_file.png"));
+
+				ICON_PLAY_WHITE = std::make_shared<EngineTexture>(EngineTexture("resources/play_icon_white.png"));
+				ICON_PAUSE_WHITE = std::make_shared<EngineTexture>(EngineTexture("resources/pause_icon_white.png"));
+				ICON_STOP_WHITE = std::make_shared<EngineTexture>(EngineTexture("resources/stop_icon_white.png"));
 			}
 			catch (std::runtime_error e) {
 				ShowMessage("Error loading icons!", e.what(), MB_ICONERROR, true);
@@ -218,7 +227,9 @@ namespace Helios {
 			}
 
 			editorFrame = Framebuffer::Create(300, 300);
+			editorFrame->AddDepthStencil();
 			gameFrame = Framebuffer::Create(300, 300);
+			gameFrame->AddDepthStencil();
 
 			InitTransformBuffers();
 
@@ -241,11 +252,7 @@ namespace Helios {
 			SceneManager::LoadScene("Test");
 		}
 
-		void OnGUI() {
-			/*static bool demo_window = true;
-			if (demo_window)
-				ImGui::ShowDemoWindow(&demo_window);*/
-			
+		void OnGUI() {			
 			static ImGuiIO& io = ImGui::GetIO();
 			static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -268,30 +275,26 @@ namespace Helios {
 			if (ImGui::IsKeyReleased(ImGuiKey_S) && ImGui::IsKeyReleased(ImGuiKey_ModCtrl))
 				Project::SaveScene(ImGui::IsKeyReleased(ImGuiKey_LeftShift) || ImGui::IsKeyReleased(ImGuiKey_RightShift));			
 
-			static GameObject* selected = nullptr;
-
-
 			if (ImGui::BeginMenuBar()) {
 				if (ImGui::BeginMenu("File"))
 				{
-					if (ImGui::MenuItem("New Scene", "", false, !this->inPlayMode))
+					if (ImGui::MenuItem("New Scene", "", false, currentMode == EditorMode::Editor))
 					{
-						selected = nullptr;
+						InspectorPanel::Reset();
 						Project::LoadSampleScene();
 					}
-					if (ImGui::MenuItem("Open Scene", "Ctrl+O", false, !this->inPlayMode))
+					if (ImGui::MenuItem("Open Scene", "Ctrl+O", false, currentMode == EditorMode::Editor))
 					{
-						selected = nullptr;
+						InspectorPanel::Reset();
 						Project::OpenSceneDialog();
 					}
 
-
 					ImGui::Separator();
 
-					if (ImGui::MenuItem("Save", "Ctrl+S", false, !this->inPlayMode))
+					if (ImGui::MenuItem("Save", "Ctrl+S", false, currentMode == EditorMode::Editor))
 						Project::SaveScene();
 					
-					if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S", false, !this->inPlayMode))
+					if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S", false, currentMode == EditorMode::Editor))
 						Project::SaveScene(true);
 
 					ImGui::Separator();
@@ -314,14 +317,56 @@ namespace Helios {
 					ImGui::EndMenu();
 				}
 
-				if (ImGui::Button("Play")) {
-						this->inPlayMode != this->inPlayMode;
+				ImVec2 pos = ImGui::GetWindowPos();
+				ImVec2 size = ImGui::GetWindowSize();
+
+				ImGui::SetNextWindowPos(ImVec2(pos.x + size.x / 2.0f - 50.0f, pos.y));
+				//ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 0, 0, 255));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0,0));
+				ImGui::BeginChild("statePanel", ImVec2(58, 25));
+
+				ImVec4 col = (currentMode == EditorMode::Playing ? ImVec4(0.5f, 0.5f, 0.5f, 1.0f) : ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+				if (ImGui::ImageButton("playBtn", currentMode == EditorMode::Editor ? *ICON_PLAY_WHITE : *ICON_STOP_WHITE, ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1), col))
+				{
+					switch (currentMode)
+					{
+					case EditorMode::Editor:
+						currentMode = EditorMode::Playing;
+						break;
+					case EditorMode::Paused:
+						currentMode = EditorMode::Editor;
+						break;
+					case EditorMode::Playing:
+						currentMode = EditorMode::Editor;
+						break;
+					}
 				}
+				ImGui::SameLine();
+				col = (currentMode == EditorMode::Paused ? ImVec4(0.5f, 0.5f, 0.5f, 1.0f) : ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+				if (ImGui::ImageButton("pauseBtn", currentMode == EditorMode::Paused ? *ICON_PLAY_WHITE : *ICON_PAUSE_WHITE, ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1), col))
+				{
+					switch (currentMode)
+					{
+					case EditorMode::Paused:
+						currentMode = EditorMode::Playing;
+						break;
+					case EditorMode::Playing:
+						currentMode = EditorMode::Paused;
+						break;
+					}
+				}
+
+				ImGui::EndChild();
+				ImGui::PopStyleVar();
+				//ImGui::PopStyleColor();
+
+				//ImGui::ImageButton((ImTextureID)*ICON_PLAY_WHITE, ImVec2(20, 20));
+				/*if ()
+					currentMode = EditorMode::Playing;
+				}*/
 				
 				ImGui::EndMenuBar();
 			}
-
-			ImGui::ShowDemoWindow();
 
 			for (auto& panel : panels)
 			{
@@ -379,48 +424,39 @@ namespace Helios {
 
 				if (ImGui::IsWindowHovered())
 				{
-					static ImVec2 origin = ImGui::GetMousePos();
+					static ImVec2 origin;
+					static bool mActive = false;
 
-					if(ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
+					if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+					{
+						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+						origin = ImGui::GetMousePos();
+						mActive = true;
+					}
+
+					if (mActive)
+					{
+						std::cout << "Mouse Is Held" << std::endl;
 						ImVec2 current = ImGui::GetMousePos();
 
 						auto difference = Vector2(origin.x, origin.y) - Vector2(current.x, current.y);
 						auto normalizedCordinates = -(Vector2(origin.y, origin.x) - Vector2(current.y, current.x)).normalize();
 
-						editorCameraRotation += normalizedCordinates * Time::deltaTime() * 100.0f;
-												
-						cameraTransform.rotation = Quanterion::Euler(editorCameraRotation);
-												
+						editorCamera.HandleControls(
+							-(Vector2(origin.y, origin.x) - Vector2(current.y, current.x)).normalize()
+						);
 
-						if(ImGui::IsKeyDown(ImGuiKey_W))
-							cameraTransform.position += cameraTransform.forward() * Time::deltaTime() * 10.0f;
-						
-						if (ImGui::IsKeyDown(ImGuiKey_S))
-							cameraTransform.position -= cameraTransform.forward() * Time::deltaTime() * 10.0f;
-
-						if (ImGui::IsKeyDown(ImGuiKey_D))
-							cameraTransform.position += cameraTransform.right() * Time::deltaTime() * 10.0f;
-
-						if (ImGui::IsKeyDown(ImGuiKey_A))
-							cameraTransform.position -= cameraTransform.right() * Time::deltaTime() * 10.0f;
-
-						//origin = ImGui::GetMousePos();
 						SetCursorPos(origin.x, origin.y);
 					}
-					else if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
+
+					if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
+						mActive = false;
 						ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-					}
-					else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-					{
-						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-						origin = ImGui::GetMousePos();
-						std::cout << "Start" << std::endl;
 					}
 				}
 
 				if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(ImGuiKey_R)) {
-					cameraTransform.position = Vector3::Zero();
-					cameraTransform.rotation = Quanterion::Identity();
+					editorCamera.Reset();
 				}
 				isEditorSceneActive = true;
 			} else isEditorSceneActive = false;
@@ -429,9 +465,21 @@ namespace Helios {
 
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
-			if (ImGui::Begin("Game"))
+			if (ImGui::Begin("Game", 0, ImGuiWindowFlags_MenuBar))
 			{
-				if (editorFrame->IsSet())
+				if (ImGui::BeginMenuBar())
+				{
+					static bool depthG = true;
+					if (ImGui::Checkbox("Depth", &depthG))
+					{
+						if (depthG)
+							gameFrame->AddDepthStencil();
+						else gameFrame->RemoveDepthStencil();
+					}
+
+					ImGui::EndMenuBar();
+				}
+				if (gameFrame->IsSet())
 				{
 					ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 					auto currentViewportSize = gameFrame->GetSize();
@@ -454,7 +502,10 @@ namespace Helios {
 		}
 
 		void OnUpdate() override {
-			if (this->inPlayMode) Application::OnUpdate();
+			if (currentMode == EditorMode::Playing)
+			{
+				// Physics, Scripts etc
+			}
 		}
 
 		void OnRender() override {
@@ -480,7 +531,7 @@ namespace Helios {
 				if (SceneManager::currentScene)
 					SceneManager::currentScene->OnUpdateRuntime();
 
-				gameFrame->Unbind();
+				gameFrame->Unbind(); 
 			}
 
 			if(isEditorSceneActive) {
@@ -489,7 +540,7 @@ namespace Helios {
 
 	#pragma region Rendering
 				if (SceneManager::currentScene) {
-					SceneManager::currentScene->OnUpdateEditor(cameraTransform, cameraPropeties);
+					SceneManager::currentScene->OnUpdateEditor(editorCamera);
 				}
 	#pragma endregion
 

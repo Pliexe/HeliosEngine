@@ -4,6 +4,7 @@ struct VSOut
     uint id : TextureID;
     float2 texCoord : TexCoord;
     float4 position : SV_Position;
+    float entityId : entityId;
 };
 
 cbuffer Cbuf
@@ -19,5 +20,6 @@ VSOut main(float2 pos : Position, float2 texCoord : TexCoord, uint id : TextureI
     vso.color = color;
     vso.id = id;
     vso.texCoord = texCoord;
+    vso.entityId = 0;
     return vso;
 }

@@ -4,6 +4,8 @@
 #include "Icons.h"
 #include "ProjectManager.h"
 
+#include "AssetRegistry.h"
+
 #define ITEM_SIZE 100.0f
 #define ITEM_PADDING 20.0f
 
@@ -153,8 +155,12 @@ ImTextureID GetFileIcon(std::filesystem::path file) {
 	else if (ext == ".hpp") return *ICON_FILE_HPP;
 	else if (ext == ".c") return *ICON_FILE_C;
 	else if (ext == ".h") return *ICON_FILE_H;
-	else if (ext == ".png") return *ICON_FILE_IMAGE;
-	else if (ext == ".jpg") return *ICON_FILE_IMAGE;
+	else if (ext == ".png" || ext == ",jpg") {
+		if (Helios::AssetRegistry::GetTextures().find(file.string()) != Helios::AssetRegistry::GetTextures().end())
+			return (ImTextureID)Helios::AssetRegistry::GetTextures()[file.string()]->GetTextureID();
+		else
+			return *ICON_FILE_IMAGE;
+	}
 	else if (ext == ".txt") return *ICON_FILE_TXT;
 	else if (ext == ".scene") return *ICON_FILE_SCENE;
 	else if (ext == ".ttf") return *ICON_FILE_FONT;
@@ -276,6 +282,18 @@ void ShowFileOrFolder(std::filesystem::path entry, int i, int maxElements) {
 	else 
 		ImGui::ImageButton(GetFileIcon(entry), ImVec2(ITEM_SIZE, ITEM_SIZE));
 
+	ImGuiDragDropFlags src_flags = 0;
+	src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
+	src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers;
+	if (ImGui::BeginDragDropSource(src_flags))
+	{
+		if (!(src_flags & ImGuiDragDropFlags_SourceNoPreviewTooltip))
+			ImGui::Text(entry.string().c_str());
+		//ImGui::SetDragDropPayload("DND_EXPLORER_TEXTURE2D", &a, sizeof(int*));
+		ImGui::SetDragDropPayload("DND_EXPLORER_TEXTURE2D", entry.string().c_str(), sizeof(const char*) * entry.string().length());
+		ImGui::EndDragDropSource();
+	}
+	
 	FileNameOrEdit(entry, i);
 
 	ProjectExplorer_RightClickMenu(entry, i, false);

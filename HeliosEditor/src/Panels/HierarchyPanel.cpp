@@ -3,7 +3,7 @@
 #include "InspectorPanel.h"
 
 #include <Helios/Scene/SceneManager.h>
-
+#include "AssetRegistry.h"
 #include "imgui.h"
 #include "entt.hpp"
 
@@ -91,15 +91,32 @@ namespace Helios {
 			ImGuiDragDropFlags target_flags = 0;
 			//target_flags |= ImGuiDragDropFlags_AcceptBeforeDelivery;    // Don't wait until the delivery (release mouse button on a target) to do something
 			//target_flags |= ImGuiDragDropFlags_AcceptNoDrawDefaultRect; // Don't display the yellow rectangle
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_HIERARCHY_ITEM", target_flags))
+			
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_EXPLORER_TEXTURE2D", target_flags))
+			{
+				const char* key = (const char*)payload->Data;
+				Ref<Texture2D> texture = Helios::AssetRegistry::GetTexture(key);
+				if (texture) {
+					if (object.HasComponent<Components::SpriteRenderer>())
+					{
+						object.GetComponent<Components::SpriteRenderer>().texture = texture;
+					}
+					else if (object.HasComponent<Components::MeshRenderer>())
+					{
+						object.GetComponent<Components::MeshRenderer>().material.get()->texture = texture;
+					}
+				}
+				ImGui::EndDragDropTarget();
+			} else if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_HIERARCHY_ITEM", 0))
 			{
 				GameObject other = (*(entt::entity*)payload->Data);
 				if (other != object) {
 					other.SetParent(object);
 					//other.ResetParent();
 				}
+				ImGui::EndDragDropTarget();
 			}
-			ImGui::EndDragDropTarget();
+			
 		}
 
 		ImGuiDragDropFlags src_flags = 0;

@@ -22,11 +22,11 @@ namespace Helios {
 
 		static API GetAPI() { return s_API; }
 
-		static Size s_currentSize;
+		static Size GetCurrentSize() { return s_currentSize; }
 
 	private:
 
-		static Size GetCurrentSize() { return s_currentSize; }
+		static Size s_currentSize;
 
 		static API s_API;
 
