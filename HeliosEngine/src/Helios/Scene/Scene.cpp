@@ -73,10 +73,10 @@ namespace Helios {
 							Components::Transform tmp = trans;
 							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
 							// Renderer2D::DrawSprite(tmp, spriteRenderer);
-							Renderer2D::DrawSprite(trans, spriteRenderer);
+							Renderer2D::DrawSprite((uint32_t)entity, trans, spriteRenderer);
 						}
 						else
-							Renderer2D::DrawSprite(trans, spriteRenderer);
+							Renderer2D::DrawSprite((uint32_t)entity, trans, spriteRenderer);
 							// Renderer2D::DrawSprite(trans, spriteRenderer);
 					}
 					catch (HeliosExceptin ex) {
@@ -113,10 +113,10 @@ namespace Helios {
 						{
 							Components::Transform tmp = trans;
 							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
-							Renderer::DrawMesh(tmp, meshRenderer);
+							Renderer::DrawMesh((uint32_t)entity, tmp, meshRenderer);
 						}
 						else
-							Renderer::DrawMesh(trans, meshRenderer);
+							Renderer::DrawMesh((uint32_t)entity, trans, meshRenderer);
 					}
 					catch (HeliosExceptin ex) {
 						switch (ex.what())
@@ -152,10 +152,10 @@ namespace Helios {
 						{
 							Components::Transform tmp = trans;
 							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
-							Renderer2D::DrawSprite(tmp, spriteRenderer);
+							Renderer2D::DrawSprite((uint32_t)entity, tmp, spriteRenderer);
 						}
 						else
-							Renderer2D::DrawSprite(trans, spriteRenderer);
+							Renderer2D::DrawSprite((uint32_t)entity, trans, spriteRenderer);
 					}
 					catch (HeliosExceptin ex) {
 						switch (ex.what())
@@ -192,10 +192,10 @@ namespace Helios {
 						{
 							Components::Transform tmp = trans;
 							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
-							Renderer::DrawMesh(tmp, meshRenderer);
+							Renderer::DrawMesh((uint32_t)entity, tmp, meshRenderer);
 						}
 						else
-							Renderer::DrawMesh(trans, meshRenderer);
+							Renderer::DrawMesh((uint32_t)entity, trans, meshRenderer);
 					}
 					catch (HeliosExceptin ex) {
 						switch (ex.what())

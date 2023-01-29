@@ -51,6 +51,41 @@ namespace Helios
 
 		return Mesh::Create("Cube", cubeVertices, std::size(cubeVertices), cubeIndices, std::size(cubeIndices));
 	}
+
+	Ref<Mesh> Mesh::GetCylinderMesh()
+	{
+		return GetDynamicCylinderMesh(6);
+	}
+
+	Ref<Mesh> Mesh::GetDynamicCylinderMesh(uint32_t sides)
+	{
+		MeshVertexData *vertices = new MeshVertexData[sides * 2 + 2];
+		unsigned short* indices = new unsigned short[sides * 4];
+
+		vertices[0] = { { 0.0f,-1.0f, 0.0f }, { 0.5f, 0.5f } };
+		vertices[1] = { { 0.0f, 1.0f, 0.0f }, { 0.5f, 0.5f } };
+
+		for (int i = 0; i < sides; i++)
+		{
+			float angle = (float)i / (float)sides * 2.0f * 3.14159265359f;
+			float x = cos(angle);
+			float z = sin(angle);
+
+			vertices[i + 2]			= { { x, 0.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f } };
+			vertices[i + 2 + sides] = { { x, 1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f } };
+
+			
+		}
+
+		for (int i = 0; i < sides-1; i)
+		{
+			indices[i * 3]     = 0;
+			indices[i * 3 + 1] = i;
+			indices[i * 3 + 2] = i + 1;
+		}
+		
+		return Mesh::Create("Cylinder_" + std::to_string(sides), vertices, sides * 2 + 2, indices, sides * 4);
+	}
 	
 	std::unordered_map<std::string, Ref<Mesh>> Mesh::s_Meshes;
 	

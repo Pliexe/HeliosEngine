@@ -82,6 +82,22 @@ bool Helios::Graphics::Init()
         reinterpret_cast<IUnknown**>(&writeFactory)
     ))) return false;
 
+    D3D11_RASTERIZER_DESC rasterizerDesc;
+    ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
+    rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+    rasterizerDesc.CullMode = D3D11_CULL_NONE;
+    rasterizerDesc.FrontCounterClockwise = false;
+    rasterizerDesc.DepthClipEnable = true;
+    rasterizerDesc.ScissorEnable = false;
+    rasterizerDesc.MultisampleEnable = false;
+    rasterizerDesc.AntialiasedLineEnable = false;
+	
+    if (FAILED(hr = m_device->CreateRasterizerState(&rasterizerDesc, &wireframeRasterizerState)))
+    {
+		MessageBox(m_hWnd, (std::wstring(L"Failed to create rasterizer state! Reason: ") + GetLastMessageAsReadable()).c_str(), L"Graphics Error!", MB_ICONERROR);
+		return false;
+    }
+
     return true;
 }
 

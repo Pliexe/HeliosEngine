@@ -33,6 +33,8 @@
 
 #include "AssetRegistry.h"
 #include <Helios/Resources/Shader.h>
+#include <Helios/Input/InputManager.h>
+#include <Helios/Input/KeyCodes.h>
 
 static std::filesystem::path currentScene;
 StartupConfig startupConfig;
@@ -109,10 +111,18 @@ namespace Helios {
 	class GameEngine : public Helios::Application {
 	private:
 
+		enum class RSState
+		{
+			Normal,
+			Wireframe,
+		};
+
 		InspectorPanel inspector;
 		HierarchyPanel hierarchy;
 
 		std::vector<Editor::IPanel*> panels;
+		
+		RSState currentRSState = RSState::Normal;
 		
 		LRESULT CALLBACK WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override
 		{
@@ -226,10 +236,16 @@ namespace Helios {
 				exit(-100);
 			}
 
-			editorFrame = Framebuffer::Create(300, 300);
-			editorFrame->AddDepthStencil();
-			gameFrame = Framebuffer::Create(300, 300);
-			gameFrame->AddDepthStencil();
+			editorFrame = Framebuffer::Create(300, 300, {
+				Framebuffer::Format::R32G32B32A32F,
+				Framebuffer::Format::R32F,
+				Framebuffer::Format::D32F,
+			});
+			gameFrame = Framebuffer::Create(300, 300, {
+				Framebuffer::Format::R8B8G8A8_UNORM,
+				//Framebuffer::Format::R32F,
+				Framebuffer::Format::D32F
+			});
 
 			InitTransformBuffers();
 
@@ -382,23 +398,138 @@ namespace Helios {
 			AssetRegistry::ShowTextureSelect();
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
-			if (ImGui::Begin("Scene"))
+			if (ImGui::Begin("Scene", 0, ImGuiWindowFlags_MenuBar))
 			{
-				if (editorFrame->IsSet())
+				static bool showIdFrame = false;
+
+				if (ImGui::BeginMenuBar())
 				{
+					ImGui::Checkbox("Show ID Frame", &showIdFrame);
+					static bool wireframe = false;
+					ImGui::Checkbox("Wireframe", &wireframe);
+					if (wireframe)
+						this->currentRSState = RSState::Wireframe;
+					else
+						this->currentRSState = RSState::Normal;
+						
+					ImGui::EndMenuBar();
+				}
+
+				auto imgPos = ImGui::GetCursorPos();
+				auto mousePos = ImGui::GetMousePos();
+				auto windowPos = ImGui::GetWindowPos();
+				auto x = mousePos.x - windowPos.x - imgPos.x;
+				auto y = mousePos.y - windowPos.y - imgPos.y;
+
+				//std::cout << x << " | " << y << std::endl;
+
+
+				/*if (editorFrame->IsSet())
+				{*/
 					ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 					auto currentViewportSize = editorFrame->GetSize();
 					if (viewportSize.x != currentViewportSize.x || viewportSize.y != currentViewportSize.y)
 					{
 						 editorFrame->Resize(viewportSize.x, viewportSize.y);
 					}
-					ImGui::Image(editorFrame->GetTextureID(), ImVec2(viewportSize));
+					ImGui::Image(editorFrame->GetTextureID((UINT)showIdFrame), ImVec2(viewportSize));
+				auto test2 = ImGui::GetCursorPos();
 
 					//ImVec2(viewportSize)
 
 					//ImGui::Image((void*)editorFrame->GetTextureID(), );
 					// ImGui::Image((void*)editorFrame->GetTextureID(), ImVec2(300, 300));
+				//}
+
+
+				//static float t = 0.0f;
+				//
+				//if ((t += Time::deltaTime()) > 1.0f)
+				//{
+				//	// Check if in bounds
+				//	if (x >= 0 && y >= 0 && x < editorFrame->GetWidth() && y < editorFrame->GetHeight())
+				//	{
+				//		Color color = editorFrame->GetPixel(0u, x, y);
+				//		Color entId = editorFrame->GetPixel(1u, x, y);
+
+				//		/*Application::ShowMessage("Pixel Clicked:",
+				//			"X: " + std::to_string(x) +
+				//			" Y: " + std::to_string(y) + "\n"
+				//			"ID: " + std::to_string(entId.r) + "\n" +
+				//			"R: " + std::to_string(color.r) +
+				//			" G: " + std::to_string(color.g) +
+				//			" B: " + std::to_string(color.b) +
+				//			" A: " + std::to_string(color.a)
+				//		);*/
+
+				//		std::cout << "--------------------------" << std::endl;
+				//		std::cout << "X: " + std::to_string(x);
+				//		std::cout << " Y: " << std::to_string(y) << std::endl;
+				//		std::cout << "ID: " << std::to_string(entId.r) << std::endl;
+				//		std::cout << "R: " << std::to_string(color.r);
+				//		std::cout << " G: " << std::to_string(color.g);
+				//		std::cout << " B: " << std::to_string(color.b);
+				//		std::cout << " A: " << std::to_string(color.a) << std::endl;
+				//		std::cout << "Width: " << std::to_string(editorFrame->GetWidth()) << ", ";
+				//		std::cout << "Height: " << std::to_string(editorFrame->GetHeight()) << std::endl;
+
+				//		/*if (entId.r > -1)
+				//		{
+				//			uint32_t id = entId.r;
+				//			InspectorPanel::GetInstance() << (entt::entity)id;
+				//		}*/
+				//	}
+				//	t = 0.0f;
+				//}
+
+				ImGui::Begin("Mouse Location Stats");
+				
+					ImGui::Text("Mouse X: %f, Y: %f", x, y);
+
+					if (x >= 0 && y >= 0 && x < editorFrame->GetWidth() && y < editorFrame->GetHeight()) {
+						ImGui::Text("ID: %f", editorFrame->GetPixel(1u, x, y).r);
+						Color color = editorFrame->GetPixel(0u, x, y);
+						ImGui::Text("R: %f, G: %f, B: %f, A: %f", color.r, color.g, color.b, color.a);
+					}
+					else {
+						ImGui::Text("ID: -");
+						ImGui::Text("R: -, G: -, B: -, A: -");
+					}
+					
+				
+				ImGui::End();
+
+
+				//if (Helios::InputManager::IsKeyPressed(HL_KEY_MOUSE_LEFT))
+				if (Helios::InputManager::IsKeyPressed(HL_KEY_MOUSE_LEFT) && ImGui::IsWindowFocused())
+				{
+					
+
+					// Check if in bounds
+					if (x >= 0 && y >= 0 && x < editorFrame->GetWidth() && y < editorFrame->GetHeight())
+					{
+						Color color = editorFrame->GetPixel(0u, x, y);
+						Color entId = editorFrame->GetPixel(1u, x, y);
+
+						Application::ShowMessage("Pixel Clicked:",
+							"X: " + std::to_string(x) +
+							" Y: " + std::to_string(y) + "\n"
+							"ID: " + std::to_string(entId.r) + "\n" +
+							"R: " + std::to_string(color.r) +
+							" G: " + std::to_string(color.g) +
+							" B: " + std::to_string(color.b) +
+							" A: " + std::to_string(color.a)
+						);
+
+						if (entId.r > -1)
+						{
+							uint32_t id = entId.r;
+							InspectorPanel::GetInstance() << (entt::entity)id;
+						}
+					}
+
 				}
+				
 
 				static bool notf = true;
 
@@ -436,7 +567,7 @@ namespace Helios {
 
 					if (mActive)
 					{
-						std::cout << "Mouse Is Held" << std::endl;
+						//std::cout << "Mouse Is Held" << std::endl;
 						ImVec2 current = ImGui::GetMousePos();
 
 						auto difference = Vector2(origin.x, origin.y) - Vector2(current.x, current.y);
@@ -469,26 +600,15 @@ namespace Helios {
 			{
 				if (ImGui::BeginMenuBar())
 				{
-					static bool depthG = true;
-					if (ImGui::Checkbox("Depth", &depthG))
-					{
-						if (depthG)
-							gameFrame->AddDepthStencil();
-						else gameFrame->RemoveDepthStencil();
-					}
-
 					ImGui::EndMenuBar();
 				}
-				if (gameFrame->IsSet())
+				ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+				auto currentViewportSize = gameFrame->GetSize();
+				if (viewportSize.x != currentViewportSize.x || viewportSize.y != currentViewportSize.y)
 				{
-					ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-					auto currentViewportSize = gameFrame->GetSize();
-					if (viewportSize.x != currentViewportSize.x || viewportSize.y != currentViewportSize.y)
-					{
-						 gameFrame->Resize(viewportSize.x, viewportSize.y);
-					}
-					ImGui::Image(gameFrame->GetTextureID(), ImVec2(viewportSize));
+					gameFrame->Resize(viewportSize.x, viewportSize.y);
 				}
+				ImGui::Image(gameFrame->GetTextureID(0u), ImVec2(viewportSize));
 
 				isGameSceneActive = true;
 			} else isGameSceneActive = false;
@@ -523,10 +643,23 @@ namespace Helios {
 			graphics->m_deviceContext->OMSetRenderTargets(1, &graphics->m_mainRenderTarget, NULL);
 			graphics->ClearRenderTarget(0.5f, 0.0f, 1.0f);
 
+			// set state to wrireframe rendering
+			
+			
+			switch (currentRSState)
+			{
+			case RSState::Wireframe:
+				graphics->m_deviceContext->RSSetState(graphics->wireframeRasterizerState.Get());
+				break;
+			default:
+				graphics->m_deviceContext->RSSetState(nullptr);
+				break;
+			}
 
 			if(isGameSceneActive) {
 				gameFrame->Bind();
-				gameFrame->ClearColor({ 0.0f, 0.0f, 0.0f });
+				gameFrame->ClearBuffer(0u, { 0.0f, 0.0f, 0.0f });
+				gameFrame->ClearDepthStencil();
 
 				if (SceneManager::currentScene)
 					SceneManager::currentScene->OnUpdateRuntime();
@@ -536,7 +669,9 @@ namespace Helios {
 
 			if(isEditorSceneActive) {
 				editorFrame->Bind();
-				editorFrame->ClearColor({ 0.0f, 0.0f, 0.0f });
+				editorFrame->ClearBuffer(0u, { 0.0f, 0.0f, 0.0f });
+				editorFrame->ClearBuffer(1u, { -1.0f, -1.0f, -1.0f });
+				editorFrame->ClearDepthStencil();
 
 	#pragma region Rendering
 				if (SceneManager::currentScene) {
@@ -548,7 +683,7 @@ namespace Helios {
 				transformMoveIndexBuffer->Bind();
 				transformShader->Bind();
 
-				Graphics::instance->m_deviceContext->DrawIndexed(std::size(transformMoveIndecies), 0u, 0u);
+				//Graphics::instance->m_deviceContext->DrawIndexed(std::size(transformMoveIndecies), 0u, 0u);
 
 				editorFrame->Unbind();
 			}

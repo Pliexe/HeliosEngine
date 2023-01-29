@@ -13,9 +13,10 @@ namespace Helios
         bd.ByteWidth = size;
         bd.StructureByteStride = 0u;
 
+        HRESULT hr;
         HL_EXCEPTION(
-            FAILED(Graphics::instance->m_device->CreateBuffer(&bd, nullptr, &m_Data)),
-            "Failed to create Constant Buffer!"
+            FAILED(hr = Graphics::instance->m_device->CreateBuffer(&bd, nullptr, &m_Data)),
+            std::string("Failed to create Constant Buffer!") + "\nError: " + GetLastErrorAsString(hr)
         );
     }
 
@@ -30,10 +31,11 @@ namespace Helios
         bd.StructureByteStride = 0u;
         D3D11_SUBRESOURCE_DATA sd = {};
         sd.pSysMem = data;
-
+		
+        HRESULT hr;
         HL_EXCEPTION(
-            FAILED(Graphics::instance->m_device->CreateBuffer(&bd, &sd, &m_Data)),
-            "Failed to create Constant Buffer!"
+            FAILED(hr = Graphics::instance->m_device->CreateBuffer(&bd, &sd, &m_Data)),
+            std::string("Failed to create Constant Buffer!") + "\nError: " + GetLastErrorAsString(hr)
         );
     }
 

@@ -17,7 +17,7 @@ namespace Helios
 		static void BeginScene(Matrix4x4 projection);
 		static void EndScene();
 
-		static void DrawMesh(Components::Transform& transform, Components::MeshRenderer& meshRenderer);
+		static void DrawMesh(uint32_t entityId, Components::Transform& transform, Components::MeshRenderer& meshRenderer);
 
 	};
 }

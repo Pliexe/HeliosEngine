@@ -80,6 +80,7 @@ namespace Helios {
 		ID2D1RenderTarget* getRenderTarget() const { return m_renderTarget2D; }
 		ID2D1Factory* getFactory() const { return factory; }
 		IDWriteFactory* getWriteFactory() const { return writeFactory; }
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> wireframeRasterizerState;
 
 		friend class Application;
 		friend class SceneManager;

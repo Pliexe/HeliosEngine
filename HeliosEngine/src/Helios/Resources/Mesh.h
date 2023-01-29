@@ -23,7 +23,10 @@ namespace Helios
         static void Destroy(std::string name);
 
         static Ref<Mesh> GetCubeMesh();
+		static Ref<Mesh> GetCylinderMesh();
+        static Ref<Mesh> GetDynamicCylinderMesh(uint32_t sides);
         static Ref<Mesh> GetTransformMoveMesh();
+		
 
         void Bind();
 		inline uint32_t GetIndexCount() const { return m_IndexBuffer->GetCount(); }

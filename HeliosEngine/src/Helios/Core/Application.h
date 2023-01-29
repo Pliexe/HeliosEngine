@@ -96,7 +96,6 @@ namespace Helios {
 		static void ShowMessage(const char* title, const char* text, UINT type = MB_OK, bool pauseGame = true);
 		static void ShowMessage(std::string title, std::string text, UINT type = MB_OK, bool pauseGame = true);
 
-
 		static void Quit();
 
 		virtual void Init() = 0;

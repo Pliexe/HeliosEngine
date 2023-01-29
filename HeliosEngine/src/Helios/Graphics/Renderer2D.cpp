@@ -36,6 +36,7 @@ namespace Helios {
 			uint8_t textureIndex;
 			Color color;
 			Matrix4x4 transform;
+			uint32_t entityId;
 		};
 
 		struct TransformData
@@ -81,6 +82,7 @@ namespace Helios {
 			{ "TextureID", Shader::DataType::UInt8, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "World", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
+			{ "EntityId", Shader::DataType::Float, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 		}));
 
 		// const Renderer2DData::QuadVertex vertices[] = {
@@ -165,7 +167,7 @@ namespace Helios {
 		}
 	}
 
-	void Renderer2D::DrawSprite(Components::Transform transform, Components::SpriteRenderer sprite)
+	void Renderer2D::DrawSprite(uint32_t entityId, Components::Transform transform, Components::SpriteRenderer sprite)
 	{
 		if ((s_Data.quadInstanceDataPtr - s_Data.quadInstanceData) > Renderer2DData::MaxQuads)
 			Flush();
@@ -181,7 +183,8 @@ namespace Helios {
 						Matrix4x4::Rotation(transform.rotation) *
 						Matrix4x4::Translation(transform.position)
 					)
-				}
+				},
+				entityId
 			};
 		}
 		else
@@ -199,7 +202,8 @@ namespace Helios {
 						Matrix4x4::Rotation(transform.rotation) *
 						Matrix4x4::Translation(transform.position)
 					)
-				}
+				},
+				entityId
 			};
 			s_Data.textureSlotIndex++;
 		}

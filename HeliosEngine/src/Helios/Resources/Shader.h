@@ -12,6 +12,7 @@ namespace Helios {
 
 		enum class DataType
 		{
+			Float = DXGI_FORMAT_R32_FLOAT,
 			Float2 = DXGI_FORMAT_R32G32_FLOAT,
 			Float3 = DXGI_FORMAT_R32G32B32_FLOAT,
 			Float4 = DXGI_FORMAT_R32G32B32A32_FLOAT,

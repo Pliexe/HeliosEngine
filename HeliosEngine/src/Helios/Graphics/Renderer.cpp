@@ -8,7 +8,7 @@ namespace Helios
 	struct RendererData
 	{
 		Matrix4x4 projectionMatrix;
-		struct CBD { Matrix4x4 transform; Color color; };
+		struct CBD { Matrix4x4 transform; Color color; float entityId; float b; float c; float d; };
 		Ref<ConstantBuffer> transformBuffer;
 
 		Ref<Texture2D> whiteTexture;
@@ -39,7 +39,7 @@ namespace Helios
 	{
 	}
 
-	void Renderer::DrawMesh(Components::Transform& transform, Components::MeshRenderer& meshRenderer)
+	void Renderer::DrawMesh(uint32_t entityId, Components::Transform& transform, Components::MeshRenderer& meshRenderer)
 	{
 		static Ref<Shader> shader = CreateRef<Shader>(Shader("Standard", {
 			{ "Position", Shader::DataType::Float3 },
@@ -61,7 +61,8 @@ namespace Helios
 				Matrix4x4::RotationColumn(transform.rotation)*
 				Matrix4x4::Scale(transform.scale)
 			},
-			meshRenderer.material->Color
+			meshRenderer.material->Color,
+			(float)entityId, 0, 0, 0
 		};
 
 
