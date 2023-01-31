@@ -54,13 +54,14 @@ namespace Helios
 
 	Ref<Mesh> Mesh::GetCylinderMesh()
 	{
-		return GetDynamicCylinderMesh(6);
+		return GetDynamicCylinderMesh(36);
 	}
 
 	Ref<Mesh> Mesh::GetDynamicCylinderMesh(uint32_t sides)
 	{
 		MeshVertexData *vertices = new MeshVertexData[sides * 2 + 2];
 		unsigned short* indices = new unsigned short[sides * 4];
+		ZeroMemory(indices, sizeof(indices));
 
 		vertices[0] = { { 0.0f,-1.0f, 0.0f }, { 0.5f, 0.5f } };
 		vertices[1] = { { 0.0f, 1.0f, 0.0f }, { 0.5f, 0.5f } };
@@ -71,32 +72,38 @@ namespace Helios
 			float x = cos(angle);
 			float z = sin(angle);
 
-			vertices[i + 2]			= { { x, 0.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f } };
+			vertices[i + 2]			= { { x, -1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f } };
 			vertices[i + 2 + sides] = { { x, 1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f } };
-
 			
 		}
 
-		for (int i = 0; i < sides-1; i)
+		for (int i = 0; i < sides; i++)
 		{
 			indices[i * 3]     = 0;
+			indices[i * 3 + 1] = i + 2;
+			indices[i * 3 + 2] = sides == i ? 2 : i + 3;
+		}
+
+		/*for (int i = sides + 2; i < sides + 2 + sides; i++)
+		{
+			indices[i * 3] = 1;
 			indices[i * 3 + 1] = i;
 			indices[i * 3 + 2] = i + 1;
-		}
+		}*/
 		
-		return Mesh::Create("Cylinder_" + std::to_string(sides), vertices, sides * 2 + 2, indices, sides * 4);
+		return Mesh::Create("Cylinder_" + std::to_string(sides), vertices, sides * 2 + 2, indices, sides * 3);
 	}
 	
 	std::unordered_map<std::string, Ref<Mesh>> Mesh::s_Meshes;
 	
-	Mesh::Mesh(std::string name, const MeshVertexData* vertices, uint32_t vertexCount, const unsigned short* indices, uint32_t indexCount)
+	Mesh::Mesh(std::string name, const MeshVertexData* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount)
 	{
 		m_VertexBuffer = VertexBuffer::Create(vertices, vertexCount * sizeof(MeshVertexData));
 		m_VertexBuffer->SetStride<MeshVertexData>();
 		m_IndexBuffer = IndexBuffer::Create(indices, indexCount);
 	}
 
-	Ref<Mesh> Mesh::Create(std::string name, const MeshVertexData* vertices, uint32_t vertexCount, const unsigned short* indices, uint32_t indexCount)
+	Ref<Mesh> Mesh::Create(std::string name, const MeshVertexData* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount)
 	{
 		if (s_Meshes.find(name) != s_Meshes.end())
 		{

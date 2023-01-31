@@ -70,7 +70,7 @@ namespace Helios
 		rendererData.transformBuffer->Bind(0);
 
 
-		Graphics::instance->m_deviceContext->DrawIndexed(meshRenderer.mesh->GetIndexCount(), 0u, 0u);
+		Graphics::instance->m_deviceContext->DrawIndexed(meshRenderer.mesh->getIndexCount(), 0u, 0u);
 	}
 }
 

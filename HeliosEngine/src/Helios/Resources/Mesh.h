@@ -17,9 +17,9 @@ namespace Helios
     public:
         Mesh() = delete;
         Mesh(const Mesh&) = default;
-        Mesh(std::string name, const MeshVertexData* vertices, uint32_t vertexCount, const unsigned short* indices, uint32_t indexCount);
+        Mesh(std::string name, const MeshVertexData* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
 		
-        static Ref<Mesh> Create(std::string name, const MeshVertexData* vertices, uint32_t vertexCount, const unsigned short* indices, uint32_t indexCount);
+        static Ref<Mesh> Create(std::string name, const MeshVertexData* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
         static void Destroy(std::string name);
 
         static Ref<Mesh> GetCubeMesh();
@@ -29,11 +29,18 @@ namespace Helios
 		
 
         void Bind();
-		inline uint32_t GetIndexCount() const { return m_IndexBuffer->GetCount(); }
+        inline uint32_t getVertexCount() const { return m_VertexBuffer->getCount<MeshVertexData>(); }
+		inline uint32_t getIndexCount() const { return m_IndexBuffer->GetCount(); }
+		inline Ref<IndexBuffer> getIndexBuffer() const { return m_IndexBuffer; }
+		inline Ref<VertexBuffer> getVertexBuffer() const { return m_VertexBuffer; }
+		
 
     private:
 
         static std::unordered_map<std::string, Ref<Mesh>> s_Meshes;
+
+		uint32_t m_VertexCount;
+		uint32_t m_IndexCount;
 
         std::string m_Name;
 

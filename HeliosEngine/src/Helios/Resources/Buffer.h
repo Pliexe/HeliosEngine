@@ -36,6 +36,7 @@ namespace Helios {
 	protected:
 		BufferUsage m_Usage;
 		uint32_t m_Stride = 0u;
+		uint32_t m_Size = 0u;
 	public:
 
 		virtual void Bind(uint32_t slot = 0u) const = 0;
@@ -49,6 +50,9 @@ namespace Helios {
 		template <typename T>
 		void SetStride() { m_Stride = sizeof(T); }
 
+		template <typename T>
+		inline uint32_t getCount() const { return m_Size / sizeof(T); }
+
 	};
 
 	class HELIOS_API IndexBuffer
@@ -61,7 +65,7 @@ namespace Helios {
 			Graphics::instance->m_deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
 		}
 
-		static Ref<IndexBuffer> Create(const unsigned short* data, uint32_t count)
+		static Ref<IndexBuffer> Create(uint32_t* data, uint32_t count)
 		{
 			D3D11_BUFFER_DESC bd = { };
 			IndexBuffer indexBuffer;
@@ -70,8 +74,8 @@ namespace Helios {
 			bd.Usage = D3D11_USAGE_DEFAULT;
 			bd.CPUAccessFlags = 0u;
 			bd.MiscFlags = 0u;
-			bd.ByteWidth = sizeof(unsigned short) * count;
-			bd.StructureByteStride = sizeof(unsigned short);
+			bd.ByteWidth = sizeof(uint32_t) * count;
+			bd.StructureByteStride = sizeof(uint32_t);
 			D3D11_SUBRESOURCE_DATA sd = {};
 			sd.pSysMem = data;
 
@@ -81,14 +85,25 @@ namespace Helios {
 			);
 
 			indexBuffer.m_Count = count;
+			indexBuffer.m_Data = new uint32_t[count];
+			//std::copy(data, data + sizeof(const unsigned short) * count, indexBuffer.m_Data);
+			memcpy(indexBuffer.m_Data, data, sizeof(uint32_t) * count);
 
 			return CreateRef<IndexBuffer>(std::move(indexBuffer));
 		}
+
+		~IndexBuffer()
+		{
+			delete m_Data;
+		}
+
+		inline const unsigned short* getData() const { return m_Data; }
 
 		inline uint32_t GetCount() const { return m_Count; }
 
 	private:
 		IndexBuffer() = default;
+		uint32_t* m_Data = nullptr;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer;
 		uint32_t m_Count;
 	};

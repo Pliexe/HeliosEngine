@@ -24,6 +24,7 @@ namespace Helios {
 		static InspectorPanel& GetInstance() { return *instance; }
 
 		const std::any GetHandle() { return handle; }
+		const SelectedType GetType() { return type; }
 
 		static void Reset() { instance->handle = nullptr; instance->type = SelectedType::None; }
 

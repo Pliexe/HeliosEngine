@@ -256,7 +256,7 @@ namespace Helios {
 	// 	Graphics::instance->m_deviceContext->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
 
 
-	// 	Graphics::instance->m_deviceContext->DrawIndexed((UINT)cubeMesh->GetIndexCount(), 0u, 0u);
+	// 	Graphics::instance->m_deviceContext->DrawIndexed((UINT)cubeMesh->getIndexCount(), 0u, 0u);
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(GetLastError()), GetLastErrorAsString());
 	// }
 	

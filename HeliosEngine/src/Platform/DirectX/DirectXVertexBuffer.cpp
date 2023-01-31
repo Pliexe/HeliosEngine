@@ -8,6 +8,7 @@ namespace Helios
 	DirectXVertexBuffer::DirectXVertexBuffer(uint32_t size, BufferUsage usage)
     {
         m_Usage = usage;
+		m_Size = size;
         D3D11_BUFFER_DESC bd = {};
         bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         bd.ByteWidth = size;
@@ -39,6 +40,7 @@ namespace Helios
     DirectXVertexBuffer::DirectXVertexBuffer(const void* data, uint32_t size, BufferUsage usage)
     {
         m_Usage = usage;
+		m_Size = size;
         D3D11_BUFFER_DESC bd = {};
         bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         bd.ByteWidth = size;
@@ -90,5 +92,6 @@ namespace Helios
         Graphics::instance->m_deviceContext->Map(m_VertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms);
         memcpy(ms.pData, data, size);
         Graphics::instance->m_deviceContext->Unmap(m_VertexBuffer.Get(), 0);
+        m_Size = size;
     }
 }

@@ -106,10 +106,12 @@
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
-xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.cso" "$(TargetDir)"
-xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -134,10 +136,12 @@ xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dl
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
-xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.cso" "$(TargetDir)"
-xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -158,10 +162,12 @@ xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dl
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
-xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.cso" "$(TargetDir)"
-xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -186,10 +192,12 @@ xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dl
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
-xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.cso" "$(TargetDir)"
-xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Application.cpp" />

@@ -268,7 +268,7 @@ namespace Helios {
 			SceneManager::LoadScene("Test");
 		}
 
-		void OnGUI() {			
+		void OnGUI() {
 			static ImGuiIO& io = ImGui::GetIO();
 			static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -280,7 +280,6 @@ namespace Helios {
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-			
 			static bool dock_open = true;
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 			ImGui::Begin("Dockspace Demon", &dock_open, window_flags);
@@ -500,8 +499,43 @@ namespace Helios {
 				ImGui::End();
 
 
-				//if (Helios::InputManager::IsKeyPressed(HL_KEY_MOUSE_LEFT))
-				if (Helios::InputManager::IsKeyPressed(HL_KEY_MOUSE_LEFT) && ImGui::IsWindowFocused())
+				if(InspectorPanel::GetInstance().GetType() == InspectorPanel::SelectedType::GameObject)
+				{
+
+					entt::entity entity = std::any_cast<entt::entity>(InspectorPanel::GetInstance().GetHandle());
+					if(entity != entt::null)
+					{
+						GameObject gm = entity;
+						if(gm.HasComponent<Components::MeshRenderer>())
+						{
+							Ref<Mesh> mesh = gm.GetComponent<Components::MeshRenderer>().mesh;
+							ImGui::Begin("Mesh Stats");
+
+							uint32_t indeciesCount = mesh->getIndexCount();
+
+							ImGui::Text("Vertex Count: %d", mesh->getVertexCount());
+							ImGui::Text("Index Count: %d", indeciesCount);
+
+							const unsigned short* indices = mesh->getIndexBuffer()->getData();
+
+							ImGui::Text("Indicies:");
+
+							std::string str = std::to_string(indices[0]);
+							for (uint32_t i = 1; i < mesh->getIndexCount(); i++)
+							{
+								str += (i % 3 == 0 ? "\n" : ", ") + std::to_string(indices[i]);
+							}
+							ImGui::Text(str.c_str());
+
+							ImGui::End();
+						}
+					}
+				}
+
+				
+
+				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowFocused())
+				//if (Helios::InputManager::IsKeyPressed(HL_KEY_MOUSE_LEFT) && ImGui::IsWindowFocused())
 				{
 					
 
