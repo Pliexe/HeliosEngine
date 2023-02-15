@@ -113,14 +113,14 @@ namespace Helios
 
 		static void CheckValidity()
 		{
-			for (auto& [path, _] : s_Textures)
-			{
-				if(true) {}
-				/*if (!std::filesystem::exists(path))
-				{
-					s_Textures.erase(path);
-				}*/
-			}
+			//for (auto& [path, _] : s_Textures)
+			//{
+			//	if(true) {}
+			//	/*if (!std::filesystem::exists(path))
+			//	{
+			//		s_Textures.erase(path);
+			//	}*/
+			//}
 			for (auto it = s_Textures.cbegin(); it != s_Textures.cend();)
 			{
 				if (!std::filesystem::exists(it->first))

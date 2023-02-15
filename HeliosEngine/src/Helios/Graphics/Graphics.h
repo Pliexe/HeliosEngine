@@ -88,6 +88,7 @@ namespace Helios {
 
 		friend class Renderer;
 		friend class Renderer2D;
+		friend class GizmosRenderer;
 		friend class UIRenderer;
 
 #pragma region Resources

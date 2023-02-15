@@ -8,6 +8,7 @@
 #include <Helios/Scene/Components.h>
 #include "../AssetRegistry.h"
 #include "ImGuiCustomControls.h"
+#include "Helios/Core/Application.h"
 
 namespace Helios {
 
@@ -24,7 +25,13 @@ namespace Helios {
 			if (entity == entt::null) return;
 			GameObject gm = entity;
 
-
+			bool enabled = !gm.HasComponent<Components::DisabledObject>();
+			if(ImGui::Checkbox("##gm_enabled", &enabled))
+			{
+				if (enabled) gm.RemoveComponent<Components::DisabledObject>();
+				else gm.AddComponent <Components::DisabledObject>();
+			}
+			
 			/*ImGui::Checkbox("##active", &gm.active);
 			ImGui::SameLine();*/
 

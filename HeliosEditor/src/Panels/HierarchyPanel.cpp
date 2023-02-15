@@ -46,6 +46,22 @@ namespace Helios {
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << (entt::entity)obj;
 			}
+			if (ImGui::MenuItem("Cone"))
+			{
+				auto obj = GameObject::InstantiateObject("Cone");
+				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
+				meshRenderer.mesh = Mesh::GetConeMesh();
+				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				InspectorPanel::GetInstance() << (entt::entity)obj;
+			}
+			if(ImGui::MenuItem("Sphere"))
+			{
+				auto obj = GameObject::InstantiateObject("Sphere");
+				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
+				meshRenderer.mesh = Mesh::GetSphereMesh();
+				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				InspectorPanel::GetInstance() << (entt::entity)obj;
+			}
 			ImGui::EndMenu();
 		}
 

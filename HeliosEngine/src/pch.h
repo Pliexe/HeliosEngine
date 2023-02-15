@@ -8,6 +8,8 @@
 #define HL_DEBUG
 #endif
 
+#define PI 3.14159265358979323846f
+
 // Standard Library
 
 #include <iostream>

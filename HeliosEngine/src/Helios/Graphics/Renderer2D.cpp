@@ -100,7 +100,7 @@ namespace Helios {
 			{ { -0.5f, -0.5f }, { 0.0f, 1.0f } },
 		};
 
-		const unsigned short indices[] = {
+		uint32_t indices[] = {
 			0, 1, 2,
 			0, 2, 3
 		};
@@ -329,7 +329,7 @@ namespace Helios {
 
 	// void Renderer2D::DrawPolygon(int sides)
 	// {
-	// 	struct Vertex
+	// 	struct MeshVertex
 	// 	{
 	// 		struct {
 	// 			float x;
@@ -347,7 +347,7 @@ namespace Helios {
 
 
 	// 	unsigned short* indecies = new unsigned short[sides * 3 + 3 + 3];
-	// 	Vertex * vertices = new Vertex[sides + 2];
+	// 	MeshVertex * vertices = new MeshVertex[sides + 2];
 
 	// 	vertices[0].pos = { 0.0f, 0.0f };
 	// 	vertices[0].col = { 0.0f, 1.0f, 1.0f };
@@ -375,14 +375,14 @@ namespace Helios {
 	// 	bd.Usage = D3D11_USAGE_DEFAULT;
 	// 	bd.CPUAccessFlags = 0u;
 	// 	bd.MiscFlags = 0u;
-	// 	bd.ByteWidth = sizeof(Vertex)*(sides + 2);
-	// 	bd.StructureByteStride = sizeof(Vertex);
+	// 	bd.ByteWidth = sizeof(MeshVertex)*(sides + 2);
+	// 	bd.StructureByteStride = sizeof(MeshVertex);
 	// 	D3D11_SUBRESOURCE_DATA sd = {};
 	// 	sd.pSysMem = vertices;
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateBuffer(&bd, &sd, &pVertexBuffer)), "Failed to create buffer");
 
 	// 	// bind vertex buffer
-	// 	const UINT stride = sizeof(Vertex);
+	// 	const UINT stride = sizeof(MeshVertex);
 	// 	const UINT offset = 0u;
 	// 	Graphics::instance->m_deviceContext->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
@@ -404,13 +404,13 @@ namespace Helios {
 	// 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
 	// 	Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(D3DReadFileToBlob(L"PixelShader.cso", &pBlob)), "Failed to read Pixel Shader!");
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader)), "Failed to create Vertex Shader!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader)), "Failed to create MeshVertex Shader!");
 
 	// 	Graphics::instance->m_deviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0u);
 
 	// 	Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(D3DReadFileToBlob(L"VertexShader.cso", &pBlob)), "Failed to read Vertex Shader!");
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader)), "Failed to create Vertex Shader!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(D3DReadFileToBlob(L"VertexShader.cso", &pBlob)), "Failed to read MeshVertex Shader!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader)), "Failed to create MeshVertex Shader!");
 
 
 	// 	Graphics::instance->m_deviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0u);
@@ -450,7 +450,7 @@ namespace Helios {
 	
 	// void Renderer2D::DrawTriangle(Vector2 position)
 	// {
-	// 	struct Vertex
+	// 	struct MeshVertex
 	// 	{
 	// 		float x;
 	// 		float y;
@@ -460,7 +460,7 @@ namespace Helios {
 	// 	};
 		
 
-	// 	const Vertex vertices[] = {
+	// 	const MeshVertex vertices[] = {
 	// 		{ -0.5f,  0.5f, 1.0f, 0.0f, 0.0f },
 	// 		{  0.5f,  0.5f, 0.0f, 1.0f, 0.0f },
 	// 		{ -0.5f, -0.5f, 0.0f, 0.0f, 1.0f },
@@ -476,13 +476,13 @@ namespace Helios {
 	// 	bd.CPUAccessFlags = 0u;
 	// 	bd.MiscFlags = 0u;
 	// 	bd.ByteWidth = sizeof(vertices);
-	// 	bd.StructureByteStride = sizeof(Vertex);
+	// 	bd.StructureByteStride = sizeof(MeshVertex);
 	// 	D3D11_SUBRESOURCE_DATA sd = {};
 	// 	sd.pSysMem = vertices;
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateBuffer(&bd, &sd, &pVertexBuffer)), "Failed to create buffer");
 		
 	// 	// bind vertex buffer
-	// 	const UINT stride = sizeof(Vertex);
+	// 	const UINT stride = sizeof(MeshVertex);
 	// 	const UINT offset = 0u;
 	// 	Graphics::instance->m_deviceContext->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
@@ -490,13 +490,13 @@ namespace Helios {
 	// 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
 	// 	Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(D3DReadFileToBlob(L"PixelShader.cso", &pBlob)), "Failed to read Pixel Shader!");
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader)), "Failed to create Vertex Shader!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader)), "Failed to create MeshVertex Shader!");
 
 	// 	Graphics::instance->m_deviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0u);
 		
 	// 	Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(D3DReadFileToBlob(L"VertexShader.cso", &pBlob)), "Failed to read Vertex Shader!");
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader)), "Failed to create Vertex Shader!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(D3DReadFileToBlob(L"VertexShader.cso", &pBlob)), "Failed to read MeshVertex Shader!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader)), "Failed to create MeshVertex Shader!");
 
 
 	// 	Graphics::instance->m_deviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0u);

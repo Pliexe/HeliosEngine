@@ -1,3 +1,4 @@
+#include "GizmosRenderer.h"
 ;/* Copyright (c) 2022 Szabadi L�szl� Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
@@ -65,6 +66,9 @@ bool Helios::Graphics::Init()
 
     if (!Renderer2D::Init()) return false;
     if (!Renderer::Init()) return false;
+#ifdef HELIOS_EDITOR
+    if (!GizmosRenderer::Init()) return false;
+#endif
 
     if (FAILED(hr = D2D1CreateFactory(D2D1_FACTORY_TYPE::D2D1_FACTORY_TYPE_MULTI_THREADED, &factory))) {
         MessageBox(m_hWnd, (std::wstring(L"Failed to create D2D1 Factory! Reason: ") + GetLastMessageAsReadable()).c_str(), L"Graphics Error!", MB_ICONERROR);

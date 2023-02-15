@@ -99,11 +99,15 @@ namespace Helios {
 		static void Quit();
 
 		virtual void Init() = 0;
+#ifdef HELIOS_EDITOR
+		virtual void OnGizmosRender() = 0;
+#endif
 
 		friend class Mouse;
 		friend class InputManager;
 		friend class Camera;
 		friend class Bitmap;
+		friend class Scene;
 
 		extern friend class GameEngine;
 	};

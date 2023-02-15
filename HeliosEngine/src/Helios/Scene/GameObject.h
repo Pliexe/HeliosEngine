@@ -43,7 +43,15 @@ namespace Helios {
 		T& AddComponent(Args&&... args)
 		{
 			HL_CORE_ASSERT_WITH_MSG(!HasComponent<T>(), "GameObject does not have the component!");
-			return SceneManager::GetCurrentScene().lock()->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
+			T& comp = SceneManager::GetCurrentScene().lock()->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
+			return comp;
+		}
+
+		template <typename T>
+		void RemoveComponent()
+		{
+			HL_CORE_ASSERT_WITH_MSG(HasComponent<T>(), "GameObject does not have the component!");
+			SceneManager::GetCurrentScene().lock()->m_components.remove<T>(m_entityHandle);
 		}
 
 		template <typename T>

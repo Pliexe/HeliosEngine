@@ -3,37 +3,39 @@
 #include "Helios/Core/Base.h"
 #include "Buffer.h"
 #include "Helios/Translation/Vector.h"
+#include "Helios/Utils/MeshBuilder.h"
 
 namespace Helios
 {
-    struct MeshVertexData
-    {
-        Vector3 position;
-        Vector2 texCoord;
-    };
-
     class HELIOS_API Mesh
     {
     public:
         Mesh() = delete;
         Mesh(const Mesh&) = default;
-        Mesh(std::string name, const MeshVertexData* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
+        Mesh(std::string name, const MeshVertex* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
+        Mesh(std::string name, const MeshBuilder& meshBuilder);
 		
-        static Ref<Mesh> Create(std::string name, const MeshVertexData* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
+        static Ref<Mesh> Create(std::string name, const MeshVertex* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
+		static Ref<Mesh> Create(std::string name, const MeshBuilder& meshBuilder);
         static void Destroy(std::string name);
 
         static Ref<Mesh> GetCubeMesh();
 		static Ref<Mesh> GetCylinderMesh();
-        static Ref<Mesh> GetDynamicCylinderMesh(uint32_t sides);
+        static Ref<Mesh> GetConeMesh();
+        static Ref<Mesh> GetSphereMesh();
+        static Ref<Mesh> GetDynamicSphereMesh(uint32_t segments);
+        static Ref<Mesh> GetDynamicConeMesh(uint32_t segments);
+        static Ref<Mesh> GetDynamicCylinderMesh(uint32_t segments);
         static Ref<Mesh> GetTransformMoveMesh();
 		
 
         void Bind();
-        inline uint32_t getVertexCount() const { return m_VertexBuffer->getCount<MeshVertexData>(); }
-		inline uint32_t getIndexCount() const { return m_IndexBuffer->GetCount(); }
+        inline uint32_t getVertexCount() const { return m_VertexBuffer->getCount<MeshVertex>(); }
+		inline uint32_t getIndexCount() const { return m_IndexBuffer->count(); }
 		inline Ref<IndexBuffer> getIndexBuffer() const { return m_IndexBuffer; }
 		inline Ref<VertexBuffer> getVertexBuffer() const { return m_VertexBuffer; }
-		
+
+        inline std::vector<MeshVertex>& GetVertices() { return m_Vertices; }
 
     private:
 
@@ -41,6 +43,8 @@ namespace Helios
 
 		uint32_t m_VertexCount;
 		uint32_t m_IndexCount;
+
+		std::vector<MeshVertex> m_Vertices;
 
         std::string m_Name;
 

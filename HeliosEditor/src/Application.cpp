@@ -36,6 +36,8 @@
 #include <Helios/Input/InputManager.h>
 #include <Helios/Input/KeyCodes.h>
 
+#include "Helios/Graphics/GizmosRenderer.h"
+
 static std::filesystem::path currentScene;
 StartupConfig startupConfig;
 
@@ -76,7 +78,7 @@ static const TransformVertex transformMoveVertices[] = {
 	{ { -0.2f, 0.8f, -0.2f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
 };
 
-static const unsigned short transformMoveIndecies[] = {
+static uint32_t transformMoveIndecies[] = {
 	0, 1, 2
 };
 
@@ -87,7 +89,7 @@ static Ref<Shader> transformShader;
 void InitTransformBuffers()
 {
 	transformMoveVertexBuffer = VertexBuffer::Create(&transformMoveVertices, std::size(transformMoveVertices) * sizeof(TransformVertex), Helios::BufferUsage::Dynamic);
-	transformMoveIndexBuffer = IndexBuffer::Create((const unsigned short*)&transformMoveIndecies, std::size(transformMoveIndecies));
+	transformMoveIndexBuffer = IndexBuffer::Create((uint32_t*)&transformMoveIndecies, std::size(transformMoveIndecies));
 	transformShader = CreateRef<Shader>(Shader("Transform", {
 		{ "Position", Shader::DataType::Float3 },
 		{ "Color", Shader::DataType::Float4 },
@@ -516,16 +518,19 @@ namespace Helios {
 							ImGui::Text("Vertex Count: %d", mesh->getVertexCount());
 							ImGui::Text("Index Count: %d", indeciesCount);
 
-							const unsigned short* indices = mesh->getIndexBuffer()->getData();
+							uint32_t* indices = mesh->getIndexBuffer()->data();
 
 							ImGui::Text("Indicies:");
 
 							std::string str = std::to_string(indices[0]);
 							for (uint32_t i = 1; i < mesh->getIndexCount(); i++)
 							{
-								str += (i % 3 == 0 ? "\n" : ", ") + std::to_string(indices[i]);
+								str += (i % 3 == 0 ? "\n" : ", ") + std::to_string((uint32_t)indices[i]);
 							}
-							ImGui::Text(str.c_str());
+							if (InputManager::IsKeyPressed(HL_KEY_CONTROL))
+								std::cout << mesh->getIndexBuffer()->toString() << std::endl;
+
+							ImGui::Text(mesh->getIndexBuffer()->m_DataStr.c_str());
 
 							ImGui::End();
 						}
@@ -557,8 +562,9 @@ namespace Helios {
 
 						if (entId.r > -1)
 						{
-							uint32_t id = entId.r;
-							InspectorPanel::GetInstance() << (entt::entity)id;
+							entt::entity id = (entt::entity)((uint32_t)entId.r);
+							if(SceneManager::currentScene->m_components.valid(id))
+								InspectorPanel::GetInstance() << (entt::entity)id;
 						}
 					}
 
@@ -734,13 +740,23 @@ namespace Helios {
 			}
 
 			graphics->EndFrame();
-
 		}
 		
 		~GameEngine() {
 			ImGui::DestroyContext();
 		}
 
+		void OnGizmosRender() override
+		{
+			if(inspector.GetType() == InspectorPanel::SelectedType::GameObject)
+			{
+				GameObject obj = ((GameObject)std::any_cast<entt::entity>(InspectorPanel::GetInstance().GetHandle()));
+				if(obj.HasComponent<Components::MeshRenderer>())
+				{
+					GizmosRenderer::DrawMeshVertices(editorCamera, obj.GetComponent<Components::Transform>(), obj.GetComponent<Components::MeshRenderer>().mesh->GetVertices());
+				}
+			}
+		}
 	};
 }
 

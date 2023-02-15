@@ -216,6 +216,7 @@
     <ClInclude Include="src\Helios\Core\Application.h" />
     <ClInclude Include="src\Helios\Core\Base.h" />
     <ClInclude Include="src\Helios\Core\EntryPoint.h" />
+    <ClInclude Include="src\Helios\Utils\MeshBuilder.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Helios.h" />
     <ClInclude Include="src\Helios\Translation\Vector.h" />
@@ -253,6 +254,7 @@
     <ClCompile Include="src\Helios\Graphics\Graphics.cpp" />
     <ClCompile Include="src\Helios\Core\Application.cpp" />
     <ClCompile Include="src\Helios\Translation\Quanterion.cpp" />
+    <ClCompile Include="src\Helios\Utils\MeshBuilder.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pch.h</PrecompiledHeaderFile>

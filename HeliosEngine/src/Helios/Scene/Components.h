@@ -70,6 +70,11 @@ namespace Helios::Components {
 		}
 	};
 
+	struct HELIOS_API DisabledObject
+	{
+		short a;
+	};
+
 	struct HELIOS_API InfoComponent
 	{
 		std::string name;
@@ -106,7 +111,7 @@ namespace Helios::Components {
 
 	struct HELIOS_API Transform2D
 	{
-		Vector2	position	= { 0.0f, 0.0f };
+		Vector2	position	=  { 0.0f, 0.0f };
 		Vector2 rotation	= { 0.0f, 0.0f };
 		Size		size	= { 50.0f, 50.0f };
 		

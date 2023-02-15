@@ -27,6 +27,7 @@ namespace Helios
 		return nullptr;
 	}
 	
+	
 	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, BufferUsage usage)
 	{
 		switch (Graphics::GetAPI())

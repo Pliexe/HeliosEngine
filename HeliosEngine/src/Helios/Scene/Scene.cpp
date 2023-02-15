@@ -12,6 +12,7 @@
 #include "Helios/Core/Time.h"
 
 #include "Components.h"
+#include "Helios/Graphics/GizmosRenderer.h"
 
 namespace Helios {
 
@@ -141,7 +142,7 @@ namespace Helios {
 			{
 				//Renderer2D::DrawPolygon((sin(Time::passedTime()) + 1) * 50);
 
-				auto view = m_components.view<Components::Transform, Components::Relationship, Components::SpriteRenderer>();
+				auto view = m_components.view<Components::Transform, Components::Relationship, Components::SpriteRenderer>(entt::exclude<Components::DisabledObject>);
 				for (auto entity : view)
 				{
 					auto [trans, relt, spriteRenderer] = view.get<Components::Transform, Components::Relationship, Components::SpriteRenderer>(entity);
@@ -181,7 +182,7 @@ namespace Helios {
 			Renderer::BeginScene(projection);
 
 			{
-				auto view = m_components.view<Components::Transform, Components::Relationship, Components::MeshRenderer>();
+				auto view = m_components.view<Components::Transform, Components::Relationship, Components::MeshRenderer>(entt::exclude<Components::DisabledObject>);
 				for (auto entity : view)
 				{
 					auto [trans, relt, meshRenderer] = view.get<Components::Transform, Components::Relationship, Components::MeshRenderer>(entity);
@@ -206,6 +207,10 @@ namespace Helios {
 					}
 				}
 			}
+
+			GizmosRenderer::Begin(projection);
+			Application::instance->OnGizmosRender();
+			GizmosRenderer::End();
 		}
 	}
 
