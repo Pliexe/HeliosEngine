@@ -44,18 +44,29 @@ namespace Helios
         // WRL smart pointers will automatically release the COM object
     }
 
-    void DirectXConstantBuffer::Bind(uint32_t slot) const
+	void DirectXConstantBuffer::BindPS(uint32_t slot)
+	{
+        HL_CORE_ASSERT_WITH_MSG(slot < D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, "Pipeline Stage: Pixel Shader.\nSlot: " + std::to_string(slot) + "\nSlot must be less than " + std::to_string(D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT) + "!");
+        this->last_slot_ps = slot;
+        Graphics::instance->m_deviceContext->PSSetConstantBuffers(slot, 1u, m_Data.GetAddressOf());
+	}
+
+    void DirectXConstantBuffer::BindVS(uint32_t slot)
     {
-        //Graphics::instance->m_deviceContext->VSSetConstantBuffers()
+		HL_ASSERT_EXCEPTION(slot < D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, "Pipeline Stage: Vertex Shader.\nSlot: " + std::to_string(slot) + "\nSlot must be less than " + std::to_string(D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT) + "!");
+		this->last_slot_vs = slot;
         Graphics::instance->m_deviceContext->VSSetConstantBuffers(slot, 1u, m_Data.GetAddressOf());
-        // Graphics::instance->m_deviceContext->PSSetConstantBuffers(slot, 1u, m_Data.GetAddressOf());
     }
 
-    void DirectXConstantBuffer::Unbind() const
+    void DirectXConstantBuffer::UnbindPS() const
     {
-        Graphics::instance->m_deviceContext->VSSetConstantBuffers(0u, 1u, nullptr);
-        // Graphics::instance->m_deviceContext->PSSetConstantBuffers(0u, 1u, nullptr);
+        Graphics::instance->m_deviceContext->PSSetConstantBuffers(this->last_slot_ps, 1u, nullptr);
     }
+
+	void DirectXConstantBuffer::UnbindVS() const
+	{
+        Graphics::instance->m_deviceContext->VSSetConstantBuffers(this->last_slot_vs, 1u, nullptr);
+	}
 
     void DirectXConstantBuffer::SetData(const void* data, uint32_t size)
     {

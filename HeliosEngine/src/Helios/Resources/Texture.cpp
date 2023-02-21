@@ -5,11 +5,11 @@
 
 namespace Helios
 {
-    Ref<Texture2D> Texture2D::Create(const std::string& path)
+    Ref<Texture2D> Texture2D::Create(const std::filesystem::path& path)
     {
         switch (Graphics::GetAPI())
         {
-        case Graphics::API::DirectX: return CreateRef<DirectXTexture2D>(path);
+        case Graphics::API::DirectX: return CreateRef<DirectXTexture2D>(path.string());
         }
 
         HL_CORE_ASSERT_WITH_MSG(false, "Unknown Graphics API!");

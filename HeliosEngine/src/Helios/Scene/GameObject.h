@@ -5,7 +5,7 @@
 #pragma once
 
 #include "pch.h"
-#include "Helios/Scene/SceneManager.h"
+#include "Helios/Scene/SceneRegistry.h"
 #include "Helios/Scene/Scene.h"
 #include "Helios/Core/Base.h"
 #include "Helios/Core/Asserts.h"
@@ -15,35 +15,41 @@
 namespace Helios {
 	class Camera;
 	class Graphics;
+	class Scene; 
 	class HELIOS_API GameObject
 	{
-
 	public:
 
-		GameObject() = delete;
-		GameObject(entt::entity entity_id)
+		//GameObject() = default;
+		GameObject() { }
+		GameObject(const GameObject& other) = default;
+		GameObject(entt::entity entity_id, Ref<Scene> scene)
 		{
 			HL_CORE_ASSERT_WITH_MSG(entity_id != entt::null, "entity handle is invalid!");
+			m_scene = scene.get();
+			m_entityHandle = entity_id;
+		}
+		GameObject(entt::entity entity_id, Scene* scene)
+		{
+			HL_CORE_ASSERT_WITH_MSG(entity_id != entt::null, "entity handle is invalid!");
+			m_scene = scene;
 			m_entityHandle = entity_id;
 		}
 
-		template <typename T>
+		template <typename... T>
 		bool HasComponent()
 		{
 			HL_CORE_ASSERT_WITH_MSG(m_entityHandle != entt::null, "entity handle is invalid!")
-			
-			if (auto tmp = SceneManager::GetCurrentScene().lock())
-			{
-				return tmp->m_components.any_of<T>(m_entityHandle);
-			}
-			else return false;
+			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!")
+			return m_scene->m_components.template any_of<T...>(m_entityHandle);
 		}
 
 		template <typename T, typename... Args>
-		T& AddComponent(Args&&... args)
+		T& AddComponent(Args &&...args)
 		{
 			HL_CORE_ASSERT_WITH_MSG(!HasComponent<T>(), "GameObject does not have the component!");
-			T& comp = SceneManager::GetCurrentScene().lock()->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
+			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!")
+			T& comp = m_scene->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
 			return comp;
 		}
 
@@ -51,34 +57,49 @@ namespace Helios {
 		void RemoveComponent()
 		{
 			HL_CORE_ASSERT_WITH_MSG(HasComponent<T>(), "GameObject does not have the component!");
-			SceneManager::GetCurrentScene().lock()->m_components.remove<T>(m_entityHandle);
+			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!");
+			m_scene->m_components.remove<T>(m_entityHandle);
 		}
 
-		template <typename T>
-		T& GetComponent()
+		template <typename... T>
+		decltype(auto) GetComponent()
 		{
-			HL_CORE_ASSERT_WITH_MSG(HasComponent<T>(), "GameObject does not have the component!");
-			return SceneManager::GetCurrentScene().lock()->m_components.get<T>(m_entityHandle);
+			HL_CORE_ASSERT_WITH_MSG(HasComponent<T...>(), "GameObject does not have the component!");
+			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!");
+			return m_scene->m_components.template get<T...>(m_entityHandle);
 		}
 
 		operator entt::entity() const { return m_entityHandle; }
+		bool operator==(const GameObject& other) const { return m_entityHandle == other.m_entityHandle && m_scene == other.m_scene; }
+		bool operator==(const entt::entity& other) const { return m_entityHandle == other; }
+		bool operator==(const Scene* other) const { return m_scene == other; }
+		bool operator==(const Ref<Scene> other) const { return m_scene == other.get(); }
+		bool operator==(const WeakRef<Scene> other) const { return m_scene == other.lock().get(); }
+
+		inline bool isGlobal() { return HasComponent<Components::GlobalObject>(); }
+		void MakeGlobal();
+		void Destroy();
+		inline bool IsValid() { return m_entityHandle != entt::null && m_scene->m_components.valid(m_entityHandle); }
+		inline bool IsNotNull() { return m_entityHandle != entt::null; }
+		inline bool IsNull() { return m_entityHandle == entt::null; }
 
 	private:
 
-		bool m_global = false;
-		entt::entity m_entityHandle;
+		Scene* m_scene;
+		entt::entity m_entityHandle{ entt::null };
 		
 	public:
 
 #pragma region GameObject Creation Helpers
 
-		static GameObject& CreateMainCamera(Vector2 position = Vector2(0.0f, 0.0f));
-		static GameObject& CreateCamera(Vector2 position = Vector2(0.0f, 0.0f));
+		GameObject& CreateMainCamera(Vector2 position = Vector2(0.0f, 0.0f));
+		GameObject& CreateCamera(Vector2 position = Vector2(0.0f, 0.0f));
 
 #pragma endregion
 
 		void ResetParent();
 		void SetParent(GameObject& object);
+		void SetParent(entt::entity& object);
 
 		inline std::string& GetName() {
 			return GetComponent<Components::InfoComponent>().name;
@@ -88,17 +109,13 @@ namespace Helios {
 			return GetComponent<Components::Transform2D>();
 		}
 
-		static GameObject InstantiateObject();
-		static GameObject InstantiateObject(std::string name);
-		static GameObject InstantiateObject(GameObject& parent);
-		static GameObject InstantiateObject(std::string name, GameObject& parent);
+		GameObject InstantiateObject();
+		GameObject InstantiateObject(std::string name);
+		GameObject InstantiateObject(GameObject& parent);
+		GameObject InstantiateObject(std::string name, GameObject& parent);
 		
 		// Serbia - Novi Sad has the worst healthcare personal that doesn't respect the laws and all and kill people by their actions
-
-		static bool MakeGlobal(GameObject& gameObject);
-
-		static void DestroyObject(GameObject gameObject);
-
+		
 		friend struct Components::Transform2D;
 
 		friend class Application;

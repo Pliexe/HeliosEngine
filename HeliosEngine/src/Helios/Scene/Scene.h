@@ -11,40 +11,53 @@
 
 namespace Helios {
 	class GameObject;
-	class SceneManager;
+	class SceneRegistry;
 	class Camera;
+
 	class HELIOS_API Scene
 	{
 	private:
-
+		std::string name;
+		std::filesystem::path path;
 
 		entt::registry m_components;
-		static entt::registry s_components;
 
 		std::function<void(Scene&)> initCallback;
 
-		entt::entity primaryCamera = entt::null;
-
 	public:
 
-		Scene();
+		Scene() {};
+		//Scene() = delete;
+		Scene(std::string name) : name(name) { }
+		Scene(std::string name, std::filesystem::path path) : name(name), path(path) { }
 		~Scene();
 
-		inline Components::Camera& GetPrimaryCamera();
-		inline bool IsPrimaryCamera(entt::entity other) const { return other == primaryCamera; }
-		inline bool IsPrimaryCameraSet() const { return entt::null != primaryCamera; }
-		inline void SetPrimaryCamera(GameObject& obj);
-		inline void ResetPrimaryCamera();
+		inline bool contains(entt::entity entity);
+		
+		inline void RenderScene(SceneCamera camera);
+		void RenderScene(Matrix4x4 projection);
+		void RenderGizmos(Matrix4x4 projection);
+		GameObject InstantiateObject();
+		GameObject InstantiateObject(Vector3 position);
+		GameObject InstantiateObject(entt::entity& parent);
+		GameObject InstantiateObject(std::string name, Vector3 position = Vector3::Zero());
+		GameObject InstantiateObject(std::string name, entt::entity& parent);
+		GameObject& CreateMainCamera(Vector3 position);
+		GameObject& CreateCamera(Vector3 position);
 
-		void OnUpdateRuntime();
-		void OnUpdateEditor(SceneCamera camera);
+		void Init() { if(initCallback) initCallback(*this); }
+		void Shutdown();
+		
+		template <typename... T>
+		decltype(auto) GetComponents()
+		{
+			return m_components.view<T...>();
+		}
 
-		void Init() { initCallback(*this); }
-
-		void Unload();
+		static void UpdateChildTransforms(Ref<Scene> scene);
 
 		static void Serialize(const std::string& filepath, WeakRef<Scene>& scene);
-		static void Deserialize(const std::string& filepath);
+		static void Deserialize(const std::string& filepath, Ref<Scene> scene);
 
 		/*static void SerializeBinary(std::filesystem::path path, Scene& scene);
 		static void DeserializeBinary(std::filesystem::path path, Scene& scene);*/

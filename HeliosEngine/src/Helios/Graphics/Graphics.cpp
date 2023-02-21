@@ -18,8 +18,6 @@ Size Graphics::s_currentSize;
 
 bool Helios::Graphics::Init()
 {
-    
-
     //if (!CreateD3DDevice()) return false;
     IDXGIAdapter* pAdapter10 = NULL;
     IDXGIDevice1* pDXGIDevice10 = NULL;
@@ -135,7 +133,7 @@ HRESULT Graphics::CreateD3D11Device(D3D_DRIVER_TYPE type)
         &this->m_device,
         NULL,
         &this->m_deviceContext
-    );;
+    );
 }
 
 HRESULT Helios::Graphics::CreateD3D11SwapChain(IDXGIFactory* pFactory, IDXGISwapChain** ppSwapChain)

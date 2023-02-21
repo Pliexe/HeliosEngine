@@ -69,9 +69,8 @@ namespace Helios
 
     void* DirectXFramebuffer::GetTextureID(unsigned int bufferIndex)
     {
-		HL_ASSERT_EXCEPTION(bufferIndex < 0, "Invalid buffer index!");
 		//HL_ASSERT_EXCEPTION(bufferIndex < m_colorBuffers.size(), std::string("Invalid buffer index!") + " " + std::to_string(bufferIndex) + " < " + std::to_string(m_colorBuffers.size()));
-		auto& test = m_colorBuffers[bufferIndex];
+		auto test = m_colorBuffers[bufferIndex];
 		return m_colorBuffers[bufferIndex].shaderResourceView.Get();
     }
 
@@ -197,7 +196,7 @@ namespace Helios
 			textureDesc.MiscFlags = 0;
 
 			HRESULT hr;
-            HL_EXCEPTION_HR(hr = FAILED(Graphics::instance->m_device->CreateTexture2D(&textureDesc, nullptr, &colorBuffer.texture)),
+            HL_EXCEPTION_HR(FAILED(hr = Graphics::instance->m_device->CreateTexture2D(&textureDesc, nullptr, &colorBuffer.texture)),
                 "Failed to create texture for framebuffer", hr);
 
 			// Create render target view

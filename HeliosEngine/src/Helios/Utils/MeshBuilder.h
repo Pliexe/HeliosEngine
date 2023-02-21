@@ -8,6 +8,7 @@ namespace Helios
 	{
 		Vector3 position;
 		Vector2 texCoord;
+		Vector3 normal;
 	};
 	class HELIOS_API MeshBuilder
 	{
@@ -27,7 +28,7 @@ namespace Helios
 
 		void Reserve(uint32_t vertexCount, uint32_t triangleCount);
 		inline uint32_t AddVertex(MeshVertex vertex);
-		inline uint32_t AddVertex(Vector3 position, Vector2 texCoord);
+		inline uint32_t AddVertex(Vector3 position, Vector2 texCoord, Vector3 normal);
 		void AddTriangle(uint32_t index0, uint32_t index1, uint32_t index2);
 		void AddQuad(uint32_t index0, uint32_t index1, uint32_t index2, uint32_t index3);
 

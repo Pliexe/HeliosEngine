@@ -6,7 +6,7 @@ namespace Helios
 {
 	Ref<ConstantBuffer> ConstantBuffer::Create(uint32_t size)
 	{
-		HL_ASSERT_EXCEPTION(!(size % 16), "Constant buffer size must be a multiple of 16 bytes!");
+		HL_ASSERT_EXCEPTION(!(size % 16), "Constant buffer size must be a multiple of 16 bytes!\nClass Name: " + std::string(typeid(ConstantBuffer).name()));
 		switch (Graphics::GetAPI())
 		{
 		case Graphics::API::DirectX: return CreateRef<DirectXConstantBuffer>(size);

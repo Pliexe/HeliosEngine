@@ -8,11 +8,13 @@
 #include "Helios/Resources/Mesh.h"
 #include "Helios/Resources/Texture.h"
 #include "Helios/Resources/Material.h"
+#include "Helios/Translation/Matrix.h"
 
 namespace Helios::Components {
 
 	struct Relationship
 	{
+		entt::entity top_handle = entt::null;
 		entt::entity parent_handle = entt::null;
 		entt::entity first_child = entt::null;
 		entt::entity prev_child = entt::null;
@@ -28,6 +30,7 @@ namespace Helios::Components {
 		void SetParent(entt::registry& registry, entt::entity destination, entt::entity source)
 		{
 			Reset(registry);
+			if (top_handle == entt::null) top_handle = source;
 			parent_handle = source;
 			auto& parent = registry.get<Relationship>(source);
 			next_child = parent.first_child;
@@ -39,6 +42,7 @@ namespace Helios::Components {
 			first_child = entt::null;
 			prev_child = entt::null;
 			next_child = entt::null;
+			top_handle = entt::null;
 		}
 
 		void Reset(entt::registry& registry) {
@@ -61,9 +65,11 @@ namespace Helios::Components {
 					else prev.next_child = entt::null;
 				}
 				parent_handle = entt::null;
+				top_handle = entt::null;
 			}
 			else {
 				parent_handle = entt::null;
+				top_handle = entt::null;
 				prev_child = entt::null;
 				next_child = entt::null;
 			}
@@ -74,6 +80,17 @@ namespace Helios::Components {
 	{
 		short a;
 	};
+
+	struct HELIOS_API DirectionalLight
+	{
+		Color color;
+		float intensity;
+
+		DirectionalLight() = default;
+		DirectionalLight(const Color& color, float intensity) : color(color), intensity(intensity) {}
+	};
+
+	struct HELIOS_API GlobalObject { byte a; };
 
 	struct HELIOS_API InfoComponent
 	{
@@ -86,9 +103,12 @@ namespace Helios::Components {
 
 	struct HELIOS_API Transform
 	{
+		Vector3		localPosition = Vector3::Zero();
 		Vector3		position = Vector3::Zero();
+		Quanterion	localRotation = Quanterion::Identity();
 		Quanterion	rotation = Quanterion::Identity();
 		// Vector3	 rotationVec = { 0.0f, 0.0f, 0.0f };
+		Vector3		localScale	 = { 1.0f, 1.0f, 1.0f };
 		Vector3		scale	 = { 1.0f, 1.0f, 1.0f };
 		bool typeSwitch = false;
 
@@ -100,13 +120,42 @@ namespace Helios::Components {
 
 		void Rotate(const Vector3& euler) {
 			//rotation *= Quanterion::Euler(euler);
-			rotation = Quanterion::FromEuler(rotation.euler() + euler);
+			localRotation = Quanterion::FromEuler(rotation.euler() + euler);
+			rotation = localRotation;
 		}
 		void RotateRads(const Vector3& euler) { this->rotation = this->rotation * Quanterion::FromEulerRads(euler); }
-		
+		void Translate(const Vector3& translation) { this->localPosition += translation; this->position = this->localPosition; }
+		void UpdateTransform(const Vector3& position, const Vector3& rotation, const Vector3& scale) {
+			this->localPosition = position;
+			this->localRotation = Quanterion::FromEuler(rotation);
+			this->localScale = scale;
+			this->scale = localScale;
+			this->position = this->localPosition;
+			this->rotation = this->localRotation;
+		}
+		void UpdatePosition(const Vector3& position) {
+			this->localPosition = position;
+			this->position = this->localPosition;
+		}
+		void UpdateRotation(const Quanterion& rotation) {
+			this->localRotation = rotation;
+			this->rotation = this->localRotation;
+		}
+		void UpdateRotation(const Vector3& rotation) {
+			this->localRotation = Quanterion::FromEuler(rotation);
+			this->rotation = this->localRotation;
+		}
+		void UpdateScale(const Vector3& scale) {
+			this->localScale = scale;
+			this->scale = this->localScale;
+		}
+
 		inline Vector3 forward() { return rotation.forward(); }
 		//Vector3 forward() { return rotation * Vector3::Forward(); }
 		inline Vector3 right() { return rotation * Vector3::Right(); }
+
+		inline Matrix4x4 GetWorldProjectionColumn() const { return Matrix4x4::TranslationColumn(position) * Matrix4x4::RotationColumn(rotation) * Matrix4x4::Scale(scale); }
+		inline Matrix4x4 GetWorldProjectionRow() const { return Matrix4x4::Translation(position) * Matrix4x4::Rotation(rotation) * Matrix4x4::Scale(scale); }
 	};
 
 	struct HELIOS_API Transform2D
@@ -148,6 +197,7 @@ namespace Helios::Components {
 		float fov = 60.0f;
 		Color clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
 		bool ortographic = false;
+		bool isPrimary = false;
 
 		Camera() = default;
 		Camera(const Camera&) = default;

@@ -3,7 +3,7 @@
 #include "ProjectManager.h"
 
 #include <Helios/Core/Application.h>
-#include <Helios/Scene/SceneManager.h>
+#include <Helios/Scene/SceneRegistry.h>
 #include <Helios/Scene/Scene.h>
 
 #include "HeliosEditor_Macros.h"
@@ -79,13 +79,13 @@ namespace Helios {
 			if (s_currentScenePath.empty() || as_new)
 				SaveSceneDialog();
 			else {
-				//SceneManager::GetCurrentScene().Serialize(s_currentScenePath.string(), SceneManager::GetCurrentScene());
+				//SceneRegistry::GetCurrentScene().Serialize(s_currentScenePath.string(), SceneRegistry::GetCurrentScene());
 			}
 			auto fn = s_currentScenePath.filename().string();
 			SetWindowTextA(Application::GetHwnd(), std::string_view(fn.c_str(), fn.size() - 6).data());
 		}
 		void SaveSceneDialog() {
-			if (SceneManager::HasCurrentScene()) {
+			if (SceneRegistry::get_current_scene()) {
 				wchar_t file[MAX_PATH];
 				ZeroMemory(file, sizeof(MAX_PATH));
 
@@ -106,7 +106,7 @@ namespace Helios {
 					if (ENDS_WITH(str, ".scene"))
 					{
 						s_currentScenePath = str;
-						//Scene::Serialize(str, SceneManager::GetCurrentScene());
+						//Scene::Serialize(str, SceneRegistry::GetCurrentScene());
 					}
 					else
 						Application::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
@@ -118,24 +118,18 @@ namespace Helios {
 			{
 				auto name = s_currentScenePath.filename().string();
 				name = name.substr(0, name.length() - 6);
-				SceneManager::AddScene(name, [last](Scene& s) {
-					s_currentScenePath = last;
-					Scene::Deserialize(last.string());
-				});
-				if (!SceneManager::LoadScene(name)) LoadSampleScene();
+				
+				LoadSampleScene();
 			}
 			else LoadSampleScene();
 		}
 		void LoadSampleScene() {
-			SceneManager::AddScene("Sample Scene", [](Scene&) {
-				GameObject::CreateMainCamera();
-
-				GameObject::InstantiateObject();
-				});
-			SceneManager::LoadScene("Sample Scene");
+			auto scene = SceneRegistry::create_temporary_scene();
+			scene->CreateMainCamera({});
+			scene->Init();
 		}
 		void OpenSceneDialog() {
-			if (SceneManager::HasCurrentScene()) {
+			if (SceneRegistry::get_current_scene()) {
 				wchar_t file[MAX_PATH];
 				ZeroMemory(file, sizeof(MAX_PATH));
 
@@ -156,12 +150,8 @@ namespace Helios {
 					if (ENDS_WITH(str, ".scene"))
 					{
 						s_currentScenePath = str;
-						auto name = s_currentScenePath.filename().string();
-						name = name.substr(0, name.length() - 6);
-						SceneManager::AddScene(name, [str](Scene& s) {
-							Scene::Deserialize(str);
-						});
-						SceneManager::LoadScene(name);
+						SceneRegistry::Register(s_currentScenePath);
+						SceneRegistry::LoadScene(s_currentScenePath);
 					}
 					else
 						Application::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);

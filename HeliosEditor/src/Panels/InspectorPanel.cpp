@@ -21,22 +21,26 @@ namespace Helios {
 		{
 		case SelectedType::GameObject:
 		{
-			entt::entity entity = std::any_cast<entt::entity>(handle);
-			if (entity == entt::null) return;
-			GameObject gm = entity;
+			GameObject entity = std::any_cast<GameObject>(handle);
+			if (entity.IsNull()) return;
+			if(!entity.IsValid())
+			{
+				handle = nullptr;
+				return;
+			}
 
-			bool enabled = !gm.HasComponent<Components::DisabledObject>();
+			bool enabled = !entity.HasComponent<Components::DisabledObject>();
 			if(ImGui::Checkbox("##gm_enabled", &enabled))
 			{
-				if (enabled) gm.RemoveComponent<Components::DisabledObject>();
-				else gm.AddComponent <Components::DisabledObject>();
+				if (enabled) entity.RemoveComponent<Components::DisabledObject>();
+				else entity.AddComponent <Components::DisabledObject>();
 			}
 			
 			/*ImGui::Checkbox("##active", &gm.active);
 			ImGui::SameLine();*/
 
 			char name[100];
-			strcpy_s(name, gm.GetName().c_str());
+			strcpy_s(name, entity.GetName().c_str());
 			if (focus_next_name_input) {
 				ImGui::SetKeyboardFocusHere(0);
 				focus_next_name_input = false;
@@ -44,18 +48,18 @@ namespace Helios {
 			if (ImGui::InputText("##gm_name", name, 100, ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				if (name[0] != '\0')
-					gm.GetName() = name;
+					entity.GetName() = name;
 			}
 
 			ImGui::Spacing();
 
-			if (gm.HasComponent<Components::Transform2D>())
+			if (entity.HasComponent<Components::Transform2D>())
 			{
 
 				if (ImGui::CollapsingHeader("Transform2D")) {
 					ImGui::Text("X:");
 					ImGui::SameLine();
-					Components::Transform2D& transform = gm.GetComponent<Components::Transform2D>();
+					Components::Transform2D& transform = entity.GetComponent<Components::Transform2D>();
 					float* vec2Pos = transform.position;
 					ImGui::DragFloat2("Position", vec2Pos);
 					transform.position = { vec2Pos[0], vec2Pos[1] };
@@ -68,34 +72,39 @@ namespace Helios {
 				}
 			}
 
-			if (gm.HasComponent<Components::Transform>())
+			if (entity.HasComponent<Components::Transform>())
 			{
 				if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-					auto& transform = gm.GetComponent<Components::Transform>();
+					auto& transform = entity.GetComponent<Components::Transform>();
 
-					ImGui::EditVector3("Position", transform.position);
+					ImGui::EditVector3("Position", transform.localPosition);
+					transform.position = transform.localPosition;
 
-					ImGui::EditQuanterionEuler("Rotation Euler", transform.rotation);
-					ImGui::EditQuanterion("Rotation", transform.rotation, 0.01, -1.0f, 1.0f);
+					ImGui::EditQuanterionEuler("Rotation Euler", transform.localRotation);
+					transform.rotation = transform.localRotation;
+					ImGui::EditQuanterion("Rotation", transform.localRotation, 0.01, -1.0f, 1.0f);
+					transform.rotation = transform.localRotation;
 
 					//ImGui::EditVector3("Rotation", transform.rotationVec);
 
-					ImGui::EditVector3("Scale", transform.scale);
+					ImGui::EditVector3("Scale", transform.localScale);
 
 
 					ImGui::Checkbox("Switch implementation: ", &transform.typeSwitch);
 				}
 			}
 
-			if (gm.HasComponent<Components::Camera>())
+			if (entity.HasComponent<Components::Camera>())
 			{
 				if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen)) {
-					auto& cam = gm.GetComponent<Components::Camera>();
+					auto& cam = entity.GetComponent<Components::Camera>();
 					ImGui::ColorEdit4("Clear Color", cam.clear_color);
 
-					if (!SceneManager::GetCurrentScene().lock()->IsPrimaryCamera(gm) && ImGui::Button("Make Primary")) {
-						SceneManager::GetCurrentScene().lock()->SetPrimaryCamera(gm);
-					}
+					/*if (!SceneRegistry::get_current_scene()->IsPrimaryCamera(entity) && ImGui::Button("Make Primary")) {
+						SceneRegistry::get_current_scene()->SetPrimaryCamera(entity);
+					}*/
+
+					ImGui::Checkbox("Is Primary", &cam.isPrimary);
 
 					int selected = cam.ortographic;
 					static const char* items[] = { "Perspective", "Ortographic" };
@@ -116,10 +125,10 @@ namespace Helios {
 				}
 			}
 
-			if (gm.HasComponent<Components::SpriteRenderer>())
+			if (entity.HasComponent<Components::SpriteRenderer>())
 			{
 				if (ImGui::CollapsingHeader("SpriteRenderer", ImGuiTreeNodeFlags_DefaultOpen)) {
-					auto& sRenderer = gm.GetComponent<Components::SpriteRenderer>();
+					auto& sRenderer = entity.GetComponent<Components::SpriteRenderer>();
 
 					ImGui::ColorEdit4("Color", sRenderer.color);
 
@@ -129,7 +138,7 @@ namespace Helios {
 						ImGui::Text("Texture: Unknown Name!");
 
 					if (ImGui::Button("Select")) {
-						GameObject selectedGm = gm;
+						GameObject selectedGm = entity;
 						AssetRegistry::OpenTextureSelect([selectedGm](Ref<Texture2D> nTexture) mutable {
 							auto& renderer = selectedGm.GetComponent<Components::SpriteRenderer>().texture = nTexture;
 						});
@@ -137,10 +146,10 @@ namespace Helios {
 				}
 			}
 
-			if (gm.HasComponent<Components::MeshRenderer>())
+			if (entity.HasComponent<Components::MeshRenderer>())
 			{
 				if (ImGui::CollapsingHeader("MeshRenderer", ImGuiTreeNodeFlags_DefaultOpen)) {
-					auto& sRenderer = gm.GetComponent<Components::MeshRenderer>();
+					auto& sRenderer = entity.GetComponent<Components::MeshRenderer>();
 
 					ImGui::ColorEdit4("Color", sRenderer.material->Color);
 
@@ -150,13 +159,24 @@ namespace Helios {
 						ImGui::Text("Texture: Unknown Name!");
 
 					if (ImGui::Button("Select")) {
-						GameObject selectedGm = gm;
+						GameObject selectedGm = entity;
 						AssetRegistry::OpenTextureSelect([selectedGm](Ref<Texture2D> nTexture) mutable {
 							auto& renderer = selectedGm.GetComponent<Components::MeshRenderer>().material->texture = nTexture;
 							});
 					}
 				}
 			}
+			
+			if (entity.HasComponent<Components::DirectionalLight>())
+			{
+				if (ImGui::CollapsingHeader("Directional Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+					auto& light = entity.GetComponent<Components::DirectionalLight>();
+
+					ImGui::ColorEdit4("Color", light.color);
+					ImGui::DragFloat("Intensity", &light.intensity, 0.1f, 0.0f, 100.0f);
+				}
+			}
+
 
 			ImVec2 lastSize = ImGui::GetWindowSize();
 			ImVec2 lastPos = ImGui::GetWindowPos();
@@ -179,8 +199,8 @@ namespace Helios {
 			ImGui::SetNextWindowPos(pos);
 			if (ImGui::BeginPopupContextItem("Add Component"))
 			{
-				AddComponentItem<Components::Camera>("Camera", gm);
-				AddComponentItem<Components::SpriteRenderer>("SpriteRenderer", gm);
+				AddComponentItem<Components::Camera>("Camera", entity);
+				AddComponentItem<Components::SpriteRenderer>("SpriteRenderer", entity);
 
 				ImGui::EndPopup();
 			}

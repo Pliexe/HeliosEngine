@@ -29,6 +29,7 @@ LRESULT Helios::Application::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 	case WM_DESTROY:
+		Application::ShowMessage("Test Tawdaitkle", "before closing!");
 		PostQuitMessage(0);
 		return 0;
 	case WM_LBUTTONUP:
@@ -148,7 +149,6 @@ int Helios::Application::Run()
 
 	MSG message;
 	message.message = WM_NULL;
-	
 
 	while (message.message != WM_QUIT) {
 		if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
@@ -159,6 +159,10 @@ int Helios::Application::Run()
 	}
 
 #pragma endregion
+
+	Application::ShowMessage("Test Titkle", "The app has quit game loop!");
+
+	Shutdown();
 
 	return 0;
 }
@@ -198,30 +202,37 @@ void Helios::Application::GameLoop() {
 	OnRender();
 }
 
+void Helios::Application::Shutdown()
+{
+
+}
+
 void Helios::Application::CheckEngineQueue() {
-	if (SceneManager::currentScene) {
-		SceneManager::CheckQueue();
-	}
+	/*if (SceneRegistry::currentScene) {
+		SceneRegistry::CheckQueue();
+	}*/
 }
 
 void Helios::Application::OnUpdate() {
-	SceneManager::Update();
+	SceneRegistry::OnRuntimeUpdate();
 }
 
 void Helios::Application::OnRender()
 {
 	graphics->ClearRenderTarget(0.0f, 0.0f, 0.5f);
 
-	if (SceneManager::currentScene)
+	SceneRegistry::OnRuntimeRender();
+
+	/*if (SceneRegistry::currentScene)
 	{
 		graphics->m_renderTarget2D->BeginDraw();
 
-		SceneManager::Render(*graphics);
+		SceneRegistry::Render(*graphics);
 
 		Render(*graphics);
 
 		graphics->m_renderTarget2D->EndDraw();
-	}
+	}*/
 
 	graphics->EndFrame();
 }

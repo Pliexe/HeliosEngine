@@ -138,8 +138,8 @@ namespace Helios {
 		Vector3 operator*=(float n);
 		Vector3 operator/=(float n);
 
-		Vector3 operator=(Vector3& other);
-		Vector3 operator=(Vector3 other);
+		/*Vector3 operator=(Vector3& other);
+		Vector3 operator=(Vector3 other);*/
 	};
 
 	struct HELIOS_API Vector4 : public Vector3 {

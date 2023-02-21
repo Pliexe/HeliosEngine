@@ -19,8 +19,12 @@ namespace Helios {
 
 		ConstantBuffer() = default;
 
-		virtual void Bind(uint32_t slot = 0) const = 0;
-		virtual void Unbind() const = 0;
+		// Bind the buffer to the pixel shader stage
+		virtual void BindPS(uint32_t slot = 0) = 0;
+		// Bind the buffer to the vertex shader stage
+		virtual void BindVS(uint32_t slot = 0) = 0;
+		virtual void UnbindPS() const = 0;
+		virtual void UnbindVS() const = 0;
 
 		virtual void SetData(const void* data, uint32_t size) = 0;
 

@@ -34,7 +34,7 @@ namespace Helios {
 		};
 
 		template <typename T>
-		typename std::enable_if<std::is_same<T, entt::entity>::value, bool>::type
+		typename std::enable_if<std::is_same<T, GameObject>::value, bool>::type
 		operator == (T anything) {
 			if (type != SelectedType::GameObject) return false;
 			return std::any_cast<T>(handle) == anything;
@@ -46,10 +46,18 @@ namespace Helios {
 		}
 
 		template <typename T>
-		typename std::enable_if<std::is_same<T, entt::entity>::value, InspectorPanel&>::type
+		typename std::enable_if<std::is_same<T, GameObject>::value, InspectorPanel&>::type
 		operator << (T entity) {
 			this->type = SelectedType::GameObject;
 			this->handle = entity;
+			return *this;
+		}
+
+		template <typename T>
+		typename std::enable_if<std::is_same<T, entt::entity>::value, InspectorPanel&>::type
+		operator << (T entity) {
+			this->type = SelectedType::GameObject;
+			this->handle = GameObject { entity, SceneRegistry::get_current_scene() };
 			return *this;
 		}
 

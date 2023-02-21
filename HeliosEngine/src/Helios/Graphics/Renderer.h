@@ -13,6 +13,9 @@ namespace Helios
 
 		static bool Init();
 		static void Shutdown();
+		static void BeginScene(Matrix4x4 projection,
+		                       entt::basic_view<entt::entity, entt::get_t<Components::Transform, Components::DirectionalLight>, entt::
+		                       exclude_t<Components::DisabledObject>> directionalLightView);
 
 		static void BeginScene(Matrix4x4 projection);
 		static void EndScene();

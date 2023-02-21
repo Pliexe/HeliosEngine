@@ -21,7 +21,7 @@ public:
 		using namespace Helios;
 
 
-		SceneManager::AddScene(L"Example Scene", [this](Scene& scene) {
+		SceneRegistry::AddScene(L"Example Scene", [this](Scene& scene) {
 			//MessageBox(getHwnd(), L"WORKS", L"L", MB_OK);
 
 			/*GameObject& obj = Helios::GameObject::InstantiateObject();
@@ -80,7 +80,7 @@ public:
 			//obj.AddComponent(new CubeCircle());
 		});
 
-		SceneManager::LoadScene(L"Example Scene");
+		SceneRegistry::LoadScene(L"Example Scene");
 	}
 };
 

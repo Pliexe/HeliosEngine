@@ -16,202 +16,165 @@
 
 namespace Helios {
 
-	Scene::Scene() = default;
 	Scene::~Scene() {
-		   
-	}
-	
-	entt::registry Scene::s_components;
-	
-	inline Helios::Components::Camera& Scene::GetPrimaryCamera()
-	{
-		HL_CORE_ASSERT_WITH_MSG(primaryCamera != entt::null, "Primary Camera is entt::null while trying to get it!!!");
-		return m_components.get<Components::Camera>(primaryCamera);
+		Application::ShowMessage("Test","Scene Deleted!");
 	}
 
-	inline  void Scene::SetPrimaryCamera(GameObject& obj)
+	bool Scene::contains(entt::entity entity)
 	{
-		HL_CORE_ASSERT_WITH_MSG(obj.HasComponent<Components::Camera>(), "The Object has no Camera component!");
-		primaryCamera = obj;
+		return m_components.valid(entity);
 	}
 
-	inline void Scene::ResetPrimaryCamera() { primaryCamera = entt::null; }
-
-	void Scene::OnUpdateRuntime()
+	void Scene::UpdateChildTransforms(Ref<Scene> scene)
 	{
-		if (primaryCamera != entt::null) {
-			auto& relationship = GameObject(primaryCamera).GetComponent<Components::Relationship>();
+		auto view = scene->m_components.view<Components::Transform, Components::Relationship>();
+		for (auto entity : view)
+		{
+			auto [transform, relationship] = view.get<Components::Transform, Components::Relationship>(entity);
 
-			Matrix4x4 projection;
-
-			if (relationship.parent_handle != entt::null)
+			if (relationship.HasParent()) continue;
+			
+			static std::function<void(entt::entity, Components::Relationship&, Components::Transform&, Components::Transform&)> UpdateTransform = [scene](entt::entity entity, Components::Relationship& relationship, Components::Transform& transform, Components::Transform& parentTransform)
 			{
-				auto parent = GameObject(relationship.parent_handle);
+				transform.position = transform.localPosition + parentTransform.localPosition;
+				transform.rotation = transform.localRotation * parentTransform.localRotation;
+				transform.scale = {
+					transform.localScale.x * parentTransform.localScale.x,
+					transform.localScale.y * parentTransform.localScale.y,
+					transform.localScale.z * parentTransform.localScale.z
+				};
 
-				projection = SceneCamera::GetProjection(
-					GameObject(primaryCamera).GetComponent<Components::Transform>(),
-					GameObject(primaryCamera).GetComponent<Components::Camera>()
-				);
-			} else projection = SceneCamera::GetProjection(
-				GameObject(primaryCamera).GetComponent<Components::Transform>(),
-				GameObject(primaryCamera).GetComponent<Components::Camera>()
-			);
-
-			Renderer2D::BeginScene(projection);
-
-			{
-				//Renderer2D::DrawPolygon((sin(Time::passedTime()) + 1) * 50);
-
-				auto view = m_components.view<Components::Transform, Components::Relationship, Components::SpriteRenderer>();
-				for (auto entity : view)
+				if (relationship.first_child != entt::null)
 				{
-					auto [trans, relt, spriteRenderer] = view.get<Components::Transform, Components::Relationship, Components::SpriteRenderer>(entity);
-
-				retry:
-					try {
-						if (relt.parent_handle != entt::null)
-						{
-							Components::Transform tmp = trans;
-							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
-							// Renderer2D::DrawSprite(tmp, spriteRenderer);
-							Renderer2D::DrawSprite((uint32_t)entity, trans, spriteRenderer);
-						}
-						else
-							Renderer2D::DrawSprite((uint32_t)entity, trans, spriteRenderer);
-							// Renderer2D::DrawSprite(trans, spriteRenderer);
-					}
-					catch (HeliosExceptin ex) {
-						switch (ex.what())
-						{
-						case IDRETRY: goto retry;
-						case IDABORT: Application::Quit(); break;
-						}
-					}
-
-					//Renderer2D::DrawTriangle(trans.position);
+					auto [childTransform, childRelationship] = scene->m_components.get<Components::Transform, Components::Relationship>(relationship.first_child);
+					UpdateTransform(relationship.first_child, childRelationship, childTransform, transform);
 				}
-
-				//Renderer2D::DrawTriangle(Vector2());
-
-				//Graphics::instance->m_renderTarget2D->Clear(camera.clear_color);
-
-				//auto group = m_components.group <Components::Transform, Components::
-			}
-
-			Renderer2D::EndScene();
-
-			Renderer::BeginScene(projection);
-
-			{
-				auto view = m_components.view<Components::Transform, Components::Relationship, Components::MeshRenderer>();
-				for (auto entity : view)
+				if(relationship.next_child != entt::null)
 				{
-					auto [trans, relt, meshRenderer] = view.get<Components::Transform, Components::Relationship, Components::MeshRenderer>(entity);
+					auto [childTransform, childRelationship] = scene->m_components.get<Components::Transform, Components::Relationship>(relationship.next_child);
+					UpdateTransform(relationship.next_child, childRelationship, childTransform, transform);
+				}
+				if(relationship.prev_child != entt::null)
+				{
+					auto [childTransform, childRelationship] = scene->m_components.get<Components::Transform, Components::Relationship>(relationship.prev_child);
+					UpdateTransform(relationship.prev_child, childRelationship, childTransform, transform);
+				}
+			};
 
-				retry4:
-					try {
-						if (relt.parent_handle != entt::null)
-						{
-							Components::Transform tmp = trans;
-							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
-							Renderer::DrawMesh((uint32_t)entity, tmp, meshRenderer);
-						}
-						else
-							Renderer::DrawMesh((uint32_t)entity, trans, meshRenderer);
+			if (relationship.first_child != entt::null)
+			{
+				auto [childTransform, childRelationship] = scene->m_components.get<Components::Transform, Components::Relationship>(relationship.first_child);
+				UpdateTransform(relationship.first_child, childRelationship, childTransform, transform);
+			}
+		}
+	}
+
+	void Scene::RenderScene(SceneCamera camera)
+	{
+		Matrix4x4 projection = camera.GetProjection();
+		RenderScene(projection);
+		RenderGizmos(projection);
+	}
+	void Scene::RenderScene(Matrix4x4 projection)
+	{
+		auto directional_light_view = m_components.view<Components::Transform, Components::DirectionalLight>(entt::exclude<Components::DisabledObject>);
+
+		Renderer2D::BeginScene(projection);
+		{
+			auto view = m_components.view<Components::Transform, Components::Relationship, Components::SpriteRenderer>(entt::exclude<Components::DisabledObject>);
+			for (auto entity : view)
+			{
+				auto [transform, spriteRenderer] = view.get<Components::Transform, Components::SpriteRenderer>(entity);
+
+			retry:
+				try {
+					Renderer2D::DrawSprite((uint32_t)entity, transform, spriteRenderer);
+				}
+				catch (HeliosExceptin ex) {
+					switch (ex.what())
+					{
+					case IDRETRY: goto retry;
+					case IDABORT: Application::Quit(); break;
 					}
-					catch (HeliosExceptin ex) {
-						switch (ex.what())
-						{
-						case IDRETRY: goto retry4;
-						case IDABORT: Application::Quit(); break;
-						}
+				}
+			}
+		}
+		Renderer2D::EndScene();
+
+		Renderer::BeginScene(projection, directional_light_view);
+
+		{
+			auto view = m_components.view<Components::Transform, Components::Relationship, Components::MeshRenderer>(entt::exclude<Components::DisabledObject>);
+			for (auto entity : view)
+			{
+				auto [transform, meshRenderer] = view.get<Components::Transform, Components::MeshRenderer>(entity);
+
+			retry4:
+				try {
+					Renderer::DrawMesh((uint32_t)entity, transform, meshRenderer);
+				}
+				catch (HeliosExceptin ex) {
+					switch (ex.what())
+					{
+					case IDRETRY: goto retry4;
+					case IDABORT: Application::Quit(); break;
 					}
 				}
 			}
 		}
 	}
 
-	void Scene::OnUpdateEditor(SceneCamera camera)
+	void Scene::RenderGizmos(Matrix4x4 projection)
 	{
-		if (primaryCamera != entt::null) {
+		GizmosRenderer::Begin(projection);
+		Application::instance->OnGizmosRender();
+		GizmosRenderer::End();
+	}
 
-			auto projection = camera.GetProjection();
+	GameObject Scene::InstantiateObject()
+	{
+		return InstantiateObject("GameObject (" + std::to_string(m_components.size() + 1) + ")");
+	}
 
-			Renderer2D::BeginScene(projection);
+	GameObject Scene::InstantiateObject(Vector3 position)
+	{
+		return InstantiateObject("GameObject (" + std::to_string(m_components.size() + 1) + ")", position);
+	}
 
-			{
-				//Renderer2D::DrawPolygon((sin(Time::passedTime()) + 1) * 50);
+	GameObject Scene::InstantiateObject(entt::entity& parent)
+	{
+		return InstantiateObject("GameObject (" + std::to_string(m_components.size() + 1) + ")", parent);
+	}
 
-				auto view = m_components.view<Components::Transform, Components::Relationship, Components::SpriteRenderer>(entt::exclude<Components::DisabledObject>);
-				for (auto entity : view)
-				{
-					auto [trans, relt, spriteRenderer] = view.get<Components::Transform, Components::Relationship, Components::SpriteRenderer>(entity);
+	GameObject Scene::InstantiateObject(std::string name, Vector3 position)
+	{
+		GameObject obj(m_components.create(), this);
+		obj.AddComponent<Components::InfoComponent>(name);
+		obj.AddComponent<Components::Transform>(position);
+		obj.AddComponent<Components::Relationship>();
+		return obj;
+	}
 
-				retry2d:
-					try {
-						if (relt.parent_handle != entt::null)
-						{
-							Components::Transform tmp = trans;
-							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
-							Renderer2D::DrawSprite((uint32_t)entity, tmp, spriteRenderer);
-						}
-						else
-							Renderer2D::DrawSprite((uint32_t)entity, trans, spriteRenderer);
-					}
-					catch (HeliosExceptin ex) {
-						switch (ex.what())
-						{
-						case IDRETRY: goto retry2d;
-						case IDABORT: Application::Quit(); break;
-						}
-					}
+	GameObject Scene::InstantiateObject(std::string name, entt::entity& parent)
+	{
+		GameObject obj(m_components.create(), this);
+		obj.AddComponent<Components::InfoComponent>(name);
+		obj.AddComponent<Components::Transform>();
+		obj.AddComponent<Components::Relationship>(m_components, obj, parent);
+		return obj;
+	}
 
-					//Renderer2D::DrawTriangle(trans.position);
-				}
+	GameObject& Scene::CreateMainCamera(Vector3 position) {
+		GameObject gameObject = InstantiateObject("MainCamera", position);
+		gameObject.AddComponent<Components::Camera>().isPrimary = true;
+		return gameObject;
+	}
 
-				//Renderer2D::DrawTriangle(Vector2());
-
-				//Graphics::instance->m_renderTarget2D->Clear(camera.clear_color);
-
-				//auto group = m_components.group <Components::Transform, Components::
-			}
-
-			Renderer2D::EndScene();
-
-
-			Renderer::BeginScene(projection);
-
-			{
-				auto view = m_components.view<Components::Transform, Components::Relationship, Components::MeshRenderer>(entt::exclude<Components::DisabledObject>);
-				for (auto entity : view)
-				{
-					auto [trans, relt, meshRenderer] = view.get<Components::Transform, Components::Relationship, Components::MeshRenderer>(entity);
-
-					retry:
-					try {
-						if (relt.parent_handle != entt::null)
-						{
-							Components::Transform tmp = trans;
-							tmp.position += GameObject(relt.parent_handle).GetComponent<Components::Transform>().position;
-							Renderer::DrawMesh((uint32_t)entity, tmp, meshRenderer);
-						}
-						else
-							Renderer::DrawMesh((uint32_t)entity, trans, meshRenderer);
-					}
-					catch (HeliosExceptin ex) {
-						switch (ex.what())
-						{
-						case IDRETRY: goto retry;
-						case IDABORT: Application::Quit(); break;
-						}
-					}
-				}
-			}
-
-			GizmosRenderer::Begin(projection);
-			Application::instance->OnGizmosRender();
-			GizmosRenderer::End();
-		}
+	GameObject& Scene::CreateCamera(Vector3 position)
+	{
+		GameObject gameObject = InstantiateObject("MainCamera", position);
+		gameObject.AddComponent<Components::Camera>();
+		return gameObject;
 	}
 
 	Vector2 DeserializeVector(std::string prefixX, std::string prefixY, YAML::Node in);
@@ -228,12 +191,11 @@ namespace Helios {
 		out << YAML::EndMap;
 	}
 
-	void DeserializeObject(YAML::Node& in)
+	void DeserializeObject(WeakRef<Scene> scene, YAML::Node& in)
 	{
-
 		if (in["Name"])
 		{
-			GameObject gm = GameObject::InstantiateObject(in["Name"].as<std::string>().c_str());
+			auto gm = scene.lock()->InstantiateObject(in["Name"].as<std::string>().c_str());
 			if (in["Transform"].IsMap())
 			{
 				auto transform = gm.GetComponent<Components::Transform2D>();
@@ -244,9 +206,9 @@ namespace Helios {
 
 	}
 
-	void Helios::Scene::Unload()
+	void Scene::Shutdown()
 	{
-
+		m_components.clear();
 	}
 
 	void SerializeTransform(YAML::Emitter& out, Helios::Components::Transform2D& transform)
@@ -281,7 +243,7 @@ namespace Helios {
 		out << YAML::Key << "GameObjects" << YAML::Value << YAML::BeginSeq;
 
 		scene.lock()->m_components.each([&](entt::entity entity) {
-			GameObject gm = entity;
+			GameObject gm = { entity, scene.lock() };
 			SerializeObject(out, gm);
 		});
 
@@ -292,14 +254,14 @@ namespace Helios {
 		fout.close();
 	}
 
-	void Helios::Scene::Deserialize(const std::string& filepath)
+	void Helios::Scene::Deserialize(const std::string& filepath, Ref<Scene> scene)
 	{
 		auto in = YAML::LoadFile(filepath);
 
 		if (!in.IsNull()) {
 			if (in["GameObjects"].IsSequence()) {
 				for (auto node : in["GameObjects"]) {
-					DeserializeObject(node);
+					DeserializeObject(scene, node);
 				}
 			}
 		}

@@ -7,7 +7,7 @@
 #include "pch.h"
 #include "Base.h"
 #include "Helios/Graphics/Graphics.h"
-#include "Helios/Scene/SceneManager.h"
+#include "Helios/Scene/SceneRegistry.h"
 
 namespace Helios {
 
@@ -64,6 +64,8 @@ namespace Helios {
 #pragma endregion
 
 		void GameLoop();
+
+		void Shutdown();
 
 	protected:
 

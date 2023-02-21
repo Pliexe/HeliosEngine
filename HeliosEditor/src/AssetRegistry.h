@@ -49,6 +49,11 @@ namespace Helios
 
 	public:
 
+		~AssetRegistry()
+		{
+			s_CheckForChanges = false;
+		}
+
 		static std::unordered_map<std::string, Ref<Texture2D>>& GetTextures() { return s_Textures; }
 
 		static Ref<Texture2D> GetTexture(std::string path)

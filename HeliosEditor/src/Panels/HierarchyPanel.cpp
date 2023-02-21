@@ -2,7 +2,7 @@
 #include "HierarchyPanel.h"
 #include "InspectorPanel.h"
 
-#include <Helios/Scene/SceneManager.h>
+#include <Helios/Scene/SceneRegistry.h>
 #include "AssetRegistry.h"
 #include "imgui.h"
 #include "entt.hpp"
@@ -12,27 +12,23 @@ namespace Helios {
 	void Popup(entt::entity item = entt::null) {
 		if (ImGui::MenuItem("Create Empty")) {
 			if (item != entt::null)
-			{
-				GameObject obj = GameObject(item);
-				GameObject::InstantiateObject(obj);
-				InspectorPanel::GetInstance() << (entt::entity)obj;
-			}
+				InspectorPanel::GetInstance() << SceneRegistry::get_current_scene()->InstantiateObject(item);
 			else
-				InspectorPanel::GetInstance() << (entt::entity)GameObject::InstantiateObject();
+				InspectorPanel::GetInstance() << SceneRegistry::get_current_scene()->InstantiateObject();
 		}
 
 		if (ImGui::MenuItem("Create PrimaryCamera")) {
-			GameObject::CreateMainCamera();
+			SceneRegistry::get_current_scene()->CreateMainCamera({});
 		}
 
 		if (ImGui::MenuItem("Create Camera")) {
-			GameObject::CreateCamera();
+			SceneRegistry::get_current_scene()->CreateCamera({});
 		}
 
 		if (ImGui::BeginMenu("3D Objects"))
 		{
 			if (ImGui::MenuItem("Cube")) {
-				auto obj = GameObject::InstantiateObject("Cube");
+				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Cube");
 				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
 				meshRenderer.mesh = Mesh::GetCubeMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
@@ -40,7 +36,7 @@ namespace Helios {
 			}
 			if (ImGui::MenuItem("Cylinder"))
 			{
-				auto obj = GameObject::InstantiateObject("Cylinder");
+				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Cylinder");
 				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
 				meshRenderer.mesh = Mesh::GetCylinderMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
@@ -48,15 +44,15 @@ namespace Helios {
 			}
 			if (ImGui::MenuItem("Cone"))
 			{
-				auto obj = GameObject::InstantiateObject("Cone");
+				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Cone");
 				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
 				meshRenderer.mesh = Mesh::GetConeMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << (entt::entity)obj;
 			}
-			if(ImGui::MenuItem("Sphere"))
+			if (ImGui::MenuItem("Sphere"))
 			{
-				auto obj = GameObject::InstantiateObject("Sphere");
+				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Sphere");
 				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
 				meshRenderer.mesh = Mesh::GetSphereMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
@@ -65,8 +61,19 @@ namespace Helios {
 			ImGui::EndMenu();
 		}
 
+		if (ImGui::BeginMenu("Lights"))
+		{
+			if (ImGui::MenuItem("Directional Light"))
+			{
+				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Directional Light");
+				obj.AddComponent<Components::DirectionalLight>(Color::White, 1.0f);
+				InspectorPanel::GetInstance() << (entt::entity)obj;
+			}
+			ImGui::EndMenu();
+		}
+
 		if (ImGui::MenuItem("Create Object With Sprite")) {
-			auto obj = GameObject::InstantiateObject("Sprite");
+			auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Sprite");
 			obj.AddComponent<Components::SpriteRenderer>();
 			InspectorPanel::GetInstance() << (entt::entity)obj;
 		}
@@ -86,7 +93,7 @@ namespace Helios {
 
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 		if (child == entt::null) flags |= ImGuiTreeNodeFlags_Leaf;
-		if (InspectorPanel::GetInstance() == (entt::entity)object) flags |= ImGuiTreeNodeFlags_Selected;
+		if (InspectorPanel::GetInstance() == object) flags |= ImGuiTreeNodeFlags_Selected;
 
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)(entt::entity)object, flags, info.name.c_str());
 
@@ -133,7 +140,7 @@ namespace Helios {
 				ImGui::EndDragDropTarget();
 			} else if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_HIERARCHY_ITEM", 0))
 			{
-				GameObject other = (*(entt::entity*)payload->Data);
+				GameObject other = { (*(entt::entity*)payload->Data), SceneRegistry::get_current_scene() };
 				if (other != object) {
 					other.SetParent(object);
 					//other.ResetParent();
@@ -158,14 +165,14 @@ namespace Helios {
 		if (opened) {
 			while (child != entt::null)
 			{
-				DrawObject(child);
-				child = GameObject(child).GetComponent<Components::Relationship>().next_child;
+				DrawObject({child,SceneRegistry::get_current_scene()});
+				child = GameObject(child, SceneRegistry::get_current_scene()).GetComponent<Components::Relationship>().next_child;
 			}
 			ImGui::TreePop();
 		}
 		
 
-		if(deleted) GameObject::DestroyObject(object);
+		if(deleted) object.Destroy();
 	}
 
 	void HierarchyPanel::OnUpdate()
@@ -188,12 +195,12 @@ namespace Helios {
 			ImGui::EndDragDropTarget();
 		}
 
-		const WeakRef<Scene>& scene = SceneManager::GetCurrentScene();
+		const WeakRef<Scene>& scene = SceneRegistry::get_current_scene();
 
 		int i = 0;
 		scene.lock()->m_components.each([&](auto entity)
 		{
-			GameObject object{ entity };
+			GameObject object{ entity, SceneRegistry::get_current_scene() };
 			if (object.HasComponent<Components::Relationship>())
 			{
 				auto& relation = object.GetComponent<Components::Relationship>();

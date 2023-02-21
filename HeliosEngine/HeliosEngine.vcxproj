@@ -210,7 +210,7 @@
     <ClInclude Include="src\Helios\GameObjects\ObjectBehaviour.h" />
     <ClInclude Include="src\Helios\Scene\GameObject.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="src\Helios\Scene\SceneManager.h" />
+    <ClInclude Include="src\Helios\Scene\SceneRegistry.h" />
     <ClInclude Include="src\Helios\Scene\Scene.h" />
     <ClInclude Include="src\Helios\Graphics\Graphics.h" />
     <ClInclude Include="src\Helios\Core\Application.h" />
@@ -249,7 +249,7 @@
     <ClCompile Include="src\Helios\Resources\Color.cpp" />
     <ClCompile Include="src\Helios\Resources\EngineTexture.cpp" />
     <ClCompile Include="src\Helios\Scene\SceneCamera.cpp" />
-    <ClCompile Include="src\Helios\Scene\SceneManager.cpp" />
+    <ClCompile Include="src\Helios\Scene\SceneRegistry.cpp" />
     <ClCompile Include="src\Helios\Scene\Scene.cpp" />
     <ClCompile Include="src\Helios\Graphics\Graphics.cpp" />
     <ClCompile Include="src\Helios\Core\Application.cpp" />

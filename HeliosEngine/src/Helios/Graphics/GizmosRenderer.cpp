@@ -121,7 +121,7 @@ namespace Helios
 			gizmosData.quads.instanceBuffer->SetData(gizmosData.quads.quadInstances, sizeof(GizmosData::Quad::QuadInstance) * gizmosData.quads.quadInstanceIndex);
 
 			gizmosData.gizmosShader->Bind();
-			gizmosData.transformBuffer->Bind(0);
+			gizmosData.transformBuffer->BindVS(0);
 			gizmosData.quads.vertexBuffer->Bind();
 			gizmosData.quads.instanceBuffer->Bind(1u);
 			gizmosData.quads.indexBuffer->Bind();

@@ -16,9 +16,9 @@ namespace Helios
 		return m_Vertices.size() - 1;
 	}
 
-	uint32_t MeshBuilder::AddVertex(Vector3 position, Vector2 texCoord)
+	uint32_t MeshBuilder::AddVertex(Vector3 position, Vector2 texCoord, Vector3 normal)
 	{
-		m_Vertices.emplace_back(MeshVertex{ position, texCoord });
+		m_Vertices.emplace_back(MeshVertex{ position, texCoord, normal });
 		return m_Vertices.size() - 1;
 	}
 

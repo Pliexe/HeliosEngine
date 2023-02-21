@@ -76,8 +76,8 @@ namespace Helios
 	{
 		MeshBuilder builder(segments * segments, segments * segments * 6);
 
-		auto vtop = builder.AddVertex({ 0.0f, 1.0f, 0.0f }, { 0.5f, 0.0f });
-		auto vbottom = builder.AddVertex({ 0.0f, -1.0f, 0.0f }, { 0.5f, 1.0f });
+		auto vtop = builder.AddVertex({ 0.0f, 1.0f, 0.0f }, { 0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f });
+		auto vbottom = builder.AddVertex({ 0.0f, -1.0f, 0.0f }, { 0.5f, 1.0f }, { 0.0f, -1.0f, 0.0f });
 
 		// Go trough segments in horizontal direction.
 		for (uint32_t i = 0; i < segments; i++)
@@ -89,7 +89,8 @@ namespace Helios
 				float y = cosf((float)j / (float)segments * (float)M_PI);
 				float z = sinf((float)i / (float)segments * 2.0f * (float)M_PI) * sinf((float)j / (float)segments * (float)M_PI);
 
-				auto v = builder.AddVertex({ x, y, z }, { (float)i / (float)segments, (float)j / (float)segments });
+				//auto v = builder.AddVertex({ x, y, z }, { (float)i / (float)segments, (float)j / (float)segments }, );
+				auto v = builder.AddVertex({ x, y, z }, { (float)i / (float)segments, (float)j / (float)segments }, { x, y, z });
 			}
 		}
 
@@ -110,7 +111,7 @@ namespace Helios
 			}
 
 			// Connect to bottom
-			builder.AddTriangle(vbottom, i * inner_segments + 5, (i + 1) * inner_segments + 5);
+			builder.AddTriangle(vbottom, i * inner_segments + inner_segments + 1, (i + 1) * inner_segments + inner_segments + 1);
 		}
 
 		builder.AddTriangle(vtop, 2, (segments - 1) * inner_segments + 2);
@@ -118,7 +119,7 @@ namespace Helios
 		{
 			builder.AddQuad(j + 2, (segments - 1) * inner_segments + j + 2, (segments - 1) * inner_segments + j + 1, j + 1);
 		}
-		builder.AddTriangle(vbottom, (segments - 1) * inner_segments + 5, 5);
+		builder.AddTriangle(vbottom, (segments - 1) * inner_segments + inner_segments + 1, inner_segments + 1);
 		
 		return Mesh::Create("Sphere_" + std::to_string(segments), builder);
 	}

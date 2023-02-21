@@ -113,6 +113,8 @@ namespace Helios {
 	class GameEngine : public Helios::Application {
 	private:
 
+		bool show_gizmos = false;
+
 		enum class RSState
 		{
 			Normal,
@@ -261,13 +263,7 @@ namespace Helios {
 
 			using namespace Helios;
 
-			//Project::TryLoad();
-
-			Helios::SceneManager::AddScene("Test", [](Helios::Scene& scene) {
-				Helios::GameObject::CreateMainCamera();
-			});
-
-			SceneManager::LoadScene("Test");
+			Project::TryLoad();
 		}
 
 		void OnGUI() {
@@ -412,6 +408,8 @@ namespace Helios {
 						this->currentRSState = RSState::Wireframe;
 					else
 						this->currentRSState = RSState::Normal;
+
+					ImGui::Checkbox("Show Gizmos", &show_gizmos);
 						
 					ImGui::EndMenuBar();
 				}
@@ -504,10 +502,10 @@ namespace Helios {
 				if(InspectorPanel::GetInstance().GetType() == InspectorPanel::SelectedType::GameObject)
 				{
 
-					entt::entity entity = std::any_cast<entt::entity>(InspectorPanel::GetInstance().GetHandle());
-					if(entity != entt::null)
+					GameObject entity = std::any_cast<GameObject>(InspectorPanel::GetInstance().GetHandle());
+					if(entity.IsNotNull())
 					{
-						GameObject gm = entity;
+						GameObject gm = {entity,SceneRegistry::get_current_scene()};
 						if(gm.HasComponent<Components::MeshRenderer>())
 						{
 							Ref<Mesh> mesh = gm.GetComponent<Components::MeshRenderer>().mesh;
@@ -517,18 +515,6 @@ namespace Helios {
 
 							ImGui::Text("Vertex Count: %d", mesh->getVertexCount());
 							ImGui::Text("Index Count: %d", indeciesCount);
-
-							uint32_t* indices = mesh->getIndexBuffer()->data();
-
-							ImGui::Text("Indicies:");
-
-							std::string str = std::to_string(indices[0]);
-							for (uint32_t i = 1; i < mesh->getIndexCount(); i++)
-							{
-								str += (i % 3 == 0 ? "\n" : ", ") + std::to_string((uint32_t)indices[i]);
-							}
-							if (InputManager::IsKeyPressed(HL_KEY_CONTROL))
-								std::cout << mesh->getIndexBuffer()->toString() << std::endl;
 
 							ImGui::Text(mesh->getIndexBuffer()->m_DataStr.c_str());
 
@@ -542,8 +528,6 @@ namespace Helios {
 				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowFocused())
 				//if (Helios::InputManager::IsKeyPressed(HL_KEY_MOUSE_LEFT) && ImGui::IsWindowFocused())
 				{
-					
-
 					// Check if in bounds
 					if (x >= 0 && y >= 0 && x < editorFrame->GetWidth() && y < editorFrame->GetHeight())
 					{
@@ -551,47 +535,48 @@ namespace Helios {
 						Color entId = editorFrame->GetPixel(1u, x, y);
 
 						Application::ShowMessage("Pixel Clicked:",
-							"X: " + std::to_string(x) +
-							" Y: " + std::to_string(y) + "\n"
-							"ID: " + std::to_string(entId.r) + "\n" +
-							"R: " + std::to_string(color.r) +
-							" G: " + std::to_string(color.g) +
-							" B: " + std::to_string(color.b) +
+							"X: " + std::to_string(x)		+
+							" Y: " + std::to_string(y)			+ "\n"
+							"ID: " + std::to_string(entId.r)	+ "\n" +
+							"R: " + std::to_string(color.r)		+
+							" G: " + std::to_string(color.g)	+
+							" B: " + std::to_string(color.b)	+
 							" A: " + std::to_string(color.a)
 						);
 
 						if (entId.r > -1)
 						{
 							entt::entity id = (entt::entity)((uint32_t)entId.r);
-							if(SceneManager::currentScene->m_components.valid(id))
-								InspectorPanel::GetInstance() << (entt::entity)id;
+
+							if(SceneRegistry::get_current_scene()->m_components.valid(id))
+								InspectorPanel::GetInstance() << GameObject { (entt::entity)id, SceneRegistry::get_current_scene().get() };
 						}
 					}
 
 				}
 				
 
-				static bool notf = true;
+				//static bool notf = true;
 
-				if (!SceneManager::GetCurrentScene().lock()->IsPrimaryCameraSet()) {
-					if (notf) {
-						auto pos = ImGui::GetWindowPos();
-						auto size = ImGui::GetWindowSize();
-						ImGui::SetNextWindowFocus();
-						ImGui::SetNextWindowBgAlpha(1.0f);
-						ImGui::SetWindowFontScale(2);
-						ImGui::SetNextWindowPos(ImVec2(pos.x + (size.x / 2.0f) - 200.0f, pos.y + (size.y / 2.0f) - 100.0f));
-						ImGui::BeginChild("MissingCameraText", ImVec2(400, 200), true);
-						//ImGui::Button("Test");
-						//ImGui::SetCursorPos(ImVec2(0, 0));
-						ImGui::Text("No Camera Present for rendering!");
-						if (ImGui::Button("Close")) {
-							notf = false;
-						}
-						ImGui::EndChild();
-					}
-				}
-				else notf = true;
+				//if (!SceneRegistry::GetCurrentScene().lock()->IsPrimaryCameraSet()) {
+				//	if (notf) {
+				//		auto pos = ImGui::GetWindowPos();
+				//		auto size = ImGui::GetWindowSize();
+				//		ImGui::SetNextWindowFocus();
+				//		ImGui::SetNextWindowBgAlpha(1.0f);
+				//		ImGui::SetWindowFontScale(2);
+				//		ImGui::SetNextWindowPos(ImVec2(pos.x + (size.x / 2.0f) - 200.0f, pos.y + (size.y / 2.0f) - 100.0f));
+				//		ImGui::BeginChild("MissingCameraText", ImVec2(400, 200), true);
+				//		//ImGui::Button("Test");
+				//		//ImGui::SetCursorPos(ImVec2(0, 0));
+				//		ImGui::Text("No Camera Present for rendering!");
+				//		if (ImGui::Button("Close")) {
+				//			notf = false;
+				//		}
+				//		ImGui::EndChild();
+				//	}
+				//}
+				//else notf = true;
 
 				if (ImGui::IsWindowHovered())
 				{
@@ -662,11 +647,24 @@ namespace Helios {
 		}
 
 		void OnUpdate() override {
-			if (currentMode == EditorMode::Playing)
+			switch (currentMode)
 			{
-				// Physics, Scripts etc
+			case EditorMode::Playing:
+				SceneRegistry::OnEditorUpdate();
+				break;
+			default:
+				SceneRegistry::OnEditorUpdate();
+				break;
+			}
+
+			if(InputManager::IsKeyPressed(HL_KEY_CONTROL) && InputManager::IsKeyPressed(HL_KEY_F10))
+			{
+				Application::ShowMessage("INFO!", "Toggled GUI", MB_ICONINFORMATION);
+				hideGui = !hideGui;
 			}
 		}
+
+		bool hideGui = false;
 
 		void OnRender() override {
 			static auto& io = ImGui::GetIO();
@@ -701,8 +699,7 @@ namespace Helios {
 				gameFrame->ClearBuffer(0u, { 0.0f, 0.0f, 0.0f });
 				gameFrame->ClearDepthStencil();
 
-				if (SceneManager::currentScene)
-					SceneManager::currentScene->OnUpdateRuntime();
+				SceneRegistry::OnRuntimeRender();
 
 				gameFrame->Unbind(); 
 			}
@@ -714,9 +711,7 @@ namespace Helios {
 				editorFrame->ClearDepthStencil();
 
 	#pragma region Rendering
-				if (SceneManager::currentScene) {
-					SceneManager::currentScene->OnUpdateEditor(editorCamera);
-				}
+				SceneRegistry::OnEditorRender(editorCamera);
 	#pragma endregion
 
 				transformMoveVertexBuffer->Bind();
@@ -730,7 +725,7 @@ namespace Helios {
 
 
 			graphics->m_deviceContext->OMSetRenderTargets(1, &graphics->m_mainRenderTarget, NULL);
-
+			
 			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 			// Update and Render additional Platform Windows
 			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -738,6 +733,13 @@ namespace Helios {
 				ImGui::UpdatePlatformWindows();
 				ImGui::RenderPlatformWindowsDefault();
 			}
+
+			/*if (this->hideGui)
+			{
+				graphics->m_deviceContext->OMSetRenderTargets(1, &graphics->m_mainRenderTarget, NULL);
+
+				SceneRegistry::OnRuntimeRender();
+			}*/
 
 			graphics->EndFrame();
 		}
@@ -748,12 +750,15 @@ namespace Helios {
 
 		void OnGizmosRender() override
 		{
-			if(inspector.GetType() == InspectorPanel::SelectedType::GameObject)
+			if(show_gizmos)
 			{
-				GameObject obj = ((GameObject)std::any_cast<entt::entity>(InspectorPanel::GetInstance().GetHandle()));
-				if(obj.HasComponent<Components::MeshRenderer>())
+				if (inspector.GetType() == InspectorPanel::SelectedType::GameObject)
 				{
-					GizmosRenderer::DrawMeshVertices(editorCamera, obj.GetComponent<Components::Transform>(), obj.GetComponent<Components::MeshRenderer>().mesh->GetVertices());
+					GameObject obj = std::any_cast<GameObject>(InspectorPanel::GetInstance().GetHandle());
+					if (obj.HasComponent<Components::MeshRenderer>())
+					{
+						GizmosRenderer::DrawMeshVertices(editorCamera, obj.GetComponent<Components::Transform>(), obj.GetComponent<Components::MeshRenderer>().mesh->GetVertices());
+					}
 				}
 			}
 		}

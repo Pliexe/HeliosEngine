@@ -177,6 +177,7 @@ namespace Helios
 
 		static Matrix4x4 Multiply(const Matrix4x4& a, const Matrix4x4& b)
 		{
+			// TODO: Add SIMD optimization
 			return {
 				/*c._11 = */a._11 * b._11 + a._12 * b._21 + a._13 * b._31 + a._14 * b._41,
 				/*c._12 = */a._11 * b._12 + a._12 * b._22 + a._13 * b._32 + a._14 * b._42,

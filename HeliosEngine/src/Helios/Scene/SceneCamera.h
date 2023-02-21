@@ -16,6 +16,7 @@ namespace Helios {
 		SceneCamera(const SceneCamera&) = default;
 
 		static inline Matrix4x4 GetProjection(const Components::Transform& transform, const Components::Camera& camera);
+		static inline Matrix4x4 GetProjection(std::tuple<const Components::Transform&, const Components::Camera&> camObj) { auto [transform, camera] = camObj; return GetProjection(transform, camera); }
 		inline Matrix4x4 GetProjection() const { return GetProjection(m_Transform, m_Camera); }
 		
 		Components::Camera& GetCamera() { return m_Camera; }

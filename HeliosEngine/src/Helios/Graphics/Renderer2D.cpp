@@ -152,7 +152,7 @@ namespace Helios {
 			s_Data.quadVertexBuffer->Bind();
 			s_Data.quadIndexBuffer->Bind();
 			s_Data.quadInstanceBuffer->Bind(1u);
-			s_Data.viewProjBuffer->Bind(0u);
+			s_Data.viewProjBuffer->BindVS(0u);
 
 			for (uint8_t i = 0; i < s_Data.textureSlotIndex; i++)
 			{
@@ -216,8 +216,8 @@ namespace Helios {
 	// void Renderer2D::DrawCube(Components::Transform transform, Components::SpriteRenderer sprite)
 	// {
 
-	// 	cubeMesh->Bind();
-	// 	cubeShader->Bind();
+	// 	cubeMesh->BindVS();
+	// 	cubeShader->BindVS();
 
 		
 	// 	struct ConstantBuffer
@@ -262,10 +262,10 @@ namespace Helios {
 	
 	// void Renderer2D::DrawSprite(Components::Transform transform, Components::SpriteRenderer sprite)
 	// {
-	// 	Renderer2DData::quadVertexBuffer->Bind();
-	// 	Renderer2DData::quadIndexBuffer->Bind();
+	// 	Renderer2DData::quadVertexBuffer->BindVS();
+	// 	Renderer2DData::quadIndexBuffer->BindVS();
 
-	// 	Renderer2DData::quadShader->Bind();
+	// 	Renderer2DData::quadShader->BindVS();
 		
 		
 
@@ -306,7 +306,7 @@ namespace Helios {
 	// 		{ "Color", Shader::DataType::Float4 }
 	// 	}));
 
-	// 	spriteShader->Bind();*/
+	// 	spriteShader->BindVS();*/
 
 
 	// 	//Graphics::instance->m_deviceContext->OMSetRenderTargets(1u, s_renderTarget.GetAddressOf(), nullptr);

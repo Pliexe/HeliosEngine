@@ -97,7 +97,7 @@ namespace Helios {
 
 	float Vector3::Dot(Vector3 lhv, Vector3 rhv)
 	{
-		return { lhv.x * rhv.x + lhv.y * rhv.y + lhv.z * rhv.z };
+		return lhv.x * rhv.x + lhv.y * rhv.y + lhv.z * rhv.z;
 	}
 
 	float Vector3::Length(Vector3 a) { return sqrt(Dot(a, a)); }
@@ -178,7 +178,7 @@ namespace Helios {
 		return SqrLength(*this - other) < 9.99999944E-11f;
 	}
 
-	Vector3 Vector3::operator=(Vector3& other)
+	/*Vector3 Vector3::operator=(Vector3& other)
 	{
 		this->x = other.x;
 		this->y = other.y;
@@ -192,7 +192,7 @@ namespace Helios {
 		this->y = other.y;
 		this->z = other.z;
 		return *this;
-	}
+	}*/
 
 #pragma endregion
 
