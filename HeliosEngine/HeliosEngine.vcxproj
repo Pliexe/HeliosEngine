@@ -1,6 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug (Editor)|Win32">
+      <Configuration>Debug (Editor)</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug (Editor)|x64">
+      <Configuration>Debug (Editor)</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
@@ -33,6 +41,12 @@
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -41,6 +55,12 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
@@ -61,10 +81,16 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -72,6 +98,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
@@ -83,6 +113,10 @@
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|x64'">
+    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)bin-intermediates\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
@@ -91,7 +125,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HELIOS_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HL_PROFILE;HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(ProjectDir)vendor\entt\include;$(ProjectDir)vendor\stb\include</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -102,7 +136,25 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>windowscodecs.lib;D3DCompiler.lib;WindowsApp.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;ImGui.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\Yaml\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\Dependencies\$(Platform)\ImGui\;$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HELIOS_EDITOR;HL_PROFILE;HL_PROFILE;HELIOS_EDITOR</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(ProjectDir)vendor\entt\include;$(ProjectDir)vendor\stb\include</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>windowscodecs.lib;D3DCompiler.lib;WindowsApp.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;ImGui.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\Dependencies\$(Platform)\ImGui\;$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -111,7 +163,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HELIOS_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HL_PROFILE;HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(ProjectDir)vendor\entt\include;$(ProjectDir)vendor\stb\include</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -124,14 +176,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>windowscodecs.lib;D3DCompiler.lib;WindowsApp.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;ImGui.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\Yaml\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\Dependencies\$(Platform)\ImGui\;$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HELIOS_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HL_PROFILE;HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(ProjectDir)vendor\entt\include;$(ProjectDir)vendor\stb\include</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -142,7 +194,25 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>windowscodecs.lib;D3DCompiler.lib;WindowsApp.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;windowscodecs.lib;Ole32.lib;ImGui.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\Yaml\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\Dependencies\$(Platform)\ImGui\;$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HELIOS_EDITOR;HL_PROFILE;HL_PROFILE;HELIOS_EDITOR</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(ProjectDir)vendor\entt\include;$(ProjectDir)vendor\stb\include</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>windowscodecs.lib;D3DCompiler.lib;WindowsApp.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;windowscodecs.lib;Ole32.lib;ImGui.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\Dependencies\$(Platform)\ImGui\;$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,7 +221,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HELIOS_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_BUILD_DLL;HL_PROFILE;HELIOS_EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(ProjectDir)vendor\entt\include;$(ProjectDir)vendor\stb\include</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -164,15 +234,17 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>windowscodecs.lib;D3DCompiler.lib;WindowsApp.lib;User32.lib;D3D10_1.lib;D3D11.lib;D3D10.lib;D2d1.lib;Dwrite.lib;bass.lib;ImGui.lib;Yaml.lib;ImGui.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\Yaml\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\Dependencies\$(Platform)\ImGui\;$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="HeliosEngine.licenseheader" />
+    <None Include="src\Helios\Resources\Buffer.inl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Helios\Core\Asserts.h" />
     <ClInclude Include="src\Helios\Core\ExitCodes.h" />
+    <ClInclude Include="src\Helios\Core\Profiler.h" />
     <ClInclude Include="src\Helios\Graphics\Framebuffer.h" />
     <ClInclude Include="src\Helios\Graphics\GizmosRenderer.h" />
     <ClInclude Include="src\Helios\Resources\Buffer.h" />
@@ -226,6 +298,7 @@
     <ClInclude Include="src\Platform\DirectX\DirectXMaterial.h" />
     <ClInclude Include="src\Platform\DirectX\DirectXTexture2D.h" />
     <ClInclude Include="src\Platform\DirectX\DirectXVertexBuffer.h" />
+    <ClInclude Include="src\Platform\DirectX\Test.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Helios\GameObjects\ObjectComponent.cpp" />
@@ -257,17 +330,20 @@
     <ClCompile Include="src\Helios\Utils\MeshBuilder.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|Win32'">pch.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">pch.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug (Editor)|x64'">pch.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="src\Helios\Core\Time.cpp" />
     <ClCompile Include="src\Helios\Translation\Vector.cpp" />
-    <ClCompile Include="src\Platform\DirectX\DirectXConstantBuffer.cpp" />
     <ClCompile Include="src\Platform\DirectX\DirectXFramebuffer.cpp" />
     <ClCompile Include="src\Platform\DirectX\DirectXMaterial.cpp" />
     <ClCompile Include="src\Platform\DirectX\DirectXTexture2D.cpp" />

@@ -102,6 +102,7 @@ namespace Helios {
 		friend class Shader;
 		friend class IndexBuffer;
 		friend class DirectXVertexBuffer;
+		template <typename T>
 		friend class DirectXConstantBuffer;
 		friend class DirectXTexture2D;
 		friend class DirectXMaterial;

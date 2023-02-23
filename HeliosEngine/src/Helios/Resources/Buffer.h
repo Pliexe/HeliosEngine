@@ -5,7 +5,7 @@
 #include "Helios/Graphics/Graphics.h"
 
 namespace Helios {
-	
+
 	enum class BufferUsage
 	{
 		Default,
@@ -13,28 +13,34 @@ namespace Helios {
 		Dynamic
 	};
 
-	class HELIOS_API ConstantBuffer
+	template <class T>
+	class ConstantBuffer
 	{
 	public:
-
-		ConstantBuffer() = default;
+		//static_assert(std::is_trivially_copyable<T>::value, "ConstantBuffer<T> must be trivially copyable!");
+		static_assert(std::is_class<T>::value, "ConstantBuffer<T> must be a struct!");
 
 		// Bind the buffer to the pixel shader stage
-		virtual void BindPS(uint32_t slot = 0) = 0;
+		virtual void HELIOS_API BindPS(uint32_t slot = 0) = 0;
 		// Bind the buffer to the vertex shader stage
-		virtual void BindVS(uint32_t slot = 0) = 0;
-		virtual void UnbindPS() const = 0;
-		virtual void UnbindVS() const = 0;
+		virtual void HELIOS_API BindVS(uint32_t slot = 0) = 0;
+		virtual void HELIOS_API UnbindPS() const = 0;
+		virtual void HELIOS_API UnbindVS() const = 0;
 
-		virtual void SetData(const void* data, uint32_t size) = 0;
+		virtual void HELIOS_API SetData(T data) = 0;
+		//virtual void SetData(T* data) = 0;
 
-		static Ref<ConstantBuffer> Create(uint32_t size);
-		static Ref<ConstantBuffer> Create(const void* data, uint32_t size);
+		/*static Ref<ConstantBuffer> Create();
+		static Ref<ConstantBuffer> Create(T data);*/
+
+		static Ref<ConstantBuffer> Create();
+		static Ref<ConstantBuffer> Create(T data);
+
 		/*static Ref<ConstantBuffer> Create(uint32_t size, BufferUsage usage);
 		static Ref<ConstantBuffer> Create(const void* data, uint32_t size, BufferUsage usage);*/
 	};
-	
-	
+
+
 	class HELIOS_API VertexBuffer
 	{
 	protected:
@@ -57,7 +63,7 @@ namespace Helios {
 		}
 		static Ref<VertexBuffer> Create(uint32_t size, BufferUsage usage = BufferUsage::Default);
 		static Ref<VertexBuffer> Create(const void* data, uint32_t size, BufferUsage usage = BufferUsage::Default);
-		
+
 		template <typename T>
 		void SetStride() { m_Stride = sizeof(T); }
 
@@ -93,7 +99,7 @@ namespace Helios {
 			bd.StructureByteStride = sizeof(uint32_t);
 			D3D11_SUBRESOURCE_DATA sd = {};
 			sd.pSysMem = data;
-			
+
 			HL_EXCEPTION(
 				FAILED(Graphics::instance->m_device->CreateBuffer(&bd, &sd, &indexBuffer.m_indexBuffer)),
 				"Failed to create Vertex Buffer!"
@@ -135,5 +141,40 @@ namespace Helios {
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer;
 		uint32_t m_Count;
 	};
-
+	
 }
+//#include "Platform/DirectX/Test.h"
+//#include "Platform/DirectX/DirectXConstantBuffer.h"
+//namespace Helios {
+//	template <class T>
+//	Ref<ConstantBuffer<T>> ConstantBuffer<T>::Create()
+//	{
+//		ConstantBuffer<T>* buffer = new Helios::DirectXConstantBuffer<T>(sizeof(T) + (16 - sizeof(T) % 16));
+//		Ref<ConstantBuffer<T>> test = CreateRef<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16));
+//		return CreateRef<Helios::DirectXConstantBuffer<T>>(sizeof(T) + (16 - sizeof(T) % 16));
+//		switch (Graphics::GetAPI())
+//		{
+//			case Graphics::API::DirectX: return reinterpret_cast<Ref<ConstantBuffer<T>>>(CreateRe?f<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
+//			//case Graphics::API::DirectX: return reinterpret_cast<Ref<ConstantBuffer<T>>>(CreateRef<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
+//		}
+//
+//		HL_CORE_ASSERT(false, "Unknown Graphics API!");
+//		return nullptr;
+//	}
+//
+//	template <class T>
+//	Ref<ConstantBuffer<T>> ConstantBuffer<T>::Create(T data)
+//	{
+//
+//		switch (Graphics::GetAPI())
+//		{
+//		case Graphics::API::DirectX: return CreateRef<Test1<T>>(data, sizeof(T) + (16 - sizeof(T) % 16));
+//		}
+//
+//		HL_CORE_ASSERT(false, "Unknown GraphicsAPI!");
+//		return nullptr;
+//	}
+//
+//}
+
+#include "Buffer.inl"

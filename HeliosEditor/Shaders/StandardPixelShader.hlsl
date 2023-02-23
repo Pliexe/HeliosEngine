@@ -14,14 +14,16 @@ struct DirectionalLight
 
 cbuffer lightBuffer : register(b0)
 {
-    uint directional_light_count;
+    float3 ambient_color;
+    float ambient_intensity;
     DirectionalLight directional_lights[MAX_DIRECTIONAL_LIGHTS];
-}
+    uint directional_light_count;
+};
 
 struct PSOut
 {
     float4 color : SV_Target0;
-    float4 engineSelect : SV_Target1;
+    float4 engine_select : SV_Target1;
 };
 
 struct PSIn
@@ -35,30 +37,25 @@ struct PSIn
 
 PSOut main(PSIn pin)
 {
-    //[unroll(MAX_OTHER_LIGHTS)]
-    //for (int i = 0; i < entityId; i++)
-    //{
-	//    
-    //}
-
     PSOut output;
     output.color = tex.Sample(samp, pin.texCoord) * pin.color;
 
+    float3 lighting = ambient_color * (ambient_intensity * 0.1f);
+    
 	[unroll(MAX_DIRECTIONAL_LIGHTS)]
     for (int i = 0; i < directional_light_count; i++)
     {
         DirectionalLight light = directional_lights[i];
-        // Calculate object shading
-        //float4 lightColor = light.color * light.intensity;
-        const float3 lightDir = normalize(light.direction - pin.worldPos);
-        const float lightIntensity = dot(lightDir, pin.normal);
-        output.color.rgb *= saturate(lightIntensity);
+        float light_intensity = saturate(dot(light.direction, pin.normal));
+        lighting += light_intensity * light.intensity * light.color;
     }
+    
+    output.color.rgb *= saturate(lighting);
 
     if (pin.color[3] == 0.0f)
-        output.engineSelect = float4(-1.0f, 0.0f, 0.0f, 0.0f);
+        output.engine_select = float4(-1.0f, 0.0f, 0.0f, 0.0f);
     else
-        output.engineSelect = float4(pin.entityId, 0.0f, 0.0f, 0.0f);
+        output.engine_select = float4(pin.entityId, 0.0f, 0.0f, 0.0f);
 
     return output;
 }

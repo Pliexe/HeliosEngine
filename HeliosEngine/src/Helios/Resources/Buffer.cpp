@@ -4,28 +4,30 @@
 
 namespace Helios
 {
-	Ref<ConstantBuffer> ConstantBuffer::Create(uint32_t size)
+	/*template <typename T>
+	Ref<ConstantBuffer<T>> ConstantBuffer<T>::Create()
 	{
-		HL_ASSERT_EXCEPTION(!(size % 16), "Constant buffer size must be a multiple of 16 bytes!\nClass Name: " + std::string(typeid(ConstantBuffer).name()));
 		switch (Graphics::GetAPI())
 		{
-		case Graphics::API::DirectX: return CreateRef<DirectXConstantBuffer>(size);
+		case Graphics::API::DirectX: return CreateRef<DirectXConstantBuffer>(sizeof(T) + (16 - sizeof(T) % 16));
 		}
 
 		HL_CORE_ASSERT(false, "Unknown Graphics API!");
 		return nullptr;
 	}
 
-	Ref<ConstantBuffer> ConstantBuffer::Create(const void* data, uint32_t size)
+	template <typename T>
+	Ref<ConstantBuffer<T>> ConstantBuffer<T>::Create(T data)
 	{
 		switch (Graphics::GetAPI())
 		{
-		case Graphics::API::DirectX: return CreateRef<DirectXConstantBuffer>(data, size);
+		case Graphics::API::DirectX: return CreateRef<DirectXConstantBuffer>(data, sizeof(T) + (16 - sizeof(T) % 16));
 		}
 
 		HL_CORE_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
-	}
+	}*/
+
 	
 	
 	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, BufferUsage usage)

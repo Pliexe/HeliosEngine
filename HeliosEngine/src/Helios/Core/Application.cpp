@@ -7,6 +7,7 @@
 #include "pch.h"
 #include <Windows.h>
 #include "Logger.h"
+#include "Profiler.h"
 
 #include "Helios/Scene/GameObject.h"
 
@@ -193,13 +194,16 @@ void Helios::Application::ShowMessage(std::string title, std::string text, UINT 
 }
 
 void Helios::Application::GameLoop() {
-
+	HL_PROFILE_FRAME_BEGIN();
+	
 	// Update Delta Time
 	Time::frameUpdate();
 	CheckEngineQueue();
 
 	OnUpdate();
 	OnRender();
+
+	HL_PROFILE_FRAME_END();
 }
 
 void Helios::Application::Shutdown()

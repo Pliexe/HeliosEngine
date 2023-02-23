@@ -31,6 +31,8 @@ namespace Helios
 		inline uint32_t AddVertex(Vector3 position, Vector2 texCoord, Vector3 normal);
 		void AddTriangle(uint32_t index0, uint32_t index1, uint32_t index2);
 		void AddQuad(uint32_t index0, uint32_t index1, uint32_t index2, uint32_t index3);
+		void CreateQuadFace(MeshVertex v0, MeshVertex v1, MeshVertex v2, MeshVertex v3);
+		void CreateTriangleFace(MeshVertex v0, MeshVertex v1, MeshVertex v2);
 
 		friend class Mesh;
 	};

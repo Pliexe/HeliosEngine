@@ -56,7 +56,7 @@ namespace Helios {
 		Ref<VertexBuffer> quadInstanceBuffer;
 
 
-		Ref<ConstantBuffer> viewProjBuffer;
+		Ref<ConstantBuffer<TransformData>> viewProjBuffer;
 	};
 
 	Renderer2DData s_Data;
@@ -83,7 +83,7 @@ namespace Helios {
 			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "World", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "EntityId", Shader::DataType::Float, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-		}));
+			}));
 
 		// const Renderer2DData::QuadVertex vertices[] = {
 		// 	{ { -0.5f,  0.5f } },
@@ -111,7 +111,7 @@ namespace Helios {
 		s_Data.quadInstanceBuffer = VertexBuffer::Create(sizeof(Renderer2DData::QuadInstanceData) * Renderer2DData::MaxQuads, BufferUsage::Dynamic);
 		s_Data.quadInstanceBuffer->SetStride<Renderer2DData::QuadInstanceData>();
 
-		s_Data.viewProjBuffer = ConstantBuffer::Create(sizeof(Renderer2DData::TransformData));
+		s_Data.viewProjBuffer = ConstantBuffer<Renderer2DData::TransformData>::Create();
 
 		D3D11_SAMPLER_DESC samplerDesc = {};
 		ZeroMemory(&samplerDesc, sizeof(samplerDesc));
@@ -135,7 +135,7 @@ namespace Helios {
 	{
 		Renderer2DData::TransformData data = { projection };
 
-		s_Data.viewProjBuffer->SetData(&data, sizeof(Renderer2DData::TransformData));
+		s_Data.viewProjBuffer->SetData(data);
 	}
 	
 	void Renderer2D::EndScene()

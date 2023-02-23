@@ -33,6 +33,20 @@ namespace Helios
 		m_Triangles.emplace_back(Triangle{ index0, index2, index3 });
 	}
 
+	void MeshBuilder::CreateQuadFace(MeshVertex v0, MeshVertex v1, MeshVertex v2, MeshVertex v3)
+	{
+		auto index0 = AddVertex(v0);
+		auto index2 = AddVertex(v2);
+
+		m_Triangles.emplace_back(Triangle{ index0, AddVertex(v1), index2 });
+		m_Triangles.emplace_back(Triangle{ index0, index2, AddVertex(v3) });
+	}
+
+	void MeshBuilder::CreateTriangleFace(MeshVertex v0, MeshVertex v1, MeshVertex v2)
+	{
+		m_Triangles.emplace_back(Triangle{ AddVertex(v0), AddVertex(v1), AddVertex(v2) });
+	}
+
 	void MeshBuilder::Reserve(uint32_t vertexCount, uint32_t triangleCount)
 	{
 		m_Vertices.reserve(vertexCount);

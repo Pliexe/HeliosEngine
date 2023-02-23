@@ -4,54 +4,83 @@ namespace Helios
 {
 	//using MeshVertex;
 
+	Ref<Mesh> Mesh::GenaratePlane()
+	{
+		static const MeshVertex vertices[4] = {
+			{ { -2.0f, 0.0f, -2.0f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+			{ { -2.0f, 0.0f, 2.0f }, { 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f } },
+			{ { 2.0f, 0.0f, 2.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f, 0.0f } },
+			{ { 2.0f, 0.0f, -2.0f }, { 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } }
+		};
+
+		static uint32_t triangles[6] = {
+			0, 1, 2,
+			0, 2, 3
+		};
+
+		return CreateRef<Mesh>("Plane", vertices, std::size(vertices), triangles, std::size(triangles));
+	}
+
+	Ref<Mesh> Mesh::GenarateCube()
+	{
+		MeshBuilder builder;
+
+		// Front Face
+		builder.CreateQuadFace(
+			{ { -0.5f,  0.5f, -0.5 }, { 0.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } },
+			{ {  0.5f,  0.5f, -0.5 }, { 1.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } },
+			{ {  0.5f, -0.5f, -0.5 }, { 1.0f, 1.0f }, { 0.0f, 0.0f, -1.0f } },
+			{ { -0.5f, -0.5f, -0.5 }, { 0.0f, 1.0f }, { 0.0f, 0.0f, -1.0f } }
+		);
+		// Back Face
+		builder.CreateQuadFace(
+			{ { -0.5f, -0.5f,  0.5 }, { 1.0f, 1.0f }, { 0.0f, 0.0f, 1.0f } },
+			{ {  0.5f, -0.5f,  0.5 }, { 0.0f, 1.0f }, { 0.0f, 0.0f, 1.0f } },
+			{ {  0.5f,  0.5f,  0.5 }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+			{ { -0.5f,  0.5f,  0.5 }, { 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+		);
+		// Right Face
+		builder.CreateQuadFace(
+			{ {  0.5f,  0.5f, -0.5 }, { 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+			{ {  0.5f,  0.5f,  0.5 }, { 1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+			{ {  0.5f, -0.5f,  0.5 }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 0.0f } },
+			{ {  0.5f, -0.5f, -0.5 }, { 0.0f, 1.0f }, { 1.0f, 0.0f, 0.0f } }
+		);
+		// Left Face
+		builder.CreateQuadFace(
+			{ { -0.5f,  0.5f,  0.5 }, { 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f } },
+			{ { -0.5f,  0.5f, -0.5 }, { 1.0f, 0.0f }, { -1.0f, 0.0f, 0.0f } },
+			{ { -0.5f, -0.5f, -0.5 }, { 1.0f, 1.0f }, { -1.0f, 0.0f, 0.0f } },
+			{ { -0.5f, -0.5f,  0.5 }, { 0.0f, 1.0f }, { -1.0f, 0.0f, 0.0f } }
+		);
+		// Top Face
+		builder.CreateQuadFace(
+			{ { -0.5f, 0.5f,  0.5 }, { 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f } },
+			{ {  0.5f, 0.5f,  0.5 }, { 1.0f, 1.0f }, { 0.0f, 1.0f, 0.0f } },
+			{ {  0.5f, 0.5f, -0.5 }, { 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+			{ { -0.5f, 0.5f, -0.5 }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } }
+		);
+		// Bottom Face
+		builder.CreateQuadFace(
+			{ {  0.5f, -0.5f, -0.5 }, { 0.0f, 1.0f }, { 0.0f, -1.0f, 0.0f } },
+			{ {  0.5f, -0.5f,  0.5 }, { 1.0f, 1.0f }, { 0.0f, -1.0f, 0.0f } },
+			{ { -0.5f, -0.5f,  0.5 }, { 1.0f, 0.0f }, { 0.0f, -1.0f, 0.0f } },
+			{ { -0.5f, -0.5f, -0.5 }, { 0.0f, 0.0f }, { 0.0f, -1.0f, 0.0f } }
+		);
+
+		return Mesh::Create("Cube", builder);
+	}
+
 	Ref<Mesh> Mesh::GetCubeMesh()
 	{
-		static const MeshVertex cubeVertices[] = {
-			// Front Face
-			{ {-0.5f, -0.5f, -0.5f}, { 0.0f, 1.0f } },
-			{ { 0.5f, -0.5f, -0.5f}, { 1.0f, 1.0f } },
-			{ {-0.5f,  0.5f, -0.5f}, { 0.0f, 0.0f } },
-			{ { 0.5f,  0.5f, -0.5f}, { 1.0f, 0.0f } },
+		static Ref<Mesh> cubeMesh = GenarateCube();
+		return cubeMesh;
+	}
 
-			// Back Face
-			{ {-0.5f, -0.5f,  0.5f}, { 1.0f, 1.0f } },
-			{ { 0.5f, -0.5f,  0.5f}, { 0.0f, 1.0f } },
-			{ {-0.5f,  0.5f,  0.5f}, { 1.0f, 0.0f } },
-			{ { 0.5f,  0.5f,  0.5f}, { 0.0f, 0.0f } },
-
-			// Right Face
-			{ { 0.5f,  0.5f,  0.5f}, { 1.0f, 0.0f } },
-			{ { 0.5f, -0.5f,  0.5f}, { 1.0f, 1.0f } },
-			{ { 0.5f,  0.5f, -0.5f}, { 0.0f, 0.0f } },
-			{ { 0.5f, -0.5f, -0.5f}, { 0.0f, 1.0f } },
-
-			// Left Face
-			{ {-0.5f, -0.5f, -0.5f}, { 1.0f, 1.0f } },
-			{ {-0.5f, -0.5f,  0.5f}, { 0.0f, 1.0f } },
-			{ {-0.5f,  0.5f, -0.5f}, { 1.0f, 0.0f } },
-			{ {-0.5f,  0.5f,  0.5f}, { 0.0f, 0.0f } },
-
-			// Top Face
-			{ {-0.5f,  0.5f, -0.5f}, { 1.0f, 1.0f } },
-			{ {-0.5f,  0.5f,  0.5f}, { 0.0f, 1.0f } },
-			{ { 0.5f,  0.5f, -0.5f}, { 0.0f, 0.0f } },
-			{ { 0.5f,  0.5f,  0.5f}, { 1.0f, 0.0f } },
-
-			// Bottom face
-		};
-
-		// TODO: create more vertecies for UV data so the cube is rendered properly.
-
-		static uint32_t cubeIndices[] = {
-			0 ,2 ,1, 2 ,3,1, // front face
-			4 ,5 ,7, 4 ,7,6, // back face
-			11,10,9, 10,8,9, // right face
-			12 ,13 ,14, 14 ,13,15, // left face
-			16 ,17 ,18, 18 ,17,19, // top face
-			0 ,1 ,4, 1 ,5,4, // bottom face
-		};
-
-		return Mesh::Create("Cube", cubeVertices, std::size(cubeVertices), cubeIndices, std::size(cubeIndices));
+	Ref<Mesh> Mesh::GetPlaneMesh()
+	{
+		static Ref<Mesh> planeMesh = GenaratePlane();
+		return planeMesh;
 	}
 
 	Ref<Mesh> Mesh::GetCylinderMesh()
@@ -68,7 +97,7 @@ namespace Helios
 
 	Ref<Mesh> Mesh::GetSphereMesh()
 	{
-		static Ref<Mesh> sphereMesh = GetDynamicSphereMesh(32);
+		static Ref<Mesh> sphereMesh = GetDynamicSphereMesh(1000);
 		return sphereMesh;
 	}
 
@@ -126,12 +155,12 @@ namespace Helios
 
 	Ref<Mesh> Mesh::GetDynamicConeMesh(uint32_t segments)
 	{
-		MeshVertex* vertices = new MeshVertex[segments + 2];
+		MeshVertex* vertices = new MeshVertex[segments * 3 + 2];
 		uint32_t* indices = new uint32_t[segments * 3 * 2];
 		ZeroMemory(indices, sizeof(indices));
 
-		vertices[0] = { { 0.0f,-1.0f, 0.0f }, { 0.5f, 0.5f } };
-		vertices[1] = { { 0.0f, 1.0f, 0.0f }, { 0.5f, 0.5f } };
+		vertices[0] = { { 0.0f,-1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f } };
+		vertices[1] = { { 0.0f, 1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.0f,  1.0f, 0.0f } };
 
 		for (uint32_t i = 0; i < segments; i++)
 		{
@@ -140,59 +169,60 @@ namespace Helios
 			float x = cos(angle);
 			float z = sin(angle);
 
-			vertices[i + 2] = { { x, -1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f } };
+			// Y = alpha
+			// a = 0.5
+			// b = 2.0
+			// c = sqrt(pow(a, 2) + pow(b, 2))
+			// c = sqrt(4.25)
+			// c = 2.06155281281
+			// alpha = asin(a / c)
+			// alpha = asin(0.5 / 2.06155281281)
+			static float alpha = 0.24497866312686414f;
+			vertices[i + 2] = { { x, -1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f }, { x, alpha , z } };
+			vertices[i + 2 + segments] = { { x, -1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f }, { 0.0f, -1.0f , 0.0f } };
+			vertices[i + 2 + segments * 2] = { { 0.0f, 1.0f, 0.0f , }, { 0.5f, 0.5f }, { x, alpha , z } };
 			
 			// Indices
 			indices[i * 3] = 0;
-			indices[i * 3 + 1] = i + 2;
-			indices[i * 3 + 2] = (segments - 1) == i ? 2 : i + 3;
+			indices[i * 3 + 1] = i + 2 + segments;
+			indices[i * 3 + 2] = ((segments - 1) == i ? 2 : i + 3) + segments;
 
 			indices[(i * 3 + segments * 3) + 2] = i + 2;
 			indices[(i * 3 + segments * 3) + 1] = (segments - 1) == i ? 2 : i + 3;
-			indices[(i * 3 + segments * 3)] = 1;
+			indices[(i * 3 + segments * 3)] = ((segments - 1) == i ? 2 : i + 3) + segments + segments;
 		}
 
-		return Mesh::Create("Cone_" + std::to_string(segments), vertices, segments + 2, indices, segments * 3 * 2);
+		return Mesh::Create("Cone_" + std::to_string(segments), vertices, segments * 3 + 2, indices, segments * 3 * 2);
 	}
 
 	Ref<Mesh> Mesh::GetDynamicCylinderMesh(uint32_t segments)
 	{
-		MeshVertex *vertices = new MeshVertex[segments * 2 + 2];
-		uint32_t* indices = new uint32_t[segments * 3 * 4];
-		ZeroMemory(indices, sizeof(indices));
+		MeshBuilder builder;
 
-		vertices[0] = { { 0.0f,-1.0f, 0.0f }, { 0.5f, 0.5f } };
-		vertices[1] = { { 0.0f, 1.0f, 0.0f }, { 0.5f, 0.5f } };
-		
-		for (uint32_t i = 0; i < segments; i++)
+		auto vtop = builder.AddVertex({ 0.0f, 1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f });
+		auto vbottom = builder.AddVertex({ 0.0f, -1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f });
+
+		for (uint32_t i = 0; i <= segments; i++)
 		{
-			// Vertices
 			float angle = (float)i / (float)segments * 2.0f * 3.14159265359f;
 			float x = cos(angle);
 			float z = sin(angle);
 
-			vertices[i + 2] = { { x, -1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f } };
-			vertices[i + 2 + segments] = { { x, 1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f } };
+			auto v = builder.AddVertex({ x, -1.0f, z }, { angle / (PI * 2), 1.0f }, { x, 0.0f, z });
+			auto v2 = builder.AddVertex({ x, 1.0f, z }, { angle / (PI * 2), 0.0f }, { x, 0.0f, z });
 
-			// Indices
-			indices[i * 3]     = 0;
-			indices[i * 3 + 1] = i + 2;
-			indices[i * 3 + 2] = (segments - 1) == i ? 2 : i + 3;
-
-			indices[(i * 6 + segments * 3) + 2] = i + 2;
-			indices[(i * 6 + segments * 3) + 1] = (segments - 1) == i ? 2 : i + 3;
-			indices[(i * 6 + segments * 3)] = i + 2 + segments;
-
-			indices[(i * 6 + segments * 3) + 4] = (segments - 1) == i ? 2 + segments : i + 3 + segments;
-			indices[(i * 6 + segments * 3) + 5] = (segments - 1) == i ? 2 : i + 3;
-			indices[(i * 6 + segments * 3) + 3] = i + 2 + segments;
-							   
-			indices[(i * 3 + segments * 3 * 3)] = 1;
-			indices[(i * 3 + segments * 3 * 3) + 2] = segments + i + 2;
-			indices[(i * 3 + segments * 3 * 3) + 1] = (segments - 1) == i ? segments + 2 : segments + i + 3;
+			auto vv = builder.AddVertex({ x, -1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f }, { 0.0f, -1.0f, 0.0f });
+			auto vv2 = builder.AddVertex({ x, 1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f }, { 0.0f, 1.0f, 0.0f });
+			
+			if(i > 0)
+			{
+				builder.AddQuad(v2 - 4, v2, v, v - 4);
+				builder.AddTriangle(vtop, vv2, vv2 - 4);
+				builder.AddTriangle(vbottom, vv - 4, vv);
+			}
 		}
 		
-		return Mesh::Create("Cylinder_" + std::to_string(segments), vertices, segments * 2 + 2, indices, segments * 3 * 4);
+		return Mesh::Create("Cylinder_" + std::to_string(segments), builder);
 	}
 	
 	std::unordered_map<std::string, Ref<Mesh>> Mesh::s_Meshes;

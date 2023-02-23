@@ -1,6 +1,6 @@
 Texture2D<float4> tex : register(t25);
 
-cbuffer Cbuf
+cbuffer Cbuf : register(b0)
 {
     matrix worldViewPortProjection;
     matrix worldProjection;
@@ -32,7 +32,8 @@ VSOut main(VSIn vin)
     vout.texCoord =  vin.texCoord;
     vout.color = color;
     vout.entityId = entityId;
-    vout.normal = mul(float4(vin.normal, 1.0f), worldProjection);
+    vout.normal = normalize(mul(float4(vin.normal, 0.0f), worldProjection));
+    //vout.normal = mul(float4(vin.normal, 1.0f), worldProjection);
     vout.worldPos = mul(float4(vin.position, 1.0f), worldProjection);
     return vout;
 }

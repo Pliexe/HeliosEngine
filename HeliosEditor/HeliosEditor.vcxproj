@@ -91,7 +91,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR;HL_PROFILE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -103,14 +103,16 @@
       <AdditionalDependencies>ProjectManager.lib;User32.lib;HeliosEngine.lib;ImGui.lib;Comdlg32.lib;Shell32.lib</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\Dependencies\$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"</Command>
+      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -119,7 +121,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR;HL_PROFILE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -133,21 +135,23 @@
       <AdditionalDependencies>ProjectManager.lib;User32.lib;HeliosEngine.lib;ImGui.lib;Comdlg32.lib;Shell32.lib</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\Dependencies\$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"</Command>
+      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR;HL_PROFILE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -159,14 +163,16 @@
       <AdditionalDependencies>ProjectManager.lib;User32.lib;HeliosEngine.lib;ImGui.lib;Comdlg32.lib;Shell32.lib</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\Dependencies\$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"</Command>
+      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -175,7 +181,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR;HL_PROFILE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -189,14 +195,16 @@
       <AdditionalDependencies>ProjectManager.lib;User32.lib;HeliosEngine.lib;ImGui.lib;Comdlg32.lib;Shell32.lib</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\;$(SolutionDir)Dependencies\BASS;$(SolutionDir)bin\Dependencies\$(Platform)\ImGui\;$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"</Command>
+      <Command>xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\HeliosEngine\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\$(Configuration)-$(Platform)\ProjectManager\*.dll" "$(TargetDir)"
+xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

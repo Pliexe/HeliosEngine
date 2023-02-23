@@ -1,5 +1,3 @@
-#define HELIOS_EDITOR
-
 #include <iostream>
 #include <windows.h>
 
@@ -36,6 +34,7 @@
 #include <Helios/Input/InputManager.h>
 #include <Helios/Input/KeyCodes.h>
 
+#include "Helios/Core/Profiler.h"
 #include "Helios/Graphics/GizmosRenderer.h"
 
 static std::filesystem::path currentScene;
@@ -112,6 +111,8 @@ int ValidateInit() {
 namespace Helios {
 	class GameEngine : public Helios::Application {
 	private:
+
+		bool show_profiler_window = false;
 
 		bool show_gizmos = false;
 
@@ -327,6 +328,12 @@ namespace Helios {
 					if (ImGui::MenuItem("Exit")) {
 						Application::Quit();
 					}
+					ImGui::EndMenu();
+				}
+
+				if(ImGui::BeginMenu("Window"))
+				{
+					if (ImGui::MenuItem("Profiler")) { show_profiler_window = true; }
 					ImGui::EndMenu();
 				}
 
@@ -639,7 +646,50 @@ namespace Helios {
 			} else isGameSceneActive = false;
 			ImGui::End();
 			ImGui::PopStyleVar();
-			
+
+			if(show_profiler_window && ImGui::Begin("Profiler", &show_profiler_window))
+			{
+				bool isProfilingThisFrame = Profiler::isProfiling();
+
+				if(ImGui::Checkbox("Profiler Enabled", &isProfilingThisFrame))
+				{
+					HL_PROFILE_TOGGLE_PROFILING();
+				}
+				ImGui::SameLine();
+				static Profiler::FrameProfile selectedFrameProfile(0);
+
+				if (ImGui::Button("Clear")) { Profiler::clear(); selectedFrameProfile = (0); }
+
+
+				if (Profiler::isProfiling() && Profiler::getResults().size() > 1) selectedFrameProfile = Profiler::getResults()[Profiler::getResults().size() - 2];
+
+				if(selectedFrameProfile.frameTime)
+				{
+					uint32_t selectedFrame = 0u;
+					unsigned long long frametime = selectedFrameProfile.frameTime / 1000.0f;
+
+					ImGui::Text((std::to_string(Profiler::getResults().size()-1) + " Frames!").c_str());
+					ImGui::Text(("Last frame time: " + std::to_string(selectedFrameProfile.frameTime / 1000.0f) + "ms.").c_str());
+
+					ImGui::PlotLines("Frametime", [](void* data, int idx) { return (Profiler::getResults()[min(max(Profiler::getResults().size() - 300, 0) + idx, Profiler::getResults().size()-1)].frameTime / 1000.0f); }, nullptr, min(Profiler::getResults().size() - 1, 299), 0, 0, FLT_MAX, FLT_MAX, ImVec2(1800, 150));
+
+					uint32_t timelineMaxRange = std::ceil(frametime / 5.0f) * 5;
+
+					for (uint32_t i = 0; i <= timelineMaxRange; i=i+5)
+					{
+						ImGui::SetCursorScreenPos(ImVec2(ImGui::GetCursorScreenPos().x + i, ImGui::GetCursorScreenPos().y));
+						ImGui::Text(("t: " + std::to_string(i)).c_str());
+						ImGui::SameLine();
+					}
+
+					/*for (auto x : selectedFrameProfile.results)
+					{
+						ImGui::Button(x.Name, ImVec2(0, 0));
+					}*/
+				}
+
+				ImGui::End();
+			}
 
 			ProjectExplorerWindow(Project::GetAssetsPath());
 
@@ -734,12 +784,12 @@ namespace Helios {
 				ImGui::RenderPlatformWindowsDefault();
 			}
 
-			/*if (this->hideGui)
+			if (this->hideGui)
 			{
 				graphics->m_deviceContext->OMSetRenderTargets(1, &graphics->m_mainRenderTarget, NULL);
 
-				SceneRegistry::OnRuntimeRender();
-			}*/
+				SceneRegistry::OnEditorRender(editorCamera);
+			}
 
 			graphics->EndFrame();
 		}

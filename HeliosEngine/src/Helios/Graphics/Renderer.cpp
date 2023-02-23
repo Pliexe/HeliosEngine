@@ -9,11 +9,24 @@ namespace Helios
 	{
 		Matrix4x4 projectionMatrix;
 		struct CBD { Matrix4x4 wvpProjection; Matrix4x4 worldProjection; Color color; float entityId; float b; float c; float d; };
-		static struct DirectionalLightData { Vector3 direction; float intensity; Color color; };
-		static struct LightData { uint32_t directional_light_count; DirectionalLightData directionalLights[4]; uint32_t other_light_count; float dummy; float dummy2; };
+		static struct DirectionalLightData
+		{
+			// first pack
+			Vector3 direction; // 12 bytes
+			float intensity; // 4 bytes
+			// second pack
+			Color color; // 16 bytes
+		};
 
-		Ref<ConstantBuffer> transformBuffer;
-		Ref<ConstantBuffer> lightBuffer;
+		static struct LightData
+		{
+			Color ambient_light; // 16 bytes
+			DirectionalLightData directionalLights[4]; // 32b * 4 bytes > 128 bytes
+			uint32_t directional_light_count; // 4 bytes 
+		};
+
+		Ref<ConstantBuffer<CBD>> transformBuffer;
+		Ref<ConstantBuffer<LightData>> lightBuffer;
 
 		Ref<Texture2D> whiteTexture;
 	};
@@ -22,8 +35,8 @@ namespace Helios
 
 	bool Renderer::Init()
 	{
-		rendererData.transformBuffer = ConstantBuffer::Create(sizeof(RendererData::CBD));
-		rendererData.lightBuffer = ConstantBuffer::Create(sizeof(RendererData::LightData));
+		rendererData.transformBuffer = ConstantBuffer<RendererData::CBD>::Create();
+		rendererData.lightBuffer = ConstantBuffer<RendererData::LightData>::Create();
 		rendererData.whiteTexture = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
 		rendererData.whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
@@ -34,32 +47,33 @@ namespace Helios
 	{
 	}
 
-	void Renderer::BeginScene(Matrix4x4 projection, entt::basic_view<entt::entity, entt::get_t<Components::Transform, Components::DirectionalLight>, entt::exclude_t<Components::DisabledObject>> directionalLightView)
+	void Renderer::BeginScene(Matrix4x4 projection, Color ambient_light, entt::basic_view<entt::entity, entt::get_t<Components::Transform, Components::DirectionalLight>, entt::exclude_t<Components::DisabledObject>> directional_light_view)
 	{
-		RendererData::LightData lightData;
-		ZeroMemory(&lightData, sizeof(RendererData::LightData));
+		RendererData::LightData light_data;
+		ZeroMemory(&light_data, sizeof(RendererData::LightData));
 		//lightData.directional_light_count = 0;
+		light_data.ambient_light = ambient_light;
 
-		for (auto entity : directionalLightView)
+		for (auto entity : directional_light_view)
 		{
-			if (lightData.directional_light_count > 3)
+			if (light_data.directional_light_count > 3)
 			{
 				//HL_CORE_WARN("Only 4 directional lights are supported!");
 				break;
 			}
 
-			auto [transform, light] = directionalLightView.get<Components::Transform, Components::DirectionalLight>(entity);
+			auto [transform, light] = directional_light_view.get<Components::Transform, Components::DirectionalLight>(entity);
 
-			lightData.directionalLights[lightData.directional_light_count] = {
+			light_data.directionalLights[light_data.directional_light_count] = {
 				transform.forward(),
 				light.intensity,
-				light.color
+				light.color,
 			};
 
-			lightData.directional_light_count++;
+			light_data.directional_light_count++;
 		}
 
-		rendererData.lightBuffer->SetData(&lightData, sizeof(RendererData::LightData));
+		rendererData.lightBuffer->SetData(light_data);
 		rendererData.lightBuffer->BindPS(0u);
 		rendererData.projectionMatrix = projection;
 	}
@@ -84,7 +98,9 @@ namespace Helios
 		shader->Bind();
 		meshRenderer.mesh->Bind();
 		if (meshRenderer.material->texture == nullptr)
+		{
 			rendererData.whiteTexture->Bind(0u);
+		}
 		else
 			meshRenderer.material->Bind(0u);
 
@@ -99,7 +115,7 @@ namespace Helios
 		};
 
 
-		rendererData.transformBuffer->SetData(&cb, sizeof(cb));
+		rendererData.transformBuffer->SetData(cb);
 		rendererData.transformBuffer->BindVS(0);
 
 

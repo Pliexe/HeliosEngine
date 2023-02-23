@@ -145,6 +145,8 @@ PSOut main(float4 color : Color, uint id : TextureID, float2 texCoord : TexCoord
         default: o.Color = color; break;
     }
 
+    clip(o.Color.a - 0.2f);
+
     if(o.Color[3] == 0.0f)
         o.EngineSelect = float4(-1.0f, 0.0f, 0.0f, 0.0f);
     else

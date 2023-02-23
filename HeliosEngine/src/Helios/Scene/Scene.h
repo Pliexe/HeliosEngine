@@ -36,7 +36,9 @@ namespace Helios {
 		
 		inline void RenderScene(SceneCamera camera);
 		void RenderScene(Matrix4x4 projection);
+#ifdef HELIOS_EDITOR
 		void RenderGizmos(Matrix4x4 projection);
+#endif
 		GameObject InstantiateObject();
 		GameObject InstantiateObject(Vector3 position);
 		GameObject InstantiateObject(entt::entity& parent);
@@ -69,6 +71,4 @@ namespace Helios {
 		extern friend class GameEngine;
 		extern friend class HierarchyPanel;
 	};
-
-
 }

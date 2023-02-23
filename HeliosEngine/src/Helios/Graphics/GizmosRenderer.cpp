@@ -1,6 +1,7 @@
 #include "GizmosRenderer.h"
 #include "Helios/Resources/Shader.h"
 #include "Helios/Utils/MeshBuilder.h"
+#include "Helios/Core/Profiler.h"
 
 namespace Helios
 {
@@ -51,7 +52,7 @@ namespace Helios
 			uint32_t quadInstanceIndex = 0;
 		} quads;
 
-		Ref<ConstantBuffer> transformBuffer;
+		Ref<ConstantBuffer<TransformData>> transformBuffer;
 
 	};
 
@@ -78,7 +79,7 @@ namespace Helios
 			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "Data",  Shader::DataType::Float, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance }
 		}));
-		gizmosData.transformBuffer = ConstantBuffer::Create(sizeof(GizmosData::TransformData));
+		gizmosData.transformBuffer = ConstantBuffer<GizmosData::TransformData>::Create();
 		//gizmosData.quads.vertexBuffer = VertexBuffer::Create<GizmosData::Quad::QuadVertex>({
 		//	{ { -1.0f, -1.0f } },
 		//	{ {  1.0f, -1.0f } },
@@ -99,9 +100,7 @@ namespace Helios
 
 	void GizmosRenderer::Begin(Matrix4x4 projection)
 	{
-		GizmosData::TransformData transformData = { projection };
-
-		gizmosData.transformBuffer->SetData(&transformData, sizeof(GizmosData::TransformData));
+		gizmosData.transformBuffer->SetData({ projection });
 	}
 
 	void GizmosRenderer::End()
@@ -141,7 +140,8 @@ namespace Helios
 				Matrix4x4::Scale(size) *
 				// Rotate transform.position + position point in world space to face camera.GetTransform().position
 				Matrix4x4::Rotation(
-					Quanterion::FromEulerRads((camera.GetTransform().position - (transform.position + position)).normalize()) * transform.rotation
+					/*Quanterion::FromEulerRads((camera.GetTransform().position - (transform.position + position)).normalize()) * transform.rotation*/
+					(Quanterion::Conjugate(transform.rotation)) * camera.GetTransform().rotation
 				) *
 				//Matrix4x4::Rotation(Quanterion::FromEulerRads(((transform.position + position) - camera.GetTransform().position).normalize()) * Quanterion::Conjugate(transform.rotation) ) *
 				Matrix4x4::Translation(position) *

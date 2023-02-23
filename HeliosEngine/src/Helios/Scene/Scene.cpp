@@ -73,7 +73,7 @@ namespace Helios {
 	{
 		Matrix4x4 projection = camera.GetProjection();
 		RenderScene(projection);
-		RenderGizmos(projection);
+		//RenderGizmos(projection);
 	}
 	void Scene::RenderScene(Matrix4x4 projection)
 	{
@@ -101,7 +101,7 @@ namespace Helios {
 		}
 		Renderer2D::EndScene();
 
-		Renderer::BeginScene(projection, directional_light_view);
+		Renderer::BeginScene(projection, { 1.0f, 1.0f, 1.0f, 1.0f }, directional_light_view);
 
 		{
 			auto view = m_components.view<Components::Transform, Components::Relationship, Components::MeshRenderer>(entt::exclude<Components::DisabledObject>);
@@ -124,12 +124,14 @@ namespace Helios {
 		}
 	}
 
+#ifdef HELIOS_EDITOR
 	void Scene::RenderGizmos(Matrix4x4 projection)
 	{
 		GizmosRenderer::Begin(projection);
 		Application::instance->OnGizmosRender();
 		GizmosRenderer::End();
 	}
+#endif
 
 	GameObject Scene::InstantiateObject()
 	{

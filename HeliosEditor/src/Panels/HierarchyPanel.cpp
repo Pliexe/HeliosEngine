@@ -34,6 +34,14 @@ namespace Helios {
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << (entt::entity)obj;
 			}
+			if(ImGui::MenuItem("Plane"))
+			{
+				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Plane");
+				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
+				meshRenderer.mesh = Mesh::GetPlaneMesh();
+				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				InspectorPanel::GetInstance() << (entt::entity)obj;
+			}
 			if (ImGui::MenuItem("Cylinder"))
 			{
 				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Cylinder");

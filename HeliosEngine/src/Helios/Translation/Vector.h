@@ -67,6 +67,88 @@ namespace Helios {
 		Vector2& operator=(Vector2& other);
 	};
 
+	struct HELIOS_API Vector3Copy {
+		union
+		{
+			float xyz[3];
+			struct
+			{
+				float x;
+				float y;
+				float z;
+			};
+		};
+
+		Vector3Copy() : x(0.0f), y(0.0f), z(0.0f) { };
+		Vector3Copy(float x, float y, float z) : x(x), y(y), z(z) { };
+
+		static inline Vector3Copy Right() { return { 1.0f,  0.0f,  0.0f }; }
+		static inline Vector3Copy Left() { return { -1.0f,  0.0f,  0.0f }; }
+		static inline Vector3Copy Up() { return { 0.0f,  1.0f,  0.0f }; }
+		static inline Vector3Copy Down() { return { 0.0f, -1.0f,  0.0f }; }
+
+		static inline Vector3Copy Forward() { return { 0.0f,  0.0f,  1.0f }; }
+		static inline Vector3Copy Backwards() { return { 0.0f,  0.0f, -1.0f }; }
+
+		static inline Vector3Copy Zero() { return { 0.0f,  0.0f,  0.0f }; }
+		static inline Vector3Copy One() { return { 1.0f,  1.0f,  1.0f }; }
+
+		static const Vector3Copy right;
+
+		//Vector3Copy raaa = Vector3Copy { 1.0f,  0.0f,  0.0f };
+		/*static inline const Vector3Copy Left { -1.0f,  0.0f,  0.0f }; }
+		static inline const Vector3Copy Up { 0.0f,  1.0f,  0.0f }; }
+		static inline const Vector3Copy Down { 0.0f, -1.0f,  0.0f }; }
+
+		static inline const Vector3Copy Forward { 0.0f,  0.0f,  1.0f }; }
+		static inline const Vector3Copy Backwards { 0.0f,  0.0f, -1.0f }; }
+
+		static lVector3Copy Zero { 0.0f,  0.0f,  0.0f }; }*/
+		//static inline const Vector3Copy One { 1.0f,  1.0f,  1.0f }; }
+
+		static inline float Dot(Vector3Copy lhv, Vector3Copy rhv);
+		static inline float Length(Vector3Copy a);
+		static inline float SqrLength(Vector3Copy a);
+		static inline float Distance(Vector3Copy a, Vector3Copy b);
+		static inline Vector3Copy Project(Vector3Copy a, Vector3Copy n);
+		static inline Vector3Copy Cross(Vector3Copy a, Vector3Copy b);
+
+		inline float length();
+		inline float sqrLength();
+		inline Vector3Copy normalize();
+
+		bool operator==(const Vector3Copy& other) const;
+		bool operator==(Vector3Copy& other) const;
+
+		Vector3Copy operator+(const Vector3Copy& other) const;
+		Vector3Copy operator-(const Vector3Copy& other) const;
+
+		Vector3Copy operator+(Vector3Copy& other);
+		Vector3Copy operator-(Vector3Copy& other);
+		Vector3Copy operator-();
+
+		Vector3Copy operator+(Vector2& other);
+		Vector3Copy operator-(Vector2& other);
+
+		Vector3Copy operator*(float n) const;
+		Vector3Copy operator/(float n) const;
+
+		Vector3Copy operator*(float n);
+		Vector3Copy operator/(float n);
+
+		Vector3Copy operator+=(const Vector3Copy& other);
+		Vector3Copy operator-=(const Vector3Copy& other);
+
+		Vector3Copy operator+=(Vector3Copy& other);
+		Vector3Copy operator-=(Vector3Copy& other);
+
+		Vector3Copy operator*=(float n);
+		Vector3Copy operator/=(float n);
+
+		/*Vector3 operator=(Vector3& other);
+		Vector3 operator=(Vector3 other);*/
+	};
+
 	struct HELIOS_API Vector3 : public Vector2 {
 		float z;
 

@@ -19,8 +19,11 @@ namespace Helios
 		static Ref<Mesh> Create(std::string name, const MeshBuilder& meshBuilder);
         static void Destroy(std::string name);
 
+        static Ref<Mesh> GenaratePlane();
+        static Ref<Mesh> GenarateCube();
         static Ref<Mesh> GetCubeMesh();
-		static Ref<Mesh> GetCylinderMesh();
+        static Ref<Mesh> GetPlaneMesh();
+        static Ref<Mesh> GetCylinderMesh();
         static Ref<Mesh> GetConeMesh();
         static Ref<Mesh> GetSphereMesh();
         static Ref<Mesh> GetDynamicSphereMesh(uint32_t segments);

@@ -30,6 +30,7 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <deque>
 
 // Windows
 #define D3D_DEBUG_INFO
