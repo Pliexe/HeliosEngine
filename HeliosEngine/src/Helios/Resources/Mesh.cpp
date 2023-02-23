@@ -97,7 +97,7 @@ namespace Helios
 
 	Ref<Mesh> Mesh::GetSphereMesh()
 	{
-		static Ref<Mesh> sphereMesh = GetDynamicSphereMesh(1000);
+		static Ref<Mesh> sphereMesh = GetDynamicSphereMesh(32);
 		return sphereMesh;
 	}
 
