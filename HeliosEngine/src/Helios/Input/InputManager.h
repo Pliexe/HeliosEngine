@@ -16,5 +16,10 @@ namespace Helios
 		static bool IsKeyPressedUp(int key);
 		static bool IsKeyToggled(int key);
 		static Point GetMousePosition();
+		static float GetMouseWheelDelta() { return s_MouseWheelDelta; }
+	private:
+		inline static float s_MouseWheelDelta = 0;
+
+		friend class Application;
 	};
 }

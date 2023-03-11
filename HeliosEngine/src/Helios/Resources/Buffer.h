@@ -82,18 +82,33 @@ namespace Helios {
 			Graphics::instance->m_deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0u);
 		}
 
-		static Ref<IndexBuffer> Create(std::initializer_list<uint32_t> data)
+		static Ref<IndexBuffer> Create(std::initializer_list<uint32_t> data, BufferUsage type = BufferUsage::Default)
 		{
-			return Create((uint32_t*)data.begin(), data.size());
+			return Create((uint32_t*)data.begin(), data.size(), type);
 		}
-		static Ref<IndexBuffer> Create(uint32_t* data, uint32_t count)
+		static Ref<IndexBuffer> Create(uint32_t* data, uint32_t count, BufferUsage type = BufferUsage::Default)
 		{
 			D3D11_BUFFER_DESC bd = { };
 			IndexBuffer indexBuffer;
 
 			bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-			bd.Usage = D3D11_USAGE_DEFAULT;
-			bd.CPUAccessFlags = 0u;
+
+			switch (type)
+			{
+			case BufferUsage::Dynamic:
+				bd.Usage = D3D11_USAGE_DYNAMIC;
+				bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+				break;
+			case BufferUsage::Static:
+				bd.Usage = D3D11_USAGE_IMMUTABLE;
+				bd.CPUAccessFlags = 0;
+				break;
+			case BufferUsage::Default:
+				bd.Usage = D3D11_USAGE_DEFAULT;
+				bd.CPUAccessFlags = 0;
+				break;
+			}
+
 			bd.MiscFlags = 0u;
 			bd.ByteWidth = sizeof(uint32_t) * count;
 			bd.StructureByteStride = sizeof(uint32_t);
@@ -112,6 +127,50 @@ namespace Helios {
 			indexBuffer.m_DataStr = indexBuffer.toString();
 
 			return CreateRef<IndexBuffer>(std::move(indexBuffer));
+		}
+
+		static Ref<IndexBuffer> Create(uint32_t count, BufferUsage type = BufferUsage::Default)
+		{
+			D3D11_BUFFER_DESC bd = { };
+			IndexBuffer indexBuffer;
+
+			bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+			switch (type)
+			{
+			case BufferUsage::Dynamic:
+				bd.Usage = D3D11_USAGE_DYNAMIC;
+				bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+				break;
+			case BufferUsage::Static:
+				bd.Usage = D3D11_USAGE_IMMUTABLE;
+				bd.CPUAccessFlags = 0;
+				break;
+			case BufferUsage::Default:
+				bd.Usage = D3D11_USAGE_DEFAULT;
+				bd.CPUAccessFlags = 0;
+				break;
+			}
+
+			bd.MiscFlags = 0u;
+			bd.ByteWidth = sizeof(uint32_t) * count;
+			bd.StructureByteStride = sizeof(uint32_t);
+
+			HL_EXCEPTION(
+				FAILED(Graphics::instance->m_device->CreateBuffer(&bd, nullptr, &indexBuffer.m_indexBuffer)),
+				"Failed to create Vertex Buffer!"
+			);
+
+			indexBuffer.m_Count = 0u;
+
+			//indexBuffer.m_DataStr = indexBuffer.toString();
+
+			return CreateRef<IndexBuffer>(std::move(indexBuffer));
+		}
+
+		void SetData(const void* data, uint32_t size)
+		{
+			
 		}
 
 		std::string toString() const

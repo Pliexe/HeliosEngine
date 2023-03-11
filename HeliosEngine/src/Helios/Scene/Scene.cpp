@@ -13,6 +13,7 @@
 
 #include "Components.h"
 #include "Helios/Graphics/GizmosRenderer.h"
+#include "Helios/Core/Profiler.h"
 
 namespace Helios {
 
@@ -73,12 +74,13 @@ namespace Helios {
 	{
 		Matrix4x4 projection = camera.GetProjection();
 		RenderScene(projection);
-		//RenderGizmos(projection);
+		RenderGizmos(projection);
 	}
 	void Scene::RenderScene(Matrix4x4 projection)
 	{
 		auto directional_light_view = m_components.view<Components::Transform, Components::DirectionalLight>(entt::exclude<Components::DisabledObject>);
 
+		HL_PROFILE_BEGIN("Scene - Renderer2D");
 		Renderer2D::BeginScene(projection);
 		{
 			auto view = m_components.view<Components::Transform, Components::Relationship, Components::SpriteRenderer>(entt::exclude<Components::DisabledObject>);
@@ -100,7 +102,9 @@ namespace Helios {
 			}
 		}
 		Renderer2D::EndScene();
+		HL_PROFILE_END();
 
+		HL_PROFILE_BEGIN("Scene - Renderer3D");
 		Renderer::BeginScene(projection, { 1.0f, 1.0f, 1.0f, 1.0f }, directional_light_view);
 
 		{
@@ -122,14 +126,17 @@ namespace Helios {
 				}
 			}
 		}
+		HL_PROFILE_END();
 	}
 
 #ifdef HELIOS_EDITOR
 	void Scene::RenderGizmos(Matrix4x4 projection)
 	{
+		HL_PROFILE_BEGIN("Scene - Gizmos Renderer");
 		GizmosRenderer::Begin(projection);
 		Application::instance->OnGizmosRender();
 		GizmosRenderer::End();
+		HL_PROFILE_END();
 	}
 #endif
 

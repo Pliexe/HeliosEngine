@@ -115,6 +115,7 @@ namespace Helios
 
 	void GizmosRenderer::Flush()
 	{
+		HL_PROFILE_BEGIN("Gizmos Renderer - Flush");
 		if (gizmosData.quads.quadInstanceIndex > 0)
 		{
 			gizmosData.quads.instanceBuffer->SetData(gizmosData.quads.quadInstances, sizeof(GizmosData::Quad::QuadInstance) * gizmosData.quads.quadInstanceIndex);
@@ -128,6 +129,7 @@ namespace Helios
 			Graphics::instance->m_deviceContext->DrawIndexedInstanced(6u, gizmosData.quads.quadInstanceIndex, 0u, 0u, 0u);
 			gizmosData.quads.quadInstanceIndex = 0u;
 		}
+		HL_PROFILE_END();
 	}
 
 	void GizmosRenderer::DrawQuad(SceneCamera camera, Components::Transform& transform, const Vector3& position, const Vector2& size, const Color& color, float data = -1.0f)

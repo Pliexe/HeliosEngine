@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <windows.h>
 
 #include <Helios.h>
@@ -34,8 +34,11 @@
 #include <Helios/Input/InputManager.h>
 #include <Helios/Input/KeyCodes.h>
 
+#include "Graphics/ProfilerTimeline.h"
 #include "Helios/Core/Profiler.h"
 #include "Helios/Graphics/GizmosRenderer.h"
+
+#include "Graphics/StackedGraph.h"
 
 static std::filesystem::path currentScene;
 StartupConfig startupConfig;
@@ -116,6 +119,14 @@ namespace Helios {
 
 		bool show_gizmos = false;
 
+		struct GraphVertices
+		{
+			Vector2 pos;
+			Color col;
+		};
+
+		Ref<StackedGraph> profilerGraph;
+
 		enum class RSState
 		{
 			Normal,
@@ -176,7 +187,8 @@ namespace Helios {
 				style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 			}
 
-			io.FontDefault = io.Fonts->AddFontFromFileTTF("fonts/NotoSans/NotoSans-Regular.ttf", 17.0f);
+			//io.Fonts->AddFontDefault();
+			io.FontDefault = io.Fonts->AddFontFromFileTTF("fonts/NotoSans/NotoSans-Regular.ttf", 17.0f, nullptr, io.Fonts->GetGlyphRangesDefault());
 
 			auto add_col = [](ImVec4 col, float offset) {
 				return ImVec4 { col.x + offset, col.y + offset, col.z + offset, 1.0f };
@@ -252,13 +264,14 @@ namespace Helios {
 				Framebuffer::Format::D32F
 			});
 
+			profilerGraph = CreateRef<StackedGraph>();
+
+
 			InitTransformBuffers();
 
 			// Setup Platform/Renderer backends
 			ImGui_ImplWin32_Init(m_hWnd);
 			ImGui_ImplDX11_Init(graphics->m_device, graphics->m_deviceContext);
-
-			
 
 			AssetRegistry::Init();
 
@@ -334,6 +347,12 @@ namespace Helios {
 				if(ImGui::BeginMenu("Window"))
 				{
 					if (ImGui::MenuItem("Profiler")) { show_profiler_window = true; }
+
+					for (auto& panel : panels)
+					{
+						if (ImGui::MenuItem(panel->GetName().c_str())) { panel->m_window_open = true; }
+					}
+
 					ImGui::EndMenu();
 				}
 
@@ -388,14 +407,24 @@ namespace Helios {
 				ImGui::EndMenuBar();
 			}
 
+			/*if(ImGui::Begin("Test window"))
+			{
+				ImGui::DebugTextEncoding(u8"Test µ ƺ  से ही सं  іни салт-жора");
+			}
+			ImGui::End();*/
+
 			for (auto& panel : panels)
 			{
-				bool is_open = true;
-				std::string tmp = panel->GetName();
-				if (ImGui::Begin(panel->GetName().c_str(), &is_open)) {
-					panel->OnUpdate();
+				if(panel->m_window_open)
+				{
+					std::string tmp = panel->GetName();
+					if (ImGui::Begin(panel->GetName().c_str(), &panel->m_window_open)) {
+						HL_PROFILE_BEGIN(("GUI - " + tmp));
+						panel->OnUpdate();
+						HL_PROFILE_END();
+					}
+					ImGui::End();
 				}
-				ImGui::End();
 			}
 			
 			AssetRegistry::ShowRegistryWindow();
@@ -559,7 +588,6 @@ namespace Helios {
 								InspectorPanel::GetInstance() << GameObject { (entt::entity)id, SceneRegistry::get_current_scene().get() };
 						}
 					}
-
 				}
 				
 
@@ -649,6 +677,7 @@ namespace Helios {
 
 			if(show_profiler_window && ImGui::Begin("Profiler", &show_profiler_window))
 			{
+				HL_PROFILE_BEGIN("GUI - Profiler");
 				bool isProfilingThisFrame = Profiler::isProfiling();
 
 				if(ImGui::Checkbox("Profiler Enabled", &isProfilingThisFrame))
@@ -673,14 +702,9 @@ namespace Helios {
 
 					ImGui::PlotLines("Frametime", [](void* data, int idx) { return (Profiler::getResults()[min(max(Profiler::getResults().size() - 300, 0) + idx, Profiler::getResults().size()-1)].frameTime / 1000.0f); }, nullptr, min(Profiler::getResults().size() - 1, 299), 0, 0, FLT_MAX, FLT_MAX, ImVec2(1800, 150));
 
-					uint32_t timelineMaxRange = std::ceil(frametime / 5.0f) * 5;
+					
 
-					for (uint32_t i = 0; i <= timelineMaxRange; i=i+5)
-					{
-						ImGui::SetCursorScreenPos(ImVec2(ImGui::GetCursorScreenPos().x + i, ImGui::GetCursorScreenPos().y));
-						ImGui::Text(("t: " + std::to_string(i)).c_str());
-						ImGui::SameLine();
-					}
+					ProfilerTimeline::Draw(selectedFrameProfile);
 
 					/*for (auto x : selectedFrameProfile.results)
 					{
@@ -689,9 +713,12 @@ namespace Helios {
 				}
 
 				ImGui::End();
+				HL_PROFILE_END();
 			}
 
+			HL_PROFILE_BEGIN("GUI - Project Explorer");
 			ProjectExplorerWindow(Project::GetAssetsPath());
+			HL_PROFILE_END();
 
 			ImGui::End();
 		}
@@ -723,7 +750,9 @@ namespace Helios {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
+			HL_PROFILE_BEGIN("Editor GUI");
 			OnGUI();
+			HL_PROFILE_END();
 
 			ImGui::EndFrame();
 			ImGui::Render();
@@ -732,8 +761,7 @@ namespace Helios {
 			graphics->ClearRenderTarget(0.5f, 0.0f, 1.0f);
 
 			// set state to wrireframe rendering
-			
-			
+
 			switch (currentRSState)
 			{
 			case RSState::Wireframe:

@@ -208,6 +208,7 @@ xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDi
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Graphics\ProfilerTimeline.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\AssetRegistry.cpp" />
     <ClCompile Include="src\EditorGUI.cpp" />
@@ -218,8 +219,10 @@ xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDi
     <ClCompile Include="src\Panels\ProjectExplorer.cpp" />
     <ClCompile Include="src\ProjectManager.cpp" />
     <ClCompile Include="src\SceneFileManager.cpp" />
+    <ClCompile Include="src\Graphics\StackedGraph.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Graphics\ProfilerTimeline.h" />
     <ClInclude Include="src\AssetRegistry.h" />
     <ClInclude Include="src\ImGuiCustomControls.h" />
     <ClInclude Include="src\HeliosEditor_Macros.h" />
@@ -231,6 +234,7 @@ xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDi
     <ClInclude Include="src\Panels\ProjectExplorer.h" />
     <ClInclude Include="src\ProjectManager.h" />
     <ClInclude Include="src\SceneFileManager.h" />
+    <ClInclude Include="src\Graphics\StackedGraph.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HeliosEditor.licenseheader" />
@@ -265,6 +269,18 @@ xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDi
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\GizmosVertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\GUI\GraphPixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\GUI\GraphVertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

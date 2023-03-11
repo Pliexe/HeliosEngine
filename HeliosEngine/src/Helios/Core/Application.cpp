@@ -8,6 +8,7 @@
 #include <Windows.h>
 #include "Logger.h"
 #include "Profiler.h"
+#include "Helios/Input/InputManager.h"
 
 #include "Helios/Scene/GameObject.h"
 
@@ -44,6 +45,12 @@ LRESULT Helios::Application::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			graphics->CreateD3D11RenderTarget();
 			GameLoop();
 		}
+		return 0;
+	}
+	case WM_MOUSEWHEEL:
+	{
+		float zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+		InputManager::s_MouseWheelDelta = zDelta;
 		return 0;
 	}
 	default:

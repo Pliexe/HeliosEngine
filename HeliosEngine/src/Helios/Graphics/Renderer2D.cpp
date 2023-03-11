@@ -16,6 +16,7 @@
 #include "Framebuffer.h"
 
 #include "Helios/Resources/Mesh.h"
+#include "Helios/Core/Profiler.h"
 
 namespace Helios {
 
@@ -145,6 +146,7 @@ namespace Helios {
 
 	void Renderer2D::Flush()
 	{
+		HL_PROFILE_BEGIN("Renderer2D Flush");
 		if ((s_Data.quadInstanceDataPtr - s_Data.quadInstanceData) > 0)
 		{
 			s_Data.quadInstanceBuffer->SetData(s_Data.quadInstanceData, (s_Data.quadInstanceDataPtr - s_Data.quadInstanceData) * sizeof(Renderer2DData::QuadInstanceData));
@@ -161,10 +163,13 @@ namespace Helios {
 
 			Graphics::instance->m_deviceContext->PSSetSamplers(0u, 1u, sampler.GetAddressOf());
 			
+			HL_PROFILE_BEGIN("Renderer2D Wait for GPU");
 			Graphics::instance->m_deviceContext->DrawIndexedInstanced(6u, (s_Data.quadInstanceDataPtr - s_Data.quadInstanceData), 0u, 0u, 0u);
+			HL_PROFILE_END();
 			s_Data.quadInstanceDataPtr = s_Data.quadInstanceData;
 			s_Data.textureSlotIndex = 0;
 		}
+		HL_PROFILE_END();
 	}
 
 	void Renderer2D::DrawSprite(uint32_t entityId, Components::Transform transform, Components::SpriteRenderer sprite)

@@ -4,7 +4,10 @@
  */
 #include "SceneRegistry.h"
 #include "Scene.h"
+#include "Helios/Core/Application.h"
+#include "Helios/Graphics/GizmosRenderer.h"
 #include "Helios/Scene/GameObject.h"
+#include "Helios/Core/Profiler.h"
 
 namespace Helios {
 	Ref<Scene> SceneRegistry::m_activeScene;
@@ -129,16 +132,21 @@ namespace Helios {
 
 	void SceneRegistry::OnRuntimeUpdate()
 	{
+		HL_PROFILE_BEGIN("Scene Runtime - Update");
 		Scene::UpdateChildTransforms(m_activeScene);
+		HL_PROFILE_END();
 	}
 
 	void SceneRegistry::OnEditorUpdate()
 	{
+		HL_PROFILE_BEGIN("Scene Editor - Update");
 		Scene::UpdateChildTransforms(m_activeScene);
+		HL_PROFILE_END();
 	}
 
 	void SceneRegistry::OnRuntimeRender()
 	{
+		HL_PROFILE_BEGIN("Scene Render");
 		//SceneCamera::GetProjection()
 		auto cam = GetPrimaryCamera();
 		if (cam.IsNull()) return;
@@ -146,10 +154,13 @@ namespace Helios {
 		Matrix4x4 projection = SceneCamera::GetProjection(cam.GetComponent<Components::Transform, Components::Camera>());
 
 		m_activeScene->RenderScene(projection);
+		HL_PROFILE_END();
 	}
 
 	void SceneRegistry::OnEditorRender(SceneCamera camera)
 	{
+		HL_PROFILE_BEGIN("Editor Scene Render");
 		m_activeScene->RenderScene(camera);
+		HL_PROFILE_END();
 	}
 }

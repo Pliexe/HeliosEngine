@@ -4,7 +4,7 @@ namespace Helios
 {
 	//using MeshVertex;
 
-	Ref<Mesh> Mesh::GenaratePlane()
+	Ref<Mesh> Mesh::GeneratePlane()
 	{
 		static const MeshVertex vertices[4] = {
 			{ { -2.0f, 0.0f, -2.0f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
@@ -21,7 +21,7 @@ namespace Helios
 		return CreateRef<Mesh>("Plane", vertices, std::size(vertices), triangles, std::size(triangles));
 	}
 
-	Ref<Mesh> Mesh::GenarateCube()
+	Ref<Mesh> Mesh::GenerateCube()
 	{
 		MeshBuilder builder;
 
@@ -73,13 +73,13 @@ namespace Helios
 
 	Ref<Mesh> Mesh::GetCubeMesh()
 	{
-		static Ref<Mesh> cubeMesh = GenarateCube();
+		static Ref<Mesh> cubeMesh = GenerateCube();
 		return cubeMesh;
 	}
 
 	Ref<Mesh> Mesh::GetPlaneMesh()
 	{
-		static Ref<Mesh> planeMesh = GenaratePlane();
+		static Ref<Mesh> planeMesh = GeneratePlane();
 		return planeMesh;
 	}
 
@@ -164,7 +164,7 @@ namespace Helios
 
 		for (uint32_t i = 0; i < segments; i++)
 		{
-			// Vertices
+			// Vertices 
 			float angle = (float)i / (float)segments * 2.0f * 3.14159265359f;
 			float x = cos(angle);
 			float z = sin(angle);

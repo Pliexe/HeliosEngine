@@ -114,7 +114,6 @@ namespace Helios
 			(float)entityId, 0, 0, 0
 		};
 
-
 		rendererData.transformBuffer->SetData(cb);
 		rendererData.transformBuffer->BindVS(0);
 
