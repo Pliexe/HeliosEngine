@@ -17,6 +17,7 @@ namespace Helios
 		static bool IsKeyToggled(int key);
 		static Point GetMousePosition();
 		static float GetMouseWheelDelta() { return s_MouseWheelDelta; }
+		static void OnUpdate();
 	private:
 		inline static float s_MouseWheelDelta = 0;
 

@@ -178,6 +178,7 @@ namespace Helios {
 
 			// Setup Dear ImGui style
 			ImGui::StyleColorsDark();
+			
 
 			// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 			ImGuiStyle& style = ImGui::GetStyle();
@@ -675,45 +676,71 @@ namespace Helios {
 			ImGui::End();
 			ImGui::PopStyleVar();
 
-			if(show_profiler_window && ImGui::Begin("Profiler", &show_profiler_window))
+			if(show_profiler_window)
 			{
-				HL_PROFILE_BEGIN("GUI - Profiler");
-				bool isProfilingThisFrame = Profiler::isProfiling();
-
-				if(ImGui::Checkbox("Profiler Enabled", &isProfilingThisFrame))
+				if(ImGui::Begin("Profiler", &show_profiler_window))
 				{
-					HL_PROFILE_TOGGLE_PROFILING();
-				}
-				ImGui::SameLine();
-				static Profiler::FrameProfile selectedFrameProfile(0);
+					HL_PROFILE_BEGIN("GUI - Profiler");
+					bool isProfilingThisFrame = Profiler::isProfiling();
 
-				if (ImGui::Button("Clear")) { Profiler::clear(); selectedFrameProfile = (0); }
-
-
-				if (Profiler::isProfiling() && Profiler::getResults().size() > 1) selectedFrameProfile = Profiler::getResults()[Profiler::getResults().size() - 2];
-
-				if(selectedFrameProfile.frameTime)
-				{
-					uint32_t selectedFrame = 0u;
-					unsigned long long frametime = selectedFrameProfile.frameTime / 1000.0f;
-
-					ImGui::Text((std::to_string(Profiler::getResults().size()-1) + " Frames!").c_str());
-					ImGui::Text(("Last frame time: " + std::to_string(selectedFrameProfile.frameTime / 1000.0f) + "ms.").c_str());
-
-					ImGui::PlotLines("Frametime", [](void* data, int idx) { return (Profiler::getResults()[min(max(Profiler::getResults().size() - 300, 0) + idx, Profiler::getResults().size()-1)].frameTime / 1000.0f); }, nullptr, min(Profiler::getResults().size() - 1, 299), 0, 0, FLT_MAX, FLT_MAX, ImVec2(1800, 150));
-
-					
-
-					ProfilerTimeline::Draw(selectedFrameProfile);
-
-					/*for (auto x : selectedFrameProfile.results)
+					if (ImGui::Checkbox("Profiler Enabled", &isProfilingThisFrame))
 					{
-						ImGui::Button(x.Name, ImVec2(0, 0));
-					}*/
-				}
+						HL_PROFILE_TOGGLE_PROFILING();
+					}
+					ImGui::SameLine();
 
+					static bool slow_mode = true;
+					static float update_interval = 3.0f;
+					static Profiler::FrameProfile selectedFrameProfile(0);
+
+					if (ImGui::Button("Clear")) { Profiler::clear(); selectedFrameProfile = (0); }
+
+					if(Profiler::isProfiling())
+					{
+						if (slow_mode)
+						{
+							static float tmr = update_interval;
+							tmr += Time::deltaTime();
+
+							if (tmr >= update_interval)
+							{
+								if (Profiler::getResults().size() > 1) selectedFrameProfile = Profiler::getResults()[Profiler::getResults().size() - 2];
+								tmr = 0.0f;
+							}
+						}
+						else if (Profiler::getResults().size() > 1) selectedFrameProfile = Profiler::getResults()[Profiler::getResults().size() - 2];
+					}
+
+
+
+					if (selectedFrameProfile.frameTime)
+					{
+						uint32_t selectedFrame = 0u;
+						unsigned long long frametime = selectedFrameProfile.frameTime / 1000.0f;
+
+						ImGui::Text((std::to_string(Profiler::getResults().size() - 1) + " Frames!").c_str());
+						ImGui::Text(("Last frame time: " + std::to_string(selectedFrameProfile.frameTime / 1000.0f) + "ms.").c_str());
+
+						ImGui::PlotLines("Frametime", [](void* data, int idx) { return (Profiler::getResults()[min(max(Profiler::getResults().size() - 300, 0) + idx, Profiler::getResults().size() - 1)].frameTime / 1000.0f); }, nullptr, min(Profiler::getResults().size() - 1, 299), 0, 0, FLT_MAX, FLT_MAX, ImVec2(1800, 150));
+
+
+						ImGui::Checkbox("Slow Mode", &slow_mode);
+						ImGui::SameLine();
+						ImGui::DragFloat("Update Interval", &update_interval);
+
+						HL_PROFILE_BEGIN("GUI - Profiler DRAW");
+						ProfilerTimeline::Draw(selectedFrameProfile);
+						HL_PROFILE_END();
+
+						/*for (auto x : selectedFrameProfile.results)
+						{
+							ImGui::Button(x.Name, ImVec2(0, 0));
+						}*/
+					}
+
+					HL_PROFILE_END();
+				}
 				ImGui::End();
-				HL_PROFILE_END();
 			}
 
 			HL_PROFILE_BEGIN("GUI - Project Explorer");

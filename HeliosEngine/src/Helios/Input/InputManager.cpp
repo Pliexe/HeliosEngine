@@ -37,3 +37,8 @@ Helios::Point Helios::InputManager::GetMousePosition()
     }
     return Point();
 }
+
+void Helios::InputManager::OnUpdate()
+{
+    s_MouseWheelDelta = 0.0f;
+}

@@ -49,8 +49,7 @@ LRESULT Helios::Application::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	case WM_MOUSEWHEEL:
 	{
-		float zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-		InputManager::s_MouseWheelDelta = zDelta;
+		InputManager::s_MouseWheelDelta = GET_WHEEL_DELTA_WPARAM(wParam) ? 1.0f : -1.0f;
 		return 0;
 	}
 	default:
@@ -91,7 +90,7 @@ Helios::Application::~Application()
 
 int Helios::Application::Run()
 {
-
+	std::ios::sync_with_stdio(false);
 	Application::instance = this;
 	
 #pragma region Init Counter
@@ -209,6 +208,8 @@ void Helios::Application::GameLoop() {
 
 	OnUpdate();
 	OnRender();
+
+	InputManager::s_MouseWheelDelta = 0.0f;
 
 	HL_PROFILE_FRAME_END();
 }
