@@ -168,8 +168,6 @@ namespace Helios {
         const static Color YellowGreen;
 #pragma endregion
 
-        
-
 		Color() : r(1.0f), g(1.0f), b(1.0f), a(1.0f) {}
         Color(const Color&) = default;
         Color(UINT32 rgb, float alpha = 1.0f) {

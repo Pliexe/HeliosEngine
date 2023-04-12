@@ -34,6 +34,9 @@ namespace Helios
 		void CreateQuadFace(MeshVertex v0, MeshVertex v1, MeshVertex v2, MeshVertex v3);
 		void CreateTriangleFace(MeshVertex v0, MeshVertex v1, MeshVertex v2);
 
+		std::vector<MeshVertex> GetVertices() const;
+		std::vector<Triangle> GetTriangles() const;
+
 		friend class Mesh;
 	};
 }

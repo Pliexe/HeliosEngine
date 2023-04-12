@@ -9,7 +9,7 @@
 
 
 namespace Helios {
-	class HeliosExceptin : public std::exception
+	class HeliosException : public std::exception
 	{
 	private:
 		const char* file;
@@ -18,14 +18,14 @@ namespace Helios {
 	protected:
 		virtual const char* ExceptionName() const { return "HeliosException"; }
 	public:
-		HeliosExceptin(const char* message, const char* function, const char* file, int line) : std::exception(message)
+		HeliosException(const char* message, const char* function, const char* file, int line) : std::exception(message)
 		{
 			this->function = function;
 			this->file = file;
 			this->line = line;
 		}
 
-		HeliosExceptin(std::string message, const char* function, const char* file, int line) : std::exception(message.c_str())
+		HeliosException(std::string message, const char* function, const char* file, int line) : std::exception(message.c_str())
 		{
 			this->function = function;
 			this->file = file;
@@ -49,8 +49,8 @@ namespace Helios {
 	};
 }
 
-#define HL_EXCEPTION(condition, message) { if(condition) throw Helios::HeliosExceptin(message, __FUNCTION__, __FILE__, __LINE__); }
-#define HL_EXCEPTION_HR(condition, message, hr) { if(condition) throw Helios::HeliosExceptin(std::string(message) + "\nReason: " + GetLastErrorAsString(hr) + "\nCode: " + std::to_string(hr), __FUNCTION__, __FILE__, __LINE__); }
+#define HL_EXCEPTION(condition, message) { if(condition) throw Helios::HeliosException(message, __FUNCTION__, __FILE__, __LINE__); }
+#define HL_EXCEPTION_HR(condition, message, hr) { if(condition) throw Helios::HeliosException(std::string(message) + "\nReason: " + GetLastErrorAsString(hr) + "\nCode: " + std::to_string(hr), __FUNCTION__, __FILE__, __LINE__); }
 
-#define HL_ASSERT_EXCEPTION_RETRY(condition, message) { retry: try { if(!condition) throw Helios::HeliosExceptin(message, __FUNCTION__, __FILE__, __LINE__); } catch(Helios::HeliosExceptin ex) { switch(ex.what()) { case: IDRETRY: goto retry; break; case IDOK:case IDABORT: abort(); } } }
-#define HL_ASSERT_EXCEPTION(condition, message) { if(!(condition)) throw Helios::HeliosExceptin(message, __FUNCTION__, __FILE__, __LINE__); }
+#define HL_ASSERT_EXCEPTION_RETRY(condition, message) { retry: try { if(!condition) throw Helios::HeliosException(message, __FUNCTION__, __FILE__, __LINE__); } catch(Helios::HeliosException ex) { switch(ex.what()) { case: IDRETRY: goto retry; break; case IDOK:case IDABORT: abort(); } } }
+#define HL_ASSERT_EXCEPTION(condition, message) { if(!(condition)) throw Helios::HeliosException(message, __FUNCTION__, __FILE__, __LINE__); }

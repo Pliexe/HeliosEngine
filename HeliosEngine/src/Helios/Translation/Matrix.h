@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Quanterion.h"
+#include "Quaternion.h"
 #include "Vector.h"
 
 namespace Helios
@@ -40,7 +40,7 @@ namespace Helios
 			};
 		}
 
-		static Matrix4x4 Translation(float x, float y, float z)
+		static Matrix4x4 TranslationRow(float x, float y, float z)
 		{
 			return {
 				1.0f, 0.0f, 0.0f, 0.0f,
@@ -50,7 +50,7 @@ namespace Helios
 			};
 		}
 
-		static Matrix4x4 Translation(const Vector3& translation)
+		static Matrix4x4 TranslationRow(const Vector3& translation)
 		{
 			return {
 				1.0f, 0.0f, 0.0f, 0.0f,
@@ -61,7 +61,7 @@ namespace Helios
 		}
 
 
-		static Matrix4x4 RotationX(float x)
+		static Matrix4x4 RotationXRow(float x)
 		{
 			return {
 				1.0f,  0.0f,   0.0f,   0.0f,
@@ -71,7 +71,7 @@ namespace Helios
 			};
 		}
 
-		static Matrix4x4 RotationY(float y)
+		static Matrix4x4 RotationYRow(float y)
 		{
 			return {
 				cos(y), 0.0f, -sin(y), 0.0f,
@@ -81,7 +81,7 @@ namespace Helios
 			};
 		}
 
-		static Matrix4x4 RotationZ(float z)
+		static Matrix4x4 RotationZRow(float z)
 		{
 			return {
 				cos(z), -sin(z), 0.0f, 0.0f,
@@ -90,12 +90,12 @@ namespace Helios
 				0.0f,    0.0f,   0.0f, 1.0f
 			};
 		}
-		static Matrix4x4 Rotation(Vector3 vec)
+		static Matrix4x4 RotationRow(Vector3 vec)
 		{
-			return RotationX(vec.x) * RotationZ(vec.z) * RotationY(vec.y);
+			return RotationXRow(vec.x) * RotationZRow(vec.z) * RotationYRow(vec.y);
 		}
 		
-		static Matrix4x4 Rotation(Quanterion rotation)
+		static Matrix4x4 RotationRow(Quaternion rotation)
 		{
 			// Create a 4x4 rotation matrix from a quaternion in row major 
 
@@ -107,7 +107,7 @@ namespace Helios
 			};
 		}
 
-		static Matrix4x4 RotationColumn(Quanterion rotation)
+		static Matrix4x4 RotationColumn(Quaternion rotation)
 		{
 			// Create a 4x4 rotation matrix from a quaternion in column major
 
@@ -119,36 +119,68 @@ namespace Helios
 			};
 		}
 
+		static float Determinant(Matrix4x4 matrix)
+		{
+			// Calculate the determinant of a 4x4 matrix
+
+			return
+				matrix._11 * matrix._22 * matrix._33 * matrix._44 +
+				matrix._11 * matrix._23 * matrix._34 * matrix._42 +
+				matrix._11 * matrix._24 * matrix._32 * matrix._43 +
+				matrix._12 * matrix._21 * matrix._34 * matrix._43 +
+				matrix._12 * matrix._23 * matrix._31 * matrix._44 +
+				matrix._12 * matrix._24 * matrix._33 * matrix._41 +
+				matrix._13 * matrix._21 * matrix._32 * matrix._44 +
+				matrix._13 * matrix._22 * matrix._34 * matrix._41 +
+				matrix._13 * matrix._24 * matrix._31 * matrix._42 +
+				matrix._14 * matrix._21 * matrix._33 * matrix._42 +
+				matrix._14 * matrix._22 * matrix._31 * matrix._43 +
+				matrix._14 * matrix._23 * matrix._32 * matrix._41 -
+				matrix._11 * matrix._22 * matrix._34 * matrix._43 -
+				matrix._11 * matrix._23 * matrix._32 * matrix._44 -
+				matrix._11 * matrix._24 * matrix._33 * matrix._42 -
+				matrix._12 * matrix._21 * matrix._33 * matrix._44 -
+				matrix._12 * matrix._23 * matrix._34 * matrix._41 -
+				matrix._12 * matrix._24 * matrix._31 * matrix._43 -
+				matrix._13 * matrix._21 * matrix._34 * matrix._42 -
+				matrix._13 * matrix._22 * matrix._31 * matrix._44 -
+				matrix._13 * matrix._24 * matrix._32 * matrix._41 -
+				matrix._14 * matrix._21 * matrix._32 * matrix._43 -
+				matrix._14 * matrix._22 * matrix._33 * matrix._41 -
+				matrix._14 * matrix._23 * matrix._31 * matrix._42;
+		}
+
 		static Matrix4x4 Inverse(Matrix4x4 matrix)
 		{
 			Matrix4x4 result = matrix;
 
-			float det = 1.0f / (
-				result._11 * (result._22 * result._33 * result._44 - result._22 * result._34 * result._43 - result._32 * result._23 * result._44 + result._32 * result._24 * result._43 + result._42 * result._23 * result._34 - result._42 * result._24 * result._33) -
-				result._21 * (result._12 * result._33 * result._44 - result._12 * result._34 * result._43 - result._32 * result._13 * result._44 + result._32 * result._14 * result._43 + result._42 * result._13 * result._34 - result._42 * result._14 * result._33) +
-				result._31 * (result._12 * result._23 * result._44 - result._12 * result._24 * result._43 - result._22 * result._13 * result._44 + result._22 * result._14 * result._43 + result._42 * result._13 * result._24 - result._42 * result._14 * result._23) -
-				result._41 * (result._12 * result._23 * result._34 - result._12 * result._24 * result._33 - result._22 * result._13 * result._34 + result._22 * result._14 * result._33 + result._32 * result._13 * result._24 - result._32 * result._14 * result._23)
-				);
+			// Calculate the determinant of the matrix
 
-			result._11 = (result._22 * result._33 * result._44 - result._22 * result._34 * result._43 - result._32 * result._23 * result._44 + result._32 * result._24 * result._43 + result._42 * result._23 * result._34 - result._42 * result._24 * result._33) * det;
-			result._12 = -(result._12 * result._33 * result._44 - result._12 * result._34 * result._43 - result._32 * result._13 * result._44 + result._32 * result._14 * result._43 + result._42 * result._13 * result._34 - result._42 * result._14 * result._33) * det;
-			result._13 = (result._12 * result._23 * result._44 - result._12 * result._24 * result._43 - result._22 * result._13 * result._44 + result._22 * result._14 * result._43 + result._42 * result._13 * result._24 - result._42 * result._14 * result._23) * det;
-			result._14 = -(result._12 * result._23 * result._34 - result._12 * result._24 * result._33 - result._22 * result._13 * result._34 + result._22 * result._14 * result._33 + result._32 * result._13 * result._24 - result._32 * result._14 * result._23) * det;
+			float determinant = Determinant(matrix);
 
-			result._21 = -(result._21 * result._33 * result._44 - result._21 * result._34 * result._43 - result._31 * result._23 * result._44 + result._31 * result._24 * result._43 + result._41 * result._23 * result._34 - result._41 * result._24 * result._33) * det;
-			result._22 = (result._11 * result._33 * result._44 - result._11 * result._34 * result._43 - result._31 * result._13 * result._44 + result._31 * result._14 * result._43 + result._41 * result._13 * result._34 - result._41 * result._14 * result._33) * det;
-			result._23 = -(result._11 * result._23 * result._44 - result._11 * result._24 * result._43 - result._21 * result._13 * result._44 + result._21 * result._14 * result._43 + result._41 * result._13 * result._24 - result._41 * result._14 * result._23) * det;
-			result._24 = (result._11 * result._23 * result._34 - result._11 * result._24 * result._33 - result._21 * result._13 * result._34 + result._21 * result._14 * result._33 + result._31 * result._13 * result._24 - result._31 * result._14 * result._23) * det;
+			// If the determinant is 0, then the matrix cannot be inverted
 
-			result._31 = (result._21 * result._32 * result._44 - result._21 * result._34 * result._42 - result._31 * result._22 * result._44 + result._31 * result._24 * result._42 + result._41 * result._22 * result._34 - result._41 * result._24 * result._32) * det;
-			result._32 = -(result._11 * result._32 * result._44 - result._11 * result._34 * result._42 - result._31 * result._12 * result._44 + result._31 * result._14 * result._42 + result._41 * result._12 * result._34 - result._41 * result._14 * result._32) * det;
-			result._33 = (result._11 * result._22 * result._44 - result._11 * result._24 * result._42 - result._21 * result._12 * result._44 + result._21 * result._14 * result._42 + result._41 * result._12 * result._24 - result._41 * result._14 * result._22) * det;
-			result._34 = -(result._11 * result._22 * result._34 - result._11 * result._24 * result._32 - result._21 * result._12 * result._34 + result._21 * result._14 * result._32 + result._31 * result._12 * result._24 - result._31 * result._14 * result._22) * det;
+			if (determinant == 0.0f)
+				return Matrix4x4::Identity();
 
-			result._41 = -(result._21 * result._32 * result._43 - result._21 * result._33 * result._42 - result._31 * result._22 * result._43 + result._31 * result._23 * result._42 + result._41 * result._22 * result._33 - result._41 * result._23 * result._32) * det;
-			result._42 = (result._11 * result._32 * result._43 - result._11 * result._33 * result._42 - result._31 * result._12 * result._43 + result._31 * result._13 * result._42 + result._41 * result._12 * result._33 - result._41 * result._13 * result._32) * det;
-			result._43 = -(result._11 * result._22 * result._43 - result._11 * result._23 * result._42 - result._21 * result._12 * result._43 + result._21 * result._13 * result._42 + result._41 * result._12 * result._23 - result._41 * result._13 * result._22) * det;
-			result._44 = (result._11 * result._22 * result._33 - result._11 * result._23 * result._32 - result._21 * result._12 * result._33 + result._21 * result._13 * result._32 + result._31 * result._12 * result._23 - result._31 * result._13 * result._22) * det;
+			// Calculate the inverse of the matrix
+
+			result._11 = (matrix._22 * matrix._33 * matrix._44 + matrix._23 * matrix._34 * matrix._42 + matrix._24 * matrix._32 * matrix._43 - matrix._22 * matrix._34 * matrix._43 - matrix._23 * matrix._32 * matrix._44 - matrix._24 * matrix._33 * matrix._42) / determinant;
+			result._12 = (matrix._12 * matrix._34 * matrix._43 + matrix._13 * matrix._32 * matrix._44 + matrix._14 * matrix._33 * matrix._42 - matrix._12 * matrix._33 * matrix._44 - matrix._13 * matrix._34 * matrix._42 - matrix._14 * matrix._32 * matrix._43) / determinant;
+			result._13 = (matrix._12 * matrix._23 * matrix._44 + matrix._13 * matrix._24 * matrix._42 + matrix._14 * matrix._22 * matrix._43 - matrix._12 * matrix._24 * matrix._43 - matrix._13 * matrix._22 * matrix._44 - matrix._14 * matrix._23 * matrix._42) / determinant;
+			result._14 = (matrix._12 * matrix._24 * matrix._33 + matrix._13 * matrix._22 * matrix._34 + matrix._14 * matrix._23 * matrix._32 - matrix._12 * matrix._23 * matrix._34 - matrix._13 * matrix._24 * matrix._32 - matrix._14 * matrix._22 * matrix._33) / determinant;
+			result._21 = (matrix._21 * matrix._34 * matrix._43 + matrix._23 * matrix._31 * matrix._44 + matrix._24 * matrix._33 * matrix._41 - matrix._21 * matrix._33 * matrix._44 - matrix._23 * matrix._34 * matrix._41 - matrix._24 * matrix._31 * matrix._43) / determinant;
+			result._22 = (matrix._11 * matrix._33 * matrix._44 + matrix._13 * matrix._34 * matrix._41 + matrix._14 * matrix._31 * matrix._43 - matrix._11 * matrix._34 * matrix._43 - matrix._13 * matrix._31 * matrix._44 - matrix._14 * matrix._33 * matrix._41) / determinant;
+			result._23 = (matrix._11 * matrix._24 * matrix._43 + matrix._13 * matrix._21 * matrix._44 + matrix._14 * matrix._23 * matrix._41 - matrix._11 * matrix._23 * matrix._44 - matrix._13 * matrix._24 * matrix._41 - matrix._14 * matrix._21 * matrix._43) / determinant;
+			result._24 = (matrix._11 * matrix._23 * matrix._34 + matrix._13 * matrix._24 * matrix._31 + matrix._14 * matrix._21 * matrix._33 - matrix._11 * matrix._24 * matrix._33 - matrix._13 * matrix._21 * matrix._34 - matrix._14 * matrix._23 * matrix._31) / determinant;
+			result._31 = (matrix._21 * matrix._32 * matrix._44 + matrix._22 * matrix._34 * matrix._41 + matrix._24 * matrix._31 * matrix._42 - matrix._21 * matrix._34 * matrix._42 - matrix._22 * matrix._31 * matrix._44 - matrix._24 * matrix._32 * matrix._41) / determinant;
+			result._32 = (matrix._11 * matrix._34 * matrix._42 + matrix._12 * matrix._31 * matrix._44 + matrix._14 * matrix._32 * matrix._41 - matrix._11 * matrix._32 * matrix._44 - matrix._12 * matrix._34 * matrix._41 - matrix._14 * matrix._31 * matrix._42) / determinant;
+			result._33 = (matrix._11 * matrix._22 * matrix._44 + matrix._12 * matrix._24 * matrix._41 + matrix._14 * matrix._21 * matrix._42 - matrix._11 * matrix._24 * matrix._42 - matrix._12 * matrix._21 * matrix._44 - matrix._14 * matrix._22 * matrix._41) / determinant;
+			result._34 = (matrix._11 * matrix._24 * matrix._32 + matrix._12 * matrix._21 * matrix._34 + matrix._14 * matrix._22 * matrix._31 - matrix._11 * matrix._22 * matrix._34 - matrix._12 * matrix._24 * matrix._31 - matrix._14 * matrix._21 * matrix._32) / determinant;
+			result._41 = (matrix._21 * matrix._33 * matrix._42 + matrix._22 * matrix._31 * matrix._43 + matrix._23 * matrix._32 * matrix._41 - matrix._21 * matrix._32 * matrix._43 - matrix._22 * matrix._33 * matrix._41 - matrix._23 * matrix._31 * matrix._42) / determinant;
+			result._42 = (matrix._11 * matrix._32 * matrix._43 + matrix._12 * matrix._33 * matrix._41 + matrix._13 * matrix._31 * matrix._42 - matrix._11 * matrix._33 * matrix._42 - matrix._12 * matrix._31 * matrix._43 - matrix._13 * matrix._32 * matrix._41) / determinant;
+			result._43 = (matrix._11 * matrix._23 * matrix._42 + matrix._12 * matrix._21 * matrix._43 + matrix._13 * matrix._22 * matrix._41 - matrix._11 * matrix._22 * matrix._43 - matrix._12 * matrix._23 * matrix._41 - matrix._13 * matrix._21 * matrix._42) / determinant;
+			result._44 = (matrix._11 * matrix._22 * matrix._33 + matrix._12 * matrix._23 * matrix._31 + matrix._13 * matrix._21 * matrix._32 - matrix._11 * matrix._23 * matrix._32 - matrix._12 * matrix._21 * matrix._33 - matrix._13 * matrix._22 * matrix._31) / determinant;
 
 			return result;
 		}
@@ -173,49 +205,74 @@ namespace Helios
 			}; 
 		}
 
-		Matrix4x4 operator* (Matrix4x4 b) { return Matrix4x4::Multiply(*this, b); }
-
-		static Matrix4x4 Multiply(const Matrix4x4& a, const Matrix4x4& b)
+		static Matrix4x4 Scale(float scaling)
 		{
-			// TODO: Add SIMD optimization
 			return {
-				/*c._11 = */a._11 * b._11 + a._12 * b._21 + a._13 * b._31 + a._14 * b._41,
-				/*c._12 = */a._11 * b._12 + a._12 * b._22 + a._13 * b._32 + a._14 * b._42,
-				/*c._13 = */a._11 * b._13 + a._12 * b._23 + a._13 * b._33 + a._14 * b._43,
-				/*c._14 = */a._11 * b._14 + a._12 * b._24 + a._13 * b._34 + a._14 * b._44,
+				scaling,	  0.0f, 0.0f, 0.0f,
+				0.0f, scaling,    0.0f, 0.0f,
+				0.0f, 0.0f, scaling, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f
+			}; 
+		}
 
-				/*c._21 = */a._21 * b._11 + a._22 * b._21 + a._23 * b._31 + a._24 * b._41,
-				/*c._22 = */a._21 * b._12 + a._22 * b._22 + a._23 * b._32 + a._24 * b._42,
-				/*c._23 = */a._21 * b._13 + a._22 * b._23 + a._23 * b._33 + a._24 * b._43,
-				/*c._24 = */a._21 * b._14 + a._22 * b._24 + a._23 * b._34 + a._24 * b._44,
-
-				/*c._31 = */a._31 * b._11 + a._32 * b._21 + a._33 * b._31 + a._34 * b._41,
-				/*c._32 = */a._31 * b._12 + a._32 * b._22 + a._33 * b._32 + a._34 * b._42,
-				/*c._33 = */a._31 * b._13 + a._32 * b._23 + a._33 * b._33 + a._34 * b._43,
-				/*c._34 = */a._31 * b._14 + a._32 * b._24 + a._33 * b._34 + a._34 * b._44,
-
-				/*c._41 = */a._41 * b._11 + a._42 * b._21 + a._43 * b._31 + a._44 * b._41,
-				/*c._42 = */a._41 * b._12 + a._42 * b._22 + a._43 * b._32 + a._44 * b._42,
-				/*c._43 = */a._41 * b._13 + a._42 * b._23 + a._43 * b._33 + a._44 * b._43,
-				/*c._44 = */a._41 * b._14 + a._42 * b._24 + a._43 * b._34 + a._44 * b._44,
+		Matrix4x4 operator* (Matrix4x4 b) { return Matrix4x4::Multiply(*this, b); }
+		const Matrix4x4 operator*(const Matrix4x4& b) const { return Matrix4x4::Multiply(*this, b); }
+		Vector4 operator*(const Vector4& vector4) const;
+		static Matrix4x4 Identity()
+		{
+			return {
+				1.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f
 			};
 		}
 
+		static Matrix4x4 Multiply(const Matrix4x4& a, const Matrix4x4& b)
+		{
+			Matrix4x4 result;
+
+			result._11 = a._11 * b._11 + a._12 * b._21 + a._13 * b._31 + a._14 * b._41;
+			result._12 = a._11 * b._12 + a._12 * b._22 + a._13 * b._32 + a._14 * b._42;
+			result._13 = a._11 * b._13 + a._12 * b._23 + a._13 * b._33 + a._14 * b._43;
+			result._14 = a._11 * b._14 + a._12 * b._24 + a._13 * b._34 + a._14 * b._44;
+
+			result._21 = a._21 * b._11 + a._22 * b._21 + a._23 * b._31 + a._24 * b._41;
+			result._22 = a._21 * b._12 + a._22 * b._22 + a._23 * b._32 + a._24 * b._42;
+			result._23 = a._21 * b._13 + a._22 * b._23 + a._23 * b._33 + a._24 * b._43;
+			result._24 = a._21 * b._14 + a._22 * b._24 + a._23 * b._34 + a._24 * b._44;
+
+			result._31 = a._31 * b._11 + a._32 * b._21 + a._33 * b._31 + a._34 * b._41;
+			result._32 = a._31 * b._12 + a._32 * b._22 + a._33 * b._32 + a._34 * b._42;
+			result._33 = a._31 * b._13 + a._32 * b._23 + a._33 * b._33 + a._34 * b._43;
+			result._34 = a._31 * b._14 + a._32 * b._24 + a._33 * b._34 + a._34 * b._44;
+
+			result._41 = a._41 * b._11 + a._42 * b._21 + a._43 * b._31 + a._44 * b._41;
+			result._42 = a._41 * b._12 + a._42 * b._22 + a._43 * b._32 + a._44 * b._42;
+			result._43 = a._41 * b._13 + a._42 * b._23 + a._43 * b._33 + a._44 * b._43;
+			result._44 = a._41 * b._14 + a._42 * b._24 + a._43 * b._34 + a._44 * b._44;
+
+			return result;
+		}
+
+		// Creates a right handed perspective projection matrix in column major order
 		static Matrix4x4 PerspectiveRH(float fov, float aspectRatio, float near_c, float far_c)
 		{
 			float q = 1.0f / tan(fov * 0.5f);
 			float a = q / aspectRatio;
 			float b = (near_c + far_c) / (near_c - far_c);
-			float c = (2.0f * near_c * far_c) / (near_c - far_c);
+			float c = (2.0f * near_c * far_c) / (near_c - far_c);		
 
 			return {
 				a, 0.0f, 0.0f, 0.0f,
 				0.0f, q, 0.0f, 0.0f,
-				0.0f, 0.0f, b, -1.0f,
-				0.0f, 0.0f, c, 0.0f
+				0.0f, 0.0f, b, c,
+				0.0f, 0.0f, -1.0f, 0.0f
 			};
 		}
 
+		
+		// Creates a left handed perspective projection matrix in column major order
 		static Matrix4x4 PerspectiveLH(float fov, float aspectRatio, float near_c, float far_c)
 		{
 			float q = 1.0f / tan(fov * 0.5f);
@@ -226,11 +283,27 @@ namespace Helios
 			return {
 				a, 0.0f, 0.0f, 0.0f,
 				0.0f, q, 0.0f, 0.0f,
-				0.0f, 0.0f, b, 1.0f,
-				0.0f, 0.0f, c, 0.0f
+				0.0f, 0.0f, b, 	c,
+				0.0f, 0.0f, 1.0f, 0.0f
 			};
 		}
 
+		static Matrix4x4 PerspectiveLHRow(float fov, float aspect_ratio, float near_c, float far_c)
+		{
+			float q = 1.0f / tan(fov * 0.5f);
+			float a = q / aspect_ratio;
+			float b = far_c / (far_c - near_c);
+			float c = (-far_c * near_c) / (far_c - near_c);
+
+			return {
+				a, 0.0f, 0.0f, 0.0f,
+				0.0f, q, 0.0f, 0.0f,
+				0.0f, 0.0f, b, 0.0f,
+				0.0f, 0.0f, c, 1.0f
+			};
+		}
+
+		// Creates a right handed orthographic projection matrix in column major order
 		static Matrix4x4 OrthographicRH(float width, float height, float near_c, float far_c)
 		{
 			float a = 2.0f / width;
@@ -241,23 +314,24 @@ namespace Helios
 			return {
 				a, 0.0f, 0.0f, 0.0f,
 				0.0f, b, 0.0f, 0.0f,
-				0.0f, 0.0f, c, 0.0f,
-				0.0f, 0.0f, d, 1.0f
+				0.0f, 0.0f, c, d,
+				0.0f, 0.0f, 0.0f, 1.0f
 			};
 		}
 
-		static Matrix4x4 OrthographicLH(float width, float height, float near_c, float far_c)
+		// Creates a left handed orthographic projection matrix in column major order
+		static Matrix4x4 OrthographicLH(float size, float aspect_ratio, float near_c, float far_c)
 		{
-			float a = 2.0f / width;
-			float b = 2.0f / height;
+			float a = 2.0f / size;
+			float b = 2.0f / (size / aspect_ratio);
 			float c = 1.0f / (far_c - near_c);
 			float d = near_c / (near_c - far_c);
 
 			return {
 				a, 0.0f, 0.0f, 0.0f,
 				0.0f, b, 0.0f, 0.0f,
-				0.0f, 0.0f, c, 0.0f,
-				0.0f, 0.0f, d, 1.0f
+				0.0f, 0.0f, c, d,
+				0.0f, 0.0f, 0.0f, 1.0f
 			};
 		}
 
@@ -270,5 +344,18 @@ namespace Helios
 				matrix._14, matrix._24, matrix._34, matrix._44
 			};
 		}
+
+#define Translation TranslationColumn
+#define Rotation RotationColumn
 	};
-}
+
+	inline Vector4 Matrix4x4::operator*(const Vector4& vector4) const
+	{
+		return {
+			_11 * vector4.x + _12 * vector4.y + _13 * vector4.z + _14 * vector4.w,
+			_21 * vector4.x + _22 * vector4.y + _23 * vector4.z + _24 * vector4.w,
+			_31 * vector4.x + _32 * vector4.y + _33 * vector4.z + _34 * vector4.w,
+			_41 * vector4.x + _42 * vector4.y + _43 * vector4.z + _44 * vector4.w
+		};
+	}
+}	

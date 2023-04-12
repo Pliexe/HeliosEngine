@@ -29,15 +29,25 @@ namespace Helios {
 		{
 			if (ImGui::MenuItem("Cube")) {
 				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Cube");
-				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
+				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::GetCubeMesh();
+				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				InspectorPanel::GetInstance() << (entt::entity)obj;
+			}
+			if(ImGui::MenuItem("Arrow"))
+			{
+				MeshBuilder arrowBuilder = Mesh::CreateGizmosArrow();
+
+				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Arrow");
+				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
+				meshRenderer.mesh = Mesh::Create("Arrow", arrowBuilder);
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << (entt::entity)obj;
 			}
 			if(ImGui::MenuItem("Plane"))
 			{
 				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Plane");
-				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
+				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::GetPlaneMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << (entt::entity)obj;
@@ -45,7 +55,7 @@ namespace Helios {
 			if (ImGui::MenuItem("Cylinder"))
 			{
 				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Cylinder");
-				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
+				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::GetCylinderMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << (entt::entity)obj;
@@ -53,7 +63,7 @@ namespace Helios {
 			if (ImGui::MenuItem("Cone"))
 			{
 				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Cone");
-				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
+				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::GetConeMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << (entt::entity)obj;
@@ -61,7 +71,7 @@ namespace Helios {
 			if (ImGui::MenuItem("Sphere"))
 			{
 				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Sphere");
-				auto& meshRenderer = obj.AddComponent<Components::MeshRenderer>();
+				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::GetSphereMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << (entt::entity)obj;
@@ -74,7 +84,7 @@ namespace Helios {
 			if (ImGui::MenuItem("Directional Light"))
 			{
 				auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Directional Light");
-				obj.AddComponent<Components::DirectionalLight>(Color::White, 1.0f);
+				obj.AddComponent<DirectionalLightComponent>(Color::White, 1.0f);
 				InspectorPanel::GetInstance() << (entt::entity)obj;
 			}
 			ImGui::EndMenu();
@@ -82,7 +92,7 @@ namespace Helios {
 
 		if (ImGui::MenuItem("Create Object With Sprite")) {
 			auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Sprite");
-			obj.AddComponent<Components::SpriteRenderer>();
+			obj.AddComponent<SpriteRendererComponent>();
 			InspectorPanel::GetInstance() << (entt::entity)obj;
 		}
 		
@@ -90,12 +100,12 @@ namespace Helios {
 
 	void DrawObject(GameObject object)
 	{
-		Components::InfoComponent info = object.GetComponent<Components::InfoComponent>();
+		InfoComponent info = object.GetComponent<InfoComponent>();
 		entt::entity child = entt::null;
 
-		if (object.HasComponent<Components::Relationship>())
+		if (object.HasComponent<RelationshipComponent>())
 		{
-			auto& trans = object.GetComponent<Components::Relationship>();
+			auto& trans = object.GetComponent<RelationshipComponent>();
 			if (trans.first_child != entt::null) child = trans.first_child;
 		}
 
@@ -136,13 +146,13 @@ namespace Helios {
 				const char* key = (const char*)payload->Data;
 				Ref<Texture2D> texture = Helios::AssetRegistry::GetTexture(key);
 				if (texture) {
-					if (object.HasComponent<Components::SpriteRenderer>())
+					if (object.HasComponent<SpriteRendererComponent>())
 					{
-						object.GetComponent<Components::SpriteRenderer>().texture = texture;
+						object.GetComponent<SpriteRendererComponent>().texture = texture;
 					}
-					else if (object.HasComponent<Components::MeshRenderer>())
+					else if (object.HasComponent<MeshRendererComponent>())
 					{
-						object.GetComponent<Components::MeshRenderer>().material.get()->texture = texture;
+						object.GetComponent<MeshRendererComponent>().material.get()->texture = texture;
 					}
 				}
 				ImGui::EndDragDropTarget();
@@ -174,7 +184,7 @@ namespace Helios {
 			while (child != entt::null)
 			{
 				DrawObject({child,SceneRegistry::get_current_scene()});
-				child = GameObject(child, SceneRegistry::get_current_scene()).GetComponent<Components::Relationship>().next_child;
+				child = GameObject(child, SceneRegistry::get_current_scene()).GetComponent<RelationshipComponent>().next_sibling;
 			}
 			ImGui::TreePop();
 		}
@@ -209,9 +219,9 @@ namespace Helios {
 		scene.lock()->m_components.each([&](auto entity)
 		{
 			GameObject object{ entity, SceneRegistry::get_current_scene() };
-			if (object.HasComponent<Components::Relationship>())
+			if (object.HasComponent<RelationshipComponent>())
 			{
-				auto& relation = object.GetComponent<Components::Relationship>();
+				auto& relation = object.GetComponent<RelationshipComponent>();
 				if (relation.HasParent()) return;
 			}
 			ImGui::PushID(i);

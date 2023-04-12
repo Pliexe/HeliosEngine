@@ -3,6 +3,7 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
 #include "Vector.h"
+#include "Matrix.h"
 
 namespace Helios {
 
@@ -95,13 +96,29 @@ namespace Helios {
 		else return { x / length, y / length, z / length };
 	}
 
-	float Vector3::Dot(Vector3 lhv, Vector3 rhv)
+    inline float Vector3::magnitude()
+    {
+		return sqrt(x * x + y * y + z * z);
+    }
+
+    float Vector3::Dot(Vector3 lhv, Vector3 rhv)
 	{
 		return lhv.x * rhv.x + lhv.y * rhv.y + lhv.z * rhv.z;
 	}
 
 	float Vector3::Length(Vector3 a) { return sqrt(Dot(a, a)); }
 	float Vector3::SqrLength(Vector3 a) { return Dot(a, a); }
+
+	float Vector3::Distance(Vector3 a, Vector3 b)
+	{
+		return Length(a - b);
+	}
+
+	float Vector3::DistanceSqrt(Vector3 a, Vector3 b)
+	{
+		return std::sqrt(SqrLength(a - b));
+	}
+
 	float distance(Vector3 a, Vector3 b) { return Vector3::Length(a - b); }
 	Vector3 Vector3::Project(Vector3 a, Vector3 n) { return n * (Vector3::Dot(a, n) / Vector3::Dot(n, n)); }
 	Vector3	Vector3::Cross(Vector3 a, Vector3 b)
@@ -113,6 +130,21 @@ namespace Helios {
 			a.z * b.x - a.x * b.z,
 			a.x * b.y - a.y * b.x
 		};
+	}
+
+	Vector3 Vector3::Lerp(Vector3 a, Vector3 b, float t)
+	{
+		return a + (b - a) * t;
+	}
+
+	Vector3 Vector3::MoveTowards(Vector3 a, Vector3 b, float maxDistanceDelta)
+	{
+		Vector3 delta = b - a;
+		float sqrDelta = Vector3::SqrLength(delta);
+		if (sqrDelta == 0.0f || (maxDistanceDelta >= 0.0f && sqrDelta <= maxDistanceDelta * maxDistanceDelta))
+			return b;
+		float deltaLength = sqrt(sqrDelta);
+		return a + delta / deltaLength * maxDistanceDelta;
 	}
 
 	float Vector3::length() { return Length(*this); }
@@ -146,6 +178,15 @@ namespace Helios {
 		this->z += other.z;
 		return *this;
 	}
+
+	Vector3 Vector3::operator-=(Vector3& other)
+	{
+		this->x -= other.x;
+		this->y -= other.y;
+		this->z -= other.z;
+		return *this;
+	}
+
 	Vector3 Vector3::operator-=(const Vector3& other)
 	{
 		this->x -= other.x;
@@ -166,6 +207,31 @@ namespace Helios {
 		this->y /= n;
 		this->z /= n;
 		return *this;
+	}
+
+	Vector3 Vector3::operator*(const Vector3& b) const
+	{
+		return { x * b.x, y * b.y, z * b.z };
+	}
+
+	Vector3 Vector3::operator/(const Vector3& scale) const
+	{
+		return { x / scale.x, y / scale.y, z / scale.z };
+	}
+
+	std::string Vector3::operator<<(const Vector3& other) const
+	{
+		return other.to_string();
+	}
+
+	std::string Vector3::operator<<(Vector3& other) const
+	{
+		return other.to_string();
+	}
+
+	std::string Vector3::to_string() const
+	{
+		return std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z);
 	}
 
 	bool Vector3::operator==(const Vector3& other) const
@@ -279,6 +345,17 @@ namespace Helios {
 		return *this;
 	}
 
+	Vector4 Vector4::operator*(const Matrix4x4& matrix4_x4) const
+	{
+		// vec4 * mat4
+		return Vector4(
+			x * matrix4_x4.m[0][0] + y * matrix4_x4.m[1][0] + z * matrix4_x4.m[2][0] + w * matrix4_x4.m[3][0],
+			x * matrix4_x4.m[0][1] + y * matrix4_x4.m[1][1] + z * matrix4_x4.m[2][1] + w * matrix4_x4.m[3][1],
+			x * matrix4_x4.m[0][2] + y * matrix4_x4.m[1][2] + z * matrix4_x4.m[2][2] + w * matrix4_x4.m[3][2],
+			x * matrix4_x4.m[0][3] + y * matrix4_x4.m[1][3] + z * matrix4_x4.m[2][3] + w * matrix4_x4.m[3][3]
+		);
+	}
+
 	Vector4 Vector4::operator=(Vector4& other)
 	{
 		this->x = other.x;
@@ -291,17 +368,97 @@ namespace Helios {
 
 #pragma region Size
 	
-	float Size::width()	const { return x; }
-	float Size::height()	const { return y; }
-
-	void Size::setWidth(float width) { x = width; }
-	void Size::setHeight(float height) { y = height; }
-	void Size::setSize(float width, float height) { x = width; y = height; }
-
-	void Size::setSize(const Size size)
+	Size Size::operator+(const Size& other) const
 	{
-		x = size.x;
-		y = size.y;
+		return { width + other.width, height + other.height };
+	}
+
+	Size Size::operator-(const Size& other) const
+	{
+		return { width - other.width, height - other.height };
+	}
+
+	Size Size::operator*(const Size& other) const
+	{
+		return { width * other.width, height * other.height };
+	}
+
+	Size Size::operator/(const Size& other) const
+	{
+		return { width / other.width, height / other.height };
+	}
+
+	Size Size::operator+=(const Size& other)
+	{
+		this->width += other.width;
+		this->height += other.height;
+		return *this;
+	}
+
+	Size Size::operator-=(const Size& other)
+	{
+		this->width -= other.width;
+		this->height -= other.height;
+		return *this;
+	}
+
+	Size Size::operator*=(const Size& other)
+	{
+		this->width *= other.width;
+		this->height *= other.height;
+		return *this;
+	}
+
+	Size Size::operator/=(const Size& other)
+	{
+		this->width /= other.width;
+		this->height /= other.height;
+		return *this;
+	}
+
+	Size Size::operator=(const Size& other)
+	{
+		this->width = other.width;
+		this->height = other.height;
+		return *this;
+	}
+
+	Size Size::operator=(const Vector2& other)
+	{
+		this->width = other.x;
+		this->height = other.y;
+		return *this;
+	}
+
+	Size Size::operator=(const Vector3& other)
+	{
+		this->width = other.x;
+		this->height = other.y;
+		return *this;
+	}
+
+	Size Size::operator=(const Vector4& other)
+	{
+		this->width = other.x;
+		this->height = other.y;
+		return *this;
+	}
+
+	Size Size::operator=(const Point& other)
+	{
+		this->width = other.x;
+		this->height = other.y;
+		return *this;
+	}
+
+	bool Size::operator==(const Size& other) const
+	{
+		return width == other.width && height == other.height;
+	}
+	
+	bool Size::operator==(const Vector2& other) const
+	{
+		return width == other.x && height == other.y;
 	}
 
 #pragma endregion

@@ -29,6 +29,7 @@ namespace Helios
 		Ref<ConstantBuffer<LightData>> lightBuffer;
 
 		Ref<Texture2D> whiteTexture;
+		Ref<Material> default_material;
 	};
 
 	RendererData rendererData;
@@ -40,6 +41,8 @@ namespace Helios
 		rendererData.whiteTexture = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
 		rendererData.whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+		rendererData.default_material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+		rendererData.default_material->texture = rendererData.whiteTexture;
 		return true;
 	}
 
@@ -47,7 +50,7 @@ namespace Helios
 	{
 	}
 
-	void Renderer::BeginScene(Matrix4x4 projection, Color ambient_light, entt::basic_view<entt::entity, entt::get_t<Components::Transform, Components::DirectionalLight>, entt::exclude_t<Components::DisabledObject>> directional_light_view)
+	void Renderer::BeginScene(Matrix4x4 projection, Color ambient_light, entt::basic_view<entt::entity, entt::get_t<TransformComponent, DirectionalLightComponent>, entt::exclude_t<DisabledObjectComponent>> directional_light_view)
 	{
 		RendererData::LightData light_data;
 		ZeroMemory(&light_data, sizeof(RendererData::LightData));
@@ -62,10 +65,10 @@ namespace Helios
 				break;
 			}
 
-			auto [transform, light] = directional_light_view.get<Components::Transform, Components::DirectionalLight>(entity);
+			auto [transform, light] = directional_light_view.get<TransformComponent, DirectionalLightComponent>(entity);
 
 			light_data.directionalLights[light_data.directional_light_count] = {
-				transform.forward(),
+				transform.Forward(),
 				light.intensity,
 				light.color,
 			};
@@ -87,7 +90,7 @@ namespace Helios
 	{
 	}
 
-	void Renderer::DrawMesh(uint32_t entityId, Components::Transform& transform, Components::MeshRenderer& meshRenderer)
+	void Renderer::DrawMesh(uint32_t entityId, Matrix4x4 worldMatrix, MeshRendererComponent& meshRenderer)
 	{
 		static Ref<Shader> shader = CreateRef<Shader>(Shader("Standard", {
 			{ "Position", Shader::DataType::Float3 },
@@ -99,12 +102,10 @@ namespace Helios
 		meshRenderer.mesh->Bind();
 		if (meshRenderer.material->texture == nullptr)
 		{
-			rendererData.whiteTexture->Bind(0u);
+			rendererData.default_material->Bind(0u);
 		}
 		else
 			meshRenderer.material->Bind(0u);
-
-		const Matrix4x4 worldMatrix = transform.GetWorldProjectionColumn();
 
 		const RendererData::CBD cb =
 		{
@@ -112,7 +113,7 @@ namespace Helios
 			worldMatrix,
 			meshRenderer.material->Color,
 			(float)entityId, 0, 0, 0
-		};
+		}; 
 
 		rendererData.transformBuffer->SetData(cb);
 		rendererData.transformBuffer->BindVS(0);

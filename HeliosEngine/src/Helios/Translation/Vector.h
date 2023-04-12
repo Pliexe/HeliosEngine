@@ -9,6 +9,7 @@
 
 namespace Helios {
 
+	struct Matrix4x4;
 	struct HELIOS_API Vector2 {
 		float x;
 		float y;
@@ -185,12 +186,16 @@ namespace Helios {
 		static inline float Length(Vector3 a);
 		static inline float SqrLength(Vector3 a);
 		static inline float Distance(Vector3 a, Vector3 b);
+		static inline float DistanceSqrt(Vector3 a, Vector3 b);
 		static inline Vector3 Project(Vector3 a, Vector3 n);
 		static inline Vector3 Cross(Vector3 a, Vector3 b);
+		static inline Vector3 Lerp(Vector3 a, Vector3 b, float t);
+		static inline Vector3 MoveTowards(Vector3 a, Vector3 b, float maxDistanceDelta);
 
 		inline float length();
 		inline float sqrLength();
 		inline Vector3 normalize();
+		inline float magnitude();
 
 		bool operator==(const Vector3& other) const;
 		bool operator==(Vector3& other) const;
@@ -219,6 +224,12 @@ namespace Helios {
 			  
 		Vector3 operator*=(float n);
 		Vector3 operator/=(float n);
+		Vector3 operator*(const Vector3& b) const;
+		Vector3 operator/(const Vector3& scale) const;
+
+		std::string operator<<(const Vector3& other) const;
+		std::string operator<<(Vector3& other) const;
+		std::string to_string() const;
 
 		/*Vector3 operator=(Vector3& other);
 		Vector3 operator=(Vector3 other);*/
@@ -231,6 +242,7 @@ namespace Helios {
 		Vector4(float x, float y, float z, float w) : Vector3(x, y, z), w(w) { };
 		Vector4(const Vector2& other) : Vector3(other), w(0.0f) { };
 		Vector4(const Vector3& other) : Vector3(other), w(0.0f) { };
+		Vector4(const Vector3& other, float w) : Vector3(other), w(w) { };
 		Vector4(const Vector4& other) : Vector3(other.x, other.y, other.z), w(other.w) { };
 		
 		static inline Vector4 Zero() { return { 0.0f, 0.0f, 0.0f, 0.0f }; }
@@ -279,6 +291,7 @@ namespace Helios {
 
 		Vector4 operator=(Vector4& other);
 		Vector4 operator=(Vector4 other);
+		Vector4 operator*(const Matrix4x4& matrix4_x4) const;
 	};
 
 	struct HELIOS_API Point : public Vector2 {
@@ -289,24 +302,31 @@ namespace Helios {
 		Point(const Vector2& size) : Vector2(size) { }
 	};
 
-	class HELIOS_API Size : public Vector2
+	struct HELIOS_API Size
 	{
-	public:
-		Size(float width, float height) : Vector2(width, height) { }
-		Size() : Vector2() {}
-		Size(const Size& size) : Vector2(size) { }
-		Size(const Vector2& size) : Vector2(size) { }
+		uint32_t width;
+		uint32_t height;
 
-		Vector2 normalize() = delete;
-		float length() = delete;
+		Size(uint32_t width, uint32_t height) : width(width), height(height) { }
+		Size() : width(0u), height(0u) {}
+		Size(const Size& size) = default;
+		Size(const Vector2& size) : width(size.x), height(size.y) { }
 
-		inline float width() const;
-		inline float height() const;
-
-		void setWidth(float width);
-		void setHeight(float height);
-		void setSize(float width, float height);
-		void setSize(const Size size);
+		Size operator+(const Size& other) const;
+		Size operator-(const Size& other) const;
+		Size operator*(const Size& other) const;
+		Size operator/(const Size& other) const;
+		Size operator+=(const Size& other);
+		Size operator-=(const Size& other);
+		Size operator*=(const Size& other);
+		Size operator/=(const Size& other);
+		Size operator=(const Size& other);
+		Size operator=(const Vector2& other);
+		Size operator=(const Vector3& other);
+		Size operator=(const Vector4& other);
+		Size operator=(const Point& other);
+		bool operator==(const Size& other) const;
+		bool operator==(const Vector2& other) const;
 
 		friend class Transform;
 	};

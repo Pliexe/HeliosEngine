@@ -21,8 +21,8 @@ namespace Helios {
 
 		static void Flush();
 		
-		//static void DrawCube(Components::Transform transform, Components::SpriteRenderer sprite);
-		static void DrawSprite(uint32_t entityId, Components::Transform transform, Components::SpriteRenderer sprite);
+		//static void DrawCube(TransformComponent transform, SpriteRendererComponent sprite);
+		static void DrawSprite(uint32_t entityId, Matrix4x4 worldMatrix, SpriteRendererComponent sprite);
 		/*static void DrawTriangle(Vector2 position);
 		static void DrawPolygon(int sides);*/
 	};

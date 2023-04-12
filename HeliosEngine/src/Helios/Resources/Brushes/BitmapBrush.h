@@ -13,7 +13,7 @@ namespace Helios {
 		std::shared_ptr<Bitmap> bitmap;
 		void Load();
 
-		//Transform2D* transform;
+		//Transform2DComponent* transform;
 	public:
 		BitmapBrush() = delete;
 		BitmapBrush(Bitmap& image);

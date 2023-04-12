@@ -40,6 +40,9 @@
 #include <dwrite.h>
 #include <wincodec.h>
 
+#include <json.hpp>
+using json = nlohmann::json;
+
 #include <wrl.h>
 #include <corecrt_math_defines.h>
 

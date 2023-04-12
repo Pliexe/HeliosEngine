@@ -172,7 +172,7 @@ namespace Helios {
 		HL_PROFILE_END();
 	}
 
-	void Renderer2D::DrawSprite(uint32_t entityId, Components::Transform transform, Components::SpriteRenderer sprite)
+	void Renderer2D::DrawSprite(uint32_t entityId, Matrix4x4 worldMatrix, SpriteRendererComponent sprite)
 	{
 		if ((s_Data.quadInstanceDataPtr - s_Data.quadInstanceData) > Renderer2DData::MaxQuads)
 			Flush();
@@ -183,11 +183,7 @@ namespace Helios {
 				128u,
 				{ sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
 				{
-					Matrix4x4::Transpose(
-						Matrix4x4::Scale(transform.scale) *
-						Matrix4x4::Rotation(transform.rotation) *
-						Matrix4x4::Translation(transform.position)
-					)
+					worldMatrix
 				},
 				entityId
 			};
@@ -202,23 +198,19 @@ namespace Helios {
 				s_Data.textureSlotIndex,
 				{ sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
 				{
-					Matrix4x4::Transpose(
-						Matrix4x4::Scale(transform.scale) *
-						Matrix4x4::Rotation(transform.rotation) *
-						Matrix4x4::Translation(transform.position)
-					)
+					worldMatrix
 				},
 				entityId
 			};
 			s_Data.textureSlotIndex++;
 		}
 
-		/*s_Data.quadInstanceDataPtr->transform = (Matrix4x4::Scale(transform.scale) * Matrix4x4::RotationColumn(transform.rotation) * Matrix4x4::Translation(transform.position)).matrix*/;
+		/*s_Data.quadInstanceDataPtr->transform = (Matrix4x4::Scale(transform.scale) * Matrix4x4::RotationColumn(transform.rotation) * Matrix4x4::TranslationRow(transform.position)).matrix*/;
 		//s_Data.quadInstanceDataPtr->color = sprite.color.c;
 		s_Data.quadInstanceDataPtr++;
 	}
 
-	// void Renderer2D::DrawCube(Components::Transform transform, Components::SpriteRenderer sprite)
+	// void Renderer2D::DrawCube(TransformComponent transform, SpriteRendererComponent sprite)
 	// {
 
 	// 	cubeMesh->BindVS();
@@ -237,8 +229,8 @@ namespace Helios {
 	// 		{
 	// 			Matrix4x4::Transpose(
 	// 				Matrix4x4::Scale(transform.scale) *
-	// 				Matrix4x4::Rotation(transform.rotation) *
-	// 				Matrix4x4::Translation(transform.position) *
+	// 				Matrix4x4::RotationRow(transform.rotation) *
+	// 				Matrix4x4::TranslationRow(transform.position) *
 	// 				projectionMatrix
 	// 			)
 	// 		}
@@ -265,7 +257,7 @@ namespace Helios {
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(GetLastError()), GetLastErrorAsString());
 	// }
 	
-	// void Renderer2D::DrawSprite(Components::Transform transform, Components::SpriteRenderer sprite)
+	// void Renderer2D::DrawSprite(TransformComponent transform, SpriteRendererComponent sprite)
 	// {
 	// 	Renderer2DData::quadVertexBuffer->BindVS();
 	// 	Renderer2DData::quadIndexBuffer->BindVS();
@@ -281,8 +273,8 @@ namespace Helios {
 	// 		{
 	// 			Matrix4x4::Transpose(
 	// 				Matrix4x4::Scale(transform.scale) *
-	// 				Matrix4x4::Rotation(transform.rotation) *
-	// 				Matrix4x4::Translation(transform.position) *
+	// 				Matrix4x4::RotationRow(transform.rotation) *
+	// 				Matrix4x4::TranslationRow(transform.position) *
 	// 				projectionMatrix
 					
 	// 			)
@@ -327,7 +319,7 @@ namespace Helios {
 	// 	Graphics::instance->m_deviceContext->RSSetViewports(1u, &vp);*/
 
 
-	// 	Graphics::instance->m_deviceContext->DrawIndexed((UINT)std::size(indices), 0u, 0u);
+	// 	Graphics::instance->m_deviceContext->DrawIndexed((UINT)std::Size(indices), 0u, 0u);
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(GetLastError()), GetLastErrorAsString());
 	// }
 
@@ -425,7 +417,7 @@ namespace Helios {
 	// 		{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	// 		{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 8u, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	// 	};
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateInputLayout(ied, (UINT)std::size(ied), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &pInputLayout)), "Failed to create input layout!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateInputLayout(ied, (UINT)std::Size(ied), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &pInputLayout)), "Failed to create input layout!");
 
 
 	// 	Graphics::instance->m_deviceContext->IASetInputLayout(pInputLayout.Get());
@@ -511,7 +503,7 @@ namespace Helios {
 	// 		{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	// 		{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 8u, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	// 	};
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateInputLayout(ied, (UINT)std::size(ied), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &pInputLayout)), "Failed to create input layout!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateInputLayout(ied, (UINT)std::Size(ied), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &pInputLayout)), "Failed to create input layout!");
 		
 
 	// 	Graphics::instance->m_deviceContext->IASetInputLayout(pInputLayout.Get());
@@ -531,7 +523,7 @@ namespace Helios {
 	// 	Graphics::instance->m_deviceContext->RSSetViewports(1u, &vp);
 
 
-	// 	Graphics::instance->m_deviceContext->Draw((UINT)std::size(vertices), 0u);
+	// 	Graphics::instance->m_deviceContext->Draw((UINT)std::Size(vertices), 0u);
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(GetLastError()), GetLastErrorAsString());		
 	// }
 }

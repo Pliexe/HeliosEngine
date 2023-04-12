@@ -49,6 +49,7 @@ namespace Helios
 
 		inline uint32_t GetWidth() const { return m_Width; }
 		inline uint32_t GetHeight() const { return m_Height; }
+        inline Size GetSize() { return Size(m_Width, m_Height); }
 		
         static Ref<Framebuffer> Create(uint32_t width, uint32_t hffeight);
 		static Ref<Framebuffer> Create(uint32_t width, uint32_t height, std::initializer_list<Format> bufferSpecifications);

@@ -12,8 +12,8 @@ namespace Helios
 	class HELIOS_API InputManager {
 	public:
 		static bool IsKeyPressed(int key);
-		static bool IsKeyPressedDown(int key);
-		static bool IsKeyPressedUp(int key);
+		static bool IsKeyDown(int key);
+		static bool IsKeyUp(int key);
 		static bool IsKeyToggled(int key);
 		static Point GetMousePosition();
 		static float GetMouseWheelDelta() { return s_MouseWheelDelta; }

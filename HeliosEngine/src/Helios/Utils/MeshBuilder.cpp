@@ -47,6 +47,16 @@ namespace Helios
 		m_Triangles.emplace_back(Triangle{ AddVertex(v0), AddVertex(v1), AddVertex(v2) });
 	}
 
+	std::vector<MeshVertex> MeshBuilder::GetVertices() const
+	{
+		return m_Vertices;
+	}
+
+	std::vector<MeshBuilder::Triangle> MeshBuilder::GetTriangles() const
+	{
+		return m_Triangles;
+	}
+
 	void MeshBuilder::Reserve(uint32_t vertexCount, uint32_t triangleCount)
 	{
 		m_Vertices.reserve(vertexCount);

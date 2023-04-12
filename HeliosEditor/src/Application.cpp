@@ -25,7 +25,7 @@
 #include <imgui_impl_win32.cpp>
 #include <imgui_impl_dx11.cpp>
 #include "Helios/Translation/Matrix.h"
-#include <Helios/Translation/Quanterion.h>
+#include <Helios/Translation/Quaternion.h>
 #include <sstream>
 #include <Helios/Graphics/Framebuffer.h>
 
@@ -39,6 +39,11 @@
 #include "Helios/Graphics/GizmosRenderer.h"
 
 #include "Graphics/StackedGraph.h"
+#include "Helios/Scene/EditorCamera.h"
+
+#include "DirectXMath.h"
+
+
 
 static std::filesystem::path currentScene;
 StartupConfig startupConfig;
@@ -47,12 +52,11 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 using namespace Helios;
 
-static SceneCamera editorCamera({ { 0.0f, 0.0f, -5.0f } });
+static SceneCamera editorCamera_old({ { 0.0f, 0.0f, -5.0f } });
+static EditorCamera editorCamera;
 
 static Ref<Framebuffer> editorFrame;
 static Ref<Framebuffer> gameFrame;
-
-static Vector2 editorCameraRotation = { 0.0f, 0.0f };
 
 enum class EditorMode
 {
@@ -71,32 +75,6 @@ struct TransformVertex
 	Vector3 position;
 	Color color;
 };
-
-static const TransformVertex transformMoveVertices[] = {
-	{ {  0.0f, 1.0f,  0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-	{ {  0.2f, 0.8f,  0.2f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-	{ { -0.2f, 0.8f,  0.2f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-	{ {  0.2f, 0.8f, -0.2f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-	{ { -0.2f, 0.8f, -0.2f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-};
-
-static uint32_t transformMoveIndecies[] = {
-	0, 1, 2
-};
-
-static Ref<VertexBuffer> transformMoveVertexBuffer;
-static Ref<IndexBuffer> transformMoveIndexBuffer;
-static Ref<Shader> transformShader;
-
-void InitTransformBuffers()
-{
-	transformMoveVertexBuffer = VertexBuffer::Create(&transformMoveVertices, std::size(transformMoveVertices) * sizeof(TransformVertex), Helios::BufferUsage::Dynamic);
-	transformMoveIndexBuffer = IndexBuffer::Create((uint32_t*)&transformMoveIndecies, std::size(transformMoveIndecies));
-	transformShader = CreateRef<Shader>(Shader("Transform", {
-		{ "Position", Shader::DataType::Float3 },
-		{ "Color", Shader::DataType::Float4 },
-	}));
-}
 
 int ValidateInit() {
 
@@ -118,6 +96,8 @@ namespace Helios {
 		bool show_profiler_window = false;
 
 		bool show_gizmos = false;
+
+		GizmosRenderer::Tool current_tool = GizmosRenderer::Tool::None;
 
 		struct GraphVertices
 		{
@@ -225,6 +205,7 @@ namespace Helios {
 			colors[ImGuiCol_TitleBgActive] = { 0.212f, 0.208f, 0.220f, 1.0f };
 			colors[ImGuiCol_TitleBgCollapsed] = { 0.212f, 0.208f, 0.220f, 1.0f };
 			
+
 		}
 
 		// Inherited via Application
@@ -266,10 +247,9 @@ namespace Helios {
 			});
 
 			profilerGraph = CreateRef<StackedGraph>();
-
-
-			InitTransformBuffers();
-
+			
+			//DirectX::XMMatrixTranslation()
+			//DirectX::XMMatrixMultiply
 			// Setup Platform/Renderer backends
 			ImGui_ImplWin32_Init(m_hWnd);
 			ImGui_ImplDX11_Init(graphics->m_device, graphics->m_deviceContext);
@@ -427,6 +407,15 @@ namespace Helios {
 					ImGui::End();
 				}
 			}
+
+			auto i = std::begin(panels);
+
+			while (i != std::end(panels)) {
+				if ((*i)->destroy_window)
+					i = panels.erase(i);
+				else
+					++i;
+			}
 			
 			AssetRegistry::ShowRegistryWindow();
 			AssetRegistry::ShowTextureSelect();
@@ -523,7 +512,7 @@ namespace Helios {
 					ImGui::Text("Mouse X: %f, Y: %f", x, y);
 
 					if (x >= 0 && y >= 0 && x < editorFrame->GetWidth() && y < editorFrame->GetHeight()) {
-						ImGui::Text("ID: %f", editorFrame->GetPixel(1u, x, y).r);
+						ImGui::Text("ID: %f", std::round(editorFrame->GetPixel(1u, x, y).r));
 						Color color = editorFrame->GetPixel(0u, x, y);
 						ImGui::Text("R: %f, G: %f, B: %f, A: %f", color.r, color.g, color.b, color.a);
 					}
@@ -531,6 +520,8 @@ namespace Helios {
 						ImGui::Text("ID: -");
 						ImGui::Text("R: -, G: -, B: -, A: -");
 					}
+
+					ImGui::Text("Mouse to World: %s", editorCamera_old.ScreenToWorldCoordinates(x, y, 5.0f).to_string().c_str());
 					
 				
 				ImGui::End();
@@ -543,10 +534,32 @@ namespace Helios {
 					if(entity.IsNotNull())
 					{
 						GameObject gm = {entity,SceneRegistry::get_current_scene()};
-						if(gm.HasComponent<Components::MeshRenderer>())
+						if(gm.HasComponent<MeshRendererComponent>())
 						{
-							Ref<Mesh> mesh = gm.GetComponent<Components::MeshRenderer>().mesh;
+							Ref<Mesh> mesh = gm.GetComponent<MeshRendererComponent>().mesh;
 							ImGui::Begin("Mesh Stats");
+							auto transform = Transform(gm);
+							auto camTrans = editorCamera_old.GetTransform();
+
+							auto dir = (transform.GetWorldPosition() - camTrans.Position).normalize();
+							auto cameraForward = camTrans.Forward();
+
+							auto trans = gm.GetComponent<TransformComponent>();
+
+							auto proj = editorCamera_old.GetViewProjection();
+
+							float alpha = std::acos(Vector3::Dot(cameraForward, dir)) / (cameraForward.magnitude() * dir.magnitude());
+							float C = Vector3::Distance(transform.GetWorldPosition(), camTrans.Position);
+
+							float A = C * std::sin(alpha);
+							float B = std::sqrt(std::pow(C, 2.0f) - std::pow(A, 2.0f));
+								
+							//float angle = std::acos(Vector3::Dot(camTrans.Position, trans.Position)) / (camTrans.Position.magnitude() * trans.Position.magnitude());
+
+							ImGui::Text("Angle: %f", alpha);
+							ImGui::Text("C: %f, B: %f, A: %f", C, B, A);
+							ImGui::Text("Direction: %f %f %f", dir.x, dir.y, dir.z);
+							ImGui::Text("Forward: %f %f %f", cameraForward.x, cameraForward.y, cameraForward.z);
 
 							uint32_t indeciesCount = mesh->getIndexCount();
 
@@ -562,50 +575,174 @@ namespace Helios {
 
 				
 
-				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowFocused())
-				//if (Helios::InputManager::IsKeyPressed(HL_KEY_MOUSE_LEFT) && ImGui::IsWindowFocused())
+				//if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowFocused())
+				////if (Helios::InputManager::IsKeyPressed(HL_KEY_MOUSE_LEFT) && ImGui::IsWindowFocused())
+				//{
+				//	// Check if in bounds
+				//	if (x >= 0 && y >= 0 && x < editorFrame->GetWidth() && y < editorFrame->GetHeight())
+				//	{
+				//		Color color = editorFrame->GetPixel(0u, x, y);
+				//		Color entId = editorFrame->GetPixel(1u, x, y);
+
+				//		Application::ShowMessage("Pixel Clicked:",
+				//			"X: " + std::to_string(x)		+
+				//			" Y: " + std::to_string(y)			+ "\n"
+				//			"ID: " + std::to_string(entId.r)	+ "\n" +
+				//			"R: " + std::to_string(color.r)		+
+				//			" G: " + std::to_string(color.g)	+
+				//			" B: " + std::to_string(color.b)	+
+				//			" A: " + std::to_string(color.a)
+				//		);
+
+				//		if (entId.r > -1)
+				//		{
+				//			entt::entity id = (entt::entity)((uint32_t)entId.r);
+
+				//			if(SceneRegistry::get_current_scene()->m_components.valid(id))
+				//				InspectorPanel::GetInstance() << GameObject { (entt::entity)id, SceneRegistry::get_current_scene().get() };
+				//		}
+				//	}
+				//}
+
+				static bool pressed = false;
+				static ImVec2 origin;
+				static TransformComponent originTransform;
+				static TransformComponent originWorldTransform;
+				static GameObject originEntity;
+
+				if (Helios::InputManager::IsKeyPressed(HL_KEY_MOUSE_LEFT) && ImGui::IsWindowHovered())
+					//if (Helios::InputManager::IsKeyPressed(HL_KEY_MOUSE_LEFT) && ImGui::IsWindowFocused())
 				{
 					// Check if in bounds
-					if (x >= 0 && y >= 0 && x < editorFrame->GetWidth() && y < editorFrame->GetHeight())
+					if (current_tool == GizmosRenderer::Tool::None && x >= 0 && y >= 0 && x < editorFrame->GetWidth() && y < editorFrame->GetHeight())
 					{
+
 						Color color = editorFrame->GetPixel(0u, x, y);
 						Color entId = editorFrame->GetPixel(1u, x, y);
+						int64_t id = std::round(entId.r);
 
-						Application::ShowMessage("Pixel Clicked:",
-							"X: " + std::to_string(x)		+
-							" Y: " + std::to_string(y)			+ "\n"
-							"ID: " + std::to_string(entId.r)	+ "\n" +
-							"R: " + std::to_string(color.r)		+
-							" G: " + std::to_string(color.g)	+
-							" B: " + std::to_string(color.b)	+
+						/*Application::ShowMessage("Pixel Clicked:",
+							"X: " + std::to_string(x) +
+							" Y: " + std::to_string(y) + "\n"
+							"ID: " + std::to_string(entId.r) + "\n" +
+							"R: " + std::to_string(color.r) +
+							" G: " + std::to_string(color.g) +
+							" B: " + std::to_string(color.b) +
 							" A: " + std::to_string(color.a)
-						);
+						);*/
 
-						if (entId.r > -1)
+						GameObject gm = SceneRegistry::GetPrimaryCamera();
+						auto [trans, cam] = gm.GetComponent<TransformComponent, CameraComponent>();
+
+						
+
+						/*auto vec = editorCamera_old.ScreenToWorldCoordinates(x, y, 5.0f, editorFrame->GetSize());
+						std::cout << "x: " << vec.x << ", y: " << vec.y << ", z: " << vec.z << std::endl;*/
+
+						if (id > -1)
 						{
-							entt::entity id = (entt::entity)((uint32_t)entId.r);
+							entt::entity entity = (entt::entity)id;
 
-							if(SceneRegistry::get_current_scene()->m_components.valid(id))
-								InspectorPanel::GetInstance() << GameObject { (entt::entity)id, SceneRegistry::get_current_scene().get() };
+							if (SceneRegistry::get_current_scene()->m_components.valid(entity))
+								InspectorPanel::GetInstance() << GameObject{ (entt::entity)entity, SceneRegistry::get_current_scene().get() };
+						} else if(id >= -13 || current_tool != GizmosRenderer::Tool::None)
+						{
+							if (inspector.GetType() == InspectorPanel::SelectedType::GameObject)
+							{
+								GameObject obj = std::any_cast<GameObject>(InspectorPanel::GetInstance().GetHandle());
+								//TransformComponent& transform = obj.GetComponent<TransformComponent>();
+								Transform transform = Transform(obj);
+								
+								if (!pressed)
+								{
+									origin = ImGui::GetMousePos();
+									originTransform = transform.GetTransformComponent();
+									originWorldTransform = transform.GetWorldTransformCache();
+									pressed = true;
+									current_tool = (GizmosRenderer::Tool)id;
+									originEntity = obj;
+								}
+							}
 						}
 					}
 				}
+				else { pressed = false; current_tool = GizmosRenderer::Tool::None; }
 				
+				if(current_tool != GizmosRenderer::Tool::None && originEntity.IsValid())
+				{
+					Transform transform(originEntity);
+					//TransformComponent& transform = originEntity.GetComponent<TransformComponent>();
+
+					switch (current_tool)
+					{
+					case GizmosRenderer::Tool::MoveX:
+						transform.SetLocalPosition(originTransform.Position - Vector3::right * ((origin.x - ImGui::GetMousePos().x) * Vector3::Distance(editorCamera_old.GetTransform().Position, originTransform.Position) * 0.01f));
+						break;
+					case GizmosRenderer::Tool::MoveXYZ:
+					{
+						GameObject gm = SceneRegistry::GetPrimaryCamera();
+						auto [trans, cam] = gm.GetComponent<TransformComponent, CameraComponent>();
+						
+						auto cameraForward = trans.Forward();
+						auto direction = (originWorldTransform.Position - trans.Position).normalize();
+
+						//auto trans = gm.GetComponent<TransformComponent>();
+
+						auto proj = editorCamera_old.GetViewProjection();
+
+						float alpha = std::acos(Vector3::Dot(cameraForward, direction)) / (cameraForward.magnitude() * direction.magnitude());
+						float C = Vector3::Distance(originWorldTransform.Position, trans.Position);
+
+						float A = C * std::sin(alpha);
+						float B = std::sqrt(std::pow(C, 2.0f) - std::pow(A, 2.0f));
+
+						ImVec2 mousePosition = ImGui::GetMousePos();
+						ImVec2 windowPosition = ImGui::GetWindowPos();
+						float x = mousePosition.x - windowPosition.x, y = mousePosition.y - windowPosition.y;
+						auto size = editorFrame->GetSize();
+						x = (x / size.width()) * 2.0f - 1.0f;
+						y = (y / size.height()) * -2.0f + 1.0f;
+						
+						auto projMatrix = Matrix4x4::Identity() * editorCamera_old.GetProjectionMatrix(editorCamera_old.GetCamera(), size);
+
+						Vector4 preresult = projMatrix * Vector4(x, y, 1.0f, 1.0f);
+						Vector3 result = Vector3(preresult.x, preresult.y, preresult.z) / preresult.w;
+						//result.z = B;
+						//result = result * cameraForward;
+
+						std::cout << "x: " << x << ", y: " << y << ", vec: " << result.to_string() << " | " << (result * B).to_string() << " | " << Vector3(result.x * B, result.y * B, result.z * B).to_string() << std::endl;
+
+						//editorCamera_old.ScreenToWorldCoordinates(x, y, 5.0f, editorFrame->GetSize());
+
+						//transform.SetLocalPosition(editorCamera_old.ScreenToWorldCoordinates(x, y, 5.0f, editorFrame->GetSize()));
+
+						/*transform.SetLocalPosition(originTransform.Position - (
+							(camTransform.Right() * (origin.x - ImGui::GetMousePos().x) * Vector3::Distance(editorCamera_old.GetTransform().Position, originTransform.Position)) +
+							(camTransform.RotationRow.up() * -(origin.y - ImGui::GetMousePos().y) * Vector3::Distance(editorCamera_old.GetTransform().Position, originTransform.Position))
+							) * 0.01f);*/
+						break;
+					}
+					default: break;
+					}
+
+					if (InputManager::IsKeyPressed(HL_KEY_ESCAPE)) { current_tool = GizmosRenderer::Tool::None; transform.GetTransformComponent() = originTransform; }
+
+				}
 
 				//static bool notf = true;
 
 				//if (!SceneRegistry::GetCurrentScene().lock()->IsPrimaryCameraSet()) {
 				//	if (notf) {
 				//		auto pos = ImGui::GetWindowPos();
-				//		auto size = ImGui::GetWindowSize();
+				//		auto Size = ImGui::GetWindowSize();
 				//		ImGui::SetNextWindowFocus();
 				//		ImGui::SetNextWindowBgAlpha(1.0f);
 				//		ImGui::SetWindowFontScale(2);
-				//		ImGui::SetNextWindowPos(ImVec2(pos.x + (size.x / 2.0f) - 200.0f, pos.y + (size.y / 2.0f) - 100.0f));
+				//		ImGui::SetNextWindowPos(ImVec2(pos.x + (Size.x / 2.0f) - 200.0f, pos.y + (Size.y / 2.0f) - 100.0f));
 				//		ImGui::BeginChild("MissingCameraText", ImVec2(400, 200), true);
 				//		//ImGui::Button("Test");
 				//		//ImGui::SetCursorPos(ImVec2(0, 0));
-				//		ImGui::Text("No Camera Present for rendering!");
+				//		ImGui::Text("No CameraComponent Present for rendering!");
 				//		if (ImGui::Button("Close")) {
 				//			notf = false;
 				//		}
@@ -634,9 +771,11 @@ namespace Helios {
 						auto difference = Vector2(origin.x, origin.y) - Vector2(current.x, current.y);
 						auto normalizedCordinates = -(Vector2(origin.y, origin.x) - Vector2(current.y, current.x)).normalize();
 
-						editorCamera.HandleControls(
+						editorCamera_old.HandleControls(
 							-(Vector2(origin.y, origin.x) - Vector2(current.y, current.x)).normalize()
 						);
+
+						editorCamera.HandleMovement(-(Vector2(origin.y, origin.x) - Vector2(current.y, current.x)).normalize());
 
 						SetCursorPos(origin.x, origin.y);
 					}
@@ -648,6 +787,7 @@ namespace Helios {
 				}
 
 				if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(ImGuiKey_R)) {
+					editorCamera_old.Reset();
 					editorCamera.Reset();
 				}
 				isEditorSceneActive = true;
@@ -667,6 +807,7 @@ namespace Helios {
 				auto currentViewportSize = gameFrame->GetSize();
 				if (viewportSize.x != currentViewportSize.x || viewportSize.y != currentViewportSize.y)
 				{
+					editorCamera.SetViewportSize(viewportSize.x,viewportSize.y);
 					gameFrame->Resize(viewportSize.x, viewportSize.y);
 				}
 				ImGui::Image(gameFrame->GetTextureID(0u), ImVec2(viewportSize));
@@ -817,13 +958,10 @@ namespace Helios {
 
 	#pragma region Rendering
 				SceneRegistry::OnEditorRender(editorCamera);
+				//SceneRegistry::OnEditorRender(editorCamera_old);
 	#pragma endregion
 
-				transformMoveVertexBuffer->Bind();
-				transformMoveIndexBuffer->Bind();
-				transformShader->Bind();
-
-				//Graphics::instance->m_deviceContext->DrawIndexed(std::size(transformMoveIndecies), 0u, 0u);
+				//Graphics::instance->m_deviceContext->DrawIndexed(std::Size(transformMoveIndecies), 0u, 0u);
 
 				editorFrame->Unbind();
 			}
@@ -843,7 +981,7 @@ namespace Helios {
 			{
 				graphics->m_deviceContext->OMSetRenderTargets(1, &graphics->m_mainRenderTarget, NULL);
 
-				SceneRegistry::OnEditorRender(editorCamera);
+				SceneRegistry::OnEditorRender(editorCamera_old);
 			}
 
 			graphics->EndFrame();
@@ -860,11 +998,27 @@ namespace Helios {
 				if (inspector.GetType() == InspectorPanel::SelectedType::GameObject)
 				{
 					GameObject obj = std::any_cast<GameObject>(InspectorPanel::GetInstance().GetHandle());
-					if (obj.HasComponent<Components::MeshRenderer>())
+					if (obj.HasComponent<MeshRendererComponent>())
 					{
-						GizmosRenderer::DrawMeshVertices(editorCamera, obj.GetComponent<Components::Transform>(), obj.GetComponent<Components::MeshRenderer>().mesh->GetVertices());
+						TransformComponent transform = Transform(obj).GetWorldTransformCache();
+						GizmosRenderer::DrawMeshVertices(editorCamera_old, transform, obj.GetComponent<MeshRendererComponent>().mesh->GetVertices());
 					}
 				}
+			}
+
+			GizmosRenderer::Flush();
+			editorFrame->ClearDepthStencil();
+
+			if (inspector.GetType() == InspectorPanel::SelectedType::GameObject)
+			{
+				GameObject obj = std::any_cast<GameObject>(InspectorPanel::GetInstance().GetHandle());
+				Transform transform = Transform(obj);
+				//GizmosRenderer::DrawTool(obj.GetComponent<TransformComponent>().GetRowTransform(), GizmosRenderer::ToolType::Move);
+
+				auto scale = 0.5f;
+				//auto scale = Vector3::Distance(transform.position, editorCamera_old.GetTransform().position) * 0.2f;
+
+				GizmosRenderer::DrawTool(transform.GetWorldTransformCache().GetModelMatrix() * Matrix4x4::Scale(scale), GizmosRenderer::ToolType::Move, current_tool);
 			}
 		}
 	};

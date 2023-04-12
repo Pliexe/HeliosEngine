@@ -55,7 +55,7 @@ namespace Helios
 
 	void DirectXFramebuffer::ClearBuffer(unsigned int bufferIndex, Color color)
 	{
-		//HL_ASSERT_EXCEPTION(bufferIndex < m_colorBuffers.size(), "Invalid buffer index!");
+		//HL_ASSERT_EXCEPTION(bufferIndex < m_colorBuffers.Size(), "Invalid buffer index!");
 		auto& test = m_colorBuffers[bufferIndex];
 		auto test2 = m_colorBuffers.size();
 		Graphics::instance->m_deviceContext->ClearRenderTargetView(m_renderTargetViews[bufferIndex], color.c);
@@ -69,7 +69,7 @@ namespace Helios
 
     void* DirectXFramebuffer::GetTextureID(unsigned int bufferIndex)
     {
-		//HL_ASSERT_EXCEPTION(bufferIndex < m_colorBuffers.size(), std::string("Invalid buffer index!") + " " + std::to_string(bufferIndex) + " < " + std::to_string(m_colorBuffers.size()));
+		//HL_ASSERT_EXCEPTION(bufferIndex < m_colorBuffers.Size(), std::string("Invalid buffer index!") + " " + std::to_string(bufferIndex) + " < " + std::to_string(m_colorBuffers.Size()));
 		auto test = m_colorBuffers[bufferIndex];
 		return m_colorBuffers[bufferIndex].shaderResourceView.Get();
     }
@@ -77,8 +77,8 @@ namespace Helios
 	Color DirectXFramebuffer::GetPixel(uint32_t attachment, uint32_t x, uint32_t y)
 	{
 		// Assert if out of bounds
-		HL_ASSERT_EXCEPTION((x < m_Width&& x >= 0), "Error while reading Pixel data! (X coordinate out of bounds!)");
-		HL_ASSERT_EXCEPTION((y < m_Height&& y >= 0), "Error while reading Pixel data! (Y coordinate out of bounds!)");
+		HL_ASSERT_EXCEPTION((x < m_Width), "Error while reading Pixel data! (X coordinate out of bounds!)");
+		HL_ASSERT_EXCEPTION((y < m_Height), "Error while reading Pixel data! (Y coordinate out of bounds!)");
 
 		// Copy the	render target to a staging texture so we can read it back from the CPU
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> stagingTexture;
@@ -115,15 +115,6 @@ namespace Helios
 		{
 		case Format::R32G32B32A32F:
 			color = *(Color*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(Color)));
-			//// Print out the resource
-			//for (int i = 0; i < m_Width * m_Height; i++)
-			//{
-			//	Color* color = (Color*)(((uint8_t*)mappedResource.pData) + (i * sizeof(Color)));
-			//	// print new line per row
-			//	if (i % m_Width == 0)
-			//		std::cout << std::endl;
-			//	std::cout << "(" << color->r << ", " << color->g << ", " << color->b << ", " << color->a << ") ";
-			//}
 			break;
 		case Format::R8B8G8A8_UNORM:
 			color = *(Color*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(Color)));
@@ -172,8 +163,6 @@ namespace Helios
     {
         return { (float)m_Width, (float)m_Height };
     }
-
-    
 
     void DirectXFramebuffer::Invalidate()
     {

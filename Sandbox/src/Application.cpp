@@ -42,7 +42,7 @@ public:
 
 			obj2.AddComponent(cs);
 
-			Camera* cam = (camObj.GetComponent<Camera>());
+			CameraComponent* cam = (camObj.GetComponent<CameraComponent>());
 
 			std::cout << "Is Null: " << (cam == nullptr) << std::endl;
 

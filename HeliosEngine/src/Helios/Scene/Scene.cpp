@@ -27,72 +27,80 @@ namespace Helios {
 	}
 
 	void Scene::UpdateChildTransforms(Ref<Scene> scene)
-	{
-		auto view = scene->m_components.view<Components::Transform, Components::Relationship>();
+	{  
+		/*auto view = scene->m_components.view<TransformComponent, RelationshipComponent>();
 		for (auto entity : view)
 		{
-			auto [transform, relationship] = view.get<Components::Transform, Components::Relationship>(entity);
+			auto [transform, relationship] = view.get<TransformComponent, RelationshipComponent>(entity);
 
 			if (relationship.HasParent()) continue;
 			
-			static std::function<void(entt::entity, Components::Relationship&, Components::Transform&, Components::Transform&)> UpdateTransform = [scene](entt::entity entity, Components::Relationship& relationship, Components::Transform& transform, Components::Transform& parentTransform)
+			static std::function<void(entt::entity, RelationshipComponent&, TransformComponent&, TransformComponent&)> UpdateTransform = [scene](entt::entity entity, RelationshipComponent& relationship, TransformComponent& transform, TransformComponent& parentTransform)
 			{
-				transform.position = transform.localPosition + parentTransform.localPosition;
-				transform.rotation = transform.localRotation * parentTransform.localRotation;
+				transform.position = transform.Position + parentTransform.Position;
+				transform.rotation = transform.RotationRow * parentTransform.RotationRow;
 				transform.scale = {
-					transform.localScale.x * parentTransform.localScale.x,
-					transform.localScale.y * parentTransform.localScale.y,
-					transform.localScale.z * parentTransform.localScale.z
+					transform.Scale.x * parentTransform.Scale.x,
+					transform.Scale.y * parentTransform.Scale.y,
+					transform.Scale.z * parentTransform.Scale.z
 				};
 
 				if (relationship.first_child != entt::null)
 				{
-					auto [childTransform, childRelationship] = scene->m_components.get<Components::Transform, Components::Relationship>(relationship.first_child);
+					auto [childTransform, childRelationship] = scene->m_components.get<TransformComponent, RelationshipComponent>(relationship.first_child);
 					UpdateTransform(relationship.first_child, childRelationship, childTransform, transform);
 				}
-				if(relationship.next_child != entt::null)
+				if(relationship.next_sibling != entt::null)
 				{
-					auto [childTransform, childRelationship] = scene->m_components.get<Components::Transform, Components::Relationship>(relationship.next_child);
-					UpdateTransform(relationship.next_child, childRelationship, childTransform, transform);
+					auto [childTransform, childRelationship] = scene->m_components.get<TransformComponent, RelationshipComponent>(relationship.next_sibling);
+					UpdateTransform(relationship.next_sibling, childRelationship, childTransform, transform);
 				}
-				if(relationship.prev_child != entt::null)
+				if(relationship.prev_sibling != entt::null)
 				{
-					auto [childTransform, childRelationship] = scene->m_components.get<Components::Transform, Components::Relationship>(relationship.prev_child);
-					UpdateTransform(relationship.prev_child, childRelationship, childTransform, transform);
+					auto [childTransform, childRelationship] = scene->m_components.get<TransformComponent, RelationshipComponent>(relationship.prev_sibling);
+					UpdateTransform(relationship.prev_sibling, childRelationship, childTransform, transform);
 				}
-			};
+			}; 
 
 			if (relationship.first_child != entt::null)
 			{
-				auto [childTransform, childRelationship] = scene->m_components.get<Components::Transform, Components::Relationship>(relationship.first_child);
+				auto [childTransform, childRelationship] = scene->m_components.get<TransformComponent, RelationshipComponent>(relationship.first_child);
 				UpdateTransform(relationship.first_child, childRelationship, childTransform, transform);
 			}
-		}
+		}*/
+	}
+
+	void Scene::RenderScene(EditorCamera& camera)
+	{
+		Matrix4x4 projection = camera.GetViewProjection();
+		RenderScene(projection);
+		RenderGizmos(projection);
 	}
 
 	void Scene::RenderScene(SceneCamera camera)
 	{
-		Matrix4x4 projection = camera.GetProjection();
+		Matrix4x4 projection = camera.GetViewProjection();
 		RenderScene(projection);
 		RenderGizmos(projection);
 	}
 	void Scene::RenderScene(Matrix4x4 projection)
 	{
-		auto directional_light_view = m_components.view<Components::Transform, Components::DirectionalLight>(entt::exclude<Components::DisabledObject>);
+		m_worldTransformCache.clear();
+		auto directional_light_view = m_components.view<TransformComponent, DirectionalLightComponent>(entt::exclude<DisabledObjectComponent>);
 
 		HL_PROFILE_BEGIN("Scene - Renderer2D");
 		Renderer2D::BeginScene(projection);
 		{
-			auto view = m_components.view<Components::Transform, Components::Relationship, Components::SpriteRenderer>(entt::exclude<Components::DisabledObject>);
+			auto view = m_components.view<TransformComponent, RelationshipComponent, SpriteRendererComponent>(entt::exclude<DisabledObjectComponent>);
 			for (auto entity : view)
 			{
-				auto [transform, spriteRenderer] = view.get<Components::Transform, Components::SpriteRenderer>(entity);
+				auto [transform, spriteRenderer] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
 			retry:
 				try {
-					Renderer2D::DrawSprite((uint32_t)entity, transform, spriteRenderer);
+					Renderer2D::DrawSprite((uint32_t)entity, Transform(entity, this).GetWorldTransformCache().GetModelMatrix(), spriteRenderer);
 				}
-				catch (HeliosExceptin ex) {
+				catch (HeliosException ex) {
 					switch (ex.what())
 					{
 					case IDRETRY: goto retry;
@@ -108,16 +116,17 @@ namespace Helios {
 		Renderer::BeginScene(projection, { 1.0f, 1.0f, 1.0f, 1.0f }, directional_light_view);
 
 		{
-			auto view = m_components.view<Components::Transform, Components::Relationship, Components::MeshRenderer>(entt::exclude<Components::DisabledObject>);
+			auto view = m_components.view<TransformComponent, RelationshipComponent, MeshRendererComponent>(entt::exclude<DisabledObjectComponent>);
 			for (auto entity : view)
 			{
-				auto [transform, meshRenderer] = view.get<Components::Transform, Components::MeshRenderer>(entity);
+				auto [transform, meshRenderer, relationship] = view.get<TransformComponent, MeshRendererComponent, RelationshipComponent>(entity);
 
 			retry4:
 				try {
-					Renderer::DrawMesh((uint32_t)entity, transform, meshRenderer);
+					//Renderer::DrawMesh((uint32_t)entity, transform.GetWorldMatrixLight(relationship, m_components), meshRenderer);
+					Renderer::DrawMesh((uint32_t)entity, Transform(entity, this).GetWorldTransformCache().GetModelMatrix(), meshRenderer);
 				}
-				catch (HeliosExceptin ex) {
+				catch (HeliosException ex) {
 					switch (ex.what())
 					{
 					case IDRETRY: goto retry4;
@@ -158,36 +167,36 @@ namespace Helios {
 	GameObject Scene::InstantiateObject(std::string name, Vector3 position)
 	{
 		GameObject obj(m_components.create(), this);
-		obj.AddComponent<Components::InfoComponent>(name);
-		obj.AddComponent<Components::Transform>(position);
-		obj.AddComponent<Components::Relationship>();
+		obj.AddComponent<InfoComponent>(name);
+		obj.AddComponent<TransformComponent>(position);
+		obj.AddComponent<RelationshipComponent>();
 		return obj;
 	}
 
 	GameObject Scene::InstantiateObject(std::string name, entt::entity& parent)
 	{
 		GameObject obj(m_components.create(), this);
-		obj.AddComponent<Components::InfoComponent>(name);
-		obj.AddComponent<Components::Transform>();
-		obj.AddComponent<Components::Relationship>(m_components, obj, parent);
+		obj.AddComponent<InfoComponent>(name);
+		obj.AddComponent<TransformComponent>();
+		obj.AddComponent<RelationshipComponent>(m_components, obj, parent);
 		return obj;
 	}
 
 	GameObject& Scene::CreateMainCamera(Vector3 position) {
 		GameObject gameObject = InstantiateObject("MainCamera", position);
-		gameObject.AddComponent<Components::Camera>().isPrimary = true;
+		gameObject.AddComponent<CameraComponent>().isPrimary = true;
 		return gameObject;
 	}
 
 	GameObject& Scene::CreateCamera(Vector3 position)
 	{
 		GameObject gameObject = InstantiateObject("MainCamera", position);
-		gameObject.AddComponent<Components::Camera>();
+		gameObject.AddComponent<CameraComponent>();
 		return gameObject;
 	}
 
 	Vector2 DeserializeVector(std::string prefixX, std::string prefixY, YAML::Node in);
-	void SerializeTransform(YAML::Emitter& out, Components::Transform2D& transform);
+	void SerializeTransform(YAML::Emitter& out, Transform2DComponent& transform);
 
 	void SerializeObject(YAML::Emitter& out, GameObject& o)
 	{
@@ -195,7 +204,7 @@ namespace Helios {
 
 		//out << YAML::Key << "Name" << YAML::Value << o.m_name;
 
-		SerializeTransform(out, o.GetComponent<Components::Transform2D>());
+		SerializeTransform(out, o.GetComponent<Transform2DComponent>());
 
 		out << YAML::EndMap;
 	}
@@ -207,7 +216,7 @@ namespace Helios {
 			auto gm = scene.lock()->InstantiateObject(in["Name"].as<std::string>().c_str());
 			if (in["Transform"].IsMap())
 			{
-				auto transform = gm.GetComponent<Components::Transform2D>();
+				auto transform = gm.GetComponent<Transform2DComponent>();
 				transform.position = DeserializeVector("Position_X", "Position_Y", in["Transform"]);
 				transform.size = DeserializeVector("Size_Width", "Size_Height", in["Transform"]);
 			}
@@ -220,7 +229,7 @@ namespace Helios {
 		m_components.clear();
 	}
 
-	void SerializeTransform(YAML::Emitter& out, Helios::Components::Transform2D& transform)
+	void SerializeTransform(YAML::Emitter& out, Helios::Transform2DComponent& transform)
 	{
 		out << YAML::Key << "Transform" << YAML::BeginMap;
 

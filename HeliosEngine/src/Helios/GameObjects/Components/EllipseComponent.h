@@ -22,10 +22,10 @@ namespace Helios {
 				{
 					auto brush = dynamic_cast<BitmapBrush*>(m_brush.get());
 					if (brush) {
-						auto size = brush->getSize();
+						auto Size = brush->getSize();
 						(*brush)->SetTransform(
-							D2D1::Matrix3x2F::Scale(D2D1::SizeF((pos.w - pos.x) / size.width(), (pos.h - pos.y) / size.height())) *
-							D2D1::Matrix3x2F::Translation(D2D1::SizeF(pos.x, pos.y))
+							D2D1::Matrix3x2F::Scale(D2D1::SizeF((pos.w - pos.x) / Size.width(), (pos.h - pos.y) / Size.height())) *
+							D2D1::Matrix3x2F::TranslationRow(D2D1::SizeF(pos.x, pos.y))
 						);
 					}
 				}

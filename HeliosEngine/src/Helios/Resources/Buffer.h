@@ -36,8 +36,8 @@ namespace Helios {
 		static Ref<ConstantBuffer> Create();
 		static Ref<ConstantBuffer> Create(T data);
 
-		/*static Ref<ConstantBuffer> Create(uint32_t size, BufferUsage usage);
-		static Ref<ConstantBuffer> Create(const void* data, uint32_t size, BufferUsage usage);*/
+		/*static Ref<ConstantBuffer> Create(uint32_t Size, BufferUsage usage);
+		static Ref<ConstantBuffer> Create(const void* data, uint32_t Size, BufferUsage usage);*/
 	};
 
 
@@ -57,7 +57,7 @@ namespace Helios {
 		template <typename T>
 		static Ref<VertexBuffer> Create(std::initializer_list<T> data, BufferUsage usage = BufferUsage::Default)
 		{
-			auto x = Create(data.begin(), data.size(), usage);
+			auto x = Create(data.begin(), data.Size(), usage);
 			x->m_Stride = sizeof(T);
 			return x;
 		}

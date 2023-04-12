@@ -17,6 +17,7 @@ struct VSIn
 
 struct VSOut
 {
+    float3 viewPos : Position;
     float4 color : Color;
     float2 texCoord : TexCoord;
     float entityId : EntityId;
@@ -28,6 +29,7 @@ struct VSOut
 VSOut main(VSIn vin)
 {
     VSOut vout;
+    vout.viewPos = (float3) mul(float4(vin.position, 1.0f), worldProjection);
     vout.position = mul(float4(vin.position, 1.0f), worldViewPortProjection);
     vout.texCoord =  vin.texCoord;
     vout.color = color;

@@ -101,7 +101,7 @@ namespace Helios
 		return sphereMesh;
 	}
 
-	Ref<Mesh> Mesh::GetDynamicSphereMesh(uint32_t segments)
+	MeshBuilder Mesh::CreateSphereMesh(uint32_t segments)
 	{
 		MeshBuilder builder(segments * segments, segments * segments * 6);
 
@@ -149,8 +149,13 @@ namespace Helios
 			builder.AddQuad(j + 2, (segments - 1) * inner_segments + j + 2, (segments - 1) * inner_segments + j + 1, j + 1);
 		}
 		builder.AddTriangle(vbottom, (segments - 1) * inner_segments + inner_segments + 1, inner_segments + 1);
-		
-		return Mesh::Create("Sphere_" + std::to_string(segments), builder);
+
+		return builder;
+	}
+
+	Ref<Mesh> Mesh::GetDynamicSphereMesh(uint32_t segments)
+	{		
+		return Mesh::Create("Sphere_" + std::to_string(segments), CreateSphereMesh(segments));
 	}
 
 	Ref<Mesh> Mesh::GetDynamicConeMesh(uint32_t segments)
@@ -277,6 +282,45 @@ namespace Helios
 		{
 			s_Meshes.erase(name);
 		}
+	}
+
+	MeshBuilder Mesh::CreateGizmosArrow(uint32_t segments)
+	{
+		MeshBuilder arrowBuilder;
+		
+		const float arrowHeadHeight = 0.2f;
+		const float arrowHeadRadius = 0.1f;
+		const float arrowBodyHeight = 1.0f - arrowHeadHeight;
+		const float arrowBodyRadius = 0.03f;
+
+		auto arrowBottom = arrowBuilder.AddVertex({ Vector3(0.0f, 0.0f, 0.0f) });
+		auto arrowHead = arrowBuilder.AddVertex({ Vector3(0.0f,  1.0f, 0.0f) });
+
+		for (int i = 0; i < segments; i++)
+		{
+			float angle = (float)i / (float)segments * 2.0f * PI;
+
+			auto arrowHeadBottom = arrowBuilder.AddVertex({ Vector3(arrowHeadRadius * cos(angle), arrowBodyHeight, arrowHeadRadius * sin(angle)) });
+			auto arrowBodyTop = arrowBuilder.AddVertex({ Vector3(arrowBodyRadius * cos(angle), arrowBodyHeight, arrowBodyRadius * sin(angle)) });
+			auto arrowBodyBottom = arrowBuilder.AddVertex({ Vector3(arrowBodyRadius * cos(angle), 0.0f, arrowBodyRadius * sin(angle)) });
+
+			if (i == segments - 1)
+			{
+				arrowBuilder.AddTriangle(arrowHead, 2, arrowHeadBottom);
+				arrowBuilder.AddQuad(arrowHeadBottom, 2, 3, arrowBodyTop);
+				arrowBuilder.AddQuad(arrowBodyTop, 3, 4, arrowBodyBottom);
+				arrowBuilder.AddTriangle(arrowBottom, arrowBodyBottom, 4);
+			}
+			else
+			{
+				arrowBuilder.AddTriangle(arrowHead, arrowHeadBottom + 3, arrowHeadBottom);
+				arrowBuilder.AddQuad(arrowHeadBottom, arrowHeadBottom + 3, arrowBodyTop + 3, arrowBodyTop);
+				arrowBuilder.AddQuad(arrowBodyTop, arrowBodyTop + 3, arrowBodyBottom + 3, arrowBodyBottom);
+				arrowBuilder.AddTriangle(arrowBottom, arrowBodyBottom, arrowBodyBottom + 3);
+			}
+		}
+
+		return arrowBuilder;
 	}
 
 	void Mesh::Bind()

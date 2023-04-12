@@ -93,8 +93,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR;HL_PROFILE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include;$(SolutionDir)Json\src</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -123,8 +123,8 @@ xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDi
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR;HL_PROFILE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include;$(SolutionDir)Json\src</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -153,8 +153,8 @@ xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDi
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR;HL_PROFILE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include;$(SolutionDir)Json\src</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -183,8 +183,8 @@ xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDi
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);HELIOS_EDITOR;HL_PROFILE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)HeliosEngine\src;$(SolutionDir)ImGui\src;$(SolutionDir)Yaml\include;$(SolutionDir)ProjectManager\src;$(SolutionDir)HeliosEngine\vendor\entt\include;$(SolutionDir)Json\src</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -238,6 +238,7 @@ xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDi
   </ItemGroup>
   <ItemGroup>
     <None Include="HeliosEditor.licenseheader" />
+    <None Include="Shaders\Shader.dgsl" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\CubePixelShader.hlsl">
@@ -267,6 +268,12 @@ xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDi
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\GizmosLineVertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="Shaders\GizmosVertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>

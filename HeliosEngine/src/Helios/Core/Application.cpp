@@ -120,7 +120,7 @@ int Helios::Application::Run()
 
 #pragma region Create Window
 
-	// Calculate the size to set for the actual window since client area always shrinks. This is done by AdjustWindowRect which is calculated by the os
+	// Calculate the Size to set for the actual window since client area always shrinks. This is done by AdjustWindowRect which is calculated by the os
 	RECT rect = { 0, 0, WindowCordinates::width, WindowCordinates::height };
 	AdjustWindowRectEx(&rect, dwStyle, false, dwExStyle);
 

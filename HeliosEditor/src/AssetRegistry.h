@@ -31,7 +31,7 @@ namespace Helios
 						try {
 							s_Textures[file.string()] = Texture2D::Create(file.string());
 						}
-						catch (HeliosExceptin ex)
+						catch (HeliosException ex)
 						{
 							ex.what(false);
 						}

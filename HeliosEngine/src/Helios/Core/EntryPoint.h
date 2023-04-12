@@ -68,7 +68,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance /*hahaha 16bit 
 		auto app = Helios::CreateApplication();
 		result = app->Run();
 		delete app;
-	} catch(Helios::HeliosExceptin e) {
+	} catch(Helios::HeliosException e) {
 		e.what(false);
 		return -1;
 	}

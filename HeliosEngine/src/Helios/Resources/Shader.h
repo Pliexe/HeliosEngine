@@ -140,9 +140,11 @@ namespace Helios {
 				ss << "-----------------------\n";
 			}
 
-			HL_EXCEPTION(
-				FAILED(Graphics::instance->m_device->CreateInputLayout(ied, (UINT)index, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &m_inputLayout)),
-				"Failed to create input layout!\n" + vertexShaderPath + "\n" + ss.str()
+			HRESULT hr;
+
+			HL_EXCEPTION_HR(
+				FAILED(hr = Graphics::instance->m_device->CreateInputLayout(ied, (UINT)index, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &m_inputLayout)),
+				"Failed to create input layout!\n" + vertexShaderPath + "\n" + ss.str(), hr
 			);
 #else
 			HL_EXCEPTION(

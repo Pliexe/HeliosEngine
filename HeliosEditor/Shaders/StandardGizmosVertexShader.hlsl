@@ -1,21 +1,21 @@
 struct VSOut
 {
     float4 color : Color;
-    float data : Data;
+    float id : Id;
     float4 position : SV_Position;
 };
 
 cbuffer Cbuf
 {
     matrix viewMatrix;
-    matrix world;
 }
 
-VSOut main(float4 color : Color, float3 pos : Position, float data : Data)
+VSOut main(float3 position : Position, matrix transform : Transform, float4 color : Color, float id : Id)
 {
     VSOut vso;
-    vso.position = mul(float4(pos.x, pos.y, pos.z, 1.0f), mul(world, viewMatrix));
+    //vso.position = float4(position, 1.0f);
+    vso.position = mul(float4(position, 1.0f), mul(transform, viewMatrix));
     vso.color = color;
-    vso.data = data;
+    vso.id = id;
     return vso;
 }

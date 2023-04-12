@@ -12,12 +12,12 @@ bool Helios::InputManager::IsKeyPressed(int key)
     return GetAsyncKeyState(key);
 }
 
-bool Helios::InputManager::IsKeyPressedDown(int key)
+bool Helios::InputManager::IsKeyDown(int key)
 {
     return GetAsyncKeyState(key) < 0;
 }
 
-bool Helios::InputManager::IsKeyPressedUp(int key)
+bool Helios::InputManager::IsKeyUp(int key)
 {
     return GetAsyncKeyState(key) > 0;
 }

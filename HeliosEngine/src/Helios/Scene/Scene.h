@@ -7,18 +7,20 @@
 #include "pch.h"
 #include "Helios/Core/Base.h"
 #include "Components.h"
-#include "SceneCamera.h"
 
 namespace Helios {
 	class GameObject;
 	class SceneRegistry;
 	class Camera;
-
+	class SceneCamera;
+	class EditorCamera;
 	class HELIOS_API Scene
 	{
 	private:
 		std::string name;
 		std::filesystem::path path;
+
+		std::unordered_map<entt::entity, TransformComponent> m_worldTransformCache;
 
 		entt::registry m_components;
 
@@ -35,6 +37,7 @@ namespace Helios {
 		inline bool contains(entt::entity entity);
 		
 		inline void RenderScene(SceneCamera camera);
+		void RenderScene(EditorCamera& camera);
 		void RenderScene(Matrix4x4 projection);
 #ifdef HELIOS_EDITOR
 		void RenderGizmos(Matrix4x4 projection);
@@ -55,6 +58,7 @@ namespace Helios {
 		{
 			return m_components.view<T...>();
 		}
+
 
 		static void UpdateChildTransforms(Ref<Scene> scene);
 

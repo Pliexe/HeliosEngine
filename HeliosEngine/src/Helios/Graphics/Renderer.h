@@ -14,14 +14,14 @@ namespace Helios
 		static bool Init();
 		static void Shutdown();
 		static void BeginScene(Matrix4x4 projection,
-		                       Color ambient_light, entt::basic_view<entt::entity, entt::get_t<Components::Transform, Components::DirectionalLight>,
+		                       Color ambient_light, entt::basic_view<entt::entity, entt::get_t<TransformComponent, DirectionalLightComponent>,
 		                       entt::
-		                       exclude_t<Components::DisabledObject>> directional_light_view);
+		                       exclude_t<DisabledObjectComponent>> directional_light_view);
 
 		static void BeginScene(Matrix4x4 projection);
 		static void EndScene();
 
-		static void DrawMesh(uint32_t entityId, Components::Transform& transform, Components::MeshRenderer& meshRenderer);
+		static void DrawMesh(uint32_t entityId, Matrix4x4 worldMatrix, MeshRendererComponent& meshRenderer);
 
 	};
 }

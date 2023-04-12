@@ -12,24 +12,24 @@ namespace Helios
 	void GameObject::SetParent(GameObject& object)
 	{
 		//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Cannot reset Parent while Scene is unloaded!");
-		GetComponent<Components::Relationship>().SetParent(m_scene->m_components, m_entityHandle, object);
+		GetComponent<RelationshipComponent>().SetParent(m_scene->m_components, m_entityHandle, object);
 	}
 
 	void GameObject::SetParent(entt::entity& object)
 	{
 		//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Cannot reset Parent while Scene is unloaded!");
-		GetComponent<Components::Relationship>().SetParent(m_scene->m_components, m_entityHandle, object);
+		GetComponent<RelationshipComponent>().SetParent(m_scene->m_components, m_entityHandle, object);
 	}
 
 	void GameObject::ResetParent()
 	{
 		//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Cannot reset Parent while Scene is unloaded!");
-		GetComponent<Components::Relationship>().Reset(m_scene->m_components);
+		GetComponent<RelationshipComponent>().Reset(m_scene->m_components);
 	}
 
-	//Transform2D GameObject::relationship = Transform2D();
+	//Transform2DComponent GameObject::relationship = Transform2DComponent();
 
-	void GameObject::MakeGlobal() { AddComponent<Components::GlobalObject>(); }
+	void GameObject::MakeGlobal() { AddComponent<GlobalObjectComponent>(); }
 
 	void GameObject::Destroy()
 	{

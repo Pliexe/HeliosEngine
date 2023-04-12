@@ -4,7 +4,7 @@
 
 //Helios::LinearGradientBrush::LinearGradientBrush(const std::initializer_list<GradientStop> stops)
 //{
-//	D2D1_GRADIENT_STOP* gradientStops = new D2D1_GRADIENT_STOP[stops.size()];
+//	D2D1_GRADIENT_STOP* gradientStops = new D2D1_GRADIENT_STOP[stops.Size()];
 //	int i = 0;
 //	for (auto& stop : stops)
 //	{

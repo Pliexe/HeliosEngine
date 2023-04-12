@@ -3,6 +3,8 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
 #include "SceneRegistry.h"
+
+#include "EditorCamera.h"
 #include "Scene.h"
 #include "Helios/Core/Application.h"
 #include "Helios/Graphics/GizmosRenderer.h"
@@ -117,10 +119,10 @@ namespace Helios {
 	{
 		GameObject primaryCamera;
 
-		auto view = m_activeScene->GetComponents<Components::Camera>();
+		auto view = m_activeScene->GetComponents<CameraComponent>();
 		for (auto& entity : view)
 		{
-			if (view.get<Components::Camera>(entity).isPrimary)
+			if (view.get<CameraComponent>(entity).isPrimary)
 			{
 				primaryCamera = { entity, m_activeScene };
 				break;
@@ -147,17 +149,26 @@ namespace Helios {
 	void SceneRegistry::OnRuntimeRender()
 	{
 		HL_PROFILE_BEGIN("Scene Render");
-		//SceneCamera::GetProjection()
+		//SceneCamera::GetViewProjection()
 		auto cam = GetPrimaryCamera();
 		if (cam.IsNull()) return;
 
-		Matrix4x4 projection = SceneCamera::GetProjection(cam.GetComponent<Components::Transform, Components::Camera>());
+		auto camt = cam.GetComponent<CameraComponent>();
+
+		Matrix4x4 projection = SceneCamera::GetViewProjection(Transform(cam, cam.GetScene()).GetWorldTransformCache(), camt);
 
 		m_activeScene->RenderScene(projection);
 		HL_PROFILE_END();
 	}
 
 	void SceneRegistry::OnEditorRender(SceneCamera camera)
+	{
+		HL_PROFILE_BEGIN("Editor Scene Render");
+		m_activeScene->RenderScene(camera);
+		HL_PROFILE_END();
+	}
+
+	void SceneRegistry::OnEditorRender(EditorCamera camera)
 	{
 		HL_PROFILE_BEGIN("Editor Scene Render");
 		m_activeScene->RenderScene(camera);

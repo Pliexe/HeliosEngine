@@ -26,11 +26,12 @@ namespace Helios
         static Ref<Mesh> GetCylinderMesh();
         static Ref<Mesh> GetConeMesh();
         static Ref<Mesh> GetSphereMesh();
+        static MeshBuilder CreateSphereMesh(uint32_t segments = 16.0f);
         static Ref<Mesh> GetDynamicSphereMesh(uint32_t segments);
         static Ref<Mesh> GetDynamicConeMesh(uint32_t segments);
         static Ref<Mesh> GetDynamicCylinderMesh(uint32_t segments);
         static Ref<Mesh> GetTransformMoveMesh();
-		
+        static MeshBuilder CreateGizmosArrow(uint32_t segments = 16.0f);
 
         void Bind();
         inline uint32_t getVertexCount() const { return m_VertexBuffer->getCount<MeshVertex>(); }

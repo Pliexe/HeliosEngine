@@ -467,9 +467,9 @@ void ProjectExplorerWindow(std::filesystem::path assetsPath)
 				else if (selection.GetLowest() > 0 && ImGui::IsKeyReleased(ImGuiKey_LeftArrow)) {
 					selection.SelectPrevious();
 				}
-				else if (selection.GetLowest() + (folders.size() + files.size()) > 0 && ImGui::IsKeyReleased(ImGuiKey_UpArrow))
+				else if (selection.GetLowest() + (folders.Size() + files.Size()) > 0 && ImGui::IsKeyReleased(ImGuiKey_UpArrow))
 					selection.SelectUp(maxElements);
-				else if (selection.GetLowest() + (folders.size() + files.size()) > 0 && ImGui::IsKeyReleased(ImGuiKey_UpArrow))
+				else if (selection.GetLowest() + (folders.Size() + files.Size()) > 0 && ImGui::IsKeyReleased(ImGuiKey_UpArrow))
 					selection.SelectDown(maxElements);*/
 
 			}

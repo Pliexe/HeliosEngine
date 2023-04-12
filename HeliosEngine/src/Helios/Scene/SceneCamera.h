@@ -10,28 +10,48 @@ namespace Helios {
 	public:
 
 		SceneCamera() = default;
-		SceneCamera(Components::Transform transform, float fov, float nearClip, float farClip);
-		SceneCamera(Components::Transform transform, Components::Camera camera);
-		SceneCamera(Components::Camera);
+		SceneCamera(TransformComponent transform, float fov, float nearClip, float farClip);
+		SceneCamera(TransformComponent transform, CameraComponent camera);
+		SceneCamera(CameraComponent);
 		SceneCamera(const SceneCamera&) = default;
 
-		static inline Matrix4x4 GetProjection(const Components::Transform& transform, const Components::Camera& camera);
-		static inline Matrix4x4 GetProjection(std::tuple<const Components::Transform&, const Components::Camera&> camObj) { auto [transform, camera] = camObj; return GetProjection(transform, camera); }
-		inline Matrix4x4 GetProjection() const { return GetProjection(m_Transform, m_Camera); }
+		static Vector3 ScreenToWorldCoordinates(const Vector3& screenCoordinates, const TransformComponent& transform, const CameraComponent& camera, Size size =
+			Graphics::GetCurrentSize()) {
+			return ScreenToWorldCoordinates(screenCoordinates.x, screenCoordinates.y, screenCoordinates.z, transform, camera, size);
+		}
+
+		static Vector3 ScreenToWorldCoordinates(float x, float y, float depth, const TransformComponent& transform, const CameraComponent& camera, Size size =
+			                                   Graphics::GetCurrentSize());
+
+		Vector3 ScreenToWorldCoordinates(const Vector3& screenCoordinates, Size size =
+			Graphics::GetCurrentSize()) {
+			return ScreenToWorldCoordinates(screenCoordinates, m_Transform, m_Camera, size);
+		}
+
+		Vector3 ScreenToWorldCoordinates(float x, float y, float depth = 5.0f, Size size =
+			Graphics::GetCurrentSize()) {
+			return ScreenToWorldCoordinates(x, y, depth, m_Transform, m_Camera, size);
+		}
 		
-		Components::Camera& GetCamera() { return m_Camera; }
-		const Components::Camera& GetCamera() const { return m_Camera; }
+		static inline Matrix4x4 GetViewProjection(const TransformComponent& transform, const CameraComponent& camera, Size size = Graphics::GetCurrentSize());
+		static Matrix4x4 GetViewMatrix(const TransformComponent& transform);
+		static Matrix4x4 GetProjectionMatrix(const CameraComponent& camera, Size size);
+		static inline Matrix4x4 GetViewProjection(std::tuple<const TransformComponent&, const CameraComponent&> camObj) { auto [transform, camera] = camObj; return GetViewProjection(transform, camera); }
+		inline Matrix4x4 GetViewProjection() { return GetViewProjection(m_Transform, m_Camera); }
 		
-		Components::Transform& GetTransform() { return m_Transform; }
-		const Components::Transform& GetTransform() const { return m_Transform; }
+		CameraComponent& GetCamera() { return m_Camera; }
+		const CameraComponent& GetCamera() const { return m_Camera; }
+		
+		TransformComponent& GetTransform() { return m_Transform; }
+		const TransformComponent& GetTransform() const { return m_Transform; }
 
 		void HandleControls(const Vector2 direction);
 		inline void Reset();
 		
 	private:
 		
-		Components::Camera m_Camera;
-		Components::Transform m_Transform;
-		float sensitivity = 100.0f;
+		CameraComponent m_Camera;
+		TransformComponent m_Transform;
+		float sensitivity = 150.0f;
 	};
 }

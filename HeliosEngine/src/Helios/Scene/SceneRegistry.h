@@ -4,6 +4,7 @@
  */
 #pragma once
 
+#include "EditorCamera.h"
 #include "pch.h"
 #include "Scene.h"
 #include "GameObject.h"
@@ -27,6 +28,7 @@ namespace Helios {
 
 		static void OnRuntimeRender();
 		static void OnEditorRender(SceneCamera camera);
+		static void OnEditorRender(EditorCamera camera);
 		static inline Ref<Scene> get_current_scene() { return m_activeScene; }
 		static Ref<Scene> create_temporary_scene();
 
@@ -68,7 +70,7 @@ namespace Helios {
 
 	//	friend class Application;
 	//	friend class GameObject;
-	//	friend class Transform;
+	//	friend class TransformComponent;
 
 	//	friend class GameEngine;
 
