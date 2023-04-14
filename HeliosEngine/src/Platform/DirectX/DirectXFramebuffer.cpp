@@ -161,7 +161,7 @@ namespace Helios
 
     Size DirectXFramebuffer::GetSize() const
     {
-        return { (float)m_Width, (float)m_Height };
+        return { m_Width, m_Height };
     }
 
     void DirectXFramebuffer::Invalidate()
@@ -262,7 +262,7 @@ namespace Helios
 
     void DirectXFramebuffer::Bind()
     {
-        Graphics::s_currentSize = { (float)m_Width, (float)m_Height };
+        Graphics::s_currentSize = { m_Width, m_Height };
 		Graphics::instance->m_deviceContext->OMSetRenderTargets(m_colorBuffers.size(), m_renderTargetViews.data(), m_depthStencilBuffer.depthStencilView.Get());
 
 		if (m_depthStencilBuffer.depthStencilState)

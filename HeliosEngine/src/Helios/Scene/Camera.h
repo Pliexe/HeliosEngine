@@ -34,18 +34,23 @@ namespace Helios
         const Matrix4x4& GetProjectionMatrix() const;
 
         Vector3 ScreenToWorldPoint(const Vector3& screenPoint, const Matrix4x4& viewMatrix) const;
-        Vector3 ScreenToWorldPoint(const Vector2& screenPoint, float depth, const Matrix4x4& viewMatrix) const;
-        Vector3 ScreenToWorldPoint(float x, float y, float depth, const Matrix4x4& viewMatrix) const;
+        Vector3 ScreenToWorldPoint(const Vector2& screenPoint, float z, const Matrix4x4& viewMatrix) const;
+        Vector3 ScreenToWorldPoint(float x, float y, float z, const Matrix4x4& viewMatrix) const;
 
         void InvalidateProjection();
 
         PerspectiveData GetPerspective() const;
         OrthographicData GetOrthographic() const;
 
+        float GetNearClip() { return m_NearClip; }
+        float GetFarClip() { return m_FarClip; }
+        float GetSize() { return m_Size; }
+        float GetFov() { return m_Fov; }
+        Type GetType() { return m_Type; }
+
     protected:
         Matrix4x4 m_ProjectionMatrix = Matrix4x4::Identity();
         Size m_ViewportSize;
-        float m_AspectRatio = 0.0f;
         float m_NearClip = 0.1f;
         float m_FarClip = 1000.0f;
         float m_Size = 10.0f;

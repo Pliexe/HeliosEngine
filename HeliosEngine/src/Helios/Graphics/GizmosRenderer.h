@@ -10,6 +10,7 @@
 
 namespace Helios
 {
+	class EditorCamera;
 	class HELIOS_API GizmosRenderer
 	{
 	private:
@@ -41,15 +42,17 @@ namespace Helios
 			Rotate
 		};
 
+		~GizmosRenderer();
+
 		static bool Init();
 		static void Begin(Matrix4x4 projection);
 		static void End();
 		static void RenderVertices();
 		static void Flush();
-		static void DrawLine(Vector3 a, Vector3 b, Color color);
+		static void DrawLine(Vector3 a, Vector3 b, float width = 0.5f, Color color = Color::White, int64_t id = -1, int32_t mode = -1);
 		static void DrawQuad(SceneCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, float
 		                     data);
-		static void DrawMeshVertices(SceneCamera camera, TransformComponent& transform, std::vector<MeshVertex>& vertices);
+		static void DrawMeshVertices(EditorCamera camera, TransformComponent& transform, std::vector<MeshVertex>& vertices);
 
 		static void DrawTool(Matrix4x4 transform, ToolType type, Tool operation = Tool::None);
 

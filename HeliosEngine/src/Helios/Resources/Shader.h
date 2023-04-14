@@ -50,13 +50,34 @@ namespace Helios {
 			InputClassification inputClassification = InputClassification::PerVertex;
 		};
 
+		enum class Topology
+		{
+			TriangleList = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+			LineList = D3D11_PRIMITIVE_TOPOLOGY_LINELIST
+		};
+
 		Shader() = delete;
 		
 		//Shader(std::string filepath, const std::initializer_list<ShaderElement> elements)
 		template <std::size_t N>
-		Shader(std::string filepath, const ShaderElement(&elements)[N])
+		Shader(std::string filepath, const ShaderElement(&elements)[N], Topology topology = Topology::TriangleList) : m_topology(topology)
 		{
 			Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
+
+			std::string geometryShaderPath = (filepath + "GeometryShader.cso");
+
+			if(std::filesystem::exists(geometryShaderPath))
+			{
+				HL_EXCEPTION(
+					FAILED(D3DReadFileToBlob(std::wstring(geometryShaderPath.begin(), geometryShaderPath.end()).c_str(), &pBlob)),
+					"Failed to read geometry shader file!\n" + geometryShaderPath
+				);
+
+				HL_EXCEPTION(
+					FAILED(Graphics::instance->m_device->CreateGeometryShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_geometryShader)),
+					"Failed to create geometry shader!\n" + geometryShaderPath
+				);
+			}
 
 			std::string pixelShaderPath = (filepath + "PixelShader.cso");
 			
@@ -159,10 +180,13 @@ namespace Helios {
 
 
 		void Bind();
+		void Unbind();
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
+		Microsoft::WRL::ComPtr<ID3D11GeometryShader> m_geometryShader;
+		Topology m_topology;
 
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 	};

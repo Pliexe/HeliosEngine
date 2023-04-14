@@ -202,10 +202,10 @@ namespace Helios
 	{
 		Vector2	position = { 0.0f, 0.0f };
 		Vector2 rotation = { 0.0f, 0.0f };
-		Size		size = { 50.0f, 50.0f };
+		Vector2		size = { 50.0f, 50.0f };
 
 		Transform2DComponent() = default;
 		Transform2DComponent(const Transform2DComponent&) = default;
-		Transform2DComponent(const Vector2& position, const size& size = { 50.0f, 50.0f }) : position(position), size(size) { }
+		Transform2DComponent(const Vector2& position, const Vector2& size = { 50.0f, 50.0f }) : position(position), size(size) { }
 	};
 }

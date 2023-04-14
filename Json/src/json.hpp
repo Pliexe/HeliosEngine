@@ -2905,7 +2905,7 @@ Returns an ordering that is similar to Python:
     }
     return std::partial_ordering::unordered;
 #else
-    return l_index < order.Size() && r_index < order.Size() && order[l_index] < order[r_index];
+    return l_index < order.size() && r_index < order.size() && order[l_index] < order[r_index];
 #endif
 }
 
@@ -2961,8 +2961,8 @@ inline void replace_substring(StringType& s, const StringType& f,
     JSON_ASSERT(!f.empty());
     for (auto pos = s.find(f);                // find first occurrence of f
             pos != StringType::npos;          // make sure f was found
-            s.replace(pos, f.Size(), t),      // replace with t, and
-            pos = s.find(f, pos + t.Size()))  // find next occurrence of f
+            s.replace(pos, f.size(), t),      // replace with t, and
+            pos = s.find(f, pos + t.size()))  // find next occurrence of f
     {}
 }
 
@@ -3109,7 +3109,7 @@ template <typename T, T... Ints>
 struct integer_sequence
 {
     using value_type = T;
-    static constexpr std::size_t Size() noexcept
+    static constexpr std::size_t size() noexcept
     {
         return sizeof...(Ints);
     }
@@ -4190,7 +4190,7 @@ inline std::size_t concat_length(const char* cstr, const Args& ... rest)
 template<typename StringType, typename... Args>
 inline std::size_t concat_length(const StringType& str, const Args& ... rest)
 {
-    return str.Size() + concat_length(rest...);
+    return str.size() + concat_length(rest...);
 }
 
 template<typename OutStringType>
@@ -4216,7 +4216,7 @@ template<typename StringType, typename Arg>
 using detect_string_can_append_iter = is_detected<string_can_append_iter, StringType, Arg>;
 
 template<typename StringType, typename Arg>
-using string_can_append_data = decltype(std::declval<StringType&>().append(std::declval<const Arg&>().data(), std::declval<const Arg&>().Size()));
+using string_can_append_data = decltype(std::declval<StringType&>().append(std::declval<const Arg&>().data(), std::declval<const Arg&>().size()));
 
 template<typename StringType, typename Arg>
 using detect_string_can_append_data = is_detected<string_can_append_data, StringType, Arg>;
@@ -4273,7 +4273,7 @@ template < typename OutStringType, typename Arg, typename... Args,
                          && detect_string_can_append_data<OutStringType, Arg>::value, int > >
 inline void concat_into(OutStringType& out, const Arg& arg, Args&& ... rest)
 {
-    out.append(arg.data(), arg.Size());
+    out.append(arg.data(), arg.size());
     concat_into(out, std::forward<Args>(rest)...);
 }
 
@@ -4338,7 +4338,7 @@ class exception : public std::exception
             {
                 case value_t::array:
                 {
-                    for (std::size_t i = 0; i < current->m_parent->m_data.m_value.array->Size(); ++i)
+                    for (std::size_t i = 0; i < current->m_parent->m_data.m_value.array->size(); ++i)
                     {
                         if (&current->m_parent->m_data.m_value.array->operator[](i) == current)
                         {
@@ -4732,7 +4732,7 @@ inline void from_json(const BasicJsonType& j, std::valarray<T>& l)
     {
         JSON_THROW(type_error::create(302, concat("type must be array, but is ", j.type_name()), &j));
     }
-    l.resize(j.Size());
+    l.resize(j.size());
     std::transform(j.begin(), j.end(), std::begin(l),
                    [](const BasicJsonType & elem)
     {
@@ -4780,7 +4780,7 @@ auto from_json_array_impl(const BasicJsonType& j, ConstructibleArrayType& arr, p
     using std::end;
 
     ConstructibleArrayType ret;
-    ret.reserve(j.Size());
+    ret.reserve(j.size());
     std::transform(j.begin(), j.end(),
                    std::inserter(ret, end(ret)), [](const BasicJsonType & i)
     {
@@ -5518,8 +5518,8 @@ struct external_constructor<value_t::array>
         j.m_data.m_value.destroy(j.m_data.m_type);
         j.m_data.m_type = value_t::array;
         j.m_data.m_value = value_t::array;
-        j.m_data.m_value.array->resize(arr.Size());
-        if (arr.Size() > 0)
+        j.m_data.m_value.array->resize(arr.size());
+        if (arr.size() > 0)
         {
             std::copy(std::begin(arr), std::end(arr), j.m_data.m_value.array->begin());
         }
@@ -5970,7 +5970,7 @@ std::size_t hash(const BasicJsonType& j)
 
         case BasicJsonType::value_t::object:
         {
-            auto seed = combine(type, j.Size());
+            auto seed = combine(type, j.size());
             for (const auto& element : j.items())
             {
                 const auto h = std::hash<string_t> {}(element.key());
@@ -5982,7 +5982,7 @@ std::size_t hash(const BasicJsonType& j)
 
         case BasicJsonType::value_t::array:
         {
-            auto seed = combine(type, j.Size());
+            auto seed = combine(type, j.size());
             for (const auto& element : j)
             {
                 seed = combine(seed, hash(element));
@@ -6022,7 +6022,7 @@ std::size_t hash(const BasicJsonType& j)
 
         case BasicJsonType::value_t::binary:
         {
-            auto seed = combine(type, j.get_binary().Size());
+            auto seed = combine(type, j.get_binary().size());
             const auto h = std::hash<bool> {}(j.get_binary().has_subtype());
             seed = combine(seed, h);
             seed = combine(seed, static_cast<std::size_t>(j.get_binary().subtype()));
@@ -6804,7 +6804,7 @@ class json_sax_dom_parser
 
         if (JSON_HEDLEY_UNLIKELY(len != static_cast<std::size_t>(-1) && len > ref_stack.back()->max_size()))
         {
-            JSON_THROW(out_of_range::create(408, concat("excessive object Size: ", std::to_string(len)), ref_stack.back()));
+            JSON_THROW(out_of_range::create(408, concat("excessive object size: ", std::to_string(len)), ref_stack.back()));
         }
 
         return true;
@@ -6836,7 +6836,7 @@ class json_sax_dom_parser
 
         if (JSON_HEDLEY_UNLIKELY(len != static_cast<std::size_t>(-1) && len > ref_stack.back()->max_size()))
         {
-            JSON_THROW(out_of_range::create(408, concat("excessive array Size: ", std::to_string(len)), ref_stack.back()));
+            JSON_THROW(out_of_range::create(408, concat("excessive array size: ", std::to_string(len)), ref_stack.back()));
         }
 
         return true;
@@ -6985,7 +6985,7 @@ class json_sax_dom_callback_parser
     bool start_object(std::size_t len)
     {
         // check callback for object start
-        const bool keep = callback(static_cast<int>(ref_stack.Size()), parse_event_t::object_start, discarded);
+        const bool keep = callback(static_cast<int>(ref_stack.size()), parse_event_t::object_start, discarded);
         keep_stack.push_back(keep);
 
         auto val = handle_value(BasicJsonType::value_t::object, true);
@@ -6994,7 +6994,7 @@ class json_sax_dom_callback_parser
         // check object limit
         if (ref_stack.back() && JSON_HEDLEY_UNLIKELY(len != static_cast<std::size_t>(-1) && len > ref_stack.back()->max_size()))
         {
-            JSON_THROW(out_of_range::create(408, concat("excessive object Size: ", std::to_string(len)), ref_stack.back()));
+            JSON_THROW(out_of_range::create(408, concat("excessive object size: ", std::to_string(len)), ref_stack.back()));
         }
 
         return true;
@@ -7005,7 +7005,7 @@ class json_sax_dom_callback_parser
         BasicJsonType k = BasicJsonType(val);
 
         // check callback for key
-        const bool keep = callback(static_cast<int>(ref_stack.Size()), parse_event_t::key, k);
+        const bool keep = callback(static_cast<int>(ref_stack.size()), parse_event_t::key, k);
         key_keep_stack.push_back(keep);
 
         // add discarded value at given key and store the reference for later
@@ -7021,7 +7021,7 @@ class json_sax_dom_callback_parser
     {
         if (ref_stack.back())
         {
-            if (!callback(static_cast<int>(ref_stack.Size()) - 1, parse_event_t::object_end, *ref_stack.back()))
+            if (!callback(static_cast<int>(ref_stack.size()) - 1, parse_event_t::object_end, *ref_stack.back()))
             {
                 // discard object
                 *ref_stack.back() = discarded;
@@ -7055,7 +7055,7 @@ class json_sax_dom_callback_parser
 
     bool start_array(std::size_t len)
     {
-        const bool keep = callback(static_cast<int>(ref_stack.Size()), parse_event_t::array_start, discarded);
+        const bool keep = callback(static_cast<int>(ref_stack.size()), parse_event_t::array_start, discarded);
         keep_stack.push_back(keep);
 
         auto val = handle_value(BasicJsonType::value_t::array, true);
@@ -7064,7 +7064,7 @@ class json_sax_dom_callback_parser
         // check array limit
         if (ref_stack.back() && JSON_HEDLEY_UNLIKELY(len != static_cast<std::size_t>(-1) && len > ref_stack.back()->max_size()))
         {
-            JSON_THROW(out_of_range::create(408, concat("excessive array Size: ", std::to_string(len)), ref_stack.back()));
+            JSON_THROW(out_of_range::create(408, concat("excessive array size: ", std::to_string(len)), ref_stack.back()));
         }
 
         return true;
@@ -7076,7 +7076,7 @@ class json_sax_dom_callback_parser
 
         if (ref_stack.back())
         {
-            keep = callback(static_cast<int>(ref_stack.Size()) - 1, parse_event_t::array_end, *ref_stack.back());
+            keep = callback(static_cast<int>(ref_stack.size()) - 1, parse_event_t::array_end, *ref_stack.back());
             if (keep)
             {
                 ref_stack.back()->set_parents();
@@ -7152,7 +7152,7 @@ class json_sax_dom_callback_parser
         auto value = BasicJsonType(std::forward<Value>(v));
 
         // check callback
-        const bool keep = skip_callback || callback(static_cast<int>(ref_stack.Size()), parse_event_t::value, value);
+        const bool keep = skip_callback || callback(static_cast<int>(ref_stack.size()), parse_event_t::value, value);
 
         // do not handle this value if we just learnt it shall be discarded
         if (!keep)
@@ -7521,7 +7521,7 @@ class lexer : public lexer_base<BasicJsonType>
     */
     bool next_byte_in_range(std::initializer_list<char_int_type> ranges)
     {
-        JSON_ASSERT(ranges.Size() == 2 || ranges.Size() == 4 || ranges.Size() == 6);
+        JSON_ASSERT(ranges.size() == 2 || ranges.size() == 4 || ranges.size() == 6);
         add(current);
 
         for (auto range = ranges.begin(); range != ranges.end(); ++range)
@@ -7547,7 +7547,7 @@ class lexer : public lexer_base<BasicJsonType>
     This function scans a string according to Sect. 7 of RFC 8259. While
     scanning, bytes are escaped and copied into buffer token_buffer. Then the
     function returns successfully, token_buffer is *not* null-terminated (as it
-    may contain \0 bytes), and token_buffer.Size() is the number of bytes in the
+    may contain \0 bytes), and token_buffer.size() is the number of bytes in the
     string.
 
     @return token_type::value_string if string could be successfully scanned,
@@ -8558,7 +8558,7 @@ scan_number_done:
             const auto x = std::strtoull(token_buffer.data(), &endptr, 10);
 
             // we checked the number format before
-            JSON_ASSERT(endptr == token_buffer.data() + token_buffer.Size());
+            JSON_ASSERT(endptr == token_buffer.data() + token_buffer.size());
 
             if (errno == 0)
             {
@@ -8574,7 +8574,7 @@ scan_number_done:
             const auto x = std::strtoll(token_buffer.data(), &endptr, 10);
 
             // we checked the number format before
-            JSON_ASSERT(endptr == token_buffer.data() + token_buffer.Size());
+            JSON_ASSERT(endptr == token_buffer.data() + token_buffer.size());
 
             if (errno == 0)
             {
@@ -8591,7 +8591,7 @@ scan_number_done:
         strtof(value_float, token_buffer.data(), &endptr);
 
         // we checked the number format before
-        JSON_ASSERT(endptr == token_buffer.data() + token_buffer.Size());
+        JSON_ASSERT(endptr == token_buffer.data() + token_buffer.size());
 
         return token_type::value_float;
     }
@@ -8855,17 +8855,17 @@ scan_number_done:
             case 't':
             {
                 std::array<char_type, 4> true_literal = {{static_cast<char_type>('t'), static_cast<char_type>('r'), static_cast<char_type>('u'), static_cast<char_type>('e')}};
-                return scan_literal(true_literal.data(), true_literal.Size(), token_type::literal_true);
+                return scan_literal(true_literal.data(), true_literal.size(), token_type::literal_true);
             }
             case 'f':
             {
                 std::array<char_type, 5> false_literal = {{static_cast<char_type>('f'), static_cast<char_type>('a'), static_cast<char_type>('l'), static_cast<char_type>('s'), static_cast<char_type>('e')}};
-                return scan_literal(false_literal.data(), false_literal.Size(), token_type::literal_false);
+                return scan_literal(false_literal.data(), false_literal.size(), token_type::literal_false);
             }
             case 'n':
             {
                 std::array<char_type, 4> null_literal = {{static_cast<char_type>('n'), static_cast<char_type>('u'), static_cast<char_type>('l'), static_cast<char_type>('l')}};
-                return scan_literal(null_literal.data(), null_literal.Size(), token_type::literal_null);
+                return scan_literal(null_literal.data(), null_literal.size(), token_type::literal_null);
             }
 
             // string
@@ -11114,7 +11114,7 @@ class binary_reader
                 if (number < 0)
                 {
                     return sax->parse_error(chars_read, get_token_string(), parse_error::create(113, chars_read,
-                                            exception_message(input_format, "count in an optimized container must be positive", "Size"), nullptr));
+                                            exception_message(input_format, "count in an optimized container must be positive", "size"), nullptr));
                 }
                 result = static_cast<std::size_t>(number); // NOLINT(bugprone-signed-char-misuse,cert-str34-c): number is not a char
                 return true;
@@ -11130,7 +11130,7 @@ class binary_reader
                 if (number < 0)
                 {
                     return sax->parse_error(chars_read, get_token_string(), parse_error::create(113, chars_read,
-                                            exception_message(input_format, "count in an optimized container must be positive", "Size"), nullptr));
+                                            exception_message(input_format, "count in an optimized container must be positive", "size"), nullptr));
                 }
                 result = static_cast<std::size_t>(number);
                 return true;
@@ -11146,7 +11146,7 @@ class binary_reader
                 if (number < 0)
                 {
                     return sax->parse_error(chars_read, get_token_string(), parse_error::create(113, chars_read,
-                                            exception_message(input_format, "count in an optimized container must be positive", "Size"), nullptr));
+                                            exception_message(input_format, "count in an optimized container must be positive", "size"), nullptr));
                 }
                 result = static_cast<std::size_t>(number);
                 return true;
@@ -11162,12 +11162,12 @@ class binary_reader
                 if (number < 0)
                 {
                     return sax->parse_error(chars_read, get_token_string(), parse_error::create(113, chars_read,
-                                            exception_message(input_format, "count in an optimized container must be positive", "Size"), nullptr));
+                                            exception_message(input_format, "count in an optimized container must be positive", "size"), nullptr));
                 }
                 if (!value_in_range_of<std::size_t>(number))
                 {
                     return sax->parse_error(chars_read, get_token_string(), out_of_range::create(408,
-                                            exception_message(input_format, "integer value overflow", "Size"), nullptr));
+                                            exception_message(input_format, "integer value overflow", "size"), nullptr));
                 }
                 result = static_cast<std::size_t>(number);
                 return true;
@@ -11217,7 +11217,7 @@ class binary_reader
                 if (!value_in_range_of<std::size_t>(number))
                 {
                     return sax->parse_error(chars_read, get_token_string(), out_of_range::create(408,
-                                            exception_message(input_format, "integer value overflow", "Size"), nullptr));
+                                            exception_message(input_format, "integer value overflow", "size"), nullptr));
                 }
                 result = detail::conditional_static_cast<std::size_t>(number);
                 return true;
@@ -11231,14 +11231,14 @@ class binary_reader
                 }
                 if (is_ndarray) // ndarray dimensional vector can only contain integers, and can not embed another array
                 {
-                    return sax->parse_error(chars_read, get_token_string(), parse_error::create(113, chars_read, exception_message(input_format, "ndarray dimensional vector is not allowed", "Size"), nullptr));
+                    return sax->parse_error(chars_read, get_token_string(), parse_error::create(113, chars_read, exception_message(input_format, "ndarray dimensional vector is not allowed", "size"), nullptr));
                 }
                 std::vector<size_t> dim;
                 if (JSON_HEDLEY_UNLIKELY(!get_ubjson_ndarray_size(dim)))
                 {
                     return false;
                 }
-                if (dim.size() == 1 || (dim.size() == 2 && dim.at(0) == 1)) // return normal array Size if 1D row vector
+                if (dim.size() == 1 || (dim.size() == 2 && dim.at(0) == 1)) // return normal array size if 1D row vector
                 {
                     result = dim.at(dim.size() - 1);
                     return true;
@@ -11263,9 +11263,9 @@ class binary_reader
                     for (auto i : dim)
                     {
                         result *= i;
-                        if (result == 0 || result == npos) // because dim elements shall not have zeros, result = 0 means overflow happened; it also can't be npos as it is used to initialize Size in get_ubjson_size_type()
+                        if (result == 0 || result == npos) // because dim elements shall not have zeros, result = 0 means overflow happened; it also can't be npos as it is used to initialize size in get_ubjson_size_type()
                         {
-                            return sax->parse_error(chars_read, get_token_string(), out_of_range::create(408, exception_message(input_format, "excessive ndarray Size caused overflow", "Size"), nullptr));
+                            return sax->parse_error(chars_read, get_token_string(), out_of_range::create(408, exception_message(input_format, "excessive ndarray size caused overflow", "size"), nullptr));
                         }
                         if (JSON_HEDLEY_UNLIKELY(!sax->number_unsigned(static_cast<number_unsigned_t>(i))))
                         {
@@ -11293,13 +11293,13 @@ class binary_reader
         {
             message = "expected length type specification (U, i, u, I, m, l, M, L) after '#'; last byte: 0x" + last_token;
         }
-        return sax->parse_error(chars_read, last_token, parse_error::create(113, chars_read, exception_message(input_format, message, "Size"), nullptr));
+        return sax->parse_error(chars_read, last_token, parse_error::create(113, chars_read, exception_message(input_format, message, "size"), nullptr));
     }
 
     /*!
     @brief determine the type and size for a container
 
-    In the optimized UBJSON format, a type and a Size can be provided to allow
+    In the optimized UBJSON format, a type and a size can be provided to allow
     for a more compact representation.
 
     @param[out] result  pair of the size and the type
@@ -11309,7 +11309,7 @@ class binary_reader
     */
     bool get_ubjson_size_type(std::pair<std::size_t, char_int_type>& result, bool inside_ndarray = false)
     {
-        result.first = npos; // Size
+        result.first = npos; // size
         result.second = 0; // type
         bool is_ndarray = false;
 
@@ -11340,7 +11340,7 @@ class binary_reader
                 }
                 auto last_token = get_token_string();
                 return sax->parse_error(chars_read, last_token, parse_error::create(112, chars_read,
-                                        exception_message(input_format, concat("expected '#' after type information; last byte: 0x", last_token), "Size"), nullptr));
+                                        exception_message(input_format, concat("expected '#' after type information; last byte: 0x", last_token), "size"), nullptr));
             }
 
             const bool is_error = get_ubjson_size_value(result.first, is_ndarray);
@@ -11349,7 +11349,7 @@ class binary_reader
                 if (inside_ndarray)
                 {
                     return sax->parse_error(chars_read, get_token_string(), parse_error::create(112, chars_read,
-                                            exception_message(input_format, "ndarray can not be recursive", "Size"), nullptr));
+                                            exception_message(input_format, "ndarray can not be recursive", "size"), nullptr));
                 }
                 result.second |= (1 << 8); // use bit 8 to indicate ndarray, all UBJSON and BJData markers should be ASCII letters
             }
@@ -11362,7 +11362,7 @@ class binary_reader
             if (input_format == input_format_t::bjdata && is_ndarray)
             {
                 return sax->parse_error(chars_read, get_token_string(), parse_error::create(112, chars_read,
-                                        exception_message(input_format, "ndarray requires both type and Size", "Size"), nullptr));
+                                        exception_message(input_format, "ndarray requires both type and size", "size"), nullptr));
             }
             return is_error;
         }
@@ -11673,12 +11673,12 @@ class binary_reader
             return false;
         }
 
-        // do not accept ND-array Size in objects in BJData
+        // do not accept ND-array size in objects in BJData
         if (input_format == input_format_t::bjdata && size_and_type.first != npos && (size_and_type.second & (1 << 8)) != 0)
         {
             auto last_token = get_token_string();
             return sax->parse_error(chars_read, last_token, parse_error::create(112, chars_read,
-                                    exception_message(input_format, "BJData object does not support ND-array Size in optimized format", "object"), nullptr));
+                                    exception_message(input_format, "BJData object does not support ND-array size in optimized format", "object"), nullptr));
         }
 
         string_t key;
@@ -11750,7 +11750,7 @@ class binary_reader
 
     bool get_ubjson_high_precision_number()
     {
-        // get Size of following number string
+        // get size of following number string
         std::size_t size{};
         bool no_ndarray = true;
         auto res = get_ubjson_size_value(size, no_ndarray);
@@ -13935,13 +13935,13 @@ class json_pointer
         using size_type = typename BasicJsonType::size_type;
 
         // error condition (cf. RFC 6901, Sect. 4)
-        if (JSON_HEDLEY_UNLIKELY(s.Size() > 1 && s[0] == '0'))
+        if (JSON_HEDLEY_UNLIKELY(s.size() > 1 && s[0] == '0'))
         {
             JSON_THROW(detail::parse_error::create(106, 0, detail::concat("array index '", s, "' must not begin with '0'"), nullptr));
         }
 
         // error condition (cf. RFC 6901, Sect. 4)
-        if (JSON_HEDLEY_UNLIKELY(s.Size() > 1 && !(s[0] >= '1' && s[0] <= '9')))
+        if (JSON_HEDLEY_UNLIKELY(s.size() > 1 && !(s[0] >= '1' && s[0] <= '9')))
         {
             JSON_THROW(detail::parse_error::create(109, 0, detail::concat("array index '", s, "' is not a number"), nullptr));
         }
@@ -13952,7 +13952,7 @@ class json_pointer
         const unsigned long long res = std::strtoull(p, &p_end, 10); // NOLINT(runtime/int)
         if (p == p_end // invalid input or empty string
                 || errno == ERANGE // out of range
-                || JSON_HEDLEY_UNLIKELY(static_cast<std::size_t>(p_end - p) != s.Size())) // incomplete read
+                || JSON_HEDLEY_UNLIKELY(static_cast<std::size_t>(p_end - p) != s.size())) // incomplete read
         {
             JSON_THROW(detail::out_of_range::create(404, detail::concat("unresolved reference token '", s, "'"), nullptr));
         }
@@ -14105,7 +14105,7 @@ class json_pointer
                     if (reference_token == "-")
                     {
                         // explicitly treat "-" as index beyond the end
-                        ptr = &ptr->operator[](ptr->m_data.m_value.array->Size());
+                        ptr = &ptr->operator[](ptr->m_data.m_value.array->size());
                     }
                     else
                     {
@@ -14157,7 +14157,7 @@ class json_pointer
                     {
                         // "-" always fails the range check
                         JSON_THROW(detail::out_of_range::create(402, detail::concat(
-                                "array index '-' (", std::to_string(ptr->m_data.m_value.array->Size()),
+                                "array index '-' (", std::to_string(ptr->m_data.m_value.array->size()),
                                 ") is out of range"), ptr));
                     }
 
@@ -14214,7 +14214,7 @@ class json_pointer
                     if (JSON_HEDLEY_UNLIKELY(reference_token == "-"))
                     {
                         // "-" cannot be used for const access
-                        JSON_THROW(detail::out_of_range::create(402, detail::concat("array index '-' (", std::to_string(ptr->m_data.m_value.array->Size()), ") is out of range"), ptr));
+                        JSON_THROW(detail::out_of_range::create(402, detail::concat("array index '-' (", std::to_string(ptr->m_data.m_value.array->size()), ") is out of range"), ptr));
                     }
 
                     // use unchecked array access
@@ -14264,7 +14264,7 @@ class json_pointer
                     {
                         // "-" always fails the range check
                         JSON_THROW(detail::out_of_range::create(402, detail::concat(
-                                "array index '-' (", std::to_string(ptr->m_data.m_value.array->Size()),
+                                "array index '-' (", std::to_string(ptr->m_data.m_value.array->size()),
                                 ") is out of range"), ptr));
                     }
 
@@ -14319,19 +14319,19 @@ class json_pointer
                         // "-" always fails the range check
                         return false;
                     }
-                    if (JSON_HEDLEY_UNLIKELY(reference_token.Size() == 1 && !("0" <= reference_token && reference_token <= "9")))
+                    if (JSON_HEDLEY_UNLIKELY(reference_token.size() == 1 && !("0" <= reference_token && reference_token <= "9")))
                     {
                         // invalid char
                         return false;
                     }
-                    if (JSON_HEDLEY_UNLIKELY(reference_token.Size() > 1))
+                    if (JSON_HEDLEY_UNLIKELY(reference_token.size() > 1))
                     {
                         if (JSON_HEDLEY_UNLIKELY(!('1' <= reference_token[0] && reference_token[0] <= '9')))
                         {
                             // first char should be between '1' and '9'
                             return false;
                         }
-                        for (std::size_t i = 1; i < reference_token.Size(); i++)
+                        for (std::size_t i = 1; i < reference_token.size(); i++)
                         {
                             if (JSON_HEDLEY_UNLIKELY(!('0' <= reference_token[i] && reference_token[i] <= '9')))
                             {
@@ -14342,7 +14342,7 @@ class json_pointer
                     }
 
                     const auto idx = array_index<BasicJsonType>(reference_token);
-                    if (idx >= ptr->Size())
+                    if (idx >= ptr->size())
                     {
                         // index out of range
                         return false;
@@ -14426,7 +14426,7 @@ class json_pointer
                 JSON_ASSERT(reference_token[pos] == '~');
 
                 // ~ must be followed by 0 or 1
-                if (JSON_HEDLEY_UNLIKELY(pos == reference_token.Size() - 1 ||
+                if (JSON_HEDLEY_UNLIKELY(pos == reference_token.size() - 1 ||
                                          (reference_token[pos + 1] != '0' &&
                                           reference_token[pos + 1] != '1')))
                 {
@@ -14467,7 +14467,7 @@ class json_pointer
                 else
                 {
                     // iterate array and use index as reference string
-                    for (std::size_t i = 0; i < value.m_data.m_value.array->Size(); ++i)
+                    for (std::size_t i = 0; i < value.m_data.m_value.array->size(); ++i)
                     {
                         flatten(detail::concat(reference_string, '/', std::to_string(i)),
                                 value.m_data.m_value.array->operator[](i), result);
@@ -15177,7 +15177,7 @@ class binary_writer
             case value_t::string:
             {
                 // step 1: write control byte and the string length
-                const auto N = j.m_data.m_value.string->Size();
+                const auto N = j.m_data.m_value.string->size();
                 if (N <= 0x17)
                 {
                     write_number(static_cast<std::uint8_t>(0x60 + N));
@@ -15208,14 +15208,14 @@ class binary_writer
                 // step 2: write the string
                 oa->write_characters(
                     reinterpret_cast<const CharType*>(j.m_data.m_value.string->c_str()),
-                    j.m_data.m_value.string->Size());
+                    j.m_data.m_value.string->size());
                 break;
             }
 
             case value_t::array:
             {
-                // step 1: write control byte and the array Size
-                const auto N = j.m_data.m_value.array->Size();
+                // step 1: write control byte and the array size
+                const auto N = j.m_data.m_value.array->size();
                 if (N <= 0x17)
                 {
                     write_number(static_cast<std::uint8_t>(0x80 + N));
@@ -15277,8 +15277,8 @@ class binary_writer
                     }
                 }
 
-                // step 1: write control byte and the binary array Size
-                const auto N = j.m_data.m_value.binary->Size();
+                // step 1: write control byte and the binary array size
+                const auto N = j.m_data.m_value.binary->size();
                 if (N <= 0x17)
                 {
                     write_number(static_cast<std::uint8_t>(0x40 + N));
@@ -15316,8 +15316,8 @@ class binary_writer
 
             case value_t::object:
             {
-                // step 1: write control byte and the object Size
-                const auto N = j.m_data.m_value.object->Size();
+                // step 1: write control byte and the object size
+                const auto N = j.m_data.m_value.object->size();
                 if (N <= 0x17)
                 {
                     write_number(static_cast<std::uint8_t>(0xA0 + N));
@@ -15500,7 +15500,7 @@ class binary_writer
             case value_t::string:
             {
                 // step 1: write control byte and the string length
-                const auto N = j.m_data.m_value.string->Size();
+                const auto N = j.m_data.m_value.string->size();
                 if (N <= 31)
                 {
                     // fixstr
@@ -15528,14 +15528,14 @@ class binary_writer
                 // step 2: write the string
                 oa->write_characters(
                     reinterpret_cast<const CharType*>(j.m_data.m_value.string->c_str()),
-                    j.m_data.m_value.string->Size());
+                    j.m_data.m_value.string->size());
                 break;
             }
 
             case value_t::array:
             {
-                // step 1: write control byte and the array Size
-                const auto N = j.m_data.m_value.array->Size();
+                // step 1: write control byte and the array size
+                const auto N = j.m_data.m_value.array->size();
                 if (N <= 15)
                 {
                     // fixarray
@@ -15569,7 +15569,7 @@ class binary_writer
                 const bool use_ext = j.m_data.m_value.binary->has_subtype();
 
                 // step 1: write control byte and the byte string length
-                const auto N = j.m_data.m_value.binary->Size();
+                const auto N = j.m_data.m_value.binary->size();
                 if (N <= (std::numeric_limits<std::uint8_t>::max)())
                 {
                     std::uint8_t output_type{};
@@ -15647,8 +15647,8 @@ class binary_writer
 
             case value_t::object:
             {
-                // step 1: write control byte and the object Size
-                const auto N = j.m_data.m_value.object->Size();
+                // step 1: write control byte and the object size
+                const auto N = j.m_data.m_value.object->size();
                 if (N <= 15)
                 {
                     // fixmap
@@ -15739,10 +15739,10 @@ class binary_writer
                 {
                     oa->write_character(to_char_type('S'));
                 }
-                write_number_with_ubjson_prefix(j.m_data.m_value.string->Size(), true, use_bjdata);
+                write_number_with_ubjson_prefix(j.m_data.m_value.string->size(), true, use_bjdata);
                 oa->write_characters(
                     reinterpret_cast<const CharType*>(j.m_data.m_value.string->c_str()),
-                    j.m_data.m_value.string->Size());
+                    j.m_data.m_value.string->size());
                 break;
             }
 
@@ -15777,7 +15777,7 @@ class binary_writer
                 if (use_count)
                 {
                     oa->write_character(to_char_type('#'));
-                    write_number_with_ubjson_prefix(j.m_data.m_value.array->Size(), true, use_bjdata);
+                    write_number_with_ubjson_prefix(j.m_data.m_value.array->size(), true, use_bjdata);
                 }
 
                 for (const auto& el : *j.m_data.m_value.array)
@@ -15810,18 +15810,18 @@ class binary_writer
                 if (use_count)
                 {
                     oa->write_character(to_char_type('#'));
-                    write_number_with_ubjson_prefix(j.m_data.m_value.binary->Size(), true, use_bjdata);
+                    write_number_with_ubjson_prefix(j.m_data.m_value.binary->size(), true, use_bjdata);
                 }
 
                 if (use_type)
                 {
                     oa->write_characters(
                         reinterpret_cast<const CharType*>(j.m_data.m_value.binary->data()),
-                        j.m_data.m_value.binary->Size());
+                        j.m_data.m_value.binary->size());
                 }
                 else
                 {
-                    for (size_t i = 0; i < j.m_data.m_value.binary->Size(); ++i)
+                    for (size_t i = 0; i < j.m_data.m_value.binary->size(); ++i)
                     {
                         oa->write_character(to_char_type('U'));
                         oa->write_character(j.m_data.m_value.binary->data()[i]);
@@ -15838,7 +15838,7 @@ class binary_writer
 
             case value_t::object:
             {
-                if (use_bjdata && j.m_data.m_value.object->Size() == 3 && j.m_data.m_value.object->find("_ArrayType_") != j.m_data.m_value.object->end() && j.m_data.m_value.object->find("_ArraySize_") != j.m_data.m_value.object->end() && j.m_data.m_value.object->find("_ArrayData_") != j.m_data.m_value.object->end())
+                if (use_bjdata && j.m_data.m_value.object->size() == 3 && j.m_data.m_value.object->find("_ArrayType_") != j.m_data.m_value.object->end() && j.m_data.m_value.object->find("_ArraySize_") != j.m_data.m_value.object->end() && j.m_data.m_value.object->find("_ArrayData_") != j.m_data.m_value.object->end())
                 {
                     if (!write_bjdata_ndarray(*j.m_data.m_value.object, use_count, use_type))  // decode bjdata ndarray in the JData format (https://github.com/NeuroJSON/jdata)
                     {
@@ -15875,15 +15875,15 @@ class binary_writer
                 if (use_count)
                 {
                     oa->write_character(to_char_type('#'));
-                    write_number_with_ubjson_prefix(j.m_data.m_value.object->Size(), true, use_bjdata);
+                    write_number_with_ubjson_prefix(j.m_data.m_value.object->size(), true, use_bjdata);
                 }
 
                 for (const auto& el : *j.m_data.m_value.object)
                 {
-                    write_number_with_ubjson_prefix(el.first.Size(), true, use_bjdata);
+                    write_number_with_ubjson_prefix(el.first.size(), true, use_bjdata);
                     oa->write_characters(
                         reinterpret_cast<const CharType*>(el.first.c_str()),
-                        el.first.Size());
+                        el.first.size());
                     write_ubjson(el.second, use_count, use_type, prefix_required, use_bjdata);
                 }
 
@@ -15919,7 +15919,7 @@ class binary_writer
             static_cast<void>(j);
         }
 
-        return /*id*/ 1ul + name.Size() + /*zero-terminator*/1u;
+        return /*id*/ 1ul + name.size() + /*zero-terminator*/1u;
     }
 
     /*!
@@ -15931,7 +15931,7 @@ class binary_writer
         oa->write_character(to_char_type(element_type)); // boolean
         oa->write_characters(
             reinterpret_cast<const CharType*>(name.c_str()),
-            name.Size() + 1u);
+            name.size() + 1u);
     }
 
     /*!
@@ -15959,7 +15959,7 @@ class binary_writer
     */
     static std::size_t calc_bson_string_size(const string_t& value)
     {
-        return sizeof(std::int32_t) + value.Size() + 1ul;
+        return sizeof(std::int32_t) + value.size() + 1ul;
     }
 
     /*!
@@ -15970,10 +15970,10 @@ class binary_writer
     {
         write_bson_entry_header(name, 0x02);
 
-        write_number<std::int32_t>(static_cast<std::int32_t>(value.Size() + 1ul), true);
+        write_number<std::int32_t>(static_cast<std::int32_t>(value.size() + 1ul), true);
         oa->write_characters(
             reinterpret_cast<const CharType*>(value.c_str()),
-            value.Size() + 1);
+            value.size() + 1);
     }
 
     /*!
@@ -16074,7 +16074,7 @@ class binary_writer
     */
     static std::size_t calc_bson_binary_size(const typename BasicJsonType::binary_t& value)
     {
-        return sizeof(std::int32_t) + value.Size() + 1ul;
+        return sizeof(std::int32_t) + value.size() + 1ul;
     }
 
     /*!
@@ -16104,10 +16104,10 @@ class binary_writer
     {
         write_bson_entry_header(name, 0x05);
 
-        write_number<std::int32_t>(static_cast<std::int32_t>(value.Size()), true);
+        write_number<std::int32_t>(static_cast<std::int32_t>(value.size()), true);
         write_number(value.has_subtype() ? static_cast<std::uint8_t>(value.subtype()) : static_cast<std::uint8_t>(0x00));
 
-        oa->write_characters(reinterpret_cast<const CharType*>(value.data()), value.Size());
+        oa->write_characters(reinterpret_cast<const CharType*>(value.data()), value.size());
     }
 
     /*!
@@ -16361,8 +16361,8 @@ class binary_writer
             }
 
             const auto number = BasicJsonType(n).dump();
-            write_number_with_ubjson_prefix(number.Size(), true, use_bjdata);
-            for (std::size_t i = 0; i < number.Size(); ++i)
+            write_number_with_ubjson_prefix(number.size(), true, use_bjdata);
+            for (std::size_t i = 0; i < number.size(); ++i)
             {
                 oa->write_character(to_char_type(static_cast<std::uint8_t>(number[i])));
             }
@@ -16442,8 +16442,8 @@ class binary_writer
             }
 
             const auto number = BasicJsonType(n).dump();
-            write_number_with_ubjson_prefix(number.Size(), true, use_bjdata);
-            for (std::size_t i = 0; i < number.Size(); ++i)
+            write_number_with_ubjson_prefix(number.size(), true, use_bjdata);
+            for (std::size_t i = 0; i < number.size(); ++i)
             {
                 oa->write_character(to_char_type(static_cast<std::uint8_t>(number[i])));
             }
@@ -16590,7 +16590,7 @@ class binary_writer
         }
 
         key = "_ArrayData_";
-        if (value.at(key).Size() != len)
+        if (value.at(key).size() != len)
         {
             return true;
         }
@@ -16754,7 +16754,7 @@ class binary_writer
                enable_if_t < std::is_signed<C>::value && std::is_unsigned<char>::value > * = nullptr >
     static CharType to_char_type(std::uint8_t x) noexcept
     {
-        static_assert(sizeof(std::uint8_t) == sizeof(CharType), "Size of CharType must be equal to std::uint8_t");
+        static_assert(sizeof(std::uint8_t) == sizeof(CharType), "size of CharType must be equal to std::uint8_t");
         static_assert(std::is_trivial<CharType>::value, "CharType must be trivial");
         CharType result;
         std::memcpy(&result, &x, sizeof(x));
@@ -16868,7 +16868,7 @@ namespace dtoa_impl
 template<typename Target, typename Source>
 Target reinterpret_bits(const Source source)
 {
-    static_assert(sizeof(Target) == sizeof(Source), "Size mismatch");
+    static_assert(sizeof(Target) == sizeof(Source), "size mismatch");
 
     Target target;
     std::memcpy(&target, &source, sizeof(Source));
@@ -17093,7 +17093,7 @@ boundaries compute_boundaries(FloatType value)
 //
 //      2^(q - 2 + alpha) <= c * w < 2^(q + gamma)
 //
-// The choice of (alpha,gamma) determines the Size of the table and the form of
+// The choice of (alpha,gamma) determines the size of the table and the form of
 // the digit generation procedure. Using (alpha,gamma)=(-60,-32) works out well
 // in practice:
 //
@@ -18048,14 +18048,14 @@ class serializer
 
                     // variable to hold indentation for recursive calls
                     const auto new_indent = current_indent + indent_step;
-                    if (JSON_HEDLEY_UNLIKELY(indent_string.Size() < new_indent))
+                    if (JSON_HEDLEY_UNLIKELY(indent_string.size() < new_indent))
                     {
-                        indent_string.resize(indent_string.Size() * 2, ' ');
+                        indent_string.resize(indent_string.size() * 2, ' ');
                     }
 
                     // first n-1 elements
                     auto i = val.m_data.m_value.object->cbegin();
-                    for (std::size_t cnt = 0; cnt < val.m_data.m_value.object->Size() - 1; ++cnt, ++i)
+                    for (std::size_t cnt = 0; cnt < val.m_data.m_value.object->size() - 1; ++cnt, ++i)
                     {
                         o->write_characters(indent_string.c_str(), new_indent);
                         o->write_character('\"');
@@ -18084,7 +18084,7 @@ class serializer
 
                     // first n-1 elements
                     auto i = val.m_data.m_value.object->cbegin();
-                    for (std::size_t cnt = 0; cnt < val.m_data.m_value.object->Size() - 1; ++cnt, ++i)
+                    for (std::size_t cnt = 0; cnt < val.m_data.m_value.object->size() - 1; ++cnt, ++i)
                     {
                         o->write_character('\"');
                         dump_escaped(i->first, ensure_ascii);
@@ -18121,9 +18121,9 @@ class serializer
 
                     // variable to hold indentation for recursive calls
                     const auto new_indent = current_indent + indent_step;
-                    if (JSON_HEDLEY_UNLIKELY(indent_string.Size() < new_indent))
+                    if (JSON_HEDLEY_UNLIKELY(indent_string.size() < new_indent))
                     {
-                        indent_string.resize(indent_string.Size() * 2, ' ');
+                        indent_string.resize(indent_string.size() * 2, ' ');
                     }
 
                     // first n-1 elements
@@ -18182,9 +18182,9 @@ class serializer
 
                     // variable to hold indentation for recursive calls
                     const auto new_indent = current_indent + indent_step;
-                    if (JSON_HEDLEY_UNLIKELY(indent_string.Size() < new_indent))
+                    if (JSON_HEDLEY_UNLIKELY(indent_string.size() < new_indent))
                     {
-                        indent_string.resize(indent_string.Size() * 2, ' ');
+                        indent_string.resize(indent_string.size() * 2, ' ');
                     }
 
                     o->write_characters(indent_string.c_str(), new_indent);
@@ -18320,7 +18320,7 @@ class serializer
         std::size_t bytes_after_last_accept = 0;
         std::size_t undumped_chars = 0;
 
-        for (std::size_t i = 0; i < s.Size(); ++i)
+        for (std::size_t i = 0; i < s.size(); ++i)
         {
             const auto byte = static_cast<std::uint8_t>(s[i]);
 
@@ -19163,7 +19163,7 @@ template <class Key, class T, class IgnoredLess = std::less<Key>,
         //             first    last
 
         // remove the unneeded elements at the end of the vector
-        Container::resize(this->Size() - static_cast<size_type>(elements_affected));
+        Container::resize(this->size() - static_cast<size_type>(elements_affected));
 
         // [ a, b, c, d, h, i, j ]
         //               ^        ^
@@ -19789,12 +19789,12 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
                 // move the top-level items to stack
                 if (t == value_t::array)
                 {
-                    stack.reserve(array->Size());
+                    stack.reserve(array->size());
                     std::move(array->begin(), array->end(), std::back_inserter(stack));
                 }
                 else
                 {
-                    stack.reserve(object->Size());
+                    stack.reserve(object->size());
                     for (auto&& it : *object)
                     {
                         stack.push_back(std::move(it.second));
@@ -20126,7 +20126,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
         bool is_an_object = std::all_of(init.begin(), init.end(),
                                         [](const detail::json_ref<basic_json>& element_ref)
         {
-            return element_ref->is_array() && element_ref->Size() == 2 && (*element_ref)[0].is_string();
+            return element_ref->is_array() && element_ref->size() == 2 && (*element_ref)[0].is_string();
         });
 
         // adjust type if type deduction is not wanted
@@ -21082,7 +21082,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     to the JSON value type (e.g., the JSON value is of type boolean, but a
     string is requested); see example below
 
-    @complexity Linear in the Size of the JSON value.
+    @complexity Linear in the size of the JSON value.
 
     @liveexample{The example below shows several conversions from JSON values
     to other types. There a few things to note: (1) Floating-point numbers can
@@ -21288,11 +21288,11 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
         if (JSON_HEDLEY_LIKELY(is_array()))
         {
             // fill up array with null values if given idx is outside range
-            if (idx >= m_data.m_value.array->Size())
+            if (idx >= m_data.m_value.array->size())
             {
 #if JSON_DIAGNOSTICS
-                // remember array Size & capacity before resizing
-                const auto old_size = m_data.m_value.array->Size();
+                // remember array size & capacity before resizing
+                const auto old_size = m_data.m_value.array->size();
                 const auto old_capacity = m_data.m_value.array->capacity();
 #endif
                 m_data.m_value.array->resize(idx + 1);
@@ -22161,7 +22161,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     }
 
     /// @brief returns the number of elements
-    /// @sa https://json.nlohmann.me/api/basic_json/Size/
+    /// @sa https://json.nlohmann.me/api/basic_json/size/
     size_type size() const noexcept
     {
         switch (m_data.m_type)
@@ -22174,14 +22174,14 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
 
             case value_t::array:
             {
-                // delegate call to array_t::Size()
-                return m_data.m_value.array->Size();
+                // delegate call to array_t::size()
+                return m_data.m_value.array->size();
             }
 
             case value_t::object:
             {
-                // delegate call to object_t::Size()
-                return m_data.m_value.object->Size();
+                // delegate call to object_t::size()
+                return m_data.m_value.object->size();
             }
 
             case value_t::string:
@@ -22193,7 +22193,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
             case value_t::discarded:
             default:
             {
-                // all other types have Size 1
+                // all other types have size 1
                 return 1;
             }
         }
@@ -22227,7 +22227,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
             case value_t::discarded:
             default:
             {
-                // all other types have max_size() == Size()
+                // all other types have max_size() == size()
                 return size();
             }
         }
@@ -22404,7 +22404,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     /// @sa https://json.nlohmann.me/api/basic_json/push_back/
     void push_back(initializer_list_t init)
     {
-        if (is_object() && init.Size() == 2 && (*init.begin())->is_string())
+        if (is_object() && init.size() == 2 && (*init.begin())->is_string())
         {
             basic_json&& key = init.begin()->moved_or_copied();
             push_back(typename object_t::value_type(

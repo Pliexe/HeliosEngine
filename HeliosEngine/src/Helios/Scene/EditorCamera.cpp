@@ -73,14 +73,14 @@ namespace Helios
 		return GetProjectionMatrix() * Matrix4x4::Inverse(GetViewMatrix());
 	}
 
-	Vector3 EditorCamera::ScreenToWorldPoint(const Vector2& screenPoint, float depth)
+	Vector3 EditorCamera::ScreenToWorldPoint(const Vector2& screenPoint, float z)
 	{
-		return Camera::ScreenToWorldPoint(screenPoint, depth, GetViewMatrix());
+		return Camera::ScreenToWorldPoint(screenPoint, z, GetViewMatrix());
 	}
 
-	Vector3 EditorCamera::ScreenToWorldPoint(float x, float y, float depth)
+	Vector3 EditorCamera::ScreenToWorldPoint(float x, float y, float z)
 	{
-		return Camera::ScreenToWorldPoint(x, y, depth, GetViewMatrix());
+		return Camera::ScreenToWorldPoint(x, y, z, GetViewMatrix());
 	}
 
 	Vector3 EditorCamera::ScreenToWorldPoint(const Vector3& screenPoint)

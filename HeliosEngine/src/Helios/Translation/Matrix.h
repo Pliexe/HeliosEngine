@@ -218,6 +218,18 @@ namespace Helios
 		Matrix4x4 operator* (Matrix4x4 b) { return Matrix4x4::Multiply(*this, b); }
 		const Matrix4x4 operator*(const Matrix4x4& b) const { return Matrix4x4::Multiply(*this, b); }
 		Vector4 operator*(const Vector4& vector4) const;
+
+		// Column major
+		Vector3 GetTranslation() const
+		{
+			return { _14, _24, _34 };
+		}
+
+		Vector3 GetForward() const
+		{
+			return { _13, _23, _33 };
+		}
+
 		static Matrix4x4 Identity()
 		{
 			return {

@@ -3,7 +3,7 @@
 
 namespace Helios
 {
-	Camera::Camera(uint32_t viewport_width, uint32_t viewport_height) : m_AspectRatio((float)viewport_width / (float)viewport_height) { InvalidateProjection(); }
+	Camera::Camera(uint32_t viewport_width, uint32_t viewport_height) : m_ViewportSize(viewport_width, viewport_height) { InvalidateProjection(); }
 
 	void Camera::SetOrthographic(float size, float nearClip, float farClip)
 	{
@@ -32,14 +32,14 @@ namespace Helios
 	void Camera::SetViewportSize(uint32_t viewport_width, uint32_t viewport_height)
 	{
         HL_ASSERT_EXCEPTION(viewport_width > 0 && viewport_height > 0, "Viewport Size cannot be zero!");
-        m_AspectRatio = (float)viewport_width / (float)viewport_height;
+		m_ViewportSize = Size(viewport_width, viewport_height);
 		InvalidateProjection();
 	}
 
 	void Camera::SetViewportSize(Size viewport_size)
 	{
-        HL_ASSERT_EXCEPTION(viewport_size.width() > 0 && viewport_size.height() > 0, "Viewport Size cannot be zero!");
-        m_AspectRatio = (float)viewport_size.width() / (float)viewport_size.height();
+        HL_ASSERT_EXCEPTION(viewport_size.width > 0 && viewport_size.height > 0, "Viewport Size cannot be zero!");
+		m_ViewportSize = viewport_size;
 		InvalidateProjection();
 	}
 
@@ -65,17 +65,18 @@ namespace Helios
 
 	Vector3 Camera::ScreenToWorldPoint(float x, float y, float depth, const Matrix4x4& viewMatrix) const
 	{
-		x = (2.0f * x) / m_ViewportSize.width() - 1.0f;
-		y = 1.0f - (2.0f * y) / m_ViewportSize.height();
+		// Get ray position in world space from screen point (x, y) and scale it by depth
 
-		Matrix4x4 viewProjection = m_ProjectionMatrix * viewMatrix;
-		Matrix4x4 inverseViewProjection = Matrix4x4::Inverse(viewProjection);
+		float ndcX = (2.0f * x) / static_cast<float>(m_ViewportSize.width) - 1.0f;
+		float ndcY = 1.0f - (2.0f * y) / static_cast<float>(m_ViewportSize.height);
 
-		Vector4 screenSpacePoint = Vector4(x, y, depth, 1.0f);
-		Vector4 worldSpacePoint = inverseViewProjection * screenSpacePoint;
-		worldSpacePoint /= worldSpacePoint.w;
+		Vector4 rayClip = Vector4(ndcX, ndcY, -1.0f, 1.0f);
+		Vector4 rayEye = Matrix4x4::Inverse(m_ProjectionMatrix) * rayClip;
+		rayEye *= depth; // Add the depth
+		rayEye = Vector4(rayEye.x, rayEye.y, depth, 1.0f);
+		Vector4 rayWorld = viewMatrix * rayEye;
 
-		return Vector3(worldSpacePoint.x, worldSpacePoint.y, worldSpacePoint.z);
+		return Vector3(rayWorld.x, rayWorld.y, rayWorld.z);		
 	}
 
 	void Helios::Camera::InvalidateProjection()
@@ -83,10 +84,10 @@ namespace Helios
 		switch (m_Type)
 		{
 		case Perspective:
-			m_ProjectionMatrix = Matrix4x4::PerspectiveLH(m_Fov, m_AspectRatio, m_NearClip, m_FarClip);
+			m_ProjectionMatrix = Matrix4x4::PerspectiveLH(m_Fov, (float)m_ViewportSize.width / (float)m_ViewportSize.height, m_NearClip, m_FarClip);
 			break;
 		case Orthographic:
-			m_ProjectionMatrix = Matrix4x4::OrthographicLH(m_Size, m_AspectRatio, m_NearClip, m_FarClip);
+			m_ProjectionMatrix = Matrix4x4::OrthographicLH(m_Size, (float)m_ViewportSize.width / (float)m_ViewportSize.height, m_NearClip, m_FarClip);
 			break;
 		}
 	}

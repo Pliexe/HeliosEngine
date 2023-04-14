@@ -345,15 +345,20 @@ namespace Helios {
 		return *this;
 	}
 
-	Vector4 Vector4::operator*(const Matrix4x4& matrix4_x4) const
+	Vector4 Vector4::operator*(const Matrix4x4& mat4x4) const
 	{
-		// vec4 * mat4
-		return Vector4(
-			x * matrix4_x4.m[0][0] + y * matrix4_x4.m[1][0] + z * matrix4_x4.m[2][0] + w * matrix4_x4.m[3][0],
-			x * matrix4_x4.m[0][1] + y * matrix4_x4.m[1][1] + z * matrix4_x4.m[2][1] + w * matrix4_x4.m[3][1],
-			x * matrix4_x4.m[0][2] + y * matrix4_x4.m[1][2] + z * matrix4_x4.m[2][2] + w * matrix4_x4.m[3][2],
-			x * matrix4_x4.m[0][3] + y * matrix4_x4.m[1][3] + z * matrix4_x4.m[2][3] + w * matrix4_x4.m[3][3]
-		);
+		// vec4 * mat4x4
+		return {
+			x * mat4x4._11 + y * mat4x4._21 + z * mat4x4._31 + w * mat4x4._41,
+			x * mat4x4._12 + y * mat4x4._22 + z * mat4x4._32 + w * mat4x4._42,
+			x * mat4x4._13 + y * mat4x4._23 + z * mat4x4._33 + w * mat4x4._43,
+			x * mat4x4._14 + y * mat4x4._24 + z * mat4x4._34 + w * mat4x4._44
+		};
+	}
+
+	std::string Vector4::to_string() const
+	{
+		return std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ", " + std::to_string(w);
 	}
 
 	Vector4 Vector4::operator=(Vector4& other)
@@ -413,41 +418,6 @@ namespace Helios {
 	{
 		this->width /= other.width;
 		this->height /= other.height;
-		return *this;
-	}
-
-	Size Size::operator=(const Size& other)
-	{
-		this->width = other.width;
-		this->height = other.height;
-		return *this;
-	}
-
-	Size Size::operator=(const Vector2& other)
-	{
-		this->width = other.x;
-		this->height = other.y;
-		return *this;
-	}
-
-	Size Size::operator=(const Vector3& other)
-	{
-		this->width = other.x;
-		this->height = other.y;
-		return *this;
-	}
-
-	Size Size::operator=(const Vector4& other)
-	{
-		this->width = other.x;
-		this->height = other.y;
-		return *this;
-	}
-
-	Size Size::operator=(const Point& other)
-	{
-		this->width = other.x;
-		this->height = other.y;
 		return *this;
 	}
 

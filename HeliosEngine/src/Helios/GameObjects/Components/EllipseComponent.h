@@ -24,16 +24,16 @@ namespace Helios {
 					if (brush) {
 						auto Size = brush->getSize();
 						(*brush)->SetTransform(
-							D2D1::Matrix3x2F::Scale(D2D1::SizeF((pos.w - pos.x) / Size.width(), (pos.h - pos.y) / Size.height())) *
+							D2D1::Matrix3x2F::Scale(D2D1::SizeF((pos.w - pos.x) / Size.width, (pos.h - pos.y) / Size.height)) *
 							D2D1::Matrix3x2F::TranslationRow(D2D1::SizeF(pos.x, pos.y))
 						);
 					}
 				}
 
 				if (stroke <= 0.0f)
-					g.getRenderTarget()->FillEllipse(D2D1::Ellipse(D2D1::Point2F(pos.x + transform->getSize().width() / 2.0f, pos.y + transform->getSize().height() / 2.0f), transform->getSize().width(), transform->getSize().height()), *m_brush);
+					g.getRenderTarget()->FillEllipse(D2D1::Ellipse(D2D1::Point2F(pos.x + transform->getSize().width / 2.0f, pos.y + transform->getSize().height / 2.0f), transform->getSize().width, transform->getSize().height), *m_brush);
 				else
-					g.getRenderTarget()->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(pos.x + transform->getSize().width() / 2.0f, pos.y + transform->getSize().height() / 2.0f), transform->getSize().width(), transform->getSize().height()), *m_brush, stroke);*/
+					g.getRenderTarget()->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(pos.x + transform->getSize().width / 2.0f, pos.y + transform->getSize().height / 2.0f), transform->getSize().width, transform->getSize().height), *m_brush, stroke);*/
 			}
 		}
 

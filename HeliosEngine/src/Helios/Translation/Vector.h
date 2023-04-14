@@ -292,6 +292,8 @@ namespace Helios {
 		Vector4 operator=(Vector4& other);
 		Vector4 operator=(Vector4 other);
 		Vector4 operator*(const Matrix4x4& matrix4_x4) const;
+
+		std::string to_string() const;
 	};
 
 	struct HELIOS_API Point : public Vector2 {
@@ -310,7 +312,7 @@ namespace Helios {
 		Size(uint32_t width, uint32_t height) : width(width), height(height) { }
 		Size() : width(0u), height(0u) {}
 		Size(const Size& size) = default;
-		Size(const Vector2& size) : width(size.x), height(size.y) { }
+		Size(const Vector2& vec2) : width(vec2.x), height(vec2.y) { }
 
 		Size operator+(const Size& other) const;
 		Size operator-(const Size& other) const;
@@ -320,11 +322,6 @@ namespace Helios {
 		Size operator-=(const Size& other);
 		Size operator*=(const Size& other);
 		Size operator/=(const Size& other);
-		Size operator=(const Size& other);
-		Size operator=(const Vector2& other);
-		Size operator=(const Vector3& other);
-		Size operator=(const Vector4& other);
-		Size operator=(const Point& other);
 		bool operator==(const Size& other) const;
 		bool operator==(const Vector2& other) const;
 

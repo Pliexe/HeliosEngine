@@ -29,7 +29,7 @@ namespace Helios {
 					if (brush) {
 						auto size = brush->getSize();
 						(*brush)->SetTransform(
-							D2D1::Matrix3x2F::Scale(D2D1::SizeF((pos.w - pos.x) / size.width(), (pos.h - pos.y) / size.height())) *
+							D2D1::Matrix3x2F::Scale(D2D1::SizeF((pos.w - pos.x) / size.width, (pos.h - pos.y) / size.height)) *
 							D2D1::Matrix3x2F::Translation(D2D1::SizeF(pos.x, pos.y))
 						);
 					}

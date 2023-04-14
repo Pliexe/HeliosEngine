@@ -2,6 +2,9 @@
 #include "Helios/Resources/Shader.h"
 #include "Helios/Utils/MeshBuilder.h"
 #include "Helios/Core/Profiler.h"
+#include "Helios/Resources/Material.h"
+#include "Helios/Resources/Material.h"
+#include "Helios/Scene/EditorCamera.h"
 
 namespace Helios
 {
@@ -33,6 +36,8 @@ namespace Helios
 	{
 		Vector3 position;
 		Color color;
+		int32_t mode;
+		float width;
 		float id;
 	};
 
@@ -40,8 +45,17 @@ namespace Helios
 	{
 		static const uint32_t MaxQuadInstances = 10000;
 		static const uint64_t MaxGizmosInstances = 10000;
+		static const uint64_t MaxLineGizmos = 10000;
 
 		//Ref<VertexBuffer>
+
+		struct Lines
+		{
+			LineGizmos* m_Lines;
+			LineGizmos* m_index;
+
+			Ref<VertexBuffer> m_vertexBuffer;
+		} m_lines;
 
 		struct Gizmos
 		{
@@ -60,8 +74,6 @@ namespace Helios
 			Ref<VertexBuffer> m_InstanceBuffer;
 		} m_GizmosInstanceData;
 
-		
-
 		struct VertexLocationDotVertex
 		{
 			Vector3 position;
@@ -77,6 +89,7 @@ namespace Helios
 		Ref<Shader> quad_gizmos_shader;
 		Ref<Shader> standard_gizmos_shader;
 		Ref<Shader> tool_gizmos_shader;
+		Ref<Shader> line_gizmos_shader;
 
 		struct QuadTool
 		{
@@ -101,12 +114,24 @@ namespace Helios
 		} quads;
 
 		Ref<ConstantBuffer<TransformData>> transformBuffer;
+		Ref<Material> defaultMaterial;
 	};
 
 	GizmosData s_Data;
 
+	GizmosRenderer::~GizmosRenderer()
+	{
+		delete s_Data.m_lines.m_Lines;
+	}
+
 	bool GizmosRenderer::Init()
 	{
+		s_Data.defaultMaterial = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+		s_Data.m_lines.m_Lines = new LineGizmos[GizmosData::MaxLineGizmos];
+		s_Data.m_lines.m_index = s_Data.m_lines.m_Lines;
+		s_Data.m_lines.m_vertexBuffer = VertexBuffer::Create(sizeof(LineGizmos) * GizmosData::MaxLineGizmos, BufferUsage::Dynamic);
+		s_Data.m_lines.m_vertexBuffer->SetStride<LineGizmos>();
+
 #pragma region Initilization Gizmos
 		s_Data.m_GizmosInstanceData.ArrowGizmo = s_Data.m_GizmosInstanceData.m_GizmosObjects.data();
 		s_Data.m_GizmosInstanceData.ArrowGizmoInstanceCount = s_Data.m_GizmosInstanceData.m_GizmosInstancesCount;
@@ -131,6 +156,14 @@ namespace Helios
 			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "Data",  Shader::DataType::Float, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance }
 		}));
+
+		s_Data.line_gizmos_shader = CreateRef<Shader>(Shader("Line", {
+			{ "Position", Shader::DataType::Float3 },
+			{ "Color", Shader::DataType::Float4 },
+			{ "Mode", Shader::DataType::Int32 },
+			{ "Width", Shader::DataType::Float },
+			{ "Id", Shader::DataType::Float }
+		}, Shader::Topology::LineList));
 
 #pragma endregion
 
@@ -188,9 +221,6 @@ namespace Helios
 			0, 1, 2,
 			0, 2, 3
 		};
-
-		
-
 		
 		s_Data.transformBuffer = ConstantBuffer<GizmosData::TransformData>::Create();
 		//s_Data.quads.vertexBuffer = VertexBuffer::Create<GizmosData::QuadTool::QuadVertex>({
@@ -268,14 +298,36 @@ namespace Helios
 		}
 		HL_PROFILE_END();
 
+		HL_PROFILE_BEGIN("Gizmos Renderer - Lines");
+		if ((s_Data.m_lines.m_index - s_Data.m_lines.m_Lines) > 0)
+		{
+			s_Data.m_lines.m_vertexBuffer->SetData(s_Data.m_lines.m_Lines, (s_Data.m_lines.m_index - s_Data.m_lines.m_Lines) * sizeof(LineGizmos));
+			s_Data.line_gizmos_shader->Bind();
+			s_Data.m_lines.m_vertexBuffer->Bind();
+
+			Graphics::instance->m_deviceContext->Draw((s_Data.m_lines.m_index - s_Data.m_lines.m_Lines), 0u);
+			s_Data.m_lines.m_index = s_Data.m_lines.m_Lines;
+			s_Data.line_gizmos_shader->Unbind();
+			//s_Data.m_lines.m_vertexBuffer->Unbind();
+		}
+		HL_PROFILE_END();
+
 		HL_PROFILE_END();
 	}
 
-	void GizmosRenderer::DrawLine(Vector3 a, Vector3 b, Color color = Color::White)
+	void GizmosRenderer::DrawLine(Vector3 a, Vector3 b, float width, Color color, int64_t id, int32_t mode)
 	{
-		GizmosVertex line = {
-			{  }
+		if ((s_Data.m_lines.m_index - s_Data.m_lines.m_Lines) >= GizmosData::MaxLineGizmos - 1)
+			Flush();
+
+		*s_Data.m_lines.m_index = LineGizmos{
+			a, color, mode, width, (float)id
 		};
+		s_Data.m_lines.m_index++;
+		*s_Data.m_lines.m_index = LineGizmos{
+			b, color, mode, width, (float)id
+		};
+		s_Data.m_lines.m_index++;
 	}
 
 	void GizmosRenderer::DrawQuad(SceneCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, float data = -1.0f)
@@ -303,10 +355,10 @@ namespace Helios
 		s_Data.quads.quadInstanceIndex++;
 	}
 
-	inline void GizmosRenderer::DrawMeshVertices(SceneCamera camera, TransformComponent& transform, std::vector<MeshVertex>& vertices)
+	inline void GizmosRenderer::DrawMeshVertices(EditorCamera camera, TransformComponent& transform, std::vector<MeshVertex>& vertices)
 	{
 		static Matrix4x4 scale = Matrix4x4::Scale({ 0.1f, 0.1f, 1.0f });
-		Matrix4x4 vertexMatrix = scale * Matrix4x4::RotationRow(Quaternion::Conjugate(transform.Rotation) * camera.GetTransform().Rotation);
+		Matrix4x4 vertexMatrix = scale * Matrix4x4::RotationRow(Quaternion::Conjugate(transform.Rotation) * camera.GetRotation());
 		Matrix4x4 worldMatrix = transform.GetRowModelMatrix();
 
 		int i = 0;

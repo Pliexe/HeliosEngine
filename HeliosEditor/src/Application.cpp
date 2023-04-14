@@ -52,7 +52,6 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 using namespace Helios;
 
-static SceneCamera editorCamera_old({ { 0.0f, 0.0f, -5.0f } });
 static EditorCamera editorCamera;
 
 static Ref<Framebuffer> editorFrame;
@@ -74,6 +73,16 @@ struct TransformVertex
 {
 	Vector3 position;
 	Color color;
+};
+
+struct Line
+{
+	Vector3 a;
+	Vector3 b;
+	Color color = Color::White;
+	float width = 0.5f;
+	int64_t id = -1;
+	int mode = -1;
 };
 
 int ValidateInit() {
@@ -98,6 +107,9 @@ namespace Helios {
 		bool show_gizmos = false;
 
 		GizmosRenderer::Tool current_tool = GizmosRenderer::Tool::None;
+
+		std::queue<Line> lines;
+		std::queue<Line> tool_lines;
 
 		struct GraphVertices
 		{
@@ -250,6 +262,7 @@ namespace Helios {
 			
 			//DirectX::XMMatrixTranslation()
 			//DirectX::XMMatrixMultiply
+			//DirectX::XMVector3Unproject()
 			// Setup Platform/Renderer backends
 			ImGui_ImplWin32_Init(m_hWnd);
 			ImGui_ImplDX11_Init(graphics->m_device, graphics->m_deviceContext);
@@ -453,9 +466,10 @@ namespace Helios {
 				{*/
 					ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 					auto currentViewportSize = editorFrame->GetSize();
-					if (viewportSize.x != currentViewportSize.x || viewportSize.y != currentViewportSize.y)
+					if (viewportSize.x != currentViewportSize.width || viewportSize.y != currentViewportSize.height)
 					{
-						 editorFrame->Resize(viewportSize.x, viewportSize.y);
+						editorFrame->Resize(viewportSize.x, viewportSize.y);
+						editorCamera.SetViewportSize(viewportSize.x, viewportSize.y);
 					}
 					ImGui::Image(editorFrame->GetTextureID((UINT)showIdFrame), ImVec2(viewportSize));
 				auto test2 = ImGui::GetCursorPos();
@@ -520,8 +534,8 @@ namespace Helios {
 						ImGui::Text("ID: -");
 						ImGui::Text("R: -, G: -, B: -, A: -");
 					}
-
-					ImGui::Text("Mouse to World: %s", editorCamera_old.ScreenToWorldCoordinates(x, y, 5.0f).to_string().c_str());
+					
+					ImGui::Text("Mouse to World: %s", editorCamera.ScreenToWorldPoint(x, y, 5.0f).to_string().c_str());
 					
 				
 				ImGui::End();
@@ -539,17 +553,16 @@ namespace Helios {
 							Ref<Mesh> mesh = gm.GetComponent<MeshRendererComponent>().mesh;
 							ImGui::Begin("Mesh Stats");
 							auto transform = Transform(gm);
-							auto camTrans = editorCamera_old.GetTransform();
 
-							auto dir = (transform.GetWorldPosition() - camTrans.Position).normalize();
-							auto cameraForward = camTrans.Forward();
+							auto dir = (transform.GetWorldPosition() - editorCamera.GetPosition()).normalize();
+							auto cameraForward = editorCamera.GetForward();
 
 							auto trans = gm.GetComponent<TransformComponent>();
 
-							auto proj = editorCamera_old.GetViewProjection();
+							auto proj = editorCamera.GetViewProjection();
 
 							float alpha = std::acos(Vector3::Dot(cameraForward, dir)) / (cameraForward.magnitude() * dir.magnitude());
-							float C = Vector3::Distance(transform.GetWorldPosition(), camTrans.Position);
+							float C = Vector3::Distance(transform.GetWorldPosition(), editorCamera.GetPosition());
 
 							float A = C * std::sin(alpha);
 							float B = std::sqrt(std::pow(C, 2.0f) - std::pow(A, 2.0f));
@@ -639,7 +652,8 @@ namespace Helios {
 						/*auto vec = editorCamera_old.ScreenToWorldCoordinates(x, y, 5.0f, editorFrame->GetSize());
 						std::cout << "x: " << vec.x << ", y: " << vec.y << ", z: " << vec.z << std::endl;*/
 
-						if (id > -1)
+						if (id == -1) InspectorPanel::GetInstance().Reset();
+						else if (id > -1)
 						{
 							entt::entity entity = (entt::entity)id;
 
@@ -676,50 +690,46 @@ namespace Helios {
 					switch (current_tool)
 					{
 					case GizmosRenderer::Tool::MoveX:
-						transform.SetLocalPosition(originTransform.Position - Vector3::right * ((origin.x - ImGui::GetMousePos().x) * Vector3::Distance(editorCamera_old.GetTransform().Position, originTransform.Position) * 0.01f));
+						{
+							auto cameraForward = editorCamera.GetForward();
+							auto direction = (originWorldTransform.Position - editorCamera.GetPosition()).normalize();
+
+							float palpha = std::acos(Vector3::Dot(cameraForward, direction)) / (cameraForward.magnitude() * direction.magnitude());
+							float pC = Vector3::Distance(originWorldTransform.Position, editorCamera.GetPosition());
+
+							float pA = pC * std::sin(palpha);
+							float pB = std::sqrt(std::pow(pC, 2.0f) - std::pow(pA, 2.0f));
+							
+							Vector3 mvPoint = editorCamera.ScreenToWorldPoint(x, y, pB);
+							auto forw = originWorldTransform.Forward();
+							auto dir = (originWorldTransform.Position - mvPoint).normalize();
+							float C = Vector3::Distance(mvPoint, originWorldTransform.Position);
+
+							float alpha = std::acos(Vector3::Dot(forw, dir)) / (forw.magnitude() * dir.magnitude());
+
+
+							float A = C * std::sin(alpha);
+							float B = std::sqrt(std::pow(C, 2.0f) - std::pow(A, 2.0f));
+
+							std::cout << "Alpha: " << alpha << ", A: " << A << ", B: " << B << ", C: " << C << std::endl;
+
+							transform.SetLocalPosition(originTransform.Position + originTransform.Right() * A * (dir.x > 0.0f ? -1.0f : 1.0f));
+						}
 						break;
 					case GizmosRenderer::Tool::MoveXYZ:
 					{
-						GameObject gm = SceneRegistry::GetPrimaryCamera();
-						auto [trans, cam] = gm.GetComponent<TransformComponent, CameraComponent>();
-						
-						auto cameraForward = trans.Forward();
-						auto direction = (originWorldTransform.Position - trans.Position).normalize();
-
-						//auto trans = gm.GetComponent<TransformComponent>();
-
-						auto proj = editorCamera_old.GetViewProjection();
+						auto cameraForward = editorCamera.GetForward();
+						auto direction = (originWorldTransform.Position - editorCamera.GetPosition()).normalize();
 
 						float alpha = std::acos(Vector3::Dot(cameraForward, direction)) / (cameraForward.magnitude() * direction.magnitude());
-						float C = Vector3::Distance(originWorldTransform.Position, trans.Position);
+						float C = Vector3::Distance(originWorldTransform.Position, editorCamera.GetPosition());
 
 						float A = C * std::sin(alpha);
 						float B = std::sqrt(std::pow(C, 2.0f) - std::pow(A, 2.0f));
-
-						ImVec2 mousePosition = ImGui::GetMousePos();
-						ImVec2 windowPosition = ImGui::GetWindowPos();
-						float x = mousePosition.x - windowPosition.x, y = mousePosition.y - windowPosition.y;
-						auto size = editorFrame->GetSize();
-						x = (x / size.width()) * 2.0f - 1.0f;
-						y = (y / size.height()) * -2.0f + 1.0f;
 						
-						auto projMatrix = Matrix4x4::Identity() * editorCamera_old.GetProjectionMatrix(editorCamera_old.GetCamera(), size);
-
-						Vector4 preresult = projMatrix * Vector4(x, y, 1.0f, 1.0f);
-						Vector3 result = Vector3(preresult.x, preresult.y, preresult.z) / preresult.w;
-						//result.z = B;
-						//result = result * cameraForward;
-
-						std::cout << "x: " << x << ", y: " << y << ", vec: " << result.to_string() << " | " << (result * B).to_string() << " | " << Vector3(result.x * B, result.y * B, result.z * B).to_string() << std::endl;
-
-						//editorCamera_old.ScreenToWorldCoordinates(x, y, 5.0f, editorFrame->GetSize());
-
-						//transform.SetLocalPosition(editorCamera_old.ScreenToWorldCoordinates(x, y, 5.0f, editorFrame->GetSize()));
-
-						/*transform.SetLocalPosition(originTransform.Position - (
-							(camTransform.Right() * (origin.x - ImGui::GetMousePos().x) * Vector3::Distance(editorCamera_old.GetTransform().Position, originTransform.Position)) +
-							(camTransform.RotationRow.up() * -(origin.y - ImGui::GetMousePos().y) * Vector3::Distance(editorCamera_old.GetTransform().Position, originTransform.Position))
-							) * 0.01f);*/
+						auto newLocation = editorCamera.ScreenToWorldPoint(x, y, B);
+						transform.SetLocalPosition(newLocation);
+						tool_lines.emplace(Line { originTransform.Position, newLocation, Color::BlanchedAlmond, 0.2f, -1, 1 });
 						break;
 					}
 					default: break;
@@ -771,10 +781,6 @@ namespace Helios {
 						auto difference = Vector2(origin.x, origin.y) - Vector2(current.x, current.y);
 						auto normalizedCordinates = -(Vector2(origin.y, origin.x) - Vector2(current.y, current.x)).normalize();
 
-						editorCamera_old.HandleControls(
-							-(Vector2(origin.y, origin.x) - Vector2(current.y, current.x)).normalize()
-						);
-
 						editorCamera.HandleMovement(-(Vector2(origin.y, origin.x) - Vector2(current.y, current.x)).normalize());
 
 						SetCursorPos(origin.x, origin.y);
@@ -787,7 +793,6 @@ namespace Helios {
 				}
 
 				if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(ImGuiKey_R)) {
-					editorCamera_old.Reset();
 					editorCamera.Reset();
 				}
 				isEditorSceneActive = true;
@@ -805,9 +810,8 @@ namespace Helios {
 				}
 				ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 				auto currentViewportSize = gameFrame->GetSize();
-				if (viewportSize.x != currentViewportSize.x || viewportSize.y != currentViewportSize.y)
+				if (viewportSize.x != currentViewportSize.width || viewportSize.y != currentViewportSize.height)
 				{
-					editorCamera.SetViewportSize(viewportSize.x,viewportSize.y);
 					gameFrame->Resize(viewportSize.x, viewportSize.y);
 				}
 				ImGui::Image(gameFrame->GetTextureID(0u), ImVec2(viewportSize));
@@ -958,7 +962,6 @@ namespace Helios {
 
 	#pragma region Rendering
 				SceneRegistry::OnEditorRender(editorCamera);
-				//SceneRegistry::OnEditorRender(editorCamera_old);
 	#pragma endregion
 
 				//Graphics::instance->m_deviceContext->DrawIndexed(std::Size(transformMoveIndecies), 0u, 0u);
@@ -981,7 +984,7 @@ namespace Helios {
 			{
 				graphics->m_deviceContext->OMSetRenderTargets(1, &graphics->m_mainRenderTarget, NULL);
 
-				SceneRegistry::OnEditorRender(editorCamera_old);
+				SceneRegistry::OnEditorRender(editorCamera);
 			}
 
 			graphics->EndFrame();
@@ -1001,9 +1004,16 @@ namespace Helios {
 					if (obj.HasComponent<MeshRendererComponent>())
 					{
 						TransformComponent transform = Transform(obj).GetWorldTransformCache();
-						GizmosRenderer::DrawMeshVertices(editorCamera_old, transform, obj.GetComponent<MeshRendererComponent>().mesh->GetVertices());
+						GizmosRenderer::DrawMeshVertices(editorCamera, transform, obj.GetComponent<MeshRendererComponent>().mesh->GetVertices());
 					}
 				}
+			}
+
+			while (!lines.empty())
+			{
+				auto line = lines.front();
+				GizmosRenderer::DrawLine(line.a, line.b, line.width, line.color, line.id, line.mode);
+				lines.pop();
 			}
 
 			GizmosRenderer::Flush();
@@ -1019,6 +1029,14 @@ namespace Helios {
 				//auto scale = Vector3::Distance(transform.position, editorCamera_old.GetTransform().position) * 0.2f;
 
 				GizmosRenderer::DrawTool(transform.GetWorldTransformCache().GetModelMatrix() * Matrix4x4::Scale(scale), GizmosRenderer::ToolType::Move, current_tool);
+			}
+
+			// tool_lines use them for GizmosRenderer::DrawLine and clear the queue in the process
+			while (!tool_lines.empty())
+			{
+				auto line = tool_lines.front();
+				GizmosRenderer::DrawLine(line.a, line.b, line.width, line.color, line.id, line.mode);
+				tool_lines.pop();
 			}
 		}
 	};

@@ -29,8 +29,8 @@ namespace Helios {
 		const CameraComponent& camera, Size screen_size)
 	{
 		Vector4 screenCoords = {
-			(x / screen_size.width()) * 2.0f - 1.0f,
-			(y / screen_size.height()) * -2.0f + 1.0f,
+			(x / screen_size.width) * 2.0f - 1.0f,
+			(y / screen_size.height) * -2.0f + 1.0f,
 			depth, 1.0f
 		};
 
@@ -84,9 +84,9 @@ namespace Helios {
 	Matrix4x4 SceneCamera::GetProjectionMatrix(const CameraComponent& camera, Size size = Graphics::GetCurrentSize())
 	{
 		return camera.ortographic ? (
-			Matrix4x4::OrthographicLH(camera.size, camera.size * ((float)size.y / (float)size.x), camera.near_z, camera.far_z)
+			Matrix4x4::OrthographicLH(camera.size, camera.size * ((float)size.height / (float)size.width), camera.near_z, camera.far_z)
 		) : (
-			Matrix4x4::PerspectiveLH(camera.fov * 3.14f / 180.0f, ((float)size.x / (float)size.y), camera.near_z, camera.far_z)
+			Matrix4x4::PerspectiveLH(camera.fov * 3.14f / 180.0f, ((float)size.width / (float)size.height), camera.near_z, camera.far_z)
 		);
 	}
 

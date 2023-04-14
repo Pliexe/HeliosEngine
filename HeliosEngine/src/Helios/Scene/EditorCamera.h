@@ -23,8 +23,8 @@ namespace Helios
 		const Matrix4x4 GetViewProjection();
 		const Matrix4x4 GetViewProjection() const;
 
-		Vector3 ScreenToWorldPoint(const Vector2& screenPoint, float depth = 0.0f);
-		Vector3 ScreenToWorldPoint(float x, float y, float depth = 0.0f);
+		Vector3 ScreenToWorldPoint(const Vector2& screenPoint, float z);
+		Vector3 ScreenToWorldPoint(float x, float y, float z);
 		Vector3 ScreenToWorldPoint(const Vector3& screenPoint);
 
 		void HandleMovement(Vector2 direction);
