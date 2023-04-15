@@ -24,7 +24,9 @@ namespace Helios {
 		virtual void HELIOS_API BindPS(uint32_t slot = 0) = 0;
 		// Bind the buffer to the vertex shader stage
 		virtual void HELIOS_API BindVS(uint32_t slot = 0) = 0;
+		virtual void HELIOS_API BindGS(uint32_t slot = 0) = 0;
 		virtual void HELIOS_API UnbindPS() const = 0;
+		virtual void HELIOS_API UnbindGS() const = 0;
 		virtual void HELIOS_API UnbindVS() const = 0;
 
 		virtual void HELIOS_API SetData(T data) = 0;

@@ -238,6 +238,7 @@ xcopy /y /d  "$(SolutionDir)bin\Dependencies\$(Platform)\Yaml\*.dll" "$(TargetDi
   </ItemGroup>
   <ItemGroup>
     <None Include="HeliosEditor.licenseheader" />
+    <None Include="Shaders\LineHeader.hlsli" />
     <None Include="Shaders\Shader.dgsl" />
   </ItemGroup>
   <ItemGroup>

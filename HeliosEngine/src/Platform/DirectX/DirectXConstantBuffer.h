@@ -62,6 +62,13 @@ namespace Helios
             Graphics::instance->m_deviceContext->VSSetConstantBuffers(slot, 1u, m_Data.GetAddressOf());
         }
 
+        void BindGS(uint32_t slot)
+        {
+            HL_ASSERT_EXCEPTION(slot < D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, "Pipeline Stage: Vertex Shader.\nSlot: " + std::to_string(slot) + "\nSlot must be less than " + std::to_string(D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT) + "!");
+            this->m_last_slot_gs = slot;
+            Graphics::instance->m_deviceContext->GSSetConstantBuffers(slot, 1u, m_Data.GetAddressOf());
+        }
+
         void UnbindPS() const
         {
             Graphics::instance->m_deviceContext->PSSetConstantBuffers(this->m_last_slot_ps, 1u, nullptr);
@@ -70,6 +77,11 @@ namespace Helios
         void UnbindVS() const
         {
             Graphics::instance->m_deviceContext->VSSetConstantBuffers(this->m_last_slot_vs, 1u, nullptr);
+        }
+
+        void UnbindGS() const
+        {
+            Graphics::instance->m_deviceContext->GSSetConstantBuffers(this->m_last_slot_gs, 1u, nullptr);
         }
 
         void SetData(T data)
@@ -89,5 +101,6 @@ namespace Helios
 		uint32_t m_Size;
         uint32_t m_last_slot_vs = 0u;
         uint32_t m_last_slot_ps = 0u;
+        uint32_t m_last_slot_gs = 0u;
     };
 }

@@ -42,6 +42,20 @@ namespace Helios
 			Rotate
 		};
 
+		enum class LineMode
+		{
+			Solid = 0,
+			Dashed = 1,
+			Dotted = 2,
+			Dash_Dot = 3,
+			Dash_Dot_Dot = 4,
+			Rounded_Solid = 5,
+			Rounded_Dashed = 6,
+			Rounded_Dotted = 7,
+			Rounded_Dash_Dot = 8,
+			Rounded_Dash_Dot_Dot = 9,
+		};
+
 		~GizmosRenderer();
 
 		static bool Init();
@@ -49,7 +63,7 @@ namespace Helios
 		static void End();
 		static void RenderVertices();
 		static void Flush();
-		static void DrawLine(Vector3 a, Vector3 b, float width = 0.5f, Color color = Color::White, int64_t id = -1, int32_t mode = -1);
+		static void DrawLine(Vector3 a, Vector3 b, float width = 0.5f, Color color = Color::White, int64_t id = -1, LineMode mode = LineMode::Solid);
 		static void DrawQuad(SceneCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, float
 		                     data);
 		static void DrawMeshVertices(EditorCamera camera, TransformComponent& transform, std::vector<MeshVertex>& vertices);

@@ -37,7 +37,7 @@ namespace Helios
 		Vector3 position;
 		Color color;
 		int32_t mode;
-		float width;
+		float thickness;
 		float id;
 	};
 
@@ -161,7 +161,7 @@ namespace Helios
 			{ "Position", Shader::DataType::Float3 },
 			{ "Color", Shader::DataType::Float4 },
 			{ "Mode", Shader::DataType::Int32 },
-			{ "Width", Shader::DataType::Float },
+			{ "Thickness", Shader::DataType::Float },
 			{ "Id", Shader::DataType::Float }
 		}, Shader::Topology::LineList));
 
@@ -304,6 +304,7 @@ namespace Helios
 			s_Data.m_lines.m_vertexBuffer->SetData(s_Data.m_lines.m_Lines, (s_Data.m_lines.m_index - s_Data.m_lines.m_Lines) * sizeof(LineGizmos));
 			s_Data.line_gizmos_shader->Bind();
 			s_Data.m_lines.m_vertexBuffer->Bind();
+			s_Data.transformBuffer->BindGS(0);
 
 			Graphics::instance->m_deviceContext->Draw((s_Data.m_lines.m_index - s_Data.m_lines.m_Lines), 0u);
 			s_Data.m_lines.m_index = s_Data.m_lines.m_Lines;
@@ -315,17 +316,17 @@ namespace Helios
 		HL_PROFILE_END();
 	}
 
-	void GizmosRenderer::DrawLine(Vector3 a, Vector3 b, float width, Color color, int64_t id, int32_t mode)
+	void GizmosRenderer::DrawLine(Vector3 a, Vector3 b, float width, Color color, int64_t id, LineMode mode)
 	{
 		if ((s_Data.m_lines.m_index - s_Data.m_lines.m_Lines) >= GizmosData::MaxLineGizmos - 1)
 			Flush();
 
 		*s_Data.m_lines.m_index = LineGizmos{
-			a, color, mode, width, (float)id
+			a, color, (int32_t)mode, width, (float)id
 		};
 		s_Data.m_lines.m_index++;
 		*s_Data.m_lines.m_index = LineGizmos{
-			b, color, mode, width, (float)id
+			b, color, (int32_t)mode, width, (float)id
 		};
 		s_Data.m_lines.m_index++;
 	}

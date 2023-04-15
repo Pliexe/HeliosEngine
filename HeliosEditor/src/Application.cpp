@@ -82,7 +82,7 @@ struct Line
 	Color color = Color::White;
 	float width = 0.5f;
 	int64_t id = -1;
-	int mode = -1;
+	GizmosRenderer::LineMode mode = GizmosRenderer::LineMode::Solid;
 };
 
 int ValidateInit() {
@@ -710,9 +710,11 @@ namespace Helios {
 
 							float A = C * std::sin(alpha);
 							float B = std::sqrt(std::pow(C, 2.0f) - std::pow(A, 2.0f));
-
+							
 							std::cout << "Alpha: " << alpha << ", A: " << A << ", B: " << B << ", C: " << C << std::endl;
 
+							tool_lines.emplace(Line{ originTransform.Right() * 1000.0f + originTransform.Position, originTransform.Right() * -1000.0f + originTransform.Position, Color::Red, 0.5f, -1, GizmosRenderer::LineMode::Solid });
+							
 							transform.SetLocalPosition(originTransform.Position + originTransform.Right() * A * (dir.x > 0.0f ? -1.0f : 1.0f));
 						}
 						break;
@@ -729,7 +731,8 @@ namespace Helios {
 						
 						auto newLocation = editorCamera.ScreenToWorldPoint(x, y, B);
 						transform.SetLocalPosition(newLocation);
-						tool_lines.emplace(Line { originTransform.Position, newLocation, Color::BlanchedAlmond, 0.2f, -1, 1 });
+						//tool_lines.emplace(Line { originTransform.Position, newLocation, Color::BlanchedAlmond, 0.5f, -1, GizmosRenderer::LineMode::Dashed });
+						tool_lines.emplace(Line { originTransform.Position, newLocation, Color::BlanchedAlmond, 10.5f, -1, GizmosRenderer::LineMode::Rounded_Dash_Dot_Dot });
 						break;
 					}
 					default: break;

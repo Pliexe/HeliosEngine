@@ -23195,11 +23195,11 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     /// @sa https://json.nlohmann.me/api/basic_json/operator_ltlt/
     friend std::ostream& operator<<(std::ostream& o, const basic_json& j)
     {
-        // read width member and use it as indentation parameter if nonzero
+        // read thickness member and use it as indentation parameter if nonzero
         const bool pretty_print = o.width() > 0;
         const auto indentation = pretty_print ? o.width() : 0;
 
-        // reset width to 0 for subsequent calls to this stream
+        // reset thickness to 0 for subsequent calls to this stream
         o.width(0);
 
         // do the actual serialization

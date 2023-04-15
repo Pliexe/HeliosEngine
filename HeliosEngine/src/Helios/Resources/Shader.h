@@ -53,7 +53,8 @@ namespace Helios {
 		enum class Topology
 		{
 			TriangleList = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
-			LineList = D3D11_PRIMITIVE_TOPOLOGY_LINELIST
+			LineList = D3D11_PRIMITIVE_TOPOLOGY_LINELIST,
+			PointList = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST
 		};
 
 		Shader() = delete;
