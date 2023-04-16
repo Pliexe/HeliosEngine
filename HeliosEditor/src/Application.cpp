@@ -710,22 +710,24 @@ namespace Helios {
 
 							float C = Vector3::Distance(originWorldTransform.Position, mvPoint);
 
-							float length = std::cos(alpha) * Vector3::Distance(originWorldTransform.Position, mvPoint);
+							float a1 = C * std::sin(alpha);
+							//float length = Vector3::Distance(originWorldTransform.Position, mvPoint * std::cos(alpha));
+							//float length = std::cos(alpha) * Vector3::Distance(originWorldTransform.Position, mvPoint);
 
-							std::cout << "Alpha: " << alpha << ", Cos: " << std::cos(alpha) << ", Length: " << length << std::endl;
+							std::cout << "Alpha: " << alpha << ", Cos: " << std::cos(alpha) << ", Length: " << a1 << std::endl;
 							
 							tool_lines.emplace(Line{ originTransform.Right() * 1000.0f + originTransform.Position, originTransform.Right() * -1000.0f + originTransform.Position, Color::Red, 0.5f, -1, GizmosRenderer::LineMode::Solid });
 
-							transform.SetLocalPosition(originTransform.Position + originTransform.Right() * length * (dir.x > 0.0f ? -1.0f : 1.0f));
+							transform.SetLocalPosition(originTransform.Position + originTransform.Right() * a1 * (dir.x > 0.0f ? -1.0f : 1.0f));
 							
 							// DrawAngle mvPoint and originWorldTransform.Position
 							// GizmosRenderer::DrawAngle(originWorldTransform.Position, mvPoint, dir, 5.0f, Color::Red, Matrix4x4::Identity());
 
-							tool_lines.emplace(Line{ originWorldTransform.Position, originWorldTransform.Position + forw * length, Color::Green, 0.5f, -1, GizmosRenderer::LineMode::Solid });
-							tool_lines.emplace(Line{ originWorldTransform.Position, originWorldTransform.Position + originWorldTransform.Right() * length, Color::Green, 0.5f, -1, GizmosRenderer::LineMode::Solid });
+							tool_lines.emplace(Line{ originWorldTransform.Position, originWorldTransform.Position + forw * a1, Color::Green, 0.5f, -1, GizmosRenderer::LineMode::Solid });
+							tool_lines.emplace(Line{ originWorldTransform.Position, originWorldTransform.Position + originWorldTransform.Right() * a1, Color::Green, 0.5f, -1, GizmosRenderer::LineMode::Solid });
 							tool_lines.emplace(Line{ originWorldTransform.Position, originWorldTransform.Position + dir * C, Color::Red, 0.5f, -1, GizmosRenderer::LineMode::Solid });
 							tool_lines.emplace(Line{ originWorldTransform.Position, mvPoint, Color::Yellow, 0.5f, -1, GizmosRenderer::LineMode::Rounded_Dash_Dot_Dot });
-							tool_lines.emplace(Line{ originWorldTransform.Position + originWorldTransform.Right() * length, mvPoint, Color::Green, 0.5f, -1, GizmosRenderer::LineMode::Dash_Dot });
+							tool_lines.emplace(Line{ originWorldTransform.Position + originWorldTransform.Right() * a1 * (alpha > 0.0f ? -1.0f : 1.0f), mvPoint, Color::Green, 0.5f, -1, GizmosRenderer::LineMode::Dash_Dot });
 
 							/*auto cameraForward = editorCamera.GetForward();
 							auto direction = (originWorldTransform.Position - editorCamera.GetPosition()).normalize();
