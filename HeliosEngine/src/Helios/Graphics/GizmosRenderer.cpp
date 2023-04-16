@@ -41,13 +41,29 @@ namespace Helios
 		float id;
 	};
 
+	struct DynamicGizmos
+	{
+		Vector3 position;
+		Color color;
+		float id;
+	};
+
 	struct GizmosData
 	{
 		static const uint32_t MaxQuadInstances = 10000;
 		static const uint64_t MaxGizmosInstances = 10000;
 		static const uint64_t MaxLineGizmos = 10000;
+		static const uint64_t MaxDynamicGizmoVertices = 4000 * 3;
 
 		//Ref<VertexBuffer>
+
+		struct DynamicGizmosConfig
+		{
+			DynamicGizmos* m_vertices;
+			DynamicGizmos* m_verticesPtr;
+
+			Ref<VertexBuffer> m_vertex_buffer;
+		} m_dynamic_gizmos;
 
 		struct Lines
 		{
@@ -90,6 +106,7 @@ namespace Helios
 		Ref<Shader> standard_gizmos_shader;
 		Ref<Shader> tool_gizmos_shader;
 		Ref<Shader> line_gizmos_shader;
+		Ref<Shader> dynamic_gizmos_shader;
 
 		struct QuadTool
 		{
@@ -122,6 +139,7 @@ namespace Helios
 	GizmosRenderer::~GizmosRenderer()
 	{
 		delete s_Data.m_lines.m_Lines;
+		delete s_Data.m_dynamic_gizmos.m_vertices;
 	}
 
 	bool GizmosRenderer::Init()
@@ -131,6 +149,12 @@ namespace Helios
 		s_Data.m_lines.m_index = s_Data.m_lines.m_Lines;
 		s_Data.m_lines.m_vertexBuffer = VertexBuffer::Create(sizeof(LineGizmos) * GizmosData::MaxLineGizmos, BufferUsage::Dynamic);
 		s_Data.m_lines.m_vertexBuffer->SetStride<LineGizmos>();
+
+		s_Data.m_dynamic_gizmos.m_vertex_buffer = VertexBuffer::Create(sizeof(DynamicGizmos) * GizmosData::MaxDynamicGizmoVertices, BufferUsage::Dynamic);
+		s_Data.m_dynamic_gizmos.m_vertex_buffer->SetStride<DynamicGizmos>();
+		s_Data.m_dynamic_gizmos.m_vertices = new DynamicGizmos[GizmosData::MaxDynamicGizmoVertices];
+		s_Data.m_dynamic_gizmos.m_verticesPtr = s_Data.m_dynamic_gizmos.m_vertices;
+
 
 #pragma region Initilization Gizmos
 		s_Data.m_GizmosInstanceData.ArrowGizmo = s_Data.m_GizmosInstanceData.m_GizmosObjects.data();
@@ -164,6 +188,12 @@ namespace Helios
 			{ "Thickness", Shader::DataType::Float },
 			{ "Id", Shader::DataType::Float }
 		}, Shader::Topology::LineList));
+
+		s_Data.dynamic_gizmos_shader = CreateRef<Shader>(Shader("DynamicGizmos", {
+			{ "Position", Shader::DataType::Float3 },
+			{ "Color", Shader::DataType::Float4 },
+			{ "Id", Shader::DataType::Float }
+		}));
 
 #pragma endregion
 
@@ -313,7 +343,119 @@ namespace Helios
 		}
 		HL_PROFILE_END();
 
+		HL_PROFILE_BEGIN("Gizmos Renderer - Dynamic Lines");
+		if ((s_Data.m_dynamic_gizmos.m_verticesPtr - s_Data.m_dynamic_gizmos.m_vertices) > 0)
+		{
+			s_Data.m_dynamic_gizmos.m_vertex_buffer->SetData(s_Data.m_dynamic_gizmos.m_vertices, (s_Data.m_dynamic_gizmos.m_verticesPtr - s_Data.m_dynamic_gizmos.m_vertices) * sizeof(DynamicGizmos));
+			s_Data.dynamic_gizmos_shader->Bind();
+			s_Data.m_dynamic_gizmos.m_vertex_buffer->Bind();
+
+			Graphics::instance->m_deviceContext->Draw((s_Data.m_dynamic_gizmos.m_verticesPtr - s_Data.m_dynamic_gizmos.m_vertices), 0u);
+			s_Data.m_dynamic_gizmos.m_verticesPtr = s_Data.m_dynamic_gizmos.m_vertices;
+			s_Data.dynamic_gizmos_shader->Unbind();
+		}
 		HL_PROFILE_END();
+
+		HL_PROFILE_END();
+	}
+
+	void GizmosRenderer::DrawTriangle(Vector3 a, Vector3 b, Vector3 c, Color color, float id)
+	{
+		if (s_Data.m_dynamic_gizmos.m_verticesPtr + 3 >= s_Data.m_dynamic_gizmos.m_vertices + GizmosData::MaxDynamicGizmoVertices)
+			Flush();
+
+		s_Data.m_dynamic_gizmos.m_verticesPtr->position = a;
+		s_Data.m_dynamic_gizmos.m_verticesPtr->color = color;
+		s_Data.m_dynamic_gizmos.m_verticesPtr->id = id;
+		s_Data.m_dynamic_gizmos.m_verticesPtr++;
+
+		s_Data.m_dynamic_gizmos.m_verticesPtr->position = b;
+		s_Data.m_dynamic_gizmos.m_verticesPtr->color = color;
+		s_Data.m_dynamic_gizmos.m_verticesPtr->id = id;
+		s_Data.m_dynamic_gizmos.m_verticesPtr++;
+
+		s_Data.m_dynamic_gizmos.m_verticesPtr->position = c;
+		s_Data.m_dynamic_gizmos.m_verticesPtr->color = color;
+		s_Data.m_dynamic_gizmos.m_verticesPtr->id = id;
+		s_Data.m_dynamic_gizmos.m_verticesPtr++;
+	}
+
+#define MAX_CIRCLE_SEGMENTS 64
+
+	void GizmosRenderer::DrawAngle(Vector3 a_normal, Vector3 b_normal, float radius, Color color, Matrix4x4 model_matrix)
+	{
+		if (s_Data.m_dynamic_gizmos.m_verticesPtr + MAX_CIRCLE_SEGMENTS >= s_Data.m_dynamic_gizmos.m_vertices + GizmosData::MaxDynamicGizmoVertices)
+			Flush();
+
+		// Circle with angle between a_normal and b_normal, The amount of segments is based on the radius
+		// Double sided circle
+		// Apply model matrix to the circle
+	}
+
+	void GizmosRenderer::DrawAngle(float angle, float radius, Color color, Matrix4x4 model_matrix)
+	{
+		
+	}
+
+	void GizmosRenderer::DrawAngle(Vector3 root, Vector3 a_normal, Vector3 b_normal, float radius, Color color, Matrix4x4 model_matrix)
+	{
+		if (s_Data.m_dynamic_gizmos.m_verticesPtr + MAX_CIRCLE_SEGMENTS >= s_Data.m_dynamic_gizmos.m_vertices + GizmosData::MaxDynamicGizmoVertices)
+			Flush();
+
+		// Draw a 2 sided circle with angle between a_normal and b_normal, The amount of segments is based on the angle and model matrix is applied to the circle and draw lines at edges of the circle using DrawLine
+
+		float angle = acosf(Vector3::Dot(a_normal, b_normal));
+		float segments = angle * radius;
+		if (segments > MAX_CIRCLE_SEGMENTS)
+			segments = MAX_CIRCLE_SEGMENTS;
+
+		float angle_step = angle / segments;
+		float current_angle = 0.0f;
+
+		Vector3 current_normal = a_normal;
+		Vector3 next_normal = a_normal;
+
+		DrawLine(root, root + a_normal * radius, 0.5f, color, -1, LineMode::Rounded_Solid);
+
+		for (int i = 0; i < segments; i++)
+		{
+			current_normal = Vector3::Rotate(current_normal, b_normal, angle_step);
+			next_normal = Vector3::Rotate(next_normal, b_normal, angle_step);
+
+			s_Data.m_dynamic_gizmos.m_verticesPtr->position = root + current_normal * radius;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->color = color;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->id = 0.0f;
+			s_Data.m_dynamic_gizmos.m_verticesPtr++;
+
+			s_Data.m_dynamic_gizmos.m_verticesPtr->position = root + next_normal * radius;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->color = color;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->id = 0.0f;
+			s_Data.m_dynamic_gizmos.m_verticesPtr++;
+
+			s_Data.m_dynamic_gizmos.m_verticesPtr->position = root + current_normal * radius;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->color = color;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->id = 0.0f;
+			s_Data.m_dynamic_gizmos.m_verticesPtr++;
+
+			s_Data.m_dynamic_gizmos.m_verticesPtr->position = root + next_normal * radius;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->color = color;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->id = 0.0f;
+			s_Data.m_dynamic_gizmos.m_verticesPtr++;
+
+			s_Data.m_dynamic_gizmos.m_verticesPtr->position = root + next_normal * radius;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->color = color;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->id = 0.0f;
+			s_Data.m_dynamic_gizmos.m_verticesPtr++;
+
+			s_Data.m_dynamic_gizmos.m_verticesPtr->position = root + current_normal * radius;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->color = color;
+			s_Data.m_dynamic_gizmos.m_verticesPtr->id = 0.0f;
+			s_Data.m_dynamic_gizmos.m_verticesPtr++;
+
+			DrawLine(root + current_normal * radius, root + next_normal * radius, 0.5f, color, -1, LineMode::Rounded_Solid);
+		}
+
+		DrawLine(root, root + b_normal * radius, 0.5f, color, -1, LineMode::Rounded_Solid);
 	}
 
 	void GizmosRenderer::DrawLine(Vector3 a, Vector3 b, float width, Color color, int64_t id, LineMode mode)

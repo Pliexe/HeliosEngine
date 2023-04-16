@@ -324,6 +324,7 @@
     <ClInclude Include="src\Helios\Scene\EditorCamera.h" />
     <ClInclude Include="src\Helios\Scene\Enums.h" />
     <ClInclude Include="src\Helios\Scene\SceneCamera.h" />
+    <ClInclude Include="src\Helios\Scripting\Native\NativeScript.h" />
     <ClInclude Include="src\Helios\Translation\Matrix.h" />
     <ClInclude Include="src\Helios\Translation\Quaternion.h" />
     <ClInclude Include="src\Helios\Utils\ErrorHandling.h" />

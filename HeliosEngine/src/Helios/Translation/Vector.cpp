@@ -234,6 +234,28 @@ namespace Helios {
 		return std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z);
 	}
 
+	Vector3 Vector3::Rotate(const Vector3& normal, const Vector3& axis, float angle)
+	{
+		float s = sin(angle);
+		float c = cos(angle);
+		float oc = 1.0f - c;
+
+		return
+		{
+			(normal.x * (axis.x * axis.x * oc + c) +
+				normal.y * (axis.x * axis.y * oc - axis.z * s) +
+				normal.z * (axis.x * axis.z * oc + axis.y * s)),
+
+			(normal.x * (axis.y * axis.x * oc + axis.z * s) +
+				normal.y * (axis.y * axis.y * oc + c) +
+				normal.z * (axis.y * axis.z * oc - axis.x * s)),
+
+			(normal.x * (axis.z * axis.x * oc - axis.y * s) +
+				normal.y * (axis.z * axis.y * oc + axis.x * s) +
+				normal.z * (axis.z * axis.z * oc + c))
+		};
+	}
+
 	bool Vector3::operator==(const Vector3& other) const
 	{
 		return SqrLength(*this - other) < 9.99999944E-11f;

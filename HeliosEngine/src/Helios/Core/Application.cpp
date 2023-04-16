@@ -17,8 +17,6 @@
 //	GetMonitorInfo()
 //}
 
-
-
 HWND Helios::Application::hWnd = NULL;
 Helios::Application* Helios::Application::instance = NULL;
 

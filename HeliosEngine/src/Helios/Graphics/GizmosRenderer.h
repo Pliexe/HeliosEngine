@@ -63,6 +63,10 @@ namespace Helios
 		static void End();
 		static void RenderVertices();
 		static void Flush();
+		static void DrawTriangle(Vector3 a, Vector3 b, Vector3 c, Color color, float id);
+		static void DrawAngle(Vector3 a_normal, Vector3 b_normal, float radius, Color color, Matrix4x4 model_matrix);
+		static void DrawAngle(float angle, float radius, Color color, Matrix4x4 model_matrix);
+		static void DrawAngle(Vector3 root, Vector3 a_normal, Vector3 b_normal, float radius, Color color, Matrix4x4 model_matrix);
 		static void DrawLine(Vector3 a, Vector3 b, float width = 0.5f, Color color = Color::White, int64_t id = -1, LineMode mode = LineMode::Solid);
 		static void DrawQuad(SceneCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, float
 		                     data);

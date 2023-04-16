@@ -191,6 +191,7 @@ namespace Helios {
 		static inline Vector3 Cross(Vector3 a, Vector3 b);
 		static inline Vector3 Lerp(Vector3 a, Vector3 b, float t);
 		static inline Vector3 MoveTowards(Vector3 a, Vector3 b, float maxDistanceDelta);
+		static Vector3 Rotate(const Vector3& normal, const Vector3& axis, float angle);
 
 		inline float length();
 		inline float sqrLength();

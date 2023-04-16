@@ -695,6 +695,42 @@ namespace Helios {
 							auto direction = (originWorldTransform.Position - editorCamera.GetPosition()).normalize();
 
 							float palpha = std::acos(Vector3::Dot(cameraForward, direction)) / (cameraForward.magnitude() * direction.magnitude());
+
+							float pC = Vector3::Distance(originWorldTransform.Position, editorCamera.GetPosition());
+
+							float pA = pC * std::sin(palpha);
+							float pB = std::sqrt(std::pow(pC, 2.0f) - std::pow(pA, 2.0f));
+
+							Vector3 mvPoint = editorCamera.ScreenToWorldPoint(x, y, pB);
+							auto forw = originWorldTransform.Forward();
+							auto dir = (originWorldTransform.Position - mvPoint).normalize();
+							//float C = Vector3::Distance(mvPoint, originWorldTransform.Position);
+
+							float alpha = std::acos(Vector3::Dot(forw, dir)) / (forw.magnitude() * dir.magnitude());
+
+							float C = Vector3::Distance(originWorldTransform.Position, mvPoint);
+
+							float length = std::cos(alpha) * Vector3::Distance(originWorldTransform.Position, mvPoint);
+
+							std::cout << "Alpha: " << alpha << ", Cos: " << std::cos(alpha) << ", Length: " << length << std::endl;
+							
+							tool_lines.emplace(Line{ originTransform.Right() * 1000.0f + originTransform.Position, originTransform.Right() * -1000.0f + originTransform.Position, Color::Red, 0.5f, -1, GizmosRenderer::LineMode::Solid });
+
+							transform.SetLocalPosition(originTransform.Position + originTransform.Right() * length * (dir.x > 0.0f ? -1.0f : 1.0f));
+							
+							// DrawAngle mvPoint and originWorldTransform.Position
+							// GizmosRenderer::DrawAngle(originWorldTransform.Position, mvPoint, dir, 5.0f, Color::Red, Matrix4x4::Identity());
+
+							tool_lines.emplace(Line{ originWorldTransform.Position, originWorldTransform.Position + forw * length, Color::Green, 0.5f, -1, GizmosRenderer::LineMode::Solid });
+							tool_lines.emplace(Line{ originWorldTransform.Position, originWorldTransform.Position + originWorldTransform.Right() * length, Color::Green, 0.5f, -1, GizmosRenderer::LineMode::Solid });
+							tool_lines.emplace(Line{ originWorldTransform.Position, originWorldTransform.Position + dir * C, Color::Red, 0.5f, -1, GizmosRenderer::LineMode::Solid });
+							tool_lines.emplace(Line{ originWorldTransform.Position, mvPoint, Color::Yellow, 0.5f, -1, GizmosRenderer::LineMode::Rounded_Dash_Dot_Dot });
+							tool_lines.emplace(Line{ originWorldTransform.Position + originWorldTransform.Right() * length, mvPoint, Color::Green, 0.5f, -1, GizmosRenderer::LineMode::Dash_Dot });
+
+							/*auto cameraForward = editorCamera.GetForward();
+							auto direction = (originWorldTransform.Position - editorCamera.GetPosition()).normalize();
+
+							float palpha = std::acos(Vector3::Dot(cameraForward, direction)) / (cameraForward.magnitude() * direction.magnitude());
 							float pC = Vector3::Distance(originWorldTransform.Position, editorCamera.GetPosition());
 
 							float pA = pC * std::sin(palpha);
@@ -715,9 +751,67 @@ namespace Helios {
 
 							tool_lines.emplace(Line{ originTransform.Right() * 1000.0f + originTransform.Position, originTransform.Right() * -1000.0f + originTransform.Position, Color::Red, 0.5f, -1, GizmosRenderer::LineMode::Solid });
 							
-							transform.SetLocalPosition(originTransform.Position + originTransform.Right() * A * (dir.x > 0.0f ? -1.0f : 1.0f));
+							transform.SetLocalPosition(originTransform.Position + originTransform.Right() * A * (dir.x > 0.0f ? -1.0f : 1.0f));*/
 						}
 						break;
+					case GizmosRenderer::Tool::MoveZ:
+					{
+						auto cameraForward = editorCamera.GetForward();
+						auto direction = (originWorldTransform.Position - editorCamera.GetPosition()).normalize();
+
+						float palpha = std::acos(Vector3::Dot(cameraForward, direction)) / (cameraForward.magnitude() * direction.magnitude());
+						float pC = Vector3::Distance(originWorldTransform.Position, editorCamera.GetPosition());
+
+						float pA = pC * std::sin(palpha);
+						float pB = std::sqrt(std::pow(pC, 2.0f) - std::pow(pA, 2.0f));
+
+						Vector3 mvPoint = editorCamera.ScreenToWorldPoint(x, y, pB);
+						auto forw = originWorldTransform.Forward();
+						auto dir = (originWorldTransform.Position - mvPoint).normalize();
+						float C = Vector3::Distance(mvPoint, originWorldTransform.Position);
+
+						float alpha = std::acos(Vector3::Dot(forw, dir)) / (forw.magnitude() * dir.magnitude());
+
+
+						float A = C * std::sin(alpha);
+						float B = std::sqrt(std::pow(C, 2.0f) - std::pow(A, 2.0f));
+
+						std::cout << "Alpha: " << alpha << ", A: " << A << ", B: " << B << ", C: " << C << std::endl;
+
+						tool_lines.emplace(Line{ originTransform.Forward() * 1000.0f + originTransform.Position, originTransform.Forward() * -1000.0f + originTransform.Position, Color::Green, 0.5f, -1, GizmosRenderer::LineMode::Solid });
+
+						transform.SetLocalPosition(originTransform.Position - originTransform.Forward() * A * (dir.x > 0.0f ? -1.0f : 1.0f));
+					}
+					break;
+					case GizmosRenderer::Tool::MoveY:
+					{
+						auto cameraForward = editorCamera.GetForward();
+						auto direction = (originWorldTransform.Position - editorCamera.GetPosition()).normalize();
+
+						float palpha = std::acos(Vector3::Dot(cameraForward, direction)) / (cameraForward.magnitude() * direction.magnitude());
+						float pC = Vector3::Distance(originWorldTransform.Position, editorCamera.GetPosition());
+
+						float pA = pC * std::sin(palpha);
+						float pB = std::sqrt(std::pow(pC, 2.0f) - std::pow(pA, 2.0f));
+
+						Vector3 mvPoint = editorCamera.ScreenToWorldPoint(x, y, pB);
+						auto forw = originWorldTransform.Forward();
+						auto dir = (originWorldTransform.Position - mvPoint).normalize();
+						float C = Vector3::Distance(mvPoint, originWorldTransform.Position);
+
+						float alpha = std::acos(Vector3::Dot(forw, dir)) / (forw.magnitude() * dir.magnitude());
+
+
+						float A = C * std::sin(alpha);
+						float B = std::sqrt(std::pow(C, 2.0f) - std::pow(A, 2.0f));
+
+						std::cout << "Alpha: " << alpha << ", A: " << A << ", B: " << B << ", C: " << C << std::endl;
+
+						tool_lines.emplace(Line{ originTransform.Up() * 1000.0f + originTransform.Position, originTransform.Up() * -1000.0f + originTransform.Position, Color::Blue, 0.5f, -1, GizmosRenderer::LineMode::Solid });
+
+						transform.SetLocalPosition(originTransform.Position + originTransform.Up() * A * (dir.x > 0.0f ? -1.0f : 1.0f));
+					}
+					break;
 					case GizmosRenderer::Tool::MoveXYZ:
 					{
 						auto cameraForward = editorCamera.GetForward();
@@ -728,11 +822,10 @@ namespace Helios {
 
 						float A = C * std::sin(alpha);
 						float B = std::sqrt(std::pow(C, 2.0f) - std::pow(A, 2.0f));
-						
+
 						auto newLocation = editorCamera.ScreenToWorldPoint(x, y, B);
 						transform.SetLocalPosition(newLocation);
-						//tool_lines.emplace(Line { originTransform.Position, newLocation, Color::BlanchedAlmond, 0.5f, -1, GizmosRenderer::LineMode::Dashed });
-						tool_lines.emplace(Line { originTransform.Position, newLocation, Color::BlanchedAlmond, 10.5f, -1, GizmosRenderer::LineMode::Rounded_Dash_Dot_Dot });
+						tool_lines.emplace(Line { originTransform.Position, newLocation, Color::BlanchedAlmond, 0.8f, -1, GizmosRenderer::LineMode::Rounded_Dashed });
 						break;
 					}
 					default: break;
