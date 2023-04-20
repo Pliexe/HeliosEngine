@@ -26,7 +26,7 @@ workspace "HeliosEngine"
 		"MultiProcessorCompile"
 	}
 
-outdir = "%{cfg.system}/%{cfg.buildcfg}-%{cfg.architecture}"
+outdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
 IncludeDir["ImGui"] = "%{wks.location}/HeliosEngine/vendor/imgui"
