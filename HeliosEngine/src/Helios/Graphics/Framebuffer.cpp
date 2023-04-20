@@ -13,7 +13,7 @@ namespace Helios
     {
         switch (Graphics::GetAPI())
         {
-        case Graphics::API::DirectX: return CreateRef<DirectXFramebuffer>(width, height, bufferSpecifications);
+        case Graphics::API::DirectX11: return CreateRef<DirectXFramebuffer>(width, height, bufferSpecifications);
         }
 
         HL_EXCEPTION(true, "No Graphics API selected!");

@@ -260,9 +260,9 @@ namespace Helios {
 
 			profilerGraph = CreateRef<StackedGraph>();
 			
-			//DirectX::XMMatrixTranslation()
-			//DirectX::XMMatrixMultiply
-			//DirectX::XMVector3Unproject()
+			//DirectX11::XMMatrixTranslation()
+			//DirectX11::XMMatrixMultiply
+			//DirectX11::XMVector3Unproject()
 			// Setup Platform/Renderer backends
 			ImGui_ImplWin32_Init(m_hWnd);
 			ImGui_ImplDX11_Init(graphics->m_device, graphics->m_deviceContext);

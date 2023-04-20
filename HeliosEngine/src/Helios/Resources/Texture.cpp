@@ -9,7 +9,7 @@ namespace Helios
     {
         switch (Graphics::GetAPI())
         {
-        case Graphics::API::DirectX: return CreateRef<DirectXTexture2D>(path.string());
+        case Graphics::API::DirectX11: return CreateRef<DirectXTexture2D>(path.string());
         }
 
         HL_CORE_ASSERT_WITH_MSG(false, "Unknown Graphics API!");
@@ -20,7 +20,7 @@ namespace Helios
     {
         switch (Graphics::GetAPI())
         {
-        case Graphics::API::DirectX: return CreateRef<DirectXTexture2D>(width, height);
+        case Graphics::API::DirectX11: return CreateRef<DirectXTexture2D>(width, height);
         }
 
         HL_CORE_ASSERT_WITH_MSG(false, "Unknown Graphics API!");

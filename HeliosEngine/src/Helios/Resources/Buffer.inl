@@ -12,7 +12,7 @@ namespace Helios
 	{
 		switch (Graphics::GetAPI())
 		{
-			case Graphics::API::DirectX: return (CreateRef<DirectXConstantBuffer<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
+			case Graphics::API::DirectX11: return (CreateRef<DirectXConstantBuffer<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
 		}
 
 		HL_CORE_ASSERT(false, "Unknown Graphics API!");
@@ -25,7 +25,7 @@ namespace Helios
 
 		switch (Graphics::GetAPI())
 		{
-			case Graphics::API::DirectX: return CreateRef<DirectXConstantBuffer<T>>(data, sizeof(T) + (16 - sizeof(T) % 16));
+			case Graphics::API::DirectX11: return CreateRef<DirectXConstantBuffer<T>>(data, sizeof(T) + (16 - sizeof(T) % 16));
 		}
 
 		HL_CORE_ASSERT(false, "Unknown GraphicsAPI!");

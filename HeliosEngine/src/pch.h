@@ -46,7 +46,7 @@ using json = nlohmann::json;
 #include <wrl.h>
 #include <corecrt_math_defines.h>
 
-#ifdef HELIOS_EDITOR
+#ifdef HELIOS_INCLUDE_IMGUI
 
 // ImGUI
 
@@ -54,7 +54,6 @@ using json = nlohmann::json;
 
 #include <imgui_stdlib.h>
 #include <imgui_impl_dx11.h>
-#include <imgui_impl_dx10.h>
 #include <imgui_impl_win32.h>
 
 #endif

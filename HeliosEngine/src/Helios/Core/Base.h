@@ -1,4 +1,4 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
@@ -15,3 +15,5 @@
 #endif
 
 #define HL_DEBUGBREAK __debugbreak
+
+#define HL_INIT_APPLICATION(ClassName) Helios::Application* Helios::CreateApplication() { return new ClassName(); }

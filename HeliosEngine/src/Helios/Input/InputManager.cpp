@@ -2,10 +2,11 @@
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
+#include "pch.h"
+
 #include "InputManager.h"
 #include "Helios/Translation/Vector.h"
 #include "Helios/Core/Application.h"
-#include "pch.h"
 
 bool Helios::InputManager::IsKeyPressed(int key)
 {

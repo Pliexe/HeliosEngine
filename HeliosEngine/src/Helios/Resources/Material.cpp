@@ -11,7 +11,7 @@ namespace Helios
 	{
 		switch (Graphics::GetAPI())
 		{
-		case Graphics::API::DirectX:
+		case Graphics::API::DirectX11:
 			return CreateRef<DirectXMaterial>(filter, type);
 		case Graphics::API::OpenGL:
 			HL_CORE_ASSERT(false, "OpenGL is not supported yet!");

@@ -2,9 +2,10 @@
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
+#include "pch.h"
+
 #include "Application.h"
 #include "Time.h"
-#include "pch.h"
 #include <Windows.h>
 #include "Logger.h"
 #include "Profiler.h"

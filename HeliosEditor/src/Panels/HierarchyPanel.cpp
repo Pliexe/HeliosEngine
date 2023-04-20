@@ -1,11 +1,12 @@
-#include "BasePanel.h"
 #include "HierarchyPanel.h"
-#include "InspectorPanel.h"
 
+#include <imgui.h>
+#include <entt.hpp>
 #include <Helios/Scene/SceneRegistry.h>
+
+#include "BasePanel.h"
+#include "InspectorPanel.h"
 #include "AssetRegistry.h"
-#include "imgui.h"
-#include "entt.hpp"
 
 namespace Helios {
 
@@ -195,7 +196,9 @@ namespace Helios {
 
 	void HierarchyPanel::OnUpdate()
 	{
-		if (ImGui::BeginPopupContextWindow(NULL, ImGuiPopupFlags_MouseButtonRight, false))
+		// Changed
+		//if (ImGui::BeginPopupContextWindow(NULL, ImGuiPopupFlags_MouseButtonRight, false))
+		if (ImGui::BeginPopupContextWindow(NULL, ImGuiPopupFlags_MouseButtonRight))
 		{
 			Popup();
 			ImGui::EndPopup();

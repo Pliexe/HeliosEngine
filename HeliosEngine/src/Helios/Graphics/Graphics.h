@@ -16,7 +16,7 @@ namespace Helios {
 		enum class API
 		{
 			None = 0,
-			DirectX = 1,
+			DirectX11 = 1,
 			OpenGL = 2,
 		};
 
@@ -71,7 +71,7 @@ namespace Helios {
 
 	public:
 		Graphics() = delete;
-		Graphics(HWND hWnd) : m_hWnd(hWnd) { instance = this; s_API = API::DirectX; };
+		Graphics(HWND hWnd) : m_hWnd(hWnd) { instance = this; s_API = API::DirectX11; };
 		~Graphics();
 
 		void ClearRenderTarget(float r, float g, float b);

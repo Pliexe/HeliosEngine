@@ -204,8 +204,8 @@ namespace Helios {
 	};
 	
 }
-//#include "Platform/DirectX/Test.h"
-//#include "Platform/DirectX/DirectXConstantBuffer.h"
+//#include "Platform/DirectX11/Test.h"
+//#include "Platform/DirectX11/DirectXConstantBuffer.h"
 //namespace Helios {
 //	template <class T>
 //	Ref<ConstantBuffer<T>> ConstantBuffer<T>::Create()
@@ -215,8 +215,8 @@ namespace Helios {
 //		return CreateRef<Helios::DirectXConstantBuffer<T>>(sizeof(T) + (16 - sizeof(T) % 16));
 //		switch (Graphics::GetAPI())
 //		{
-//			case Graphics::API::DirectX: return reinterpret_cast<Ref<ConstantBuffer<T>>>(CreateRe?f<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
-//			//case Graphics::API::DirectX: return reinterpret_cast<Ref<ConstantBuffer<T>>>(CreateRef<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
+//			case Graphics::API::DirectX11: return reinterpret_cast<Ref<ConstantBuffer<T>>>(CreateRe?f<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
+//			//case Graphics::API::DirectX11: return reinterpret_cast<Ref<ConstantBuffer<T>>>(CreateRef<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
 //		}
 //
 //		HL_CORE_ASSERT(false, "Unknown Graphics API!");
@@ -229,7 +229,7 @@ namespace Helios {
 //
 //		switch (Graphics::GetAPI())
 //		{
-//		case Graphics::API::DirectX: return CreateRef<Test1<T>>(data, sizeof(T) + (16 - sizeof(T) % 16));
+//		case Graphics::API::DirectX11: return CreateRef<Test1<T>>(data, sizeof(T) + (16 - sizeof(T) % 16));
 //		}
 //
 //		HL_CORE_ASSERT(false, "Unknown GraphicsAPI!");
