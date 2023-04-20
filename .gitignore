@@ -5,6 +5,11 @@
 
 # Ignore all files in the .vs folder
 .vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+**.csproj
 
 # Ignore all files in the .vscode folder
 .vscode/
