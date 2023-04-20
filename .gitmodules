@@ -1,6 +1,3 @@
-[submodule "yaml-cpp"]
-	path = yaml-cpp
-	url = https://github.com/jbeder/yaml-cpp
 [submodule "HeliosEngine/vendor/imgui"]
 	path = HeliosEngine/vendor/imgui
 	url = https://github.com/ocornut/imgui
