@@ -17,9 +17,10 @@
 # Ignore all files in the .vscode-test folder
 .vscode-test/
 
-# Ignore bin and obj folders
-bin/
-bin-int/
+# Ignore bin and obj folders in all subdirectories except premake5 directory
+**/bin/
+**/bin-int/
+!premake5/bin/
 
 # Ignore Visual Studio Project files
 *.csproj
