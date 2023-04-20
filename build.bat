@@ -16,7 +16,7 @@ GOTO Done
 :PrtHelp
 
 echo.
-echo Usage: build.bat [command]
+echo Usage: %~n0%~x0 [command]
 echo.
 echo Commands:
 echo.
@@ -45,7 +45,7 @@ if not defined DevEnvDir (
     call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
 )
 
-set soltionfile="HeliosEngine.sln"
-msbuild %soltionfile% /t:Build /p:Configuration=Debug /p:Platform=x64
+set solutionfile="HeliosEngine.sln"
+msbuild %solutionfile% /t:Build /p:Configuration=Debug /p:Platform=x64
 
 :Done

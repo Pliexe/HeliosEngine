@@ -92,12 +92,16 @@ group ""
     include "HeliosEngine"
     include "HeliosEditor"
 
-
-if _ACTION == 'clean' then
-    os.rmdir('bin')
-    os.rmdir('bin-int')
-    os.remove('**.sln')
-    os.remove('**.vcxproj')
-    os.remove('**.vcxproj.*')
-    -- etc
-end
+newaction {
+    trigger = "clean",
+    description = "Remove all binaries and intermediate files, and project files",
+    execute = function ()
+        print("Removing all binaries and intermediate files")
+        os.rmdir('bin')
+        os.rmdir('bin-int')
+        print("Removing all project files")
+        os.remove('**.sln')
+        os.remove('**.vcxproj')
+        os.remove('**.vcxproj.*')
+    end
+}
