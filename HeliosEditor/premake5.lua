@@ -13,6 +13,7 @@ project "HeliosEditor"
         "src/**.c",
         "src/**.hpp",
         "src/**.cpp",
+        "Shaders/**.hlsl",
     }
 
     includedirs
@@ -49,6 +50,22 @@ project "HeliosEditor"
     debugargs { "\"C:\\Users\\dz\\Documents\\Helios Projects\\Sandbox\\\"" }
 
     flags { "NoPCH" }
+
+    filter { "files:**.hlsl" }
+        flags "ExcludeFromBuild"
+        shadermodel "5.0"
+    filter { "files:**PixelShader.hlsl" }
+        removeflags "ExcludeFromBuild"
+        shadertype "Pixel"
+        shaderentry "main"
+    filter { "files:**VertexShader.hlsl" }
+        removeflags "ExcludeFromBuild"
+        shadertype "Vertex"
+        shaderentry "main"
+    filter { "files:**GeometryShader.hlsl" }
+        removeflags "ExcludeFromBuild"
+        shadertype "Geometry"
+        shaderentry "main"
 
     filter "system:windows"
         systemversion "latest"

@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <fstream>
 #include <Windows.h>
+#include <atlstr.h>
 
 namespace Helios {
 	namespace Project {
@@ -44,8 +45,11 @@ namespace Helios {
 			if (__argc > 1) {
 				int argCount;
 				LPWSTR* args = CommandLineToArgvW(GetCommandLineW(), &argCount);
+				args[1][wcslen(args[1]) - 1] = '\0';
 				std::filesystem::path selected_path(args[1]);
 				LocalFree(args);
+
+				std::cout << "Project Location: " <<  selected_path << std::endl;
 
 				if (!std::filesystem::is_directory(selected_path)) {
 					MessageBoxA(NULL, "The path given is invalid!", "Failed to open project!", MB_ICONERROR);
