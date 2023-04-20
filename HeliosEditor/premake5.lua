@@ -45,7 +45,8 @@ project "HeliosEditor"
         "YAML_CPP_STATIC_DEFINE",
     }
 
-    debugargs { "--append", "\"C:\\Users\\dz\\Documents\\Helios Projects\\Sandbox\\\"" }
+    -- For some reason it's not settings it inside Visual Studio
+    debugargs { "\"C:\\Users\\dz\\Documents\\Helios Projects\\Sandbox\\\"" }
 
     flags { "NoPCH" }
 
