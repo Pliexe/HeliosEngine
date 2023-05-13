@@ -119,7 +119,7 @@ namespace Helios
 		rendererData.transformBuffer->BindVS(0);
 
 
-		Graphics::instance->m_deviceContext->DrawIndexed(meshRenderer.mesh->getIndexCount(), 0u, 0u);
+		Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexed(meshRenderer.mesh->getIndexCount(), 0u, 0u);
 	}
 }
 

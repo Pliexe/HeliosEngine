@@ -34,11 +34,20 @@
 
 // Windows
 #define D3D_DEBUG_INFO
+
+#ifdef HELIOS_PLATFORM_WINDOWS
+
 #include <windowsx.h>
 #include <d2d1.h>
 #include <d3d11.h>
 #include <dwrite.h>
 #include <wincodec.h>
+#define NOMINMAX
+
+#endif
+
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 #include <json.hpp>
 using json = nlohmann::json;
@@ -49,12 +58,13 @@ using json = nlohmann::json;
 #ifdef HELIOS_INCLUDE_IMGUI
 
 // ImGUI
-
 #include <imgui.h>
 
 #include <imgui_stdlib.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 #endif
 

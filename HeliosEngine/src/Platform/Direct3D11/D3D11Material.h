@@ -2,10 +2,10 @@
 #include "pch.h"
 
 namespace Helios {
-    class DirectXMaterial : public Material {
+    class D3D11Material : public Material {
     public:
-        DirectXMaterial(Filter filter, Type type);
-        virtual ~DirectXMaterial() = default;
+        D3D11Material(Filter filter, Type type);
+        virtual ~D3D11Material() = default;
 
         virtual void Bind(uint32_t slot) override;
         virtual void Unbind() override;

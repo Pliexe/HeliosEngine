@@ -4,7 +4,7 @@
  */
 #include "pch.h"
 #include "Mouse.h"
-#include "Helios/Core/Application.h"
+#include "Helios/Core/DepricatedApplication.h"
 #include "Helios/Translation/Vector.h"
 
 using namespace Helios;
@@ -14,9 +14,9 @@ void Mouse::SetCursorState(MouseState state)
 	switch (state)
 	{
 	case Mouse::Locked:
-		//SetCapture(Application::hWnd);
+		//SetCapture(DepricatedApplication::hWnd);
 		RECT cRect;
-		GetWindowRect(Application::hWnd, &cRect);
+		GetWindowRect(DepricatedApplication::hWnd, &cRect);
 		ClipCursor(&cRect);
 		break;
 	case Mouse::Show:
@@ -30,7 +30,7 @@ Point Mouse::GetPosition()
 {
 	POINT p;
 	if (GetCursorPos(&p)) {
-		if (ScreenToClient(Application::instance->m_hWnd, &p)) {
+		if (ScreenToClient(DepricatedApplication::instance->m_hWnd, &p)) {
 			return Point(p.x, p.y);
 		}
 	}

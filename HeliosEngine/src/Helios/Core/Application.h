@@ -1,119 +1,58 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
- * You should have received a copy of the GNU AGPL v3.0 license with
- * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
- */
 #pragma once
-
 #include "pch.h"
-#include "Base.h"
+
+#include "Window.h"
 #include "Helios/Graphics/Graphics.h"
-#include "Helios/Scene/SceneRegistry.h"
+#include "GraphicalWindow.h"
+#include "Helios/Events/Events.h"
 
-namespace Helios {
+int main(int,char**);
 
-	class HELIOS_API WindowCordinates {
-	private:
-		static float width;
-		static float height;
-		static float scale;
-	public:
-		WindowCordinates() = delete;
-		WindowCordinates(const WindowCordinates&) = delete;
-		
-		static void SetSize(int w, int h) { 
-			static float baseCanvas = 1920 + 1680;
-			width = w; height = h;
-			scale = (baseCanvas - (baseCanvas - (w + h))) / baseCanvas;
-		}
-
-		static inline const float getScale() { return scale; }
-
-		static inline Vector2 getSize() { return { width, height }; }
-
-		static inline const float getWidth() { return width; }
-		static inline const float getHeight() { return height; }
-
-		friend class Application;
-		extern friend class EngineScene;
-	};
-
+namespace Helios
+{
 	class HELIOS_API Application
 	{
+	public:
+		struct Specifications : GraphicalWindow::Specifications
+		{
+			Graphics::API graphicsAPI;
+		};
+
+		Application(Specifications specs);
+
+		Scope<GraphicalWindow>& GetWindow() { return m_Window; }
+		
+		void Initialize(Specifications specs);
+		void Quit();
+
+		// Getters
+		bool IsRunning() const;
+		static Application& GetInstance() { return *m_Instance; }
+	protected:
+		void Run();
+
+
+		virtual void OnUpdate() = 0;
+
+	private:
 	private:
 
-		static HWND hWnd;
+		void OnEvent(Event& event);
 
-		HWND m_hWnd = NULL; // Window Handle
-		RAWINPUTDEVICE rid = { };
+		bool OnWindowClose(WindowCloseEvent& event);
+		bool OnWindowResize(WindowResizeEvent& event);
 
-		int clientWidth = 800;
-		int clientHeight = 600;
+		Scope<GraphicalWindow> m_Window;
 
-		DWORD dwStyle = WS_OVERLAPPEDWINDOW;
-		DWORD dwExStyle = WS_EX_OVERLAPPEDWINDOW;
+		bool m_Running = true;
 
-		Graphics* graphics = NULL;
+		inline static Application* m_Instance = nullptr;
 
-		static Application* instance;
+		friend class GraphicalWindow;
+		friend class Win32GraphicalWindow;
 
-#pragma region WndProc
-
-		virtual LRESULT CALLBACK WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-		static LRESULT CALLBACK StaticWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-#pragma endregion
-
-		void GameLoop();
-
-		void Shutdown();
-
-	protected:
-
-		Graphics* getGraphics() const { return graphics; }
-
-		static const wchar_t* WindowTitle() { return L"Game"; };
-		static const wchar_t* WindowClassName() { return L"Helios Game Window"; };
-
-		bool fpsCounter = false;
-
-	public:
-		static const HWND GetHwnd() { return instance->m_hWnd; }
-
-		Application(const Application& copy) = delete;
-		Application() { };
-		Application(int windowWidth, int windowHeight);
-		~Application();
-
-		void Render(Graphics& graphics) { }
-
-		virtual void OnRender();
-		virtual void OnUpdate();
-		void CheckEngineQueue();
-
-		int Run();
-		static void ShowMessageBox(const wchar_t* title, const wchar_t* text, UINT type = MB_OK, bool pauseGame = true);
-
-		static void ShowMessage(const wchar_t* title, const wchar_t* text, UINT type = MB_OK, bool pauseGame = true);
-		static void ShowMessage(std::wstring title, std::wstring text, UINT type = MB_OK, bool pauseGame = true);
-		static void ShowMessage(const char* title, const char* text, UINT type = MB_OK, bool pauseGame = true);
-		static void ShowMessage(std::string title, std::string text, UINT type = MB_OK, bool pauseGame = true);
-
-		static void Quit();
-
-		virtual void Init() = 0;
-#ifdef HELIOS_EDITOR
-		virtual void OnGizmosRender() = 0;
-#endif
-
-		friend class Mouse;
-		friend class InputManager;
-		friend class Camera;
-		friend class Bitmap;
-		friend class Scene;
-
-		extern friend class GameEngine;
+		friend int ::main(int,char**);
 	};
 
-	Application* CreateApplication();
+	Application* CreateApplication(int argc, char** argv);
 }
-

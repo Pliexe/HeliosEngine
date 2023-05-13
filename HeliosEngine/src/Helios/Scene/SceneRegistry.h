@@ -9,7 +9,7 @@
 #include "Scene.h"
 #include "GameObject.h"
 #include "Helios/Core/Base.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 #include "SceneCamera.h"
 
 namespace Helios {
@@ -19,9 +19,21 @@ namespace Helios {
 	class HELIOS_API SceneRegistry
 	{
 	public:
-		static void Unregister(std::filesystem::path path);
-		static void Register(std::filesystem::path path);
-		static bool LoadScene(std::filesystem::path path);
+		enum class Mode
+		{
+			Single,
+			Additive
+		};
+		
+		static void Register(std::string name, std::filesystem::path path);
+		
+		static void LoadEmptyScene(std::string name);
+		static bool LoadScene(std::filesystem::path path, Mode mode = Mode::Single);
+		static bool LoadScene(std::string name, std::filesystem::path path, Mode mode = Mode::Single);
+		static bool LoadScene(std::string name, Mode mode = Mode::Single);
+
+		static bool UnloadScene(std::string name);
+		
 		static GameObject GetPrimaryCamera();
 		static void OnRuntimeUpdate();
 		static void OnEditorUpdate();
@@ -33,47 +45,14 @@ namespace Helios {
 		static Ref<Scene> create_temporary_scene();
 
 	private:
-
-		static std::map<std::filesystem::path, Ref<Scene>> m_scenes;
-		// First entry is global scene
-		static Ref<Scene> m_activeScene;
+		
+		static std::vector<Ref<Scene>> m_activeScenes;
+		static std::unordered_map<std::string, std::filesystem::path> m_scenePaths;
 
 		static std::vector<std::future<void>> m_asyncTasks;
 
 		extern friend class GameEngine;
-
-
-	//	static std::map<std::string, Ref<Scene>> scenes;
-	//	static Ref<Scene> currentScene;
-	//	static Ref<Scene> loadQueue;
-
-	//	//inline Scene* getCurrentScene() const { return currentScene; }
-
-	//	static void CheckQueue();
-
-	//public:
-
-	//	inline static const WeakRef<Scene>& GetCurrentScene() { return currentScene; }
-	//	inline static bool HasCurrentScene() { return currentScene != nullptr; }
-
-	//	SceneRegistry() = delete;
-	//	SceneRegistry(SceneRegistry const&) = delete;
-	//	void operator=(SceneRegistry const&) = delete;
-
-	//	static void Render(Graphics& graphics);
-	//	static void Update();
-
-	//	static const WeakRef<Scene>& AddScene(std::string name, std::function<void(Scene&)> callback);
-	//	static const WeakRef<Scene>& AddScene(std::string name);
-
-	//	static bool LoadScene(std::string name);
-
-	//	friend class Application;
-	//	friend class GameObject;
-	//	friend class TransformComponent;
-
-	//	friend class GameEngine;
-
+		extern friend class HeliosEditor;
 	};
 }
 

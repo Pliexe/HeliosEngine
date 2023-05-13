@@ -3,7 +3,7 @@
 #include "Helios/Core/Asserts.h"
 #include "Helios/Graphics/Graphics.h"
 
-#include "Platform/DirectX/DirectXMaterial.h"
+#include "Platform/Direct3D11/D3D11Material.h"
 
 namespace Helios
 {
@@ -11,13 +11,13 @@ namespace Helios
 	{
 		switch (Graphics::GetAPI())
 		{
-		case Graphics::API::DirectX11:
-			return CreateRef<DirectXMaterial>(filter, type);
+		case Graphics::API::Direct3D11:
+			return CreateRef<D3D11Material>(filter, type);
 		case Graphics::API::OpenGL:
-			HL_CORE_ASSERT(false, "OpenGL is not supported yet!");
+			HELIOS_ASSERT(false, "OpenGL is not supported yet!");
 			return nullptr;
 		default:
-			HL_CORE_ASSERT(false, "Unknown Graphics API!");
+			HELIOS_ASSERT(false, "Unknown DepricatedGraphics API!");
 			return nullptr;
 		}
 	}

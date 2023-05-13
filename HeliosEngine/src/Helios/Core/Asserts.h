@@ -3,10 +3,18 @@
 #include "Base.h"
 #include "Logger.h"
 #include <string>
-#define HL_CORE_ASSERT(condition) if(!(condition)) { HL_DEBUGBREAK(); } 
+
+#ifdef HELIOS_DEBUG
+
+#define HELIOS_ASSERT(condition) assert(condition)
 #define HL_CORE_ASSERT_WITH_MSG(condition, message) if(!(condition)) { HL_MESSAGE(("Helios Assertion Failed!\n\nFunction:" + std::string(__FUNCTION__) + "\nLine: " + std::to_string(__LINE__) + "\n\nMessage: " + message ).c_str()); HL_DEBUGBREAK(); }
 
+#else
 
+#define HL_CORE_ASSERT(condition)
+#define HL_CORE_ASSERT_WITH_MSG(condition, message)
+
+#endif // HELIOS_DEBUG
 
 namespace Helios {
 	class HeliosException : public std::exception

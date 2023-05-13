@@ -6,13 +6,13 @@
 
 #include "ObjectComponent.h"
 #include "Helios/Core/Base.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 
 namespace Helios {
 	class HELIOS_API ObjectBehaviour : public ObjectComponent
 	{
 	private:
-		void Render(Graphics& g) override { }
+		void Render(DepricatedGraphics& g) override { }
 	protected:
 		virtual void Update() override = 0;
 	};

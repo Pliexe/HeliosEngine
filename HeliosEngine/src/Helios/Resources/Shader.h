@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pch.h"
-#include "Helios/Core/Application.h"
+#include "Helios/Core/DepricatedApplication.h"
 #include "Helios/Core/Asserts.h"
 #include <d3dcompiler.h>
 
@@ -75,7 +75,7 @@ namespace Helios {
 				);
 
 				HL_EXCEPTION(
-					FAILED(Graphics::instance->m_device->CreateGeometryShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_geometryShader)),
+					FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateGeometryShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_geometryShader)),
 					"Failed to create geometry shader!\n" + geometryShaderPath
 				);
 			}
@@ -88,7 +88,7 @@ namespace Helios {
 			);
 
 			HL_EXCEPTION(
-				FAILED(Graphics::instance->m_device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_pixelShader)),
+				FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_pixelShader)),
 				"Failed to create pixel shader!\n" + pixelShaderPath
 			);
 
@@ -100,7 +100,7 @@ namespace Helios {
 			);
 
 			HL_EXCEPTION(
-				FAILED(Graphics::instance->m_device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_vertexShader)),
+				FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_vertexShader)),
 				"Failed to create vertex shader!\n" + vertexShaderPath
 			);
 
@@ -165,12 +165,12 @@ namespace Helios {
 			HRESULT hr;
 
 			HL_EXCEPTION_HR(
-				FAILED(hr = Graphics::instance->m_device->CreateInputLayout(ied, (UINT)index, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &m_inputLayout)),
+				FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateInputLayout(ied, (UINT)index, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &m_inputLayout)),
 				"Failed to create input layout!\n" + vertexShaderPath + "\n" + ss.str(), hr
 			);
 #else
 			HL_EXCEPTION(
-				FAILED(Graphics::instance->m_device->CreateInputLayout(ied, (UINT)index, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &m_inputLayout)),
+				FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateInputLayout(ied, (UINT)index, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &m_inputLayout)),
 				"Failed to create input layout!\n" + vertexShaderPath
 			);
 #endif // DEBUG

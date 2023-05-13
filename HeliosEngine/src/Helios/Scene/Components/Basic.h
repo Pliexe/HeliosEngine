@@ -5,6 +5,7 @@
 namespace Helios
 {
 	struct HELIOS_API GlobalObjectComponent { byte a; };
+	struct HELIOS_API DontDestroyOnLoadComponent { byte a; };
 	struct HELIOS_API DisabledObjectComponent { byte a; };
 
 	struct HELIOS_API InfoComponent

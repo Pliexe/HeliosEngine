@@ -14,6 +14,8 @@ project "HeliosEditor"
         "src/**.hpp",
         "src/**.cpp",
         "Shaders/**.hlsl",
+        "%{wks.location}/HeliosEngine/vendor/stb_image/**.h",
+        "%{wks.location}/HeliosEngine/vendor/stb_image/**.cpp",
     }
 
     includedirs
@@ -24,11 +26,14 @@ project "HeliosEditor"
         "%{wks.location}/HeliosEngine/vendor/entt/include",
         "%{wks.location}/HeliosEngine/vendor/json/single_include/nlohmann",
         
+        "%{IncludeDir.ProjectManager}",
+        
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.ImGuiMisc}",
         "%{IncludeDir.ImGuiBackends}",
         "%{IncludeDir.Yaml}",
-        "%{IncludeDir.ProjectManager}",
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.GLAD}",
     }
 
     links
@@ -37,6 +42,8 @@ project "HeliosEditor"
         "ImGui",
         "Yaml",
         "ProjectManager",
+        "GLFW",
+        "GLAD",
     }
 
     defines
@@ -44,6 +51,7 @@ project "HeliosEditor"
         "HELIOS_EDITOR",
         "HELIOS_INCLUDE_IMGUI",
         "YAML_CPP_STATIC_DEFINE",
+        "GLFW_INCLUDE_NONE",
     }
 
     -- For some reason it's not settings it inside Visual Studio
@@ -54,6 +62,7 @@ project "HeliosEditor"
     filter { "files:**.hlsl" }
         flags "ExcludeFromBuild"
         shadermodel "5.0"
+        
     filter { "files:**PixelShader.hlsl" }
         removeflags "ExcludeFromBuild"
         shadertype "Pixel"
@@ -69,7 +78,7 @@ project "HeliosEditor"
 
     filter "system:windows"
         systemversion "latest"
-
+        entrypoint "mainCRTStartup"
         defines { "HELIOS_PLATFORM_WINDOWS" }
         
     filter "configurations:Debug"

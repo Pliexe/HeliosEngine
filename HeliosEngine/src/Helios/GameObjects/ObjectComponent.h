@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 #include "Helios/Scene/GameObject.h"
 #include "Helios/Core/Base.h"
 
@@ -16,9 +16,9 @@ namespace Helios {
 	{
 	protected:
 
-		virtual void Render(Graphics& graphics) { };
+		virtual void Render(DepricatedGraphics& graphics) { };
 		virtual void Update() { };
-		virtual void Init(Graphics& graphics) { };
+		virtual void Init(DepricatedGraphics& graphics) { };
 		//virtual void OnTranslate() { };
 
 		GameObject* gameObject = NULL;
@@ -35,7 +35,7 @@ namespace Helios {
 
 		ObjectComponent() { }
 
-		friend class Application;
+		friend class DepricatedApplication;
 		friend class SceneManager;
 		friend class GameObject;
 		friend class Transform;
@@ -48,6 +48,6 @@ namespace Helios {
 	private:
 
 
-		friend class Application;
+		friend class DepricatedApplication;
 	};*/
 }

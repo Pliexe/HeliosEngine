@@ -2,7 +2,8 @@
 
 #include "pch.h"
 #include "Helios/Core/Asserts.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
+#include "Platform/Direct3D11/Direct3D11Context.h"
 
 namespace Helios {
 
@@ -81,7 +82,7 @@ namespace Helios {
 
 		void Bind() const
 		{
-			Graphics::instance->m_deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0u);
+			Direct3D11Context::GetCurrentContext()->GetContext()->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0u);
 		}
 
 		static Ref<IndexBuffer> Create(std::initializer_list<uint32_t> data, BufferUsage type = BufferUsage::Default)
@@ -118,7 +119,7 @@ namespace Helios {
 			sd.pSysMem = data;
 
 			HL_EXCEPTION(
-				FAILED(Graphics::instance->m_device->CreateBuffer(&bd, &sd, &indexBuffer.m_indexBuffer)),
+				FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&bd, &sd, &indexBuffer.m_indexBuffer)),
 				"Failed to create Vertex Buffer!"
 			);
 
@@ -159,7 +160,7 @@ namespace Helios {
 			bd.StructureByteStride = sizeof(uint32_t);
 
 			HL_EXCEPTION(
-				FAILED(Graphics::instance->m_device->CreateBuffer(&bd, nullptr, &indexBuffer.m_indexBuffer)),
+				FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&bd, nullptr, &indexBuffer.m_indexBuffer)),
 				"Failed to create Vertex Buffer!"
 			);
 
@@ -204,8 +205,8 @@ namespace Helios {
 	};
 	
 }
-//#include "Platform/DirectX11/Test.h"
-//#include "Platform/DirectX11/DirectXConstantBuffer.h"
+//#include "Platform/Direct3D1111/Test.h"
+//#include "Platform/Direct3D1111/DirectXConstantBuffer.h"
 //namespace Helios {
 //	template <class T>
 //	Ref<ConstantBuffer<T>> ConstantBuffer<T>::Create()
@@ -213,13 +214,13 @@ namespace Helios {
 //		ConstantBuffer<T>* buffer = new Helios::DirectXConstantBuffer<T>(sizeof(T) + (16 - sizeof(T) % 16));
 //		Ref<ConstantBuffer<T>> test = CreateRef<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16));
 //		return CreateRef<Helios::DirectXConstantBuffer<T>>(sizeof(T) + (16 - sizeof(T) % 16));
-//		switch (Graphics::GetAPI())
+//		switch (DepricatedGraphics::GetAPI())
 //		{
-//			case Graphics::API::DirectX11: return reinterpret_cast<Ref<ConstantBuffer<T>>>(CreateRe?f<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
-//			//case Graphics::API::DirectX11: return reinterpret_cast<Ref<ConstantBuffer<T>>>(CreateRef<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
+//			case DepricatedGraphics::API::DirectX11: return reinterpret_cast<Ref<ConstantBuffer<T>>>(CreateRe?f<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
+//			//case DepricatedGraphics::API::DirectX11: return reinterpret_cast<Ref<ConstantBuffer<T>>>(CreateRef<Test1<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
 //		}
 //
-//		HL_CORE_ASSERT(false, "Unknown Graphics API!");
+//		HELIOS_ASSERT(false, "Unknown DepricatedGraphics API!");
 //		return nullptr;
 //	}
 //
@@ -227,12 +228,12 @@ namespace Helios {
 //	Ref<ConstantBuffer<T>> ConstantBuffer<T>::Create(T data)
 //	{
 //
-//		switch (Graphics::GetAPI())
+//		switch (DepricatedGraphics::GetAPI())
 //		{
-//		case Graphics::API::DirectX11: return CreateRef<Test1<T>>(data, sizeof(T) + (16 - sizeof(T) % 16));
+//		case DepricatedGraphics::API::DirectX11: return CreateRef<Test1<T>>(data, sizeof(T) + (16 - sizeof(T) % 16));
 //		}
 //
-//		HL_CORE_ASSERT(false, "Unknown GraphicsAPI!");
+//		HELIOS_ASSERT(false, "Unknown GraphicsAPI!");
 //		return nullptr;
 //	}
 //

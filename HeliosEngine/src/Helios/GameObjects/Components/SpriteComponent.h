@@ -13,7 +13,7 @@ namespace Helios {
 		std::unique_ptr<Bitmap> bitmap;
 		float opacity;
 
-		void Render(Graphics& g) override {
+		void Render(DepricatedGraphics& g) override {
 			if (!bitmap->isNull()) {
 				g.getRenderTarget()->DrawBitmap(*bitmap, transform->getScreenPosition(), opacity);
 			}

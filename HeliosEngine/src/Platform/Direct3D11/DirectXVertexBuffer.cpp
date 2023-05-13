@@ -1,7 +1,9 @@
 #include "Helios/Core/Asserts.h"
 #include "DirectXVertexBuffer.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 #include <d3d11.h>
+
+#include "Direct3D11Context.h"
 
 namespace Helios
 {
@@ -32,7 +34,7 @@ namespace Helios
         }
 
         HL_EXCEPTION(
-            FAILED(Graphics::instance->m_device->CreateBuffer(&bd, nullptr, &m_VertexBuffer)),
+            FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&bd, nullptr, &m_VertexBuffer)),
             "Failed to create Vertex Buffer!"
         );
     }
@@ -68,20 +70,20 @@ namespace Helios
 
         HRESULT hr;
         HL_EXCEPTION(
-            FAILED(hr = Graphics::instance->m_device->CreateBuffer(&bd, &sd, &m_VertexBuffer)),
-            std::string("Failed to create Vertex Buffer!\n") + GetLastErrorAsString(hr) + "\n" + GetLastErrorAsString(Graphics::instance->m_device->GetDeviceRemovedReason())
+            FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&bd, &sd, &m_VertexBuffer)),
+            std::string("Failed to create Vertex Buffer!\n") + GetLastErrorAsString(hr) + "\n" + GetLastErrorAsString(Direct3D11Context::GetCurrentContext()->GetDevice()->GetDeviceRemovedReason())
         );
     }
 
     void DirectXVertexBuffer::Bind(uint32_t slot) const
     {
         uint32_t offset = 0;
-        Graphics::instance->m_deviceContext->IASetVertexBuffers(slot, 1, m_VertexBuffer.GetAddressOf(), &m_Stride, &offset);
+        Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(slot, 1, m_VertexBuffer.GetAddressOf(), &m_Stride, &offset);
     }
 
     void DirectXVertexBuffer::Unbind() const
     {
-        Graphics::instance->m_deviceContext->IASetVertexBuffers(0, 1, nullptr, nullptr, nullptr);
+        Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(0, 1, nullptr, nullptr, nullptr);
     }
 
     void DirectXVertexBuffer::SetData(const void* data, uint32_t size)
@@ -89,9 +91,9 @@ namespace Helios
         HL_CORE_ASSERT_WITH_MSG(m_Usage == BufferUsage::Dynamic, "Buffer is not dynamic!");
 
         D3D11_MAPPED_SUBRESOURCE ms;
-        Graphics::instance->m_deviceContext->Map(m_VertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms);
+        Direct3D11Context::GetCurrentContext()->GetContext()->Map(m_VertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms);
         memcpy(ms.pData, data, size);
-        Graphics::instance->m_deviceContext->Unmap(m_VertexBuffer.Get(), 0);
+        Direct3D11Context::GetCurrentContext()->GetContext()->Unmap(m_VertexBuffer.Get(), 0);
         m_Size = size;
     }
 }

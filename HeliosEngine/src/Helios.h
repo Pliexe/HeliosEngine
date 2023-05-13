@@ -5,6 +5,6 @@
 #pragma once
 
 #include "Helios/Core/EntryPoint.h"
-#include "Helios/Core/Application.h"
+#include "Helios/Core/DepricatedApplication.h"
 
 #include "Helios/Core/Time.h"

@@ -1,6 +1,8 @@
 #include "ProjectExplorer.h"
 #include <queue>
-#include <Helios/Core/Application.h>
+#include <Helios/Core/DepricatedApplication.h>
+
+#include "Application.h"
 #include "Icons.h"
 #include "ProjectManager.h"
 
@@ -29,7 +31,7 @@ public:
 	Selection() {
 		arr = (int*)malloc(sizeof(int) * alloced);
 		if (arr == NULL) {
-			Helios::Application::ShowMessage("Critical!", "Out of memory!", MB_ICONERROR, true);
+			Helios::DepricatedApplication::ShowMessage("Critical!", "Out of memory!", MB_ICONERROR, true);
 			exit(-3);
 		}
 	}
@@ -148,38 +150,38 @@ public:
 Selection selection;
 
 ImTextureID GetFileIcon(std::filesystem::path file) {
-	if (!file.has_extension()) return *ICON_FILE_UNKNOWN;
+	if (!file.has_extension()) return Helios::HeliosEditor::ICON_FILE_UNKNOWN->GetTextureID();
 
 	std::string ext = file.extension().generic_string();
-	if (ext == ".cpp") return *ICON_FILE_CPP;
-	else if (ext == ".hpp") return *ICON_FILE_HPP;
-	else if (ext == ".c") return *ICON_FILE_C;
-	else if (ext == ".h") return *ICON_FILE_H;
+	if (ext == ".cpp") return Helios::HeliosEditor::ICON_FILE_CPP->GetTextureID();
+	else if (ext == ".hpp") return Helios::HeliosEditor::ICON_FILE_HPP->GetTextureID();
+	else if (ext == ".c") return Helios::HeliosEditor::ICON_FILE_C->GetTextureID();
+	else if (ext == ".h") return Helios::HeliosEditor::ICON_FILE_H->GetTextureID();
 	else if (ext == ".png" || ext == ",jpg") {
 		if (Helios::AssetRegistry::GetTextures().find(file.string()) != Helios::AssetRegistry::GetTextures().end())
 			return (ImTextureID)Helios::AssetRegistry::GetTextures()[file.string()]->GetTextureID();
 		else
-			return *ICON_FILE_IMAGE;
+			return Helios::HeliosEditor::ICON_FILE_IMAGE->GetTextureID();
 	}
-	else if (ext == ".txt") return *ICON_FILE_TXT;
-	else if (ext == ".scene") return *ICON_FILE_SCENE;
-	else if (ext == ".ttf") return *ICON_FILE_FONT;
-	else return *ICON_FILE_UNKNOWN;
+	else if (ext == ".txt") return Helios::HeliosEditor::ICON_FILE_TXT->GetTextureID();
+	else if (ext == ".scene") return Helios::HeliosEditor::ICON_FILE_SCENE->GetTextureID();
+	else if (ext == ".ttf") return Helios::HeliosEditor::ICON_FILE_FONT->GetTextureID();
+	else return Helios::HeliosEditor::ICON_FILE_UNKNOWN->GetTextureID();
 }
 
 ImTextureID GetFileIcon(FileType type) {
 	switch (type)
 	{
-	case FileType::Cpp: return *ICON_FILE_CPP;
-	case FileType::Hpp: return *ICON_FILE_HPP;
-	case FileType::C: return *ICON_FILE_C;
-	case FileType::H: return *ICON_FILE_H;
-	case FileType::Folder: return *ICON_FOLDER_EMPTY;
+	case FileType::Cpp: return Helios::HeliosEditor::ICON_FILE_CPP->GetTextureID();
+	case FileType::Hpp: return Helios::HeliosEditor::ICON_FILE_HPP->GetTextureID();
+	case FileType::C: return Helios::HeliosEditor::ICON_FILE_C->GetTextureID();
+	case FileType::H: return Helios::HeliosEditor::ICON_FILE_H->GetTextureID();
+	case FileType::Folder: return Helios::HeliosEditor::ICON_FOLDER_EMPTY->GetTextureID();
 		//case FileType::; return *ICON_FILE_IMAGE;
 		//case FileType::; return *ICON_FILE_TXT;
 		//case FileType::; return *ICON_FILE_FONT;
 	default:
-		return *ICON_FILE_UNKNOWN;
+		return Helios::HeliosEditor::ICON_FILE_UNKNOWN->GetTextureID();
 	}
 }
 
@@ -202,7 +204,7 @@ std::string GetFileExtension(FileType type)
 
 void EditItemName(std::filesystem::path entry, std::string new_name) {
 	if (!MoveFile(entry.wstring().c_str(), (entry.parent_path() / (new_name + entry.extension().string())).wstring().c_str()))
-		Helios::Application::ShowMessage("Error", "Unable to rename item", MB_ICONERROR);
+		Helios::DepricatedApplication::ShowMessage("Error", "Unable to rename item", MB_ICONERROR);
 }
 
 void FileNameOrEdit(std::filesystem::path entry, int i) {
@@ -275,10 +277,16 @@ void ShowFileOrFolder(std::filesystem::path entry, int i, int maxElements) {
 	}
 	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
 
+	if(Helios::HeliosEditor::ICON_FOLDER_EMPTY == nullptr)
+	{
+		MessageBoxA(nullptr, "Error loading icons!", "yea", MB_ICONERROR);
+		exit(100);
+	}
+
 	if(create_item != FileType::None && i == editing_item)
 		ImGui::ImageButton(GetFileIcon(create_item), ImVec2(ITEM_SIZE, ITEM_SIZE));
 	else if(is_dir)
-		ImGui::ImageButton(std::filesystem::is_empty(entry) ? *ICON_FOLDER_EMPTY : *ICON_FOLDER, ImVec2(ITEM_SIZE, ITEM_SIZE));
+		ImGui::ImageButton(std::filesystem::is_empty(entry) ? Helios::HeliosEditor::ICON_FOLDER_EMPTY->GetTextureID() : Helios::HeliosEditor::ICON_FOLDER->GetTextureID(), ImVec2(ITEM_SIZE, ITEM_SIZE));
 	else 
 		ImGui::ImageButton(GetFileIcon(entry), ImVec2(ITEM_SIZE, ITEM_SIZE));
 
@@ -379,10 +387,10 @@ void ProjectExplorer_RightClickMenu(std::filesystem::path path, int count, bool 
 			if (std::filesystem::is_directory(path))
 			{
 				if (!RemoveDirectory(path.wstring().c_str())) {
-					Helios::Application::ShowMessage("Error", "Unable to delete directory!", MB_ICONERROR, true);
+					Helios::DepricatedApplication::ShowMessage("Error", "Unable to delete directory!", MB_ICONERROR, true);
 				}
 			} else if (!DeleteFile(path.wstring().c_str())) {
-				Helios::Application::ShowMessage("Error", "Unable to delete file!", MB_ICONERROR, true);
+				Helios::DepricatedApplication::ShowMessage("Error", "Unable to delete file!", MB_ICONERROR, true);
 			}
 		}
 

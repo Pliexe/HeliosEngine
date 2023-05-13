@@ -1,5 +1,5 @@
 #include "BitmapBrush.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 #include "Helios/Resources/Bitmap.h"
 #include "Helios/Translation/Vector.h"
 
@@ -33,7 +33,7 @@ inline Helios::Size Helios::BitmapBrush::getSize() const {
 void Helios::BitmapBrush::Load()
 {
 	ID2D1BitmapBrush* tmp = NULL;
-	Graphics::instance->m_renderTarget2D->CreateBitmapBrush(*bitmap, &tmp);
+	DepricatedGraphics::instance->m_renderTarget2D->CreateBitmapBrush(*bitmap, &tmp);
 	brush.reset(tmp, Brush::releaseBrush);
 }
 

@@ -1,10 +1,10 @@
 #include "SolidBrush.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 
 Helios::SolidBrush::SolidBrush(Color color)
 {
 	ID2D1SolidColorBrush* tmp = NULL;
-	Graphics::instance->m_renderTarget2D->CreateSolidColorBrush(color, &tmp);
+	DepricatedGraphics::instance->m_renderTarget2D->CreateSolidColorBrush(color, &tmp);
 	brush.reset(tmp, [](ID2D1SolidColorBrush* ptr) {
 		ptr->Release();
 	});
@@ -13,7 +13,7 @@ Helios::SolidBrush::SolidBrush(Color color)
 Helios::SolidBrush::SolidBrush(float r, float g, float b, float a)
 {
 	ID2D1SolidColorBrush* tmp = NULL;
-	Graphics::instance->m_renderTarget2D->CreateSolidColorBrush(D2D1::ColorF(r, g, b, a), &tmp);
+	DepricatedGraphics::instance->m_renderTarget2D->CreateSolidColorBrush(D2D1::ColorF(r, g, b, a), &tmp);
 	brush.reset(tmp, [](ID2D1SolidColorBrush* ptr) {
 		ptr->Release();
 	});

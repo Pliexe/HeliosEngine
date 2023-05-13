@@ -47,10 +47,10 @@ namespace Helios
 		//	
 
 		//	
-		//	//Graphics::instance->m_deviceContext->Map(m_Texture.Get(), 0, D3D11_MAP_READ, 0, &mappedResource);
+		//	//Direct3D11Context::GetCurrentContext()->GetContext()->Map(m_Texture.Get(), 0, D3D11_MAP_READ, 0, &mappedResource);
 		//	/*FormatUInt2* pixels = (FormatUInt2*)mappedResource.pData;
 		//	data = pixels[y * m_Width + x];
-		//	Graphics::instance->m_deviceContext->Unmap(m_Texture.Get(), 0);
+		//	Direct3D11Context::GetCurrentContext()->GetContext()->Unmap(m_Texture.Get(), 0);
 		//	*/return data;
   //      }
 		

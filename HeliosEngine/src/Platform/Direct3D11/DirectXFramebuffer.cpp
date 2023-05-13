@@ -1,6 +1,7 @@
 #include "DirectXFramebuffer.h"
+
+#include "Direct3D11Context.h"
 #include "Helios/Core/Asserts.h"
-#include "Helios/Graphics/Graphics.h"
 
 namespace Helios
 {
@@ -58,13 +59,13 @@ namespace Helios
 		//HL_ASSERT_EXCEPTION(bufferIndex < m_colorBuffers.Size(), "Invalid buffer index!");
 		auto& test = m_colorBuffers[bufferIndex];
 		auto test2 = m_colorBuffers.size();
-		Graphics::instance->m_deviceContext->ClearRenderTargetView(m_renderTargetViews[bufferIndex], color.c);
+		Direct3D11Context::GetCurrentContext()->GetContext()->ClearRenderTargetView(m_renderTargetViews[bufferIndex], color.c);
 	}
 
 	void DirectXFramebuffer::ClearDepthStencil()
 	{
 		HL_ASSERT_EXCEPTION(m_depthStencilBuffer.depthStencilView, "Depth stencil buffer not set!");
-		Graphics::instance->m_deviceContext->ClearDepthStencilView(m_depthStencilBuffer.depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		Direct3D11Context::GetCurrentContext()->GetContext()->ClearDepthStencilView(m_depthStencilBuffer.depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 
     void* DirectXFramebuffer::GetTextureID(unsigned int bufferIndex)
@@ -98,14 +99,14 @@ namespace Helios
 		
 		HRESULT hr;
 
-		hr = Graphics::instance->m_device->CreateTexture2D(&stagingTextureDesc, nullptr, stagingTexture.GetAddressOf());
+		hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateTexture2D(&stagingTextureDesc, nullptr, stagingTexture.GetAddressOf());
 
 		HL_EXCEPTION_HR(FAILED(hr), "Failed to create staging texture!", hr);
 
-		Graphics::instance->m_deviceContext->CopyResource(stagingTexture.Get(), m_colorBuffers[attachment].texture.Get());
+		Direct3D11Context::GetCurrentContext()->GetContext()->CopyResource(stagingTexture.Get(), m_colorBuffers[attachment].texture.Get());
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
-		hr = Graphics::instance->m_deviceContext->Map(stagingTexture.Get(), 0, D3D11_MAP_READ, 0, &mappedResource);
+		hr = Direct3D11Context::GetCurrentContext()->GetContext()->Map(stagingTexture.Get(), 0, D3D11_MAP_READ, 0, &mappedResource);
 		
 		HL_EXCEPTION_HR(FAILED(hr), "Failed to map staging texture!", hr);
 
@@ -154,7 +155,7 @@ namespace Helios
 			break;
 		}
 		
-		Graphics::instance->m_deviceContext->Unmap(stagingTexture.Get(), 0);
+		Direct3D11Context::GetCurrentContext()->GetContext()->Unmap(stagingTexture.Get(), 0);
 
 		return color;
 	}
@@ -185,7 +186,7 @@ namespace Helios
 			textureDesc.MiscFlags = 0;
 
 			HRESULT hr;
-            HL_EXCEPTION_HR(FAILED(hr = Graphics::instance->m_device->CreateTexture2D(&textureDesc, nullptr, &colorBuffer.texture)),
+            HL_EXCEPTION_HR(FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateTexture2D(&textureDesc, nullptr, &colorBuffer.texture)),
                 "Failed to create texture for framebuffer", hr);
 
 			// Create render target view
@@ -196,7 +197,7 @@ namespace Helios
 			renderTargetViewDesc.Texture2D.MipSlice = 0;
 
 			SafeRelease(&m_renderTargetViews[i]);
-			HL_EXCEPTION(FAILED(Graphics::instance->m_device->CreateRenderTargetView(colorBuffer.texture.Get(), &renderTargetViewDesc, &m_renderTargetViews[i])),
+			HL_EXCEPTION(FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateRenderTargetView(colorBuffer.texture.Get(), &renderTargetViewDesc, &m_renderTargetViews[i])),
 				"Failed to create render target view for framebuffer");
 
 			// Create shader resource view
@@ -207,7 +208,7 @@ namespace Helios
 			shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 			shaderResourceViewDesc.Texture2D.MipLevels = 1;
 
-			HL_EXCEPTION(FAILED(Graphics::instance->m_device->CreateShaderResourceView(colorBuffer.texture.Get(), &shaderResourceViewDesc, &colorBuffer.shaderResourceView)),
+			HL_EXCEPTION(FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateShaderResourceView(colorBuffer.texture.Get(), &shaderResourceViewDesc, &colorBuffer.shaderResourceView)),
 				"Failed to create shader resource view for framebuffer");
 
 			i++;
@@ -223,7 +224,7 @@ namespace Helios
 			depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 			depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
 
-			HL_EXCEPTION(Graphics::instance->m_device->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilBuffer.depthStencilState),
+			HL_EXCEPTION(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilBuffer.depthStencilState),
 				"Failed to create depth stencil state");
 
 			D3D11_TEXTURE2D_DESC descTexture;
@@ -238,7 +239,7 @@ namespace Helios
 			descTexture.Usage = D3D11_USAGE_DEFAULT;
 			descTexture.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-			HL_EXCEPTION(FAILED(Graphics::instance->m_device->CreateTexture2D(&descTexture, nullptr, &m_depthStencilBuffer.texture)),
+			HL_EXCEPTION(FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateTexture2D(&descTexture, nullptr, &m_depthStencilBuffer.texture)),
 				"Failed to create depth stencil buffer");
 
 			D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
@@ -246,7 +247,7 @@ namespace Helios
 			descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 			descDSV.Texture2D.MipSlice = 0u;
 
-			HL_EXCEPTION(FAILED(Graphics::instance->m_device->CreateDepthStencilView(m_depthStencilBuffer.texture.Get(), &descDSV, &m_depthStencilBuffer.depthStencilView)),
+			HL_EXCEPTION(FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateDepthStencilView(m_depthStencilBuffer.texture.Get(), &descDSV, &m_depthStencilBuffer.depthStencilView)),
 				"Failed to create depth stencil view");
 		}
 
@@ -257,16 +258,16 @@ namespace Helios
 		viewport.MinDepth = 0.0f;
 		viewport.MaxDepth = 1.0f;
 		
-		Graphics::instance->m_deviceContext->RSSetViewports(1, &viewport);
+		Direct3D11Context::GetCurrentContext()->GetContext()->RSSetViewports(1, &viewport);
     }
 
     void DirectXFramebuffer::Bind()
     {
-        Graphics::s_currentSize = { m_Width, m_Height };
-		Graphics::instance->m_deviceContext->OMSetRenderTargets(m_colorBuffers.size(), m_renderTargetViews.data(), m_depthStencilBuffer.depthStencilView.Get());
+        //DepricatedGraphics::s_currentSize = { m_Width, m_Height };
+		Direct3D11Context::GetCurrentContext()->GetContext()->OMSetRenderTargets(m_colorBuffers.size(), m_renderTargetViews.data(), m_depthStencilBuffer.depthStencilView.Get());
 
 		if (m_depthStencilBuffer.depthStencilState)
-			Graphics::instance->m_deviceContext->OMSetDepthStencilState(m_depthStencilBuffer.depthStencilState.Get(), 1u);
+			Direct3D11Context::GetCurrentContext()->GetContext()->OMSetDepthStencilState(m_depthStencilBuffer.depthStencilState.Get(), 1u);
 
         D3D11_VIEWPORT viewport = {};
         viewport.Width = (float)m_Width;
@@ -276,13 +277,13 @@ namespace Helios
         viewport.TopLeftX = 0.0f;
         viewport.TopLeftY = 0.0f;
 
-        Graphics::instance->m_deviceContext->RSSetViewports(1, &viewport);
+        Direct3D11Context::GetCurrentContext()->GetContext()->RSSetViewports(1, &viewport);
     }
 
     void DirectXFramebuffer::Unbind()
     {
-        Graphics::instance->m_deviceContext->OMSetRenderTargets(0, nullptr, nullptr);
-		Graphics::instance->m_deviceContext->OMSetDepthStencilState(nullptr, 1);
+        Direct3D11Context::GetCurrentContext()->GetContext()->OMSetRenderTargets(0, nullptr, nullptr);
+		Direct3D11Context::GetCurrentContext()->GetContext()->OMSetDepthStencilState(nullptr, 1);
     }
 
     void DirectXFramebuffer::Resize(uint32_t width, uint32_t height)

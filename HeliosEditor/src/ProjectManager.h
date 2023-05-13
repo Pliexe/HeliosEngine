@@ -2,11 +2,27 @@
 
 #include <iostream>
 #include <filesystem>
+#include <functional>
 
 namespace Helios {
 	namespace Project {
+		struct ProjectSettings
+		{
+			std::string name;
+			std::string lastScene;
+
+			void Serialize();
+			void Deserialize();
+		};
+
 		inline const std::filesystem::path GetProjectPath();
 		inline const std::filesystem::path GetAssetsPath();
+		const ProjectSettings& GetProjectSettings();
+		
+		bool HasProjectFile(std::filesystem::path path);
+
+		void CreateProject(std::filesystem::path path, std::function<void(std::string,float)> progressCb);
+		void LoadProject(std::filesystem::path path, std::function<void(std::string, float)> progressCb);
 
 		void AttemptLoad();
 		void SaveSceneDialog();

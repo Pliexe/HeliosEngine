@@ -3,7 +3,7 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
 #include "Helios/Translation/Vector.h"
-#include "Helios/Core/Application.h"
+#include "Helios/Core/DepricatedApplication.h"
 #include "Helios/Scene/GameObject.h"
 #include "Helios/Core/Asserts.h"
 #include "Helios/Graphics/Renderer.h"
@@ -18,7 +18,7 @@
 namespace Helios {
 
 	Scene::~Scene() {
-		Application::ShowMessage("Test","Scene Deleted!");
+		DepricatedApplication::ShowMessage("Test","Scene Deleted!");
 	}
 
 	bool Scene::contains(entt::entity entity)
@@ -104,7 +104,7 @@ namespace Helios {
 					switch (ex.what())
 					{
 					case IDRETRY: goto retry;
-					case IDABORT: Application::Quit(); break;
+					case IDABORT: DepricatedApplication::Quit(); break;
 					}
 				}
 			}
@@ -113,7 +113,7 @@ namespace Helios {
 		HL_PROFILE_END();
 
 		HL_PROFILE_BEGIN("Scene - Renderer3D");
-		Renderer::BeginScene(projection, { 1.0f, 1.0f, 1.0f, 1.0f }, directional_light_view);
+		Renderer::BeginScene(projection, { 1.0f, 1.0f, 1.0f, 0.2f }, directional_light_view);
 
 		{
 			auto view = m_components.view<TransformComponent, RelationshipComponent, MeshRendererComponent>(entt::exclude<DisabledObjectComponent>);
@@ -130,7 +130,7 @@ namespace Helios {
 					switch (ex.what())
 					{
 					case IDRETRY: goto retry4;
-					case IDABORT: Application::Quit(); break;
+					case IDABORT: DepricatedApplication::Quit(); break;
 					}
 				}
 			}
@@ -143,7 +143,7 @@ namespace Helios {
 	{
 		HL_PROFILE_BEGIN("Scene - Gizmos Renderer");
 		GizmosRenderer::Begin(projection);
-		Application::instance->OnGizmosRender();
+		//DepricatedApplication::instance->OnGizmosRender();
 		GizmosRenderer::End();
 		HL_PROFILE_END();
 	}

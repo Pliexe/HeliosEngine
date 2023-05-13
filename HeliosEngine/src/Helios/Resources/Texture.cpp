@@ -1,7 +1,9 @@
 #include "Texture.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 #include "Helios/Core/Asserts.h"
-#include "Platform/DirectX/DirectXTexture2D.h"
+#include "Helios/Graphics/Graphics.h"
+#include "Platform/Direct3D11/Direct3D11Texture2D.h"
+#include "Platform/OpenGL/OpenGLTexture2D.h"
 
 namespace Helios
 {
@@ -9,10 +11,11 @@ namespace Helios
     {
         switch (Graphics::GetAPI())
         {
-        case Graphics::API::DirectX11: return CreateRef<DirectXTexture2D>(path.string());
+        case Graphics::API::Direct3D11: return CreateRef<Direct3D11Texture2D>(path.string());
+        case Graphics::API::OpenGL: return CreateRef<OpenGLTexture2D>(path.string());
         }
 
-        HL_CORE_ASSERT_WITH_MSG(false, "Unknown Graphics API!");
+        HL_CORE_ASSERT_WITH_MSG(false, "Unknown DepricatedGraphics API!");
         return nullptr;
     }
 
@@ -20,10 +23,11 @@ namespace Helios
     {
         switch (Graphics::GetAPI())
         {
-        case Graphics::API::DirectX11: return CreateRef<DirectXTexture2D>(width, height);
+        case Graphics::API::Direct3D11: return CreateRef<Direct3D11Texture2D>(width, height);
+        case Graphics::API::OpenGL: return CreateRef<OpenGLTexture2D>(width, height);
         }
 
-        HL_CORE_ASSERT_WITH_MSG(false, "Unknown Graphics API!");
+        HL_CORE_ASSERT_WITH_MSG(false, "Unknown DepricatedGraphics API!");
         return nullptr;
     }
 }

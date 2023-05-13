@@ -19,6 +19,11 @@ workspace "HeliosEngine"
 		"MultiProcessorCompile"
 	}
 
+    defines
+    {
+        "HELIOS_IMGUI_ENABLED",
+    }
+
 outdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
@@ -27,6 +32,8 @@ IncludeDir["ImGuiMisc"] = "%{wks.location}/HeliosEngine/vendor/imgui/misc/cpp"
 IncludeDir["ImGuiBackends"] = "%{wks.location}/HeliosEngine/vendor/imgui/backends"
 IncludeDir["Yaml"] = "%{wks.location}/HeliosEngine/vendor/yaml-cpp/include"
 IncludeDir["ProjectManager"] = "%{wks.location}/ProjectManager/src"
+IncludeDir["GLFW"] = "%{wks.location}/HeliosEngine/vendor/glfw/include"
+IncludeDir["GLAD"] = "%{wks.location}/HeliosEngine/vendor/glad/include"
 
 group "Dependencies"
     include "HeliosEngine/vendor"
@@ -73,7 +80,7 @@ group "Dependencies"
 
         filter "system:windows"
             systemversion "latest"
-            defines { "HELIOS_PLATFORM_WINDOWS" }
+            defines { "HELIOS_PLATFORM_WINDOWS", "HELIOS_DEBUG" }
 
         filter "configurations:Debug"
             defines "HELIOS_DEBUG"
@@ -84,8 +91,6 @@ group "Dependencies"
             defines "HELIOS_RELEASE"
             runtime "Release"
             optimize "on"
-
-        
         
 group ""
 

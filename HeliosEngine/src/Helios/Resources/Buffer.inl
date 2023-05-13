@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Platform/DirectX/DirectXConstantBuffer.h"
+#include "Platform/Direct3D11/DirectXConstantBuffer.h"
 #include "Buffer.h"
-#include "Platform/DirectX/Test.h"
+#include "Helios/Graphics/Graphics.h"
 
 namespace Helios
 {
@@ -12,10 +12,10 @@ namespace Helios
 	{
 		switch (Graphics::GetAPI())
 		{
-			case Graphics::API::DirectX11: return (CreateRef<DirectXConstantBuffer<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
+			case Graphics::API::Direct3D11: return (CreateRef<DirectXConstantBuffer<T>>(sizeof(T) + (16 - sizeof(T) % 16)));
 		}
 
-		HL_CORE_ASSERT(false, "Unknown Graphics API!");
+		HELIOS_ASSERT(false, "Unknown Graphics API!");
 		return nullptr;
 	}
 
@@ -25,10 +25,10 @@ namespace Helios
 
 		switch (Graphics::GetAPI())
 		{
-			case Graphics::API::DirectX11: return CreateRef<DirectXConstantBuffer<T>>(data, sizeof(T) + (16 - sizeof(T) % 16));
+			case Graphics::API::Direct3D11: return CreateRef<DirectXConstantBuffer<T>>(data, sizeof(T) + (16 - sizeof(T) % 16));
 		}
 
-		HL_CORE_ASSERT(false, "Unknown GraphicsAPI!");
+		HELIOS_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}
 }

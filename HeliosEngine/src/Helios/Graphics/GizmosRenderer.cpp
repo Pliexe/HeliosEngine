@@ -302,7 +302,7 @@ namespace Helios
 			s_Data.quads.instanceBuffer->Bind(1u);
 			s_Data.quads.indexBuffer->Bind();
 
-			Graphics::instance->m_deviceContext->DrawIndexedInstanced(6u, s_Data.quads.quadInstanceIndex, 0u, 0u, 0u);
+			Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexedInstanced(6u, s_Data.quads.quadInstanceIndex, 0u, 0u, 0u);
 			s_Data.quads.quadInstanceIndex = 0u;
 		}
 		HL_PROFILE_END();
@@ -321,7 +321,7 @@ namespace Helios
 				s_Data.m_GizmosInstanceData.m_GizmosObjects[i].Bind();
 				s_Data.m_GizmosInstanceData.m_InstanceBuffer->Bind(1u);
 				
-				Graphics::instance->m_deviceContext->DrawIndexedInstanced(s_Data.m_GizmosInstanceData.m_GizmosObjects[i].m_IndexBuffer->count(), instances, 0u, 0u, 0u);
+				Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexedInstanced(s_Data.m_GizmosInstanceData.m_GizmosObjects[i].m_IndexBuffer->count(), instances, 0u, 0u, 0u);
 				instances = 0u;
 			}
 			i++;
@@ -336,7 +336,7 @@ namespace Helios
 			s_Data.m_lines.m_vertexBuffer->Bind();
 			s_Data.transformBuffer->BindGS(0);
 
-			Graphics::instance->m_deviceContext->Draw((s_Data.m_lines.m_index - s_Data.m_lines.m_Lines), 0u);
+			Direct3D11Context::GetCurrentContext()->GetContext()->Draw((s_Data.m_lines.m_index - s_Data.m_lines.m_Lines), 0u);
 			s_Data.m_lines.m_index = s_Data.m_lines.m_Lines;
 			s_Data.line_gizmos_shader->Unbind();
 			//s_Data.m_lines.m_vertexBuffer->Unbind();
@@ -350,7 +350,7 @@ namespace Helios
 			s_Data.dynamic_gizmos_shader->Bind();
 			s_Data.m_dynamic_gizmos.m_vertex_buffer->Bind();
 
-			Graphics::instance->m_deviceContext->Draw((s_Data.m_dynamic_gizmos.m_verticesPtr - s_Data.m_dynamic_gizmos.m_vertices), 0u);
+			Direct3D11Context::GetCurrentContext()->GetContext()->Draw((s_Data.m_dynamic_gizmos.m_verticesPtr - s_Data.m_dynamic_gizmos.m_vertices), 0u);
 			s_Data.m_dynamic_gizmos.m_verticesPtr = s_Data.m_dynamic_gizmos.m_vertices;
 			s_Data.dynamic_gizmos_shader->Unbind();
 		}

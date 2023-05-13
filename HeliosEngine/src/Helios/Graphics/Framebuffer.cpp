@@ -1,7 +1,9 @@
-#include <Platform/DirectX/DirectXFramebuffer.h>
+#include <Platform/Direct3D11/DirectXFramebuffer.h>
 #include "Framebuffer.h"
+
+#include "Graphics.h"
 #include "Helios/Core/Asserts.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 
 namespace Helios
 {
@@ -13,10 +15,10 @@ namespace Helios
     {
         switch (Graphics::GetAPI())
         {
-        case Graphics::API::DirectX11: return CreateRef<DirectXFramebuffer>(width, height, bufferSpecifications);
+        case Graphics::API::Direct3D11: return CreateRef<DirectXFramebuffer>(width, height, bufferSpecifications);
         }
 
-        HL_EXCEPTION(true, "No Graphics API selected!");
+        HL_EXCEPTION(true, "No DepricatedGraphics API selected!");
         abort();
         return nullptr;
     }

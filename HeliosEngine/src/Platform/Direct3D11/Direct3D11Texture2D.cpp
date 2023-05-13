@@ -1,11 +1,13 @@
-#include "DirectXTexture2D.h"
-#include "stb_image.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Direct3D11Texture2D.h"
+
+#include "Direct3D11Context.h"
 #include "Helios/Core/Asserts.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 namespace Helios
 {
-    DirectXTexture2D::DirectXTexture2D(const std::string& path)
+    Direct3D11Texture2D::Direct3D11Texture2D(const std::string& path)
     {
         int width, height;
         //stbi_set_flip_vertically_on_load(1);
@@ -42,7 +44,7 @@ namespace Helios
         HRESULT hr;
 
         HL_EXCEPTION(
-            FAILED(hr = Graphics::instance->m_device->CreateTexture2D(&textureDesc, &subResource, &m_Texture)),
+            FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateTexture2D(&textureDesc, &subResource, &m_Texture)),
             "Failed to create texture!\n" + GetLastErrorAsString(hr)
         );
 
@@ -54,14 +56,14 @@ namespace Helios
         srvDesc.Texture1D.MostDetailedMip = 0;
 
         HL_EXCEPTION(
-            FAILED(hr = Graphics::instance->m_device->CreateShaderResourceView(m_Texture.Get(), &srvDesc, &m_TextureView)),
+            FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateShaderResourceView(m_Texture.Get(), &srvDesc, &m_TextureView)),
             "Failed to create shader resource view!\n" + GetLastErrorAsString(hr)
         );
 
         stbi_image_free(data);
     }
 
-    DirectXTexture2D::DirectXTexture2D(uint32_t width, uint32_t height)
+    Direct3D11Texture2D::Direct3D11Texture2D(uint32_t width, uint32_t height)
         : m_Width(width), m_Height(height)
     {
         D3D11_TEXTURE2D_DESC textureDesc;
@@ -81,7 +83,7 @@ namespace Helios
         HRESULT hr;
 
         HL_EXCEPTION(
-            FAILED(hr = Graphics::instance->m_device->CreateTexture2D(&textureDesc, nullptr, &m_Texture)),
+            FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateTexture2D(&textureDesc, nullptr, &m_Texture)),
             "Failed to create texture!\n" + GetLastErrorAsString(hr)
         );
 
@@ -94,12 +96,12 @@ namespace Helios
         srvDesc.Texture2D.MostDetailedMip = 0;
 
         HL_EXCEPTION(
-            FAILED(hr = Graphics::instance->m_device->CreateShaderResourceView(m_Texture.Get(), &srvDesc, &m_TextureView)),
+            FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateShaderResourceView(m_Texture.Get(), &srvDesc, &m_TextureView)),
             "Failed to create shader resource view!\n" + GetLastErrorAsString(hr)
         );
     }
 
-    DirectXTexture2D::DirectXTexture2D(const DirectXTexture2D& other)
+    Direct3D11Texture2D::Direct3D11Texture2D(const Direct3D11Texture2D& other)
     {
         m_Width = other.m_Width;
         m_Height = other.m_Height;
@@ -107,18 +109,19 @@ namespace Helios
         m_TextureView = other.m_TextureView;
     }
 
-    void DirectXTexture2D::SetData(void* data, uint32_t size)
+    void Direct3D11Texture2D::SetData(void* data, uint32_t size)
     {
-        Graphics::instance->m_deviceContext->UpdateSubresource(m_Texture.Get(), 0, nullptr, data, m_Width * 4, 0);
+        Direct3D11Context::GetCurrentContext()->GetContext()->UpdateSubresource(m_Texture.Get(), 0, nullptr, data, m_Width * 4, 0);
     }
 
-    void DirectXTexture2D::Bind(uint32_t slot) const
+    void Direct3D11Texture2D::Bind(uint32_t slot)
     {
-        Graphics::instance->m_deviceContext->PSSetShaderResources(slot, 1, m_TextureView.GetAddressOf());
+        Direct3D11Context::GetCurrentContext()->GetContext()->PSSetShaderResources(slot, 1, m_TextureView.GetAddressOf());
+        m_lastBoundSlot = slot;
     }
 
-    void DirectXTexture2D::Unbind() const
+    void Direct3D11Texture2D::Unbind()
     {
-        Graphics::instance->m_deviceContext->PSSetShaderResources(0, 1, nullptr);
+        Direct3D11Context::GetCurrentContext()->GetContext()->PSSetShaderResources(m_lastBoundSlot, 1, nullptr);
     }
 }

@@ -42,6 +42,7 @@ namespace Helios {
 		static const long float passedTime() { return (m_lastFrame - m_firstFrame) / PCFreq; }
 		static const unsigned long long currentTimeMicroseconds() { return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); }
 		
+		friend class DepricatedApplication;
 		friend class Application;
 		extern friend class EngineScene;
 	};

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Helios/Resources/Buffer.h"
+#include "Direct3D11Context.h"
 
 namespace Helios
 {
@@ -20,7 +21,7 @@ namespace Helios
 
             HRESULT hr;
             HL_EXCEPTION(
-                FAILED(hr = Graphics::instance->m_device->CreateBuffer(&bd, nullptr, &m_Data)),
+                FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&bd, nullptr, &m_Data)),
                 std::string("Failed to create Constant Buffer!") + "\nError: " + GetLastErrorAsString(hr)
             );
         }
@@ -38,7 +39,7 @@ namespace Helios
             sd.pSysMem = &data;
             HRESULT hr;
             HL_EXCEPTION(
-                FAILED(hr = Graphics::instance->m_device->CreateBuffer(&bd, &sd, &m_Data)),
+                FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&bd, &sd, &m_Data)),
                 std::string("Failed to create Constant Buffer!") + "\nError: " + GetLastErrorAsString(hr)
             );
         }
@@ -52,36 +53,36 @@ namespace Helios
         {
             HL_CORE_ASSERT_WITH_MSG(slot < D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, "Pipeline Stage: Pixel Shader.\nSlot: " + std::to_string(slot) + "\nSlot must be less than " + std::to_string(D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT) + "!");
             this->m_last_slot_ps = slot;
-            Graphics::instance->m_deviceContext->PSSetConstantBuffers(slot, 1u, m_Data.GetAddressOf());
+            Direct3D11Context::GetCurrentContext()->GetContext()->PSSetConstantBuffers(slot, 1u, m_Data.GetAddressOf());
         }
 
         void BindVS(uint32_t slot)
         {
             HL_ASSERT_EXCEPTION(slot < D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, "Pipeline Stage: Vertex Shader.\nSlot: " + std::to_string(slot) + "\nSlot must be less than " + std::to_string(D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT) + "!");
             this->m_last_slot_vs = slot;
-            Graphics::instance->m_deviceContext->VSSetConstantBuffers(slot, 1u, m_Data.GetAddressOf());
+            Direct3D11Context::GetCurrentContext()->GetContext()->VSSetConstantBuffers(slot, 1u, m_Data.GetAddressOf());
         }
 
         void BindGS(uint32_t slot)
         {
             HL_ASSERT_EXCEPTION(slot < D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, "Pipeline Stage: Vertex Shader.\nSlot: " + std::to_string(slot) + "\nSlot must be less than " + std::to_string(D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT) + "!");
             this->m_last_slot_gs = slot;
-            Graphics::instance->m_deviceContext->GSSetConstantBuffers(slot, 1u, m_Data.GetAddressOf());
+            Direct3D11Context::GetCurrentContext()->GetContext()->GSSetConstantBuffers(slot, 1u, m_Data.GetAddressOf());
         }
 
         void UnbindPS() const
         {
-            Graphics::instance->m_deviceContext->PSSetConstantBuffers(this->m_last_slot_ps, 1u, nullptr);
+            Direct3D11Context::GetCurrentContext()->GetContext()->PSSetConstantBuffers(this->m_last_slot_ps, 1u, nullptr);
         }
 
         void UnbindVS() const
         {
-            Graphics::instance->m_deviceContext->VSSetConstantBuffers(this->m_last_slot_vs, 1u, nullptr);
+            Direct3D11Context::GetCurrentContext()->GetContext()->VSSetConstantBuffers(this->m_last_slot_vs, 1u, nullptr);
         }
 
         void UnbindGS() const
         {
-            Graphics::instance->m_deviceContext->GSSetConstantBuffers(this->m_last_slot_gs, 1u, nullptr);
+            Direct3D11Context::GetCurrentContext()->GetContext()->GSSetConstantBuffers(this->m_last_slot_gs, 1u, nullptr);
         }
 
         void SetData(T data)
@@ -89,11 +90,11 @@ namespace Helios
         {
             D3D11_MAPPED_SUBRESOURCE msr;
             HRESULT hr;
-            HL_EXCEPTION_HR(FAILED(hr = Graphics::instance->m_deviceContext->Map(m_Data.Get(), 0u, D3D11_MAP_WRITE_DISCARD, 0u, &msr)),
+            HL_EXCEPTION_HR(FAILED(hr = Direct3D11Context::GetCurrentContext()->GetContext()->Map(m_Data.Get(), 0u, D3D11_MAP_WRITE_DISCARD, 0u, &msr)),
                 "Failed to map constant buffer.", hr);
             std::memcpy(msr.pData, &data, sizeof(T));
             //memcpy(msr.pData, &data, sizeof(T));
-            Graphics::instance->m_deviceContext->Unmap(m_Data.Get(), 0u);
+            Direct3D11Context::GetCurrentContext()->GetContext()->Unmap(m_Data.Get(), 0u);
         }
 
     private:

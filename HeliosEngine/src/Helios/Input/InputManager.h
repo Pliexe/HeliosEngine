@@ -21,6 +21,7 @@ namespace Helios
 	private:
 		inline static float s_MouseWheelDelta = 0;
 
+		friend class DepricatedApplication;
 		friend class Application;
 	};
 }

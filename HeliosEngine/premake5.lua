@@ -16,6 +16,8 @@ project "HeliosEngine"
         "src/**.c",
         "src/**.hpp",
         "src/**.cpp",
+        "src/**.inl",
+        "vendor/stb/include/stb_image.h",
     }
 
     includedirs
@@ -28,12 +30,17 @@ project "HeliosEngine"
         "%{IncludeDir.ImGuiMisc}",
         "%{IncludeDir.ImGuiBackends}",
         "%{IncludeDir.Yaml}",
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.GLAD}",
     }
 
     links
     {
         "ImGui",
         "Yaml",
+        "GLFW",
+        "GLAD",
+        "opengl32.lib",
     }
 
     defines
@@ -42,6 +49,7 @@ project "HeliosEngine"
         "HELIOS_EDITOR",
         "HELIOS_INCLUDE_IMGUI",
         "YAML_CPP_STATIC_DEFINE",
+        "GLFW_INCLUDE_NONE",
     }
 
     flags { "NoPCH" }

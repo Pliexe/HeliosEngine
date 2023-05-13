@@ -1,30 +1,32 @@
 #include "Buffer.h"
-#include "Platform/DirectX/DirectXConstantBuffer.h"
-#include "Platform/DirectX/DirectXVertexBuffer.h"
+
+#include "Helios/Graphics/Graphics.h"
+#include "Platform/Direct3D11/DirectXConstantBuffer.h"
+#include "Platform/Direct3D11/DirectXVertexBuffer.h"
 
 namespace Helios
 {
 	/*template <typename T>
 	Ref<ConstantBuffer<T>> ConstantBuffer<T>::Create()
 	{
-		switch (Graphics::GetAPI())
+		switch (DepricatedGraphics::GetAPI())
 		{
-		case Graphics::API::DirectX11: return CreateRef<DirectXConstantBuffer>(sizeof(T) + (16 - sizeof(T) % 16));
+		case DepricatedGraphics::API::DirectX11: return CreateRef<DirectXConstantBuffer>(sizeof(T) + (16 - sizeof(T) % 16));
 		}
 
-		HL_CORE_ASSERT(false, "Unknown Graphics API!");
+		HELIOS_ASSERT(false, "Unknown DepricatedGraphics API!");
 		return nullptr;
 	}
 
 	template <typename T>
 	Ref<ConstantBuffer<T>> ConstantBuffer<T>::Create(T data)
 	{
-		switch (Graphics::GetAPI())
+		switch (DepricatedGraphics::GetAPI())
 		{
-		case Graphics::API::DirectX11: return CreateRef<DirectXConstantBuffer>(data, sizeof(T) + (16 - sizeof(T) % 16));
+		case DepricatedGraphics::API::DirectX11: return CreateRef<DirectXConstantBuffer>(data, sizeof(T) + (16 - sizeof(T) % 16));
 		}
 
-		HL_CORE_ASSERT(false, "Unknown GraphicsAPI!");
+		HELIOS_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}*/
 
@@ -34,10 +36,10 @@ namespace Helios
 	{
 		switch (Graphics::GetAPI())
 		{
-		case Graphics::API::DirectX11: return CreateRef<DirectXVertexBuffer>(size, usage);
+		case Graphics::API::Direct3D11: return CreateRef<DirectXVertexBuffer>(size, usage);
 		}
 
-		HL_CORE_ASSERT(false, "Unknown Graphics API!");
+		HELIOS_ASSERT(false, "Unknown DepricatedGraphics API!");
 		return nullptr;
 	}
 	
@@ -45,10 +47,10 @@ namespace Helios
 	{
 		switch (Graphics::GetAPI())
 		{
-		case Graphics::API::DirectX11: return CreateRef<DirectXVertexBuffer>(data, size, usage);
+		case Graphics::API::Direct3D11: return CreateRef<DirectXVertexBuffer>(data, size, usage);
 		}
 
-		HL_CORE_ASSERT(false, "Unknown Graphics API!");
+		HELIOS_ASSERT(false, "Unknown DepricatedGraphics API!");
 		return nullptr;
 	}
 }

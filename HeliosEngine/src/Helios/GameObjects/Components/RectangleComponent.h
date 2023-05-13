@@ -18,7 +18,7 @@ namespace Helios {
 		ID2D1StrokeStyle* strokeStyle = NULL;
 		std::unique_ptr<Brush> m_brush;
 
-		void Render(Graphics& g) override {
+		void Render(DepricatedGraphics& g) override {
 			/*if (m_brush->isReady())
 			{
 				auto pos = transform->getScreenPosition();
@@ -51,7 +51,7 @@ namespace Helios {
 			this->stroke = strokeWidth;
 		}
 
-		friend class Application;
+		friend class DepricatedApplication;
 		friend class SceneManager;
 
 		extern friend class EditorRectangleComponent;

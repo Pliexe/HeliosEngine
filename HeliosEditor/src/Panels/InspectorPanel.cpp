@@ -8,7 +8,7 @@
 #include <Helios/Scene/Components.h>
 #include "../AssetRegistry.h"
 #include "ImGuiCustomControls.h"
-#include "Helios/Core/Application.h"
+#include "Helios/Core/DepricatedApplication.h"
 
 namespace Helios {
 

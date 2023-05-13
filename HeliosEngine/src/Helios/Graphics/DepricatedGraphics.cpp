@@ -3,8 +3,8 @@
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
-#include "Graphics.h"
-#include "Helios/Core/Application.h"
+#include "DepricatedGraphics.h"
+#include "Helios/Core/DepricatedApplication.h"
 #include "Helios/Utils/ErrorHandling.h"
 
 #include "Renderer2D.h"
@@ -12,11 +12,11 @@
 
 using namespace Helios;
 
-Graphics::API Graphics::s_API = API::None;
+DepricatedGraphics::API DepricatedGraphics::s_API = API::None;
 
-Size Graphics::s_currentSize;
+Size DepricatedGraphics::s_currentSize;
 
-bool Helios::Graphics::Init()
+bool Helios::DepricatedGraphics::Init()
 {
     //if (!CreateD3DDevice()) return false;
     IDXGIAdapter* pAdapter10 = NULL;
@@ -32,7 +32,7 @@ bool Helios::Graphics::Init()
     // Create a new D3D11 device.
     if (FAILED(hr = CreateD3D11Device(D3D_DRIVER_TYPE_HARDWARE))) {
         if (FAILED(hr = CreateD3D11Device(D3D_DRIVER_TYPE_WARP))) {
-            MessageBox(m_hWnd, (std::wstring(L"Failed to create Direct3D11 device! Reason: ") + GetErrorAsReadable(hr)).c_str(), L"Graphics Error!", MB_ICONERROR);
+            MessageBox(m_hWnd, (std::wstring(L"Failed to create Direct3D11 device! Reason: ") + GetErrorAsReadable(hr)).c_str(), L"DepricatedGraphics Error!", MB_ICONERROR);
             return false;
         }
     }
@@ -46,19 +46,19 @@ bool Helios::Graphics::Init()
 
     // Check HRESULT
     if (FAILED(hr)) {
-        MessageBox(m_hWnd, (std::wstring(L"Failed to get DXGI device or adapter! Reason: ") + GetErrorAsReadable(hr)).c_str(), L"Graphics Error!", MB_ICONERROR);
+        MessageBox(m_hWnd, (std::wstring(L"Failed to get DXGI device or adapter! Reason: ") + GetErrorAsReadable(hr)).c_str(), L"DepricatedGraphics Error!", MB_ICONERROR);
         return false;
     }
 
     // Create Swap Chain for DX11
     if (FAILED(hr = CreateD3D11SwapChain(pDXGIFactory, &this->m_pSwapChain))) {
-        MessageBox(m_hWnd, (std::wstring(L"Failed to create swap chain! Reason: ") + GetErrorAsReadable(hr)).c_str(), L"Graphics Error!", MB_ICONERROR);
+        MessageBox(m_hWnd, (std::wstring(L"Failed to create swap chain! Reason: ") + GetErrorAsReadable(hr)).c_str(), L"DepricatedGraphics Error!", MB_ICONERROR);
         return false;
     }
 
     // Create Render Target for DX11
     if (FAILED(hr = CreateD3D11RenderTarget())) {
-        MessageBox(m_hWnd, (std::wstring(L"Failed to create render target! Reason: ") + GetLastMessageAsReadable()).c_str(), L"Graphics Error!", MB_ICONERROR);
+        MessageBox(m_hWnd, (std::wstring(L"Failed to create render target! Reason: ") + GetLastMessageAsReadable()).c_str(), L"DepricatedGraphics Error!", MB_ICONERROR);
         return false;
     }
 
@@ -69,12 +69,12 @@ bool Helios::Graphics::Init()
 #endif
 
     if (FAILED(hr = D2D1CreateFactory(D2D1_FACTORY_TYPE::D2D1_FACTORY_TYPE_MULTI_THREADED, &factory))) {
-        MessageBox(m_hWnd, (std::wstring(L"Failed to create D2D1 Factory! Reason: ") + GetLastMessageAsReadable()).c_str(), L"Graphics Error!", MB_ICONERROR);
+        MessageBox(m_hWnd, (std::wstring(L"Failed to create D2D1 Factory! Reason: ") + GetLastMessageAsReadable()).c_str(), L"DepricatedGraphics Error!", MB_ICONERROR);
         return false;
     }
 
     if (FAILED(hr = CreateDXGIRenderTarget(500, 500))) {
-        MessageBox(m_hWnd, (std::wstring(L"Failed to create DXGI Render Target! Reason: ") + GetLastMessageAsReadable()).c_str(), L"Graphics Error!", MB_ICONERROR);
+        MessageBox(m_hWnd, (std::wstring(L"Failed to create DXGI Render Target! Reason: ") + GetLastMessageAsReadable()).c_str(), L"DepricatedGraphics Error!", MB_ICONERROR);
         return false;
     }
 
@@ -96,14 +96,14 @@ bool Helios::Graphics::Init()
 	
     if (FAILED(hr = m_device->CreateRasterizerState(&rasterizerDesc, &wireframeRasterizerState)))
     {
-		MessageBox(m_hWnd, (std::wstring(L"Failed to create rasterizer state! Reason: ") + GetLastMessageAsReadable()).c_str(), L"Graphics Error!", MB_ICONERROR);
+		MessageBox(m_hWnd, (std::wstring(L"Failed to create rasterizer state! Reason: ") + GetLastMessageAsReadable()).c_str(), L"DepricatedGraphics Error!", MB_ICONERROR);
 		return false;
     }
 
     return true;
 }
 
-HRESULT Graphics::CreateD3D11Device(D3D_DRIVER_TYPE type)
+HRESULT DepricatedGraphics::CreateD3D11Device(D3D_DRIVER_TYPE type)
 {
     static const D3D_FEATURE_LEVEL levelAttempts[] =
     {
@@ -136,7 +136,7 @@ HRESULT Graphics::CreateD3D11Device(D3D_DRIVER_TYPE type)
     );
 }
 
-HRESULT Helios::Graphics::CreateD3D11SwapChain(IDXGIFactory* pFactory, IDXGISwapChain** ppSwapChain)
+HRESULT Helios::DepricatedGraphics::CreateD3D11SwapChain(IDXGIFactory* pFactory, IDXGISwapChain** ppSwapChain)
 {
     DXGI_SWAP_CHAIN_DESC swapDesc;
 	ZeroMemory(&swapDesc, sizeof(swapDesc));
@@ -156,20 +156,20 @@ HRESULT Helios::Graphics::CreateD3D11SwapChain(IDXGIFactory* pFactory, IDXGISwap
     return pFactory->CreateSwapChain(this->m_device, &swapDesc, ppSwapChain);
 }
 
-void Helios::Graphics::EndFrame()
+void Helios::DepricatedGraphics::EndFrame()
 {
     // m_pSwapChain->Present(1u, 0u);
     m_pSwapChain->Present(0u, 0u);
     //m_pSwapChain_10->Present(1u, 0u);
 }
 
-void Helios::Graphics::ClearRenderTarget(float r, float g, float b)
+void Helios::DepricatedGraphics::ClearRenderTarget(float r, float g, float b)
 {
     const float color[4] = { r,g,b,1.0f };
     this->m_deviceContext->ClearRenderTargetView(m_mainRenderTarget, color);
 }
 
-HRESULT Helios::Graphics::CreateD3D11RenderTarget()
+HRESULT Helios::DepricatedGraphics::CreateD3D11RenderTarget()
 {
 	// Back Buffer Texture
 	ID3D11Texture2D* pBB = nullptr;
@@ -179,7 +179,7 @@ HRESULT Helios::Graphics::CreateD3D11RenderTarget()
     pBB->Release();
 }
 
-HRESULT Helios::Graphics::CreateDXGIRenderTarget(UINT width, UINT height)
+HRESULT Helios::DepricatedGraphics::CreateDXGIRenderTarget(UINT width, UINT height)
 {
     HRESULT hr = S_OK;
     IDXGISurface* pBackBuffer = nullptr;
@@ -240,7 +240,7 @@ HRESULT Helios::Graphics::CreateDXGIRenderTarget(UINT width, UINT height)
     return hr;
 }
 
-Helios::Graphics::~Graphics()
+Helios::DepricatedGraphics::~DepricatedGraphics()
 {
 	SafeRelease(&factory);
 	SafeRelease(&m_renderTarget2D);
@@ -254,4 +254,4 @@ Helios::Graphics::~Graphics()
     SafeRelease(&pTextureView);
 }
 
-Helios::Graphics* Helios::Graphics::instance = nullptr;
+Helios::DepricatedGraphics* Helios::DepricatedGraphics::instance = nullptr;

@@ -81,7 +81,7 @@ namespace Helios {
 		return Matrix4x4::RotationColumn(transform.Rotation) * Matrix4x4::TranslationColumn(-(Vector3)transform.Position);
 	}
 
-	Matrix4x4 SceneCamera::GetProjectionMatrix(const CameraComponent& camera, Size size = Graphics::GetCurrentSize())
+	Matrix4x4 SceneCamera::GetProjectionMatrix(const CameraComponent& camera, Size size = DepricatedGraphics::GetCurrentSize())
 	{
 		return camera.ortographic ? (
 			Matrix4x4::OrthographicLH(camera.size, camera.size * ((float)size.height / (float)size.width), camera.near_z, camera.far_z)

@@ -14,6 +14,9 @@
 #define HELIOS_API __declspec(dllimport)
 #endif
 
+typedef unsigned long long bitmask_t;
+#define BIT(x) (1ull << static_cast<unsigned long long>(x))
+
 #define HL_DEBUGBREAK __debugbreak
 
 #define HL_INIT_APPLICATION(ClassName) Helios::Application* Helios::CreateApplication() { return new ClassName(); }

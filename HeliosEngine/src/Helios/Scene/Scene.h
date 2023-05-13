@@ -34,6 +34,18 @@ namespace Helios {
 		Scene(std::string name, std::filesystem::path path) : name(name), path(path) { }
 		~Scene();
 
+		inline std::string GetName() const { return name; }
+
+		template<typename... Component>
+		static void CopyComponentIfExists(GameObject dst, GameObject src)
+		{
+			([&]()
+				{
+					if (src.HasComponent<Component>())
+						dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+				}(), ...);
+		}
+
 		inline bool contains(entt::entity entity);
 		
 		inline void RenderScene(SceneCamera camera);
@@ -72,7 +84,11 @@ namespace Helios {
 		friend class GameObject;
 		friend class Transform;
 
-		extern friend class GameEngine;
+		extern friend class DepricatedGameEngine;
 		extern friend class HierarchyPanel;
+		extern friend class HeliosEditor;
+		extern friend class ScenePanel;
+		extern friend class SceneRegistry;
+
 	};
 }

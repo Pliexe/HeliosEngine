@@ -16,7 +16,7 @@ namespace Helios {
 
 	
 	class Camera;
-	class Graphics;
+	class DepricatedGraphics;
 
 	class HELIOS_API GameObject
 	{
@@ -122,7 +122,7 @@ namespace Helios {
 		
 		friend struct Transform2DComponent;
 
-		friend class Application;
+		friend class DepricatedApplication;
 		friend class SceneManager;
 		friend class Scene;
 		friend void SerializeObject(YAML::Emitter& out, GameObject& o);

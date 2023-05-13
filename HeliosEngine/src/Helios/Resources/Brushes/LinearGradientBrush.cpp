@@ -1,6 +1,6 @@
 #include "LinearGradientBrush.h"
 #include "Helios/Resources/Color.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 
 //Helios::LinearGradientBrush::LinearGradientBrush(const std::initializer_list<GradientStop> stops)
 //{
@@ -13,7 +13,7 @@
 //		i++;
 //	}
 //	ID2D1GradientStopCollection* tmp;
-//	if (SUCCEEDED(Graphics::instance->m_renderTarget2D->CreateGradientStopCollection(
+//	if (SUCCEEDED(DepricatedGraphics::instance->m_renderTarget2D->CreateGradientStopCollection(
 //		gradientStops,
 //		2,
 //		D2D1_GAMMA_2_2,
@@ -23,7 +23,7 @@
 //		//m_gradientStops.reset(tmp, [](ID2D1GradientStopCollection* ptr) { ptr->Release(); });
 //
 //		ID2D1LinearGradientBrush* tmp2 = nullptr;
-//		Graphics::instance->m_renderTarget2D->CreateLinearGradientBrush(
+//		DepricatedGraphics::instance->m_renderTarget2D->CreateLinearGradientBrush(
 //			D2D1::LinearGradientBrushProperties(
 //				D2D1::Point2F(0, 0),
 //				D2D1::Point2F(150, 150)),

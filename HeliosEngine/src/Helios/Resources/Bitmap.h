@@ -8,7 +8,7 @@
 #include "Helios/Core/Base.h"
 
 namespace Helios {
-	class Graphics;
+	class DepricatedGraphics;
 	class Size;
 	class HELIOS_API Bitmap {
 	private:

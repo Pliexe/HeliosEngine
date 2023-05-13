@@ -6,7 +6,7 @@
 
 #include "EditorCamera.h"
 #include "Scene.h"
-#include "Helios/Core/Application.h"
+#include "Helios/Core/DepricatedApplication.h"
 #include "Helios/Graphics/GizmosRenderer.h"
 #include "Helios/Scene/GameObject.h"
 #include "Helios/Core/Profiler.h"
@@ -14,13 +14,12 @@
 namespace Helios {
 	Ref<Scene> SceneRegistry::m_activeScene;
 	std::vector<std::future<void>> SceneRegistry::m_asyncTasks;
-	std::map<std::filesystem::path, Ref<Scene>> SceneRegistry::m_scenes;
 
 	/*Ref<Scene> SceneRegistry::loadQueue;
 	Ref<Scene> SceneRegistry::currentScene;*/
 	//std::map<std::string, Ref<Scene>> SceneRegistry::scenes;
 
-	//void SceneRegistry::Render(Graphics& graphics)
+	//void SceneRegistry::Render(DepricatedGraphics& graphics)
 	//{
 	//	/*auto currentCamera = currentScene->currentCamera;
 	//	if (currentCamera) {
@@ -86,33 +85,75 @@ namespace Helios {
 	//		if (!currentScene->IsPrimaryCameraSet()) GameObject::CreateMainCamera();
 	//	}
 	//}
-
-	void SceneRegistry::Unregister(std::filesystem::path path)
-	{
-		m_scenes.erase(path);
-	}
-
-	void SceneRegistry::Register(std::filesystem::path path)
-	{
-		m_scenes.emplace(path, CreateRef<Scene>(path.filename().generic_string()));
-	}
+	
 
 	Ref<Scene> SceneRegistry::create_temporary_scene()
 	{
 		return m_activeScene = CreateRef<Scene>("New Scene");
 	}
 
-	bool SceneRegistry::LoadScene(std::filesystem::path path)
+	void SceneRegistry::Register(std::string name, std::filesystem::path path)
 	{
-		std::map<std::filesystem::path, Ref<Scene>>::iterator x;
-		if ((x = m_scenes.find(path)) != m_scenes.end())
+		m_scenePaths.emplace(name, path);
+	}
+
+	bool SceneRegistry::LoadEmptyScene(std::string name, Mode mode)
+	{
+		// Check if a scene with the same name already exists
+		if (const auto x = m_scenePaths.find(name); x != m_scenePaths.end()) return false;
+
+		Ref<Scene> new_scene = CreateRef<Scene>(name);
+		if (mode == Mode::Single)
 		{
-			m_activeScene->Shutdown();
-			x->second->Init();
-			Scene::Deserialize(path.string(), x->second);
-			return true;
+			for (auto& scene : m_activeScenes)
+			{
+				scene->m_components.each([scene](auto entity)
+				{
+					if (scene->m_components.any_of<DontDestroyOnLoadComponent>(entity))
+					{
+
+					}
+				});
+			}
+
+			m_activeScenes.clear();
 		}
-		else return false;
+		m_activeScenes.emplace_back(new_scene);
+
+		return true;
+	}
+
+	bool SceneRegistry::LoadScene(std::filesystem::path path, Mode mode)
+	{
+		return LoadScene(path.filename().generic_string(), path, mode);
+	}
+
+	bool SceneRegistry::LoadScene(std::string name, std::filesystem::path path, Mode mode)
+	{
+		Ref<Scene> scene = CreateRef<Scene>(name);
+		Scene::Deserialize(path.string(), scene);
+		m_activeScenes.emplace_back(scene);
+		return true;
+	}
+
+
+	bool SceneRegistry::LoadScene(std::string name, Mode mode)
+	{
+		if (const auto x = m_scenePaths.find(name); x == m_scenePaths.end()) return false;
+		else return LoadScene(name, x->second, mode);
+	}
+	
+	bool SceneRegistry::UnloadScene(std::string name)
+	{
+		for (auto scene : m_activeScenes)
+		{
+			if (scene->GetName() == name)
+			{
+				m_activeScenes.erase(std::remove(m_activeScenes.begin(), m_activeScenes.end(), scene), m_activeScenes.end());
+				return true;
+			}
+		}
+		return false;
 	}
 
 	GameObject SceneRegistry::GetPrimaryCamera()

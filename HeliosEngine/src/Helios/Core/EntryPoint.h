@@ -4,11 +4,12 @@
  */
 #pragma once
 
+#include "DepricatedApplication.h"
 #include "Application.h"
 
-extern Helios::Application* Helios::CreateApplication();
+extern Helios::Application* Helios::CreateApplication(int argc, char** argv);
 #ifdef HELIOS_EDITOR
-extern int ValidateInit();
+//extern int ValidateInit();
 #endif // HELIOS_EDITOR
 
 #include "Asserts.h"
@@ -16,7 +17,7 @@ extern int ValidateInit();
 #include "Helios/Translation/Matrix.h"
 #include "Helios/Translation/Vector.h"
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance /*hahaha 16bit windows legacy*/, PWSTR pCmdLine, int nCmdShow)
+int main(int argc, char** argv)
 {
 
 #pragma region Logging
@@ -52,26 +53,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance /*hahaha 16bit 
 		freopen_s(&e, "error.txt", "w", stderr);
 
 	}
-
-	std::cout << "Starting Application" << std::endl;
-
+	
 #pragma endregion
 
-	int result;
-	
-#ifdef HELIOS_EDITOR
-	result = ValidateInit();
-	if (result < 0) return result;
-#endif // HELIOS_EDITOR
-
 	try {
-		auto app = Helios::CreateApplication();
-		result = app->Run();
+		auto app = Helios::CreateApplication(argc, argv);
+		app->Run();
 		delete app;
 	} catch(Helios::HeliosException e) {
 		e.what(false);
 		return -1;
 	}
-	std::cout << "Application closed! Code: " << result << std::endl;
-	return result;
+
+	return 0;
 }

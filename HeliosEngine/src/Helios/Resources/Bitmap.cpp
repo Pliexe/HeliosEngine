@@ -1,12 +1,12 @@
 #include "Bitmap.h"
-#include "Helios/Core/Application.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Core/DepricatedApplication.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 #include "Helios/Core/Logger.h"
 #include "Helios/Translation/Vector.h"
 
 Helios::Bitmap::Bitmap(const wchar_t* path)
 {
-	if (Graphics::instance) {
+	if (DepricatedGraphics::instance) {
 
 		CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
 		IWICImagingFactory* wicFactory = NULL;
@@ -63,7 +63,7 @@ Helios::Bitmap::Bitmap(const wchar_t* path)
 
 		ID2D1Bitmap* bmp;
 
-		if (FAILED(Graphics::instance->m_renderTarget2D->CreateBitmapFromWicBitmap(
+		if (FAILED(DepricatedGraphics::instance->m_renderTarget2D->CreateBitmapFromWicBitmap(
 			wicConverter,
 			NULL,
 			&bmp
@@ -83,7 +83,7 @@ Helios::Bitmap::Bitmap(const wchar_t* path)
 		SafeRelease(&wicFrame);
 
 	} else {
-		throw std::logic_error("Graphics Instance is nullptr. Can't create a Bitmap before the program has Initialized!");
+		throw std::logic_error("DepricatedGraphics Instance is nullptr. Can't create a Bitmap before the program has Initialized!");
 		abort();
 	}
 }

@@ -1,6 +1,6 @@
 #include "Renderer2D.h"
 
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 #include "Helios/Core/Asserts.h"
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
@@ -113,6 +113,7 @@ namespace Helios {
 		s_Data.quadInstanceBuffer->SetStride<Renderer2DData::QuadInstanceData>();
 
 		s_Data.viewProjBuffer = ConstantBuffer<Renderer2DData::TransformData>::Create();
+		//assert(s_Data.viewProjBuffer == nullptr);
 
 		D3D11_SAMPLER_DESC samplerDesc = {};
 		ZeroMemory(&samplerDesc, sizeof(samplerDesc));
@@ -122,7 +123,7 @@ namespace Helios {
 		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 		
-		Graphics::instance->m_device->CreateSamplerState(&samplerDesc, &sampler);
+		Direct3D11Context::GetCurrentContext()->GetDevice()->CreateSamplerState(&samplerDesc, &sampler);
 
 		return true;
 	}
@@ -161,10 +162,10 @@ namespace Helios {
 				s_Data.textureSlots[i]->Bind(i);
 			}
 
-			Graphics::instance->m_deviceContext->PSSetSamplers(0u, 1u, sampler.GetAddressOf());
+			Direct3D11Context::GetCurrentContext()->GetContext()->PSSetSamplers(0u, 1u, sampler.GetAddressOf());
 			
 			HL_PROFILE_BEGIN("Renderer2D Wait for GPU");
-			Graphics::instance->m_deviceContext->DrawIndexedInstanced(6u, (s_Data.quadInstanceDataPtr - s_Data.quadInstanceData), 0u, 0u, 0u);
+			Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexedInstanced(6u, (s_Data.quadInstanceDataPtr - s_Data.quadInstanceData), 0u, 0u, 0u);
 			HL_PROFILE_END();
 			s_Data.quadInstanceDataPtr = s_Data.quadInstanceData;
 			s_Data.textureSlotIndex = 0;
@@ -246,14 +247,14 @@ namespace Helios {
 	// 	cbd.StructureByteStride = 0u;
 	// 	D3D11_SUBRESOURCE_DATA csd = {};
 	// 	csd.pSysMem = &cb;
-	// 	//Graphics::instance->m_device->CreateBuffer(&cbd, &csd, &pConstantBuffer);
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateBuffer(&cbd, &csd, &pConstantBuffer)), "Failed to create constant buffer!\n" + GetLastErrorAsString());
+	// 	//Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&cbd, &csd, &pConstantBuffer);
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&cbd, &csd, &pConstantBuffer)), "Failed to create constant buffer!\n" + GetLastErrorAsString());
 	
 	// 	// bind
-	// 	Graphics::instance->m_deviceContext->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
 
 
-	// 	Graphics::instance->m_deviceContext->DrawIndexed((UINT)cubeMesh->getIndexCount(), 0u, 0u);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexed((UINT)cubeMesh->getIndexCount(), 0u, 0u);
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(GetLastError()), GetLastErrorAsString());
 	// }
 	
@@ -291,11 +292,11 @@ namespace Helios {
 	// 	cbd.StructureByteStride = 0u;
 	// 	D3D11_SUBRESOURCE_DATA csd = {};
 	// 	csd.pSysMem = &cb;
-	// 	//Graphics::instance->m_device->CreateBuffer(&cbd, &csd, &pConstantBuffer);
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateBuffer(&cbd, &csd, &pConstantBuffer)), "Failed to create constant buffer!\n" + GetLastErrorAsString());
+	// 	//Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&cbd, &csd, &pConstantBuffer);
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&cbd, &csd, &pConstantBuffer)), "Failed to create constant buffer!\n" + GetLastErrorAsString());
 	
 	// 	// bind
-	// 	Graphics::instance->m_deviceContext->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
 
 	// 	/*spriteShader.reset();
 	// 	spriteShader = CreateRef<Shader>(Shader(std::string("Sprite"), {
@@ -306,7 +307,7 @@ namespace Helios {
 	// 	spriteShader->BindVS();*/
 
 
-	// 	//Graphics::instance->m_deviceContext->OMSetRenderTargets(1u, s_renderTarget.GetAddressOf(), nullptr);
+	// 	//Direct3D11Context::GetCurrentContext()->GetContext()->OMSetRenderTargets(1u, s_renderTarget.GetAddressOf(), nullptr);
 
 
 	// 	/*D3D11_VIEWPORT vp;
@@ -316,10 +317,10 @@ namespace Helios {
 	// 	vp.MaxDepth = 1;
 	// 	vp.TopLeftX = 0;
 	// 	vp.TopLeftY = 0;
-	// 	Graphics::instance->m_deviceContext->RSSetViewports(1u, &vp);*/
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->RSSetViewports(1u, &vp);*/
 
 
-	// 	Graphics::instance->m_deviceContext->DrawIndexed((UINT)std::Size(indices), 0u, 0u);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexed((UINT)std::Size(indices), 0u, 0u);
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(GetLastError()), GetLastErrorAsString());
 	// }
 
@@ -376,12 +377,12 @@ namespace Helios {
 	// 	bd.StructureByteStride = sizeof(MeshVertex);
 	// 	D3D11_SUBRESOURCE_DATA sd = {};
 	// 	sd.pSysMem = vertices;
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateBuffer(&bd, &sd, &pVertexBuffer)), "Failed to create buffer");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&bd, &sd, &pVertexBuffer)), "Failed to create buffer");
 
 	// 	// bind vertex buffer
 	// 	const UINT stride = sizeof(MeshVertex);
 	// 	const UINT offset = 0u;
-	// 	Graphics::instance->m_deviceContext->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
 
 	// 	Microsoft::WRL::ComPtr<ID3D11Buffer> pIndexBuffer;
@@ -394,37 +395,37 @@ namespace Helios {
 	// 	bdi.StructureByteStride = sizeof(unsigned short);
 	// 	D3D11_SUBRESOURCE_DATA sdi = {};
 	// 	sdi.pSysMem = indecies;
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateBuffer(&bdi, &sdi, &pIndexBuffer)), "Failed to create buffer");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&bdi, &sdi, &pIndexBuffer)), "Failed to create buffer");
 
-	// 	Graphics::instance->m_deviceContext->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
 
 	// 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
 	// 	Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(D3DReadFileToBlob(L"PixelShader.cso", &pBlob)), "Failed to read Pixel Shader!");
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader)), "Failed to create MeshVertex Shader!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader)), "Failed to create MeshVertex Shader!");
 
-	// 	Graphics::instance->m_deviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0u);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->PSSetShader(pPixelShader.Get(), nullptr, 0u);
 
 	// 	Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(D3DReadFileToBlob(L"VertexShader.cso", &pBlob)), "Failed to read MeshVertex Shader!");
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader)), "Failed to create MeshVertex Shader!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader)), "Failed to create MeshVertex Shader!");
 
 
-	// 	Graphics::instance->m_deviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0u);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->VSSetShader(pVertexShader.Get(), nullptr, 0u);
 
 	// 	Microsoft::WRL::ComPtr<ID3D11InputLayout> pInputLayout;
 	// 	const D3D11_INPUT_ELEMENT_DESC ied[] = {
 	// 		{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	// 		{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 8u, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	// 	};
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateInputLayout(ied, (UINT)std::Size(ied), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &pInputLayout)), "Failed to create input layout!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateInputLayout(ied, (UINT)std::Size(ied), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &pInputLayout)), "Failed to create input layout!");
 
 
-	// 	Graphics::instance->m_deviceContext->IASetInputLayout(pInputLayout.Get());
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->IASetInputLayout(pInputLayout.Get());
 
 
-	// 	Graphics::instance->m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	// 	//Graphics::instance->m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	// 	//Direct3D11Context::GetCurrentContext()->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 
 
@@ -435,10 +436,10 @@ namespace Helios {
 	// 	vp.MaxDepth = 1;
 	// 	vp.TopLeftX = 0;
 	// 	vp.TopLeftY = 0;
-	// 	Graphics::instance->m_deviceContext->RSSetViewports(1u, &vp);*/
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->RSSetViewports(1u, &vp);*/
 
 
-	// 	Graphics::instance->m_deviceContext->DrawIndexed((UINT)(sides * 3 + 3), 0u, 0u);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexed((UINT)(sides * 3 + 3), 0u, 0u);
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(GetLastError()), GetLastErrorAsString());
 		
 	// 	delete[] vertices;
@@ -476,40 +477,40 @@ namespace Helios {
 	// 	bd.StructureByteStride = sizeof(MeshVertex);
 	// 	D3D11_SUBRESOURCE_DATA sd = {};
 	// 	sd.pSysMem = vertices;
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateBuffer(&bd, &sd, &pVertexBuffer)), "Failed to create buffer");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateBuffer(&bd, &sd, &pVertexBuffer)), "Failed to create buffer");
 		
 	// 	// bind vertex buffer
 	// 	const UINT stride = sizeof(MeshVertex);
 	// 	const UINT offset = 0u;
-	// 	Graphics::instance->m_deviceContext->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
 
 	// 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
 	// 	Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(D3DReadFileToBlob(L"PixelShader.cso", &pBlob)), "Failed to read Pixel Shader!");
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader)), "Failed to create MeshVertex Shader!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader)), "Failed to create MeshVertex Shader!");
 
-	// 	Graphics::instance->m_deviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0u);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->PSSetShader(pPixelShader.Get(), nullptr, 0u);
 		
 	// 	Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(D3DReadFileToBlob(L"VertexShader.cso", &pBlob)), "Failed to read MeshVertex Shader!");
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader)), "Failed to create MeshVertex Shader!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader)), "Failed to create MeshVertex Shader!");
 
 
-	// 	Graphics::instance->m_deviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0u);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->VSSetShader(pVertexShader.Get(), nullptr, 0u);
 
 	// 	Microsoft::WRL::ComPtr<ID3D11InputLayout> pInputLayout;
 	// 	const D3D11_INPUT_ELEMENT_DESC ied[] = {
 	// 		{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	// 		{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 8u, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	// 	};
-	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Graphics::instance->m_device->CreateInputLayout(ied, (UINT)std::Size(ied), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &pInputLayout)), "Failed to create input layout!");
+	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateInputLayout(ied, (UINT)std::Size(ied), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &pInputLayout)), "Failed to create input layout!");
 		
 
-	// 	Graphics::instance->m_deviceContext->IASetInputLayout(pInputLayout.Get());
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->IASetInputLayout(pInputLayout.Get());
 
-	// 	Graphics::instance->m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	// 	//Graphics::instance->m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	// 	//Direct3D11Context::GetCurrentContext()->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 
 
@@ -520,10 +521,10 @@ namespace Helios {
 	// 	vp.MaxDepth = 1;
 	// 	vp.TopLeftX = 0;
 	// 	vp.TopLeftY = 0;
-	// 	Graphics::instance->m_deviceContext->RSSetViewports(1u, &vp);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->RSSetViewports(1u, &vp);
 
 
-	// 	Graphics::instance->m_deviceContext->Draw((UINT)std::Size(vertices), 0u);
+	// 	Direct3D11Context::GetCurrentContext()->GetContext()->Draw((UINT)std::Size(vertices), 0u);
 	// 	HL_CORE_ASSERT_WITH_MSG(SUCCEEDED(GetLastError()), GetLastErrorAsString());		
 	// }
 }

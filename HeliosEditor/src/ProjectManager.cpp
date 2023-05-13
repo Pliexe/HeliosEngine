@@ -2,7 +2,7 @@
 
 #include "ProjectManager.h"
 
-#include <Helios/Core/Application.h>
+#include <Helios/Core/DepricatedApplication.h>
 #include <Helios/Scene/SceneRegistry.h>
 #include <Helios/Scene/Scene.h>
 
@@ -18,11 +18,119 @@ namespace Helios {
 
 		static std::filesystem::path s_projectPath;
 		static std::filesystem::path s_currentScenePath;
+		static ProjectSettings s_projectSettings;
 
-		static StartupConfig s_startupConfig;
+		static StartupConfig s_startupConfig = {};
+
+		void ProjectSettings::Serialize()
+		{
+			YAML::Emitter out;
+
+			out << YAML::BeginMap;
+
+			out << YAML::Key << "Name" << YAML::Value << name;
+			if (!lastScene.empty()) out << YAML::Key << "LastScene" << YAML::Value << lastScene;
+
+			out << YAML::EndMap;
+
+			std::ofstream fout(s_projectPath / "project.helios");
+			fout << out.c_str();
+			fout.close();
+		}
+
+		void ProjectSettings::Deserialize()
+		{
+			assert(std::filesystem::exists(s_projectPath / "project.helios"));
+
+			YAML::Node in = YAML::LoadFile((s_projectPath / "project.helios").generic_string());
+
+			name = in["Name"].as<std::string>();
+			if (in["LastScene"].IsDefined()) lastScene = in["LastScene"].as<std::string>();
+		}
 
 		inline const std::filesystem::path GetProjectPath() { return s_projectPath; }
 		inline const std::filesystem::path GetAssetsPath() { return s_projectPath / "Assets"; }
+
+		const ProjectSettings& GetProjectSettings()
+		{
+			return s_projectSettings;
+		}
+
+		void GenerateDirectoriesIfMissing()
+		{
+			if (!std::filesystem::exists(s_projectPath / "Assets"))
+				std::filesystem::create_directory(s_projectPath / "Assets");
+		}
+
+		bool HasProjectFile(std::filesystem::path path)
+		{
+			return std::filesystem::exists(path / "project.helios");
+		}
+
+		void CreateProject(std::filesystem::path path, std::function<void(std::string, float)> progressCb)
+		{
+
+			if (HasProjectFile(path))
+			{
+#ifdef HELIOS_PLATFORM_WINDOWS
+				MessageBoxA(NULL, "The directory given is already a project!", "Failed to create project!", MB_ICONERROR);
+#endif
+				throw HELIOS_EXIT_CODE_INVALID_PROJECT_PATH;
+			}
+
+			try
+			{
+				if (!std::filesystem::exists(path))
+					std::filesystem::create_directory(path);
+			} catch (std::filesystem::filesystem_error e)
+			{
+#ifdef HELIOS_PLATFORM_WINDOWS
+				MessageBoxA(NULL, e.what(), "Failed to create project!", MB_ICONERROR);
+#endif
+				std::cout << e.what() << std::endl;
+				exit(1);
+			}
+
+			progressCb("Creating project directory structure...", 0.0f);
+
+			s_projectPath = path;
+			s_projectSettings.name = (path.filename().empty() ? path.parent_path() : path).filename().string();
+			if (s_projectSettings.name.empty()) s_projectSettings.name = "Untitled";
+			
+			s_projectSettings.Serialize();
+
+			GenerateDirectoriesIfMissing();
+		}
+
+		void LoadProject(std::filesystem::path path, std::function<void(std::string, float)> progressCb)
+		{
+			if (!HasProjectFile(path))
+			{
+#ifdef HELIOS_PLATFORM_WINDOWS
+				MessageBoxA(NULL, "The directory given is not a project!", "Failed to load project!", MB_ICONERROR);
+#endif
+				throw HELIOS_EXIT_CODE_INVALID_PROJECT_PATH;
+			}
+
+			progressCb("Loading project...", 0.0f);
+
+			s_projectPath = path;
+
+			try
+			{
+				s_projectSettings.Deserialize();
+			} catch (YAML::Exception e)
+			{
+				std::cout << e.what() << std::endl;
+#ifdef HELIOS_PLATFORM_WINDOWS
+				MessageBoxA(NULL, e.what(), "Failed to load project!", MB_ICONERROR);
+#endif
+				exit(1);
+			}
+
+			progressCb("Loading assets...", 0.5f);
+		}
+
 		const std::filesystem::path GetLastScenePath()
 		{
 			std::string str;
@@ -86,7 +194,7 @@ namespace Helios {
 				//SceneRegistry::GetCurrentScene().Serialize(s_currentScenePath.string(), SceneRegistry::GetCurrentScene());
 			}
 			auto fn = s_currentScenePath.filename().string();
-			SetWindowTextA(Application::GetHwnd(), std::string_view(fn.c_str(), fn.size() - 6).data());
+			SetWindowTextA(DepricatedApplication::GetHwnd(), std::string_view(fn.c_str(), fn.size() - 6).data());
 		}
 		void SaveSceneDialog() {
 			if (SceneRegistry::get_current_scene()) {
@@ -96,7 +204,7 @@ namespace Helios {
 				OPENFILENAMEW props;
 				ZeroMemory(&props, sizeof(props));
 				props.lStructSize = sizeof(props);
-				props.hwndOwner = Application::GetHwnd();
+				props.hwndOwner = DepricatedApplication::GetHwnd();
 				props.lpstrFilter = L"Scene (*.scene)\0*.scene\0All Files (*.*)\0*.*\0";
 				props.lpstrFile = file;
 				props.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
@@ -113,7 +221,7 @@ namespace Helios {
 						//Scene::Serialize(str, SceneRegistry::GetCurrentScene());
 					}
 					else
-						Application::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
+						DepricatedApplication::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
 				}
 			}
 		}
@@ -140,7 +248,7 @@ namespace Helios {
 				OPENFILENAMEW props;
 				ZeroMemory(&props, sizeof(props));
 				props.lStructSize = sizeof(props);
-				props.hwndOwner = Application::GetHwnd();
+				props.hwndOwner = DepricatedApplication::GetHwnd();
 				props.lpstrFilter = L"Scene (*.scene)\0*.scene\0All Files (*.*)\0*.*\0";
 				props.lpstrFile = file;
 				props.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
@@ -158,7 +266,7 @@ namespace Helios {
 						SceneRegistry::LoadScene(s_currentScenePath);
 					}
 					else
-						Application::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
+						DepricatedApplication::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
 				}
 			}
 		}

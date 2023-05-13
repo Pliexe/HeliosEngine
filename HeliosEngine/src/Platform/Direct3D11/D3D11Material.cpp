@@ -1,10 +1,12 @@
-#include "DirectXMaterial.h"
+#include "D3D11Material.h"
+
+#include "Direct3D11Context.h"
 #include "Helios/Core/Logger.h"
 #include "Helios/Core/Asserts.h"
-#include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/DepricatedGraphics.h"
 
 namespace Helios {
-    DirectXMaterial::DirectXMaterial(Filter filter, Type type) {
+    D3D11Material::D3D11Material(Filter filter, Type type) {
         D3D11_SAMPLER_DESC samplerDesc = {};
         ZeroMemory(&samplerDesc, sizeof(samplerDesc));
 
@@ -13,7 +15,7 @@ namespace Helios {
             samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
             break;
         default:
-            HL_CORE_ASSERT(false, "Unknown Filter!");
+            HELIOS_ASSERT(false, "Unknown Filter!");
             break;
         }
 
@@ -44,26 +46,26 @@ namespace Helios {
             samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
             break;
         default:
-            HL_CORE_ASSERT(false, "Unknown Type!");
+            HELIOS_ASSERT(false, "Unknown Type!");
             break;
         }
 
         HL_EXCEPTION(
-            Graphics::instance->m_device->CreateSamplerState(&samplerDesc, m_samplerState.GetAddressOf()),
+            Direct3D11Context::GetCurrentContext()->GetDevice()->CreateSamplerState(&samplerDesc, m_samplerState.GetAddressOf()),
             "Failed to create sampler state!"
         );
     }
     
-    void DirectXMaterial::Bind(uint32_t slot) {
+    void D3D11Material::Bind(uint32_t slot) {
         if(texture)
             texture->Bind();
-        Graphics::instance->m_deviceContext->PSSetSamplers(slot, 1, m_samplerState.GetAddressOf());
+        Direct3D11Context::GetCurrentContext()->GetContext()->PSSetSamplers(slot, 1, m_samplerState.GetAddressOf());
         m_lastBoundSlot = slot;
     }
 
-    void DirectXMaterial::Unbind() {
+    void D3D11Material::Unbind() {
         if(texture)
             texture->Unbind();
-        Graphics::instance->m_deviceContext->PSSetSamplers(m_lastBoundSlot, 1, nullptr);
+        Direct3D11Context::GetCurrentContext()->GetContext()->PSSetSamplers(m_lastBoundSlot, 1, nullptr);
     }
 }

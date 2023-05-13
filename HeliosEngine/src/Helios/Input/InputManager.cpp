@@ -6,7 +6,7 @@
 
 #include "InputManager.h"
 #include "Helios/Translation/Vector.h"
-#include "Helios/Core/Application.h"
+#include "Helios/Core/DepricatedApplication.h"
 
 bool Helios::InputManager::IsKeyPressed(int key)
 {
@@ -32,7 +32,7 @@ Helios::Point Helios::InputManager::GetMousePosition()
 {
     POINT p;
     if (GetCursorPos(&p)) {
-        if (ScreenToClient(Helios::Application::instance->m_hWnd, &p)) {
+        if (ScreenToClient(Helios::DepricatedApplication::instance->m_hWnd, &p)) {
             return Point(p.x, p.y);
         }
     }
