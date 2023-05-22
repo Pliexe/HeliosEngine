@@ -4,7 +4,6 @@
  */
 #pragma once
 
-#include "DepricatedApplication.h"
 #include "Application.h"
 
 extern Helios::Application* Helios::CreateApplication(int argc, char** argv);

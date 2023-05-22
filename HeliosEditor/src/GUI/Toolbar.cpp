@@ -48,7 +48,7 @@ namespace Helios
 				ImGui::Separator();
 
 				if (ImGui::MenuItem("Exit")) {
-					DepricatedApplication::Quit();
+					Application::GetInstance().Quit();
 				}
 				ImGui::EndMenu();
 			}

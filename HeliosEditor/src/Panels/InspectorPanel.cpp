@@ -2,26 +2,22 @@
 
 #include <imgui.h>
 
-#include <Helios/Resources/Brushes/Brush.h>
-#include <Helios/Resources/Brushes/SolidBrush.h>
-#include <Helios/GameObjects/Components/RectangleComponent.h>
 #include <Helios/Scene/Components.h>
 #include "../AssetRegistry.h"
 #include "ImGuiCustomControls.h"
-#include "Helios/Core/DepricatedApplication.h"
 
 namespace Helios {
 
 	InspectorPanel* InspectorPanel::instance = nullptr;
 
-	template <typename T> void AddComponentItem(const char* name, GameObject& obj) { if (!obj.HasComponent<T>() && ImGui::Button(name)) obj.AddComponent<T>(); }
+	template <typename T> void AddComponentItem(const char* name, Entity& obj) { if (!obj.HasComponent<T>() && ImGui::Button(name)) obj.AddComponent<T>(); }
 
 	void InspectorPanel::OnUpdate() {
 		switch (type)
 		{
 		case SelectedType::GameObject:
 		{
-			GameObject entity = std::any_cast<GameObject>(handle);
+			Entity entity = std::any_cast<Entity>(handle);
 			if (entity.IsNull()) return;
 			if(!entity.IsValid())
 			{
@@ -133,7 +129,7 @@ namespace Helios {
 						ImGui::Text("Texture: Unknown Name!");
 
 					if (ImGui::Button("Select")) {
-						GameObject selectedGm = entity;
+						Entity selectedGm = entity;
 						AssetRegistry::OpenTextureSelect([selectedGm](Ref<Texture2D> nTexture) mutable {
 							auto& renderer = selectedGm.GetComponent<SpriteRendererComponent>().texture = nTexture;
 						});
@@ -154,7 +150,7 @@ namespace Helios {
 						ImGui::Text("Texture: Unknown Name!");
 
 					if (ImGui::Button("Select")) {
-						GameObject selectedGm = entity;
+						Entity selectedGm = entity;
 						AssetRegistry::OpenTextureSelect([selectedGm](Ref<Texture2D> nTexture) mutable {
 							auto& renderer = selectedGm.GetComponent<MeshRendererComponent>().material->texture = nTexture;
 							});

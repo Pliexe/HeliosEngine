@@ -2,7 +2,6 @@
 
 #include "ProjectManager.h"
 
-#include <Helios/Core/DepricatedApplication.h>
 #include <Helios/Scene/SceneRegistry.h>
 #include <Helios/Scene/Scene.h>
 
@@ -188,42 +187,42 @@ namespace Helios {
 			}
 		}
 		void SaveScene(bool as_new) {
-			if (s_currentScenePath.empty() || as_new)
-				SaveSceneDialog();
-			else {
-				//SceneRegistry::GetCurrentScene().Serialize(s_currentScenePath.string(), SceneRegistry::GetCurrentScene());
-			}
-			auto fn = s_currentScenePath.filename().string();
-			SetWindowTextA(DepricatedApplication::GetHwnd(), std::string_view(fn.c_str(), fn.size() - 6).data());
+			//if (s_currentScenePath.empty() || as_new)
+			//	SaveSceneDialog();
+			//else {
+			//	//SceneRegistry::GetCurrentScene().Serialize(s_currentScenePath.string(), SceneRegistry::GetCurrentScene());
+			//}
+			//auto fn = s_currentScenePath.filename().string();
+			//SetWindowTextA(DepricatedApplication::GetHwnd(), std::string_view(fn.c_str(), fn.size() - 6).data());
 		}
 		void SaveSceneDialog() {
-			if (SceneRegistry::get_current_scene()) {
-				wchar_t file[MAX_PATH];
-				ZeroMemory(file, sizeof(MAX_PATH));
+			//if (SceneRegistry::get_current_scene()) {
+			//	wchar_t file[MAX_PATH];
+			//	ZeroMemory(file, sizeof(MAX_PATH));
 
-				OPENFILENAMEW props;
-				ZeroMemory(&props, sizeof(props));
-				props.lStructSize = sizeof(props);
-				props.hwndOwner = DepricatedApplication::GetHwnd();
-				props.lpstrFilter = L"Scene (*.scene)\0*.scene\0All Files (*.*)\0*.*\0";
-				props.lpstrFile = file;
-				props.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-				props.lpstrDefExt = L"scene";
-				props.nMaxFile = MAX_PATH;
-				props.lpstrInitialDir = Project::GetAssetsPath().wstring().c_str();
+			//	OPENFILENAMEW props;
+			//	ZeroMemory(&props, sizeof(props));
+			//	props.lStructSize = sizeof(props);
+			//	props.hwndOwner = DepricatedApplication::GetHwnd();
+			//	props.lpstrFilter = L"Scene (*.scene)\0*.scene\0All Files (*.*)\0*.*\0";
+			//	props.lpstrFile = file;
+			//	props.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+			//	props.lpstrDefExt = L"scene";
+			//	props.nMaxFile = MAX_PATH;
+			//	props.lpstrInitialDir = Project::GetAssetsPath().wstring().c_str();
 
-				if (GetSaveFileName(&props)) {
-					std::wstring wstr(file);
-					std::string str(wstr.begin(), wstr.end());
-					if (ENDS_WITH(str, ".scene"))
-					{
-						s_currentScenePath = str;
-						//Scene::Serialize(str, SceneRegistry::GetCurrentScene());
-					}
-					else
-						DepricatedApplication::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
-				}
-			}
+			//	if (GetSaveFileName(&props)) {
+			//		std::wstring wstr(file);
+			//		std::string str(wstr.begin(), wstr.end());
+			//		if (ENDS_WITH(str, ".scene"))
+			//		{
+			//			s_currentScenePath = str;
+			//			//Scene::Serialize(str, SceneRegistry::GetCurrentScene());
+			//		}
+			//		else
+			//			DepricatedApplication::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
+			//	}
+			//}
 		}
 		void TryLoad(std::filesystem::path last) {
 			if (last != "" || std::filesystem::exists(last)) 
@@ -236,12 +235,12 @@ namespace Helios {
 			else LoadSampleScene();
 		}
 		void LoadSampleScene() {
-			auto scene = SceneRegistry::create_temporary_scene();
+			/*auto scene = SceneRegistry::create_temporary_scene();
 			scene->CreateMainCamera({});
-			scene->Init();
+			scene->Init();*/
 		}
 		void OpenSceneDialog() {
-			if (SceneRegistry::get_current_scene()) {
+		/*	if (SceneRegistry::get_current_scene()) {
 				wchar_t file[MAX_PATH];
 				ZeroMemory(file, sizeof(MAX_PATH));
 
@@ -268,7 +267,7 @@ namespace Helios {
 					else
 						DepricatedApplication::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
 				}
-			}
+			}*/	
 		}
 	}
 }

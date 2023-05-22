@@ -1,6 +1,6 @@
 #include "SceneCamera.h"
 
-#include "GameObject.h"
+#include "Entity.h"
 #include "Helios/Core/Time.h"
 #include "imgui.h"
 

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "pch.h"
-#include "Helios/Core/DepricatedApplication.h"
 #include "Helios/Core/Asserts.h"
 #include <d3dcompiler.h>
+#include "Platform/Direct3D11/Direct3D11Context.h"
 
 namespace Helios {
 	class HELIOS_API Shader

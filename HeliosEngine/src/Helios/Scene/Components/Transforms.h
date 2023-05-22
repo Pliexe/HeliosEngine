@@ -208,4 +208,6 @@ namespace Helios
 		Transform2DComponent(const Transform2DComponent&) = default;
 		Transform2DComponent(const Vector2& position, const Vector2& size = { 50.0f, 50.0f }) : position(position), size(size) { }
 	};
+
+
 }

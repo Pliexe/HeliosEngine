@@ -4,7 +4,6 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
 #include "DepricatedGraphics.h"
-#include "Helios/Core/DepricatedApplication.h"
 #include "Helios/Utils/ErrorHandling.h"
 
 #include "Renderer2D.h"

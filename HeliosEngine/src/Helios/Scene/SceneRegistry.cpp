@@ -6,15 +6,11 @@
 
 #include "EditorCamera.h"
 #include "Scene.h"
-#include "Helios/Core/DepricatedApplication.h"
 #include "Helios/Graphics/GizmosRenderer.h"
-#include "Helios/Scene/GameObject.h"
+#include "Helios/Scene/Entity.h"
 #include "Helios/Core/Profiler.h"
 
 namespace Helios {
-	Ref<Scene> SceneRegistry::m_activeScene;
-	std::vector<std::future<void>> SceneRegistry::m_asyncTasks;
-
 	/*Ref<Scene> SceneRegistry::loadQueue;
 	Ref<Scene> SceneRegistry::currentScene;*/
 	//std::map<std::string, Ref<Scene>> SceneRegistry::scenes;
@@ -86,11 +82,7 @@ namespace Helios {
 	//	}
 	//}
 	
-
-	Ref<Scene> SceneRegistry::create_temporary_scene()
-	{
-		return m_activeScene = CreateRef<Scene>("New Scene");
-	}
+	
 
 	void SceneRegistry::Register(std::string name, std::filesystem::path path)
 	{
@@ -156,17 +148,20 @@ namespace Helios {
 		return false;
 	}
 
-	GameObject SceneRegistry::GetPrimaryCamera()
+	Entity SceneRegistry::GetPrimaryCamera()
 	{
-		GameObject primaryCamera;
+		Entity primaryCamera;
 
-		auto view = m_activeScene->GetComponents<CameraComponent>();
-		for (auto& entity : view)
+		for (auto& scene : m_activeScenes)
 		{
-			if (view.get<CameraComponent>(entity).isPrimary)
+			auto view = scene->GetComponents<CameraComponent>();
+			for (auto& entity : view)
 			{
-				primaryCamera = { entity, m_activeScene };
-				break;
+				if (view.get<CameraComponent>(entity).isPrimary)
+				{
+					primaryCamera = { entity, scene };
+					break;
+				}
 			}
 		}
 		
@@ -176,14 +171,21 @@ namespace Helios {
 	void SceneRegistry::OnRuntimeUpdate()
 	{
 		HL_PROFILE_BEGIN("Scene Runtime - Update");
-		Scene::UpdateChildTransforms(m_activeScene);
+
+		for (auto& scene : m_activeScenes)
+		{
+			Scene::UpdateChildTransforms(scene);
+		}
 		HL_PROFILE_END();
 	}
 
 	void SceneRegistry::OnEditorUpdate()
 	{
 		HL_PROFILE_BEGIN("Scene Editor - Update");
-		Scene::UpdateChildTransforms(m_activeScene);
+		for (auto& scene : m_activeScenes)
+		{
+			Scene::UpdateChildTransforms(scene);
+		}
 		HL_PROFILE_END();
 	}
 
@@ -198,21 +200,34 @@ namespace Helios {
 
 		Matrix4x4 projection = SceneCamera::GetViewProjection(Transform(cam, cam.GetScene()).GetWorldTransformCache(), camt);
 
-		m_activeScene->RenderScene(projection);
+		for (auto& scene : m_activeScenes)
+		{
+			scene->RenderScene(projection);
+		}
+
 		HL_PROFILE_END();
 	}
 
 	void SceneRegistry::OnEditorRender(SceneCamera camera)
 	{
 		HL_PROFILE_BEGIN("Editor Scene Render");
-		m_activeScene->RenderScene(camera);
+
+		for (auto& scene : m_activeScenes)
+		{
+			scene->RenderScene(camera);
+		}
+
 		HL_PROFILE_END();
 	}
 
 	void SceneRegistry::OnEditorRender(EditorCamera camera)
 	{
 		HL_PROFILE_BEGIN("Editor Scene Render");
-		m_activeScene->RenderScene(camera);
+
+		for (auto& scene : m_activeScenes)
+		{
+			scene->RenderScene(camera);
+		}
 		HL_PROFILE_END();
 	}
 }

@@ -13,7 +13,6 @@
 #include "Panels/HierarchyPanel.h"
 #include "Panels/InspectorPanel.h"
 #include "Helios/Graphics/GizmosRenderer.h"
-#include <Helios/Core/DepricatedApplication.h>
 #include <Platform/Windows/Win32GraphicalWindow.h>
 
 #include "Icons.h"

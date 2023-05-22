@@ -1,6 +1,5 @@
 #include "ProjectExplorer.h"
 #include <queue>
-#include <Helios/Core/DepricatedApplication.h>
 
 #include "Application.h"
 #include "Icons.h"
@@ -31,7 +30,7 @@ public:
 	Selection() {
 		arr = (int*)malloc(sizeof(int) * alloced);
 		if (arr == NULL) {
-			Helios::DepricatedApplication::ShowMessage("Critical!", "Out of memory!", MB_ICONERROR, true);
+			//Helios::DepricatedApplication::ShowMessage("Critical!", "Out of memory!", MB_ICONERROR, true);
 			exit(-3);
 		}
 	}
@@ -203,8 +202,8 @@ std::string GetFileExtension(FileType type)
 }
 
 void EditItemName(std::filesystem::path entry, std::string new_name) {
-	if (!MoveFile(entry.wstring().c_str(), (entry.parent_path() / (new_name + entry.extension().string())).wstring().c_str()))
-		Helios::DepricatedApplication::ShowMessage("Error", "Unable to rename item", MB_ICONERROR);
+	/*if (!MoveFile(entry.wstring().c_str(), (entry.parent_path() / (new_name + entry.extension().string())).wstring().c_str()))
+		Helios::DepricatedApplication::ShowMessage("Error", "Unable to rename item", MB_ICONERROR);*/
 }
 
 void FileNameOrEdit(std::filesystem::path entry, int i) {
@@ -384,14 +383,14 @@ void ProjectExplorer_RightClickMenu(std::filesystem::path path, int count, bool 
 			editing_item = count;
 
 		if (ImGui::MenuItem("Delete", "", false, !is_root)) {
-			if (std::filesystem::is_directory(path))
+			/*if (std::filesystem::is_directory(path))
 			{
 				if (!RemoveDirectory(path.wstring().c_str())) {
 					Helios::DepricatedApplication::ShowMessage("Error", "Unable to delete directory!", MB_ICONERROR, true);
 				}
 			} else if (!DeleteFile(path.wstring().c_str())) {
 				Helios::DepricatedApplication::ShowMessage("Error", "Unable to delete file!", MB_ICONERROR, true);
-			}
+			}*/
 		}
 
 		ImGui::Text(std::string("Okey: " + std::to_string(count)).c_str());

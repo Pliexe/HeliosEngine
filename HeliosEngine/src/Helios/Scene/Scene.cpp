@@ -3,8 +3,7 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
 #include "Helios/Translation/Vector.h"
-#include "Helios/Core/DepricatedApplication.h"
-#include "Helios/Scene/GameObject.h"
+#include "Helios/Scene/Entity.h"
 #include "Helios/Core/Asserts.h"
 #include "Helios/Graphics/Renderer.h"
 #include "Helios/Graphics/Renderer2D.h"
@@ -12,18 +11,28 @@
 #include "Helios/Core/Time.h"
 
 #include "Components.h"
+#include "EntityHelpers.h"
+#include "Helios/Core/Application.h"
 #include "Helios/Graphics/GizmosRenderer.h"
 #include "Helios/Core/Profiler.h"
 
 namespace Helios {
 
 	Scene::~Scene() {
-		DepricatedApplication::ShowMessage("Test","Scene Deleted!");
+		//DepricatedApplication::ShowMessage("Test","Scene Deleted!");
 	}
 
 	bool Scene::contains(entt::entity entity)
 	{
 		return m_components.valid(entity);
+	}
+
+	Entity Scene::DuplicateEntity(Entity entity)
+	{
+		assert(entity.IsValid());
+		Entity newEntity = InstantiateObject(entity.GetName());
+		CopyComponentIfExists(AllComponents{}, newEntity, entity);
+		return newEntity;
 	}
 
 	void Scene::UpdateChildTransforms(Ref<Scene> scene)
@@ -104,7 +113,7 @@ namespace Helios {
 					switch (ex.what())
 					{
 					case IDRETRY: goto retry;
-					case IDABORT: DepricatedApplication::Quit(); break;
+					case IDABORT: Application::GetInstance().Quit(); break;
 					}
 				}
 			}
@@ -130,7 +139,7 @@ namespace Helios {
 					switch (ex.what())
 					{
 					case IDRETRY: goto retry4;
-					case IDABORT: DepricatedApplication::Quit(); break;
+					case IDABORT: Application::GetInstance().Quit(); break;
 					}
 				}
 			}
@@ -149,48 +158,48 @@ namespace Helios {
 	}
 #endif
 
-	GameObject Scene::InstantiateObject()
+	Entity Scene::InstantiateObject()
 	{
 		return InstantiateObject("GameObject (" + std::to_string(m_components.size() + 1) + ")");
 	}
 
-	GameObject Scene::InstantiateObject(Vector3 position)
+	Entity Scene::InstantiateObject(Vector3 position)
 	{
 		return InstantiateObject("GameObject (" + std::to_string(m_components.size() + 1) + ")", position);
 	}
 
-	GameObject Scene::InstantiateObject(entt::entity& parent)
+	Entity Scene::InstantiateObject(entt::entity& parent)
 	{
 		return InstantiateObject("GameObject (" + std::to_string(m_components.size() + 1) + ")", parent);
 	}
 
-	GameObject Scene::InstantiateObject(std::string name, Vector3 position)
+	Entity Scene::InstantiateObject(std::string name, Vector3 position)
 	{
-		GameObject obj(m_components.create(), this);
+		Entity obj(m_components.create(), this);
 		obj.AddComponent<InfoComponent>(name);
 		obj.AddComponent<TransformComponent>(position);
 		obj.AddComponent<RelationshipComponent>();
 		return obj;
 	}
 
-	GameObject Scene::InstantiateObject(std::string name, entt::entity& parent)
+	Entity Scene::InstantiateObject(std::string name, entt::entity& parent)
 	{
-		GameObject obj(m_components.create(), this);
+		Entity obj(m_components.create(), this);
 		obj.AddComponent<InfoComponent>(name);
 		obj.AddComponent<TransformComponent>();
 		obj.AddComponent<RelationshipComponent>(m_components, obj, parent);
 		return obj;
 	}
 
-	GameObject& Scene::CreateMainCamera(Vector3 position) {
-		GameObject gameObject = InstantiateObject("MainCamera", position);
+	Entity& Scene::CreateMainCamera(Vector3 position) {
+		Entity gameObject = InstantiateObject("MainCamera", position);
 		gameObject.AddComponent<CameraComponent>().isPrimary = true;
 		return gameObject;
 	}
 
-	GameObject& Scene::CreateCamera(Vector3 position)
+	Entity& Scene::CreateCamera(Vector3 position)
 	{
-		GameObject gameObject = InstantiateObject("MainCamera", position);
+		Entity gameObject = InstantiateObject("MainCamera", position);
 		gameObject.AddComponent<CameraComponent>();
 		return gameObject;
 	}
@@ -198,7 +207,7 @@ namespace Helios {
 	Vector2 DeserializeVector(std::string prefixX, std::string prefixY, YAML::Node in);
 	void SerializeTransform(YAML::Emitter& out, Transform2DComponent& transform);
 
-	void SerializeObject(YAML::Emitter& out, GameObject& o)
+	void SerializeObject(YAML::Emitter& out, Entity& o)
 	{
 		out << YAML::BeginMap;
 
@@ -261,7 +270,7 @@ namespace Helios {
 		out << YAML::Key << "GameObjects" << YAML::Value << YAML::BeginSeq;
 
 		scene.lock()->m_components.each([&](entt::entity entity) {
-			GameObject gm = { entity, scene.lock() };
+			Entity gm = { entity, scene.lock() };
 			SerializeObject(out, gm);
 		});
 

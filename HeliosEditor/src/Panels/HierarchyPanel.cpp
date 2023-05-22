@@ -11,7 +11,7 @@
 namespace Helios {
 
 	void Popup(entt::entity item = entt::null) {
-		if (ImGui::MenuItem("Create Empty")) {
+		/*if (ImGui::MenuItem("Create Empty")) {
 			if (item != entt::null)
 				InspectorPanel::GetInstance() << SceneRegistry::get_current_scene()->InstantiateObject(item);
 			else
@@ -95,11 +95,11 @@ namespace Helios {
 			auto obj = SceneRegistry::get_current_scene()->InstantiateObject("Sprite");
 			obj.AddComponent<SpriteRendererComponent>();
 			InspectorPanel::GetInstance() << (entt::entity)obj;
-		}
+		}*/
 		
 	}
 
-	void DrawObject(GameObject object)
+	void DrawObject(Entity object)
 	{
 		InfoComponent info = object.GetComponent<InfoComponent>();
 		entt::entity child = entt::null;
@@ -159,12 +159,12 @@ namespace Helios {
 				ImGui::EndDragDropTarget();
 			} else if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_HIERARCHY_ITEM", 0))
 			{
-				GameObject other = { (*(entt::entity*)payload->Data), SceneRegistry::get_current_scene() };
-				if (other != object) {
-					other.SetParent(object);
-					//other.ResetParent();
-				}
-				ImGui::EndDragDropTarget();
+				//GameObject other = { (*(entt::entity*)payload->Data), SceneRegistry::get_current_scene() };
+				//if (other != object) {
+				//	other.SetParent(object);
+				//	//other.ResetParent();
+				//}
+				//ImGui::EndDragDropTarget();
 			}
 			
 		}
@@ -182,11 +182,11 @@ namespace Helios {
 		}
 
 		if (opened) {
-			while (child != entt::null)
+			/*while (child != entt::null)
 			{
 				DrawObject({child,SceneRegistry::get_current_scene()});
 				child = GameObject(child, SceneRegistry::get_current_scene()).GetComponent<RelationshipComponent>().next_sibling;
-			}
+			}*/
 			ImGui::TreePop();
 		}
 		
@@ -216,7 +216,7 @@ namespace Helios {
 			ImGui::EndDragDropTarget();
 		}
 
-		const WeakRef<Scene>& scene = SceneRegistry::get_current_scene();
+		/*const WeakRef<Scene>& scene = SceneRegistry::get_current_scene();
 
 		int i = 0;
 		scene.lock()->m_components.each([&](auto entity)
@@ -231,7 +231,7 @@ namespace Helios {
 			DrawObject(object);
 			ImGui::PopID();
 			i++;
-		});
+		});*/
 
 		
 	}

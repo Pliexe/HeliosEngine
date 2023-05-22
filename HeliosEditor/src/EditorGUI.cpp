@@ -1,7 +1,6 @@
 //#include "pch.h"
 
 #include <Helios/Translation//Vector.h>
-#include <Helios/Resources/Brushes/SolidBrush.h>
 
 //using namespace HeliosEditor;
 //

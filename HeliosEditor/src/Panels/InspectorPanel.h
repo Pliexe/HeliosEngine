@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BasePanel.h"
-#include <Helios/Scene/GameObject.h>
+#include <Helios/Scene/Entity.h>
 #include "pch.h"
 #include "entt.hpp"
 
@@ -34,7 +34,7 @@ namespace Helios {
 		};
 
 		template <typename T>
-		typename std::enable_if<std::is_same<T, GameObject>::value, bool>::type
+		typename std::enable_if<std::is_same<T, Entity>::value, bool>::type
 		operator == (T anything) {
 			if (type != SelectedType::GameObject) return false;
 			return std::any_cast<T>(handle) == anything;
@@ -46,7 +46,7 @@ namespace Helios {
 		}
 
 		template <typename T>
-		typename std::enable_if<std::is_same<T, GameObject>::value, InspectorPanel&>::type
+		typename std::enable_if<std::is_same<T, Entity>::value, InspectorPanel&>::type
 		operator << (T entity) {
 			this->type = SelectedType::GameObject;
 			this->handle = entity;
@@ -57,7 +57,7 @@ namespace Helios {
 		typename std::enable_if<std::is_same<T, entt::entity>::value, InspectorPanel&>::type
 		operator << (T entity) {
 			this->type = SelectedType::GameObject;
-			this->handle = GameObject { entity, SceneRegistry::get_current_scene() };
+			//this->handle = GameObject { entity, SceneRegistry::get_current_scene() };
 			return *this;
 		}
 

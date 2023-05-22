@@ -65,8 +65,8 @@ struct TransformVertex
 int ValidateInit() {
 
 	try {
-		Project::AttemptLoad();
-		SetCurrentPath(Project::GetAssetsPath());
+		/*Project::AttemptLoad();
+		SetCurrentPath(Project::GetAssetsPath());*/
 	}
 	catch (int code) {
 		return code;
@@ -242,11 +242,11 @@ namespace Helios
 			break;
 		}
 
-		if (InputManager::IsKeyPressed(HL_KEY_CONTROL) && InputManager::IsKeyPressed(HL_KEY_F10))
-		{
-			DepricatedApplication::ShowMessage("INFO!", "Toggled GUI", MB_ICONINFORMATION, false);
-			//hideGui = !hideGui;
-		}
+		//if (InputManager::IsKeyPressed(HL_KEY_CONTROL) && InputManager::IsKeyPressed(HL_KEY_F10))
+		//{
+		//	DepricatedApplication::ShowMessage("INFO!", "Toggled GUI", MB_ICONINFORMATION, false);
+		//	//hideGui = !hideGui;
+		//}
 
 		//switch (currentRSState)
 		//{
@@ -268,7 +268,7 @@ namespace Helios
 			gameFrame->Unbind();
 		}
 
-		ScenePanel::Render(*SceneRegistry::get_current_scene().get());
+		//ScenePanel::Render(*SceneRegistry::get_current_scene().get());
 
 		OnGUI();
 	}
@@ -298,6 +298,45 @@ namespace Helios
 			Project::SaveScene(ImGui::IsKeyReleased(ImGuiKey_LeftShift) || ImGui::IsKeyReleased(ImGuiKey_RightShift));
 
 		DrawToolbar(currentMode, panels);
+
+		ImGui::Begin("Colors");
+
+		auto& colors = ImGui::GetStyle().Colors;
+		ImGui::ColorEdit4("WindowBg", &colors[ImGuiCol_WindowBg].x);
+
+		ImGui::ColorEdit4 ("FrameBg", &colors[ImGuiCol_FrameBg].x);
+		ImGui::ColorEdit4 ("FrameBgHovered", &colors[ImGuiCol_FrameBgHovered].x);
+		ImGui::ColorEdit4 ("FrameBgActive", &colors[ImGuiCol_FrameBgActive].x);
+		ImGui::ColorEdit4 ("TitleBg", &colors[ImGuiCol_TitleBg].x);
+		ImGui::ColorEdit4 ("TitleBgActive", &colors[ImGuiCol_TitleBgActive].x);
+		ImGui::ColorEdit4 ("TitleBgCollapsed", &colors[ImGuiCol_TitleBgCollapsed].x);
+		ImGui::ColorEdit4 ("MenuBarBg", &colors[ImGuiCol_MenuBarBg].x);
+		ImGui::ColorEdit4 ("ScrollbarBg", &colors[ImGuiCol_ScrollbarBg].x);
+		ImGui::ColorEdit4 ("ScrollbarGrab", &colors[ImGuiCol_ScrollbarGrab].x);
+		ImGui::ColorEdit4 ("ScrollbarGrabHovered", &colors[ImGuiCol_ScrollbarGrabHovered].x);
+		ImGui::ColorEdit4 ("ScrollbarGrabActive", &colors[ImGuiCol_ScrollbarGrabActive].x);
+		ImGui::ColorEdit4 ("CheckMark", &colors[ImGuiCol_CheckMark].x);
+		ImGui::ColorEdit4 ("SliderGrab", &colors[ImGuiCol_SliderGrab].x);
+		ImGui::ColorEdit4 ("SliderGrabActive", &colors[ImGuiCol_SliderGrabActive].x);
+		ImGui::ColorEdit4 ("Button", &colors[ImGuiCol_Button].x);
+		ImGui::ColorEdit4 ("ButtonHovered", &colors[ImGuiCol_ButtonHovered].x);
+		ImGui::ColorEdit4 ("ButtonActive", &colors[ImGuiCol_ButtonActive].x);
+		ImGui::ColorEdit4 ("Header", &colors[ImGuiCol_Header].x);
+		ImGui::ColorEdit4 ("HeaderHovered", &colors[ImGuiCol_HeaderHovered].x);
+		ImGui::ColorEdit4 ("HeaderActive", &colors[ImGuiCol_HeaderActive].x);
+		ImGui::ColorEdit4 ("Separator", &colors[ImGuiCol_Separator].x);
+		ImGui::ColorEdit4 ("SeparatorHovered", &colors[ImGuiCol_SeparatorHovered].x);
+		ImGui::ColorEdit4 ("SeparatorActive", &colors[ImGuiCol_SeparatorActive].x);
+		ImGui::ColorEdit4 ("ResizeGrip", &colors[ImGuiCol_ResizeGrip].x);
+		ImGui::ColorEdit4 ("ResizeGripHovered", &colors[ImGuiCol_ResizeGripHovered].x);
+		ImGui::ColorEdit4 ("ResizeGripActive", &colors[ImGuiCol_ResizeGripActive].x);
+		ImGui::ColorEdit4 ("Tab", &colors[ImGuiCol_Tab].x);
+		ImGui::ColorEdit4 ("TabHovered", &colors[ImGuiCol_TabHovered].x);
+		ImGui::ColorEdit4 ("TabActive", &colors[ImGuiCol_TabActive].x);
+		ImGui::ColorEdit4 ("TabUnfocused", &colors[ImGuiCol_TabUnfocused].x);
+		ImGui::ColorEdit4 ("TabUnfocusedActive", &colors[ImGuiCol_TabUnfocusedActive].x);
+		
+		ImGui::End();
 
 		for (auto& panel : panels)
 		{
@@ -402,7 +441,7 @@ namespace Helios
 		}
 
 		HL_PROFILE_BEGIN("GUI - Project Explorer");
-		ProjectExplorerWindow(Project::GetAssetsPath());
+		//ProjectExplorerWindow(Project::GetAssetsPath());
 		HL_PROFILE_END();
 
 		ImGui::End();

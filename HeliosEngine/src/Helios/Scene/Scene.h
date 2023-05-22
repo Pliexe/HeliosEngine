@@ -9,7 +9,7 @@
 #include "Components.h"
 
 namespace Helios {
-	class GameObject;
+	class Entity;
 	class SceneRegistry;
 	class Camera;
 	class SceneCamera;
@@ -36,7 +36,7 @@ namespace Helios {
 
 		inline std::string GetName() const { return name; }
 
-		template<typename... Component>
+		/*template<typename... Component>
 		static void CopyComponentIfExists(GameObject dst, GameObject src)
 		{
 			([&]()
@@ -44,9 +44,11 @@ namespace Helios {
 					if (src.HasComponent<Component>())
 						dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
 				}(), ...);
-		}
+		}*/
 
 		inline bool contains(entt::entity entity);
+
+		Entity DuplicateEntity(Entity entity);
 		
 		inline void RenderScene(SceneCamera camera);
 		void RenderScene(EditorCamera& camera);
@@ -54,13 +56,13 @@ namespace Helios {
 #ifdef HELIOS_EDITOR
 		void RenderGizmos(Matrix4x4 projection);
 #endif
-		GameObject InstantiateObject();
-		GameObject InstantiateObject(Vector3 position);
-		GameObject InstantiateObject(entt::entity& parent);
-		GameObject InstantiateObject(std::string name, Vector3 position = Vector3::Zero());
-		GameObject InstantiateObject(std::string name, entt::entity& parent);
-		GameObject& CreateMainCamera(Vector3 position);
-		GameObject& CreateCamera(Vector3 position);
+		Entity InstantiateObject();
+		Entity InstantiateObject(Vector3 position);
+		Entity InstantiateObject(entt::entity& parent);
+		Entity InstantiateObject(std::string name, Vector3 position = Vector3::Zero());
+		Entity InstantiateObject(std::string name, entt::entity& parent);
+		Entity& CreateMainCamera(Vector3 position);
+		Entity& CreateCamera(Vector3 position);
 
 		void Init() { if(initCallback) initCallback(*this); }
 		void Shutdown();
@@ -81,7 +83,7 @@ namespace Helios {
 		static void DeserializeBinary(std::filesystem::path path, Scene& scene);*/
 
 		friend class SceneManager;
-		friend class GameObject;
+		friend class Entity;
 		friend class Transform;
 
 		extern friend class DepricatedGameEngine;

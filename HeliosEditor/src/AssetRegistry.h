@@ -69,14 +69,14 @@ namespace Helios
 		static void Init()
 		{
 			s_CheckForChanges = true;
-			std::thread([]() {
+			/*std::thread([]() {
 				while (AssetRegistry::CheckForChangesEnabled())
 				{
 					CheckValidity();
 					Rescan();
 					std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 				}
-			}).detach();
+			}).detach();*/
 		}
 
 		static void OpenTextureSelect(std::function<void(Ref<Texture2D>)> onSelected)

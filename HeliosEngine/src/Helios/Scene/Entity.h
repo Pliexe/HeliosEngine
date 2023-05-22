@@ -18,20 +18,20 @@ namespace Helios {
 	class Camera;
 	class DepricatedGraphics;
 
-	class HELIOS_API GameObject
+	class HELIOS_API Entity
 	{
 	public:
 
 		//GameObject() = default;
-		GameObject() { }
-		GameObject(const GameObject& other) = default;
-		GameObject(entt::entity entity_id, Ref<Scene> scene)
+		Entity() { }
+		Entity(const Entity& other) = default;
+		Entity(entt::entity entity_id, Ref<Scene> scene)
 		{
 			HL_CORE_ASSERT_WITH_MSG(entity_id != entt::null, "entity handle is invalid!");
 			m_scene = scene.get();
 			m_entityHandle = entity_id;
 		}
-		GameObject(entt::entity entity_id, Scene* scene)
+		Entity(entt::entity entity_id, Scene* scene)
 		{
 			HL_CORE_ASSERT_WITH_MSG(entity_id != entt::null, "entity handle is invalid!");
 			m_scene = scene;
@@ -55,6 +55,15 @@ namespace Helios {
 			return comp;
 		}
 
+		template <typename T, typename... Args>
+		T& AddOrReplaceComponent(Args &&...args)
+		{
+			HL_CORE_ASSERT_WITH_MSG(!HasComponent<T>(), "GameObject does not have the component!");
+			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!")
+			T& comp = m_scene->m_components.emplace_or_replace<T>(m_entityHandle, std::forward<Args>(args)...);
+			return comp;
+		}
+
 		template <typename T>
 		void RemoveComponent()
 		{
@@ -72,7 +81,7 @@ namespace Helios {
 		}
 
 		operator entt::entity() const { return m_entityHandle; }
-		bool operator==(const GameObject& other) const { return m_entityHandle == other.m_entityHandle && m_scene == other.m_scene; }
+		bool operator==(const Entity& other) const { return m_entityHandle == other.m_entityHandle && m_scene == other.m_scene; }
 		bool operator==(const entt::entity& other) const { return m_entityHandle == other; }
 		bool operator==(const Scene* other) const { return m_scene == other; }
 		bool operator==(const Ref<Scene> other) const { return m_scene == other.get(); }
@@ -96,13 +105,13 @@ namespace Helios {
 
 #pragma region GameObject Creation Helpers
 
-		GameObject& CreateMainCamera(Vector2 position = Vector2(0.0f, 0.0f));
-		GameObject& CreateCamera(Vector2 position = Vector2(0.0f, 0.0f));
+		Entity& CreateMainCamera(Vector2 position = Vector2(0.0f, 0.0f));
+		Entity& CreateCamera(Vector2 position = Vector2(0.0f, 0.0f));
 
 #pragma endregion
 
 		void ResetParent();
-		void SetParent(GameObject& object);
+		void SetParent(Entity& object);
 		void SetParent(entt::entity& object);
 
 		inline std::string& GetName() {
@@ -113,10 +122,10 @@ namespace Helios {
 			return GetComponent<Transform2DComponent>();
 		}
 
-		GameObject InstantiateObject();
-		GameObject InstantiateObject(std::string name);
-		GameObject InstantiateObject(GameObject& parent);
-		GameObject InstantiateObject(std::string name, GameObject& parent);
+		Entity InstantiateObject();
+		Entity InstantiateObject(std::string name);
+		Entity InstantiateObject(Entity& parent);
+		Entity InstantiateObject(std::string name, Entity& parent);
 		
 		// Serbia - Novi Sad has the worst healthcare personal that doesn't respect the laws and all and kill people by their actions
 		
@@ -125,7 +134,7 @@ namespace Helios {
 		friend class DepricatedApplication;
 		friend class SceneManager;
 		friend class Scene;
-		friend void SerializeObject(YAML::Emitter& out, GameObject& o);
+		friend void SerializeObject(YAML::Emitter& out, Entity& o);
 		friend class Transform;
 		
 		extern friend class GameEngine;
@@ -137,8 +146,8 @@ namespace Helios {
 	public:
 		Transform() = default;
 		Transform(const Transform& other) = default;
-		Transform(GameObject& gameObject) : m_GameObject(gameObject), m_transform(gameObject.GetComponent<TransformComponent>()), m_relationship(gameObject.GetComponent<RelationshipComponent>()) { }
-		Transform(entt::entity entity, Scene* m_scene) : m_GameObject(GameObject(entity, m_scene)), m_transform(m_GameObject.GetComponent<TransformComponent>()), m_relationship(m_GameObject.GetComponent<RelationshipComponent>()) { }
+		Transform(Entity& gameObject) : m_GameObject(gameObject), m_transform(gameObject.GetComponent<TransformComponent>()), m_relationship(gameObject.GetComponent<RelationshipComponent>()) { }
+		Transform(entt::entity entity, Scene* m_scene) : m_GameObject(Entity(entity, m_scene)), m_transform(m_GameObject.GetComponent<TransformComponent>()), m_relationship(m_GameObject.GetComponent<RelationshipComponent>()) { }
 
 		inline TransformComponent GetWorldTransform() { return m_transform.GetWorldTransform(m_relationship, m_GameObject.m_scene->m_components); }
 
@@ -211,7 +220,7 @@ namespace Helios {
 		inline Quaternion GetLocalRotation() { return m_transform.Rotation; }
 		inline Vector3 GetLocalScale() { return m_transform.Scale; }
 
-		inline GameObject GetGameObject() { return m_GameObject; }
+		inline Entity GetGameObject() { return m_GameObject; }
 		inline TransformComponent& GetTransformComponent() { return m_transform; }
 
 		inline void SetWorldPosition(Vector3 position) { m_transform.SetWorldPosition(position, m_relationship, m_GameObject.m_scene->m_components); }
@@ -233,7 +242,7 @@ namespace Helios {
 		inline Vector3 Right() { return m_transform.Right(); }
 
 	private:
-		GameObject m_GameObject;
+		Entity m_GameObject;
 		TransformComponent& m_transform;
 		RelationshipComponent& m_relationship;
 	};

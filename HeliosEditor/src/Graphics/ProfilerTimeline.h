@@ -2,7 +2,6 @@
 
 #include <imgui.h>
 
-#include "Helios/Core/DepricatedApplication.h"
 #include "Helios/Core/Profiler.h"
 #include "Helios/Input/InputManager.h"
 
