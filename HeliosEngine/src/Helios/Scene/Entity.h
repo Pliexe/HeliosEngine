@@ -27,7 +27,6 @@ namespace Helios {
 		Entity(const Entity& other) = default;
 		Entity(entt::entity entity_id, Ref<Scene> scene)
 		{
-			HL_CORE_ASSERT_WITH_MSG(entity_id != entt::null, "entity handle is invalid!");
 			m_scene = scene.get();
 			m_entityHandle = entity_id;
 		}
@@ -49,7 +48,7 @@ namespace Helios {
 		template <typename T, typename... Args>
 		T& AddComponent(Args &&...args)
 		{
-			HL_CORE_ASSERT_WITH_MSG(!HasComponent<T>(), "GameObject does not have the component!");
+			HL_CORE_ASSERT_WITH_MSG(!HasComponent<T>(), "GameObject arleady has this component!");
 			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!")
 			T& comp = m_scene->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
 			return comp;
@@ -58,8 +57,6 @@ namespace Helios {
 		template <typename T, typename... Args>
 		T& AddOrReplaceComponent(Args &&...args)
 		{
-			HL_CORE_ASSERT_WITH_MSG(!HasComponent<T>(), "GameObject does not have the component!");
-			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!")
 			T& comp = m_scene->m_components.emplace_or_replace<T>(m_entityHandle, std::forward<Args>(args)...);
 			return comp;
 		}
@@ -95,6 +92,7 @@ namespace Helios {
 		inline bool IsNull() { return m_entityHandle == entt::null; }
 
 		Scene* GetScene() { return m_scene; }
+		entt::entity GetHandle() { return m_entityHandle; }
 
 	private:
 
@@ -148,6 +146,7 @@ namespace Helios {
 		Transform(const Transform& other) = default;
 		Transform(Entity& gameObject) : m_GameObject(gameObject), m_transform(gameObject.GetComponent<TransformComponent>()), m_relationship(gameObject.GetComponent<RelationshipComponent>()) { }
 		Transform(entt::entity entity, Scene* m_scene) : m_GameObject(Entity(entity, m_scene)), m_transform(m_GameObject.GetComponent<TransformComponent>()), m_relationship(m_GameObject.GetComponent<RelationshipComponent>()) { }
+		Transform(entt::entity entity, TransformComponent transform_component, RelationshipComponent relationship_component, Scene* m_scene) : m_GameObject(Entity(entity, m_scene)), m_transform(transform_component), m_relationship(relationship_component) { }
 
 		inline TransformComponent GetWorldTransform() { return m_transform.GetWorldTransform(m_relationship, m_GameObject.m_scene->m_components); }
 

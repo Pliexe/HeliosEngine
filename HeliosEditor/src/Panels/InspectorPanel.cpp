@@ -15,7 +15,7 @@ namespace Helios {
 	void InspectorPanel::OnUpdate() {
 		switch (type)
 		{
-		case SelectedType::GameObject:
+		case SelectedType::Entity:
 		{
 			Entity entity = std::any_cast<Entity>(handle);
 			if (entity.IsNull()) return;
@@ -73,11 +73,11 @@ namespace Helios {
 				if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 					auto transform = Transform(entity);
 					TransformComponent& comp = transform.GetTransformComponent();
+					ImVec2 size = ImGui::GetContentRegionAvail();
 
-					ImGui::EditVector3("Position", comp.Position);
-					ImGui::EditQuanterionEuler("RotationRow Euler", comp.Rotation);
-					ImGui::EditQuanterion("RotationRow", comp.Rotation, 0.01, -1.0f, 1.0f);
-					ImGui::EditVector3("Scale", comp.Scale);
+					ImGui::EditVector3("Position", size.x, comp.Position);
+					ImGui::EditQuanterionEuler("Rotation", size.x, comp.Rotation);
+					ImGui::EditVector3("Scale", size.x, comp.Scale);
 
 					//transform.SetLocalTransform(comp.Position, comp.RotationRow, comp.Scale);
 

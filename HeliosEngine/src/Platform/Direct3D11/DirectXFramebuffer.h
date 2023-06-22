@@ -26,8 +26,13 @@ namespace Helios
 
         void* GetTextureID(unsigned int bufferIndex) override;
 
-		Color GetPixel(uint32_t attachment, uint32_t x, uint32_t y) override;
+        // template GetPixel for uint and etc such as Color
 
+
+
+		Color GetPixelColor(uint32_t attachment, uint32_t x, uint32_t y) override;
+        Vector4Int GetPixelInt4(uint32_t attachment, uint32_t x, uint32_t y) override;
+   
         Size GetSize() const override;
 
         struct FormatUInt2

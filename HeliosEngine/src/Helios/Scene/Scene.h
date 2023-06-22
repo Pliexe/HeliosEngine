@@ -50,6 +50,8 @@ namespace Helios {
 
 		Entity DuplicateEntity(Entity entity);
 		
+		uint64_t GetEntityCount() const { return m_components.size(); }
+
 		inline void RenderScene(SceneCamera camera);
 		void RenderScene(EditorCamera& camera);
 		void RenderScene(Matrix4x4 projection);
@@ -58,7 +60,7 @@ namespace Helios {
 #endif
 		Entity InstantiateObject();
 		Entity InstantiateObject(Vector3 position);
-		Entity InstantiateObject(entt::entity& parent);
+		Entity InstantiateObject(entt::entity parent);
 		Entity InstantiateObject(std::string name, Vector3 position = Vector3::Zero());
 		Entity InstantiateObject(std::string name, entt::entity& parent);
 		Entity& CreateMainCamera(Vector3 position);

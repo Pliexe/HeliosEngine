@@ -55,13 +55,15 @@ project "HeliosEditor"
     }
 
     -- For some reason it's not settings it inside Visual Studio
-    debugargs { "\"C:\\Users\\dz\\Documents\\Helios Projects\\Sandbox\\\"" }
+    debugargs { "-project \"C:\\Users\\dz\\Documents\\Helios Projects\\Sandbox\"" }
 
     flags { "NoPCH" }
 
     filter { "files:**.hlsl" }
         flags "ExcludeFromBuild"
         shadermodel "5.0"
+        shaderobjectfileoutput("CompiledShaders/%{file.basename}"..".cso")
+        shaderassembleroutput("CompiledShaders/%{file.basename}"..".asm")
         
     filter { "files:**PixelShader.hlsl" }
         removeflags "ExcludeFromBuild"
@@ -80,6 +82,11 @@ project "HeliosEditor"
         systemversion "latest"
         entrypoint "mainCRTStartup"
         defines { "HELIOS_PLATFORM_WINDOWS" }
+
+        links
+        {
+            "Gdiplus.lib"
+        }
         
     filter "configurations:Debug"
         defines "HELIOS_DEBUG"

@@ -23,6 +23,8 @@
 #include "HeliosEditor_Macros.h"
 #include <imgui_impl_win32.cpp>
 #include <imgui_impl_dx11.cpp>
+#include <Shlwapi.h>
+
 #include "Helios/Translation/Matrix.h"
 #include <Helios/Translation/Quaternion.h>
 #include <sstream>
@@ -42,7 +44,10 @@
 #include "Helios/Scene/EditorCamera.h"
 
 #include "DirectXMath.h"
+#include "InitWindow.h"
 #include "GUI/Toolbar.h"
+#include "Helios/Resources/Material.h"
+#include "Panels/ProfilerPanel.h"
 #include "Platform/Windows/Win32GraphicalWindow.h"
 
 
@@ -83,7 +88,11 @@ inline std::filesystem::path PROJECT_PATH;
 Helios::Application* Helios::CreateApplication(int argc, char** argv)
 {
 	Application::Specifications specs;
-	specs.graphicsAPI = Graphics::API::Direct3D11;
+	#ifdef HELIOS_PLATFORM_WINDOWS
+		specs.graphicsAPI = Graphics::API::Direct3D11;
+	#else
+		specs.graphicsAPI = Graphics::API::OpenGL;
+	#endif
 	specs.width = 1280;
 	specs.height = 720;
 	
@@ -180,23 +189,40 @@ namespace Helios
 
 		GetWindow()->GetContext().UseContext();
 
+		InitWindow* initWindow = InitWindow::Create();
+		initWindow->SetTextA("Loading Engine...");
+
 		try
 		{
+			initWindow->SetB("Loading icon. 0 out of 14", 0.0);
 			ICON_FOLDER = Texture2D::Create("Resources/Icons/folder.png");
+			initWindow->SetB("Loading icon. 1 out of 14", 1.0f / 14.0f);
 			ICON_FOLDER_EMPTY = Texture2D::Create("Resources/Icons/folder_empty.png");
+			initWindow->SetB("Loading icon. 2 out of 14", 2.0f / 14.0f);
 			ICON_FILE_UNKNOWN = Texture2D::Create("Resources/Icons/unknown_file.png");
+			initWindow->SetB("Loading icon. 3 out of 14", 3.0f / 14.0f);
 			ICON_FILE_TXT = Texture2D::Create("Resources/Icons/text_file.png");
+			initWindow->SetB("Loading icon. 4 out of 14", 4.0f / 14.0f);
 			ICON_FILE_C = Texture2D::Create("Resources/Icons/c_file.png");
+			initWindow->SetB("Loading icon. 5 out of 14", 5.0f / 14.0f);
 			ICON_FILE_H = Texture2D::Create("Resources/Icons/h_file.png");
+			initWindow->SetB("Loading icon. 6 out of 14", 6.0f / 14.0f);
 			ICON_FILE_CPP = Texture2D::Create("Resources/Icons/cpp_file.png");
+			initWindow->SetB("Loading icon. 7 out of 14", 7.0f / 14.0f);
 			ICON_FILE_HPP = Texture2D::Create("Resources/Icons/hpp_file.png");
+			initWindow->SetB("Loading icon. 8 out of 14", 8.0f / 14.0f);
 			ICON_FILE_FONT = Texture2D::Create("Resources/Icons/ttf_file.png");
+			initWindow->SetB("Loading icon. 9 out of 14", 9.0f / 14.0f);
 			ICON_FILE_SCENE = Texture2D::Create("Resources/Icons/scene_file.png");
+			initWindow->SetB("Loading icon. 10 out of 14", 10.0f / 14.0f);
 			ICON_FILE_IMAGE = Texture2D::Create("Resources/Icons/image_file.png");
+			initWindow->SetB("Loading icon. 11 out of 14", 11.0f / 14.0f);
 			ICON_PLAY_WHITE = Texture2D::Create("Resources/Icons/play_white.png");
+			initWindow->SetB("Loading icon. 12 out of 14", 12.0f / 14.0f);
 			ICON_PAUSE_WHITE = Texture2D::Create("Resources/Icons/pause_white.png");
+			initWindow->SetB("Loading icon. 13 out of 14", 13.0f / 14.0f);
 			ICON_STOP_WHITE = Texture2D::Create("Resources/Icons/stop_white.png");
-				
+			initWindow->SetB("Loading icon. 14 out of 14", 1.0);
 		} catch (HeliosException e)
 		{
 			MessageBoxA(nullptr, "Error loading icons!", std::to_string(e.what()).c_str(), MB_ICONERROR);
@@ -215,16 +241,30 @@ namespace Helios
 
 		profilerGraph = CreateRef<StackedGraph>();
 
+		
+
+		
+		initWindow->Quit();
+
 		AssetRegistry::Init();
 
 		using namespace Helios;
 
 		Project::TryLoad();
 
+		// tmp
+
+		SceneRegistry::LoadEmptyScene("New Scene");
+		auto ent = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 0, -5 });
+		auto& mrc = ent.AddComponent<MeshRendererComponent>();
+		mrc.mesh = Mesh::GenerateCube();
+		mrc.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Clamp);
+
 		panels.push_back(&inspector);
 		panels.push_back(&hierarchy);
 		panels.push_back(&gameViewPanel);
 		panels.push_back(&scenePanel);
+		panels.push_back(new ProfilerPanel());
 		//panels.push_back(&AssetRegistry::Get());
 
 		GetWindow()->Show();
@@ -270,9 +310,33 @@ namespace Helios
 
 		//ScenePanel::Render(*SceneRegistry::get_current_scene().get());
 
-		OnGUI();
-	}
+		if (InputManager::IsKeyPressed(HL_KEY_CONTROL) && InputManager::IsKeyPressed(HL_KEY_F10))
+		{
+			MessageBoxA(nullptr, "Toggled GUI", "INFO!", MB_ICONINFORMATION);
+			m_barebones = !m_barebones;
+		}
 
+		if (m_barebones)
+		{
+			GetWindow()->GetContext().BindDefaultFramebuffer();
+			static EditorCamera camera;
+			camera.SetViewportSize( { GetWindow()->GetWidth(), GetWindow()->GetHeight() } );
+			SceneRegistry::OnEditorRender(camera);
+		} else
+		{
+			OnGUI();
+
+			for (auto& panel : panels)
+			{
+				ScenePanel* tmp;
+
+				if ((tmp = dynamic_cast<ScenePanel*>(panel)) == nullptr) continue;
+
+				tmp->RenderFramebuffer();
+			}
+		}
+	}
+	  
 	void HeliosEditor::OnGUI()
 	{
 		//static ImGuiIO& io = ImGui::GetIO(); (void)io;

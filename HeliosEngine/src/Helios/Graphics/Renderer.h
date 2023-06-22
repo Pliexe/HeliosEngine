@@ -10,7 +10,6 @@ namespace Helios
 	class Renderer
 	{
 	public:
-
 		static bool Init();
 		static void Shutdown();
 		static void BeginScene(Matrix4x4 projection,
@@ -20,8 +19,10 @@ namespace Helios
 
 		static void BeginScene(Matrix4x4 projection);
 		static void EndScene();
+		static void Flush();
 
-		static void DrawMesh(uint32_t entityId, Matrix4x4 worldMatrix, MeshRendererComponent& meshRenderer);
+		static void DrawMesh(uint64_t entityId, int32_t sceneIndex, Matrix4x4 worldMatrix, MeshRendererComponent& meshRenderer);
+		static void SubmitMesh(uint64_t entityId, int32_t sceneIndex, Matrix4x4 worldMatrix, MeshRendererComponent& meshRenderer);
 
 	};
 }

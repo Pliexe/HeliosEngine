@@ -46,6 +46,8 @@ namespace Helios
 			WindowStyles::Value style = WindowStyles::Decorated | WindowStyles::Resizable | WindowStyles::Show;
 		};
 	public: // Constructors & Destructor
+	 	static Ref<GraphicalWindow> Create();
+	
 		virtual ~GraphicalWindow() = default;
 
 		using EventCallbackFun = std::function<void(Event&)>;
@@ -61,6 +63,9 @@ namespace Helios
 #pragma endregion
 
 #pragma region Getters
+
+		virtual uint32_t GetWidth() const = 0;
+		virtual uint32_t GetHeight() const = 0;
 
 		virtual GraphicsContext& GetContext() const = 0;
 		virtual void* GetNativeWindow() const = 0;

@@ -1,5 +1,6 @@
 #include "Application.h"
 
+#include "Profiler.h"
 #include "Time.h"
 #include "Helios/Graphics/Renderer.h"
 #include "Helios/Graphics/Renderer2D.h"
@@ -47,6 +48,7 @@ namespace Helios
 	{
 		while(m_Running)
 		{
+			HL_PROFILE_FRAME_BEGIN();
 			Time::frameUpdate();
 
 			m_Window->BeginFrame();
@@ -57,6 +59,7 @@ namespace Helios
 
 			InputManager::s_MouseWheelDelta = 0.0f;
 
+			HL_PROFILE_FRAME_END();
 			GraphicalWindow::PollEvents();
 		}
 	}

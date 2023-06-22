@@ -9,6 +9,8 @@ namespace Helios
 	{
 		switch (format)
 		{
+		case Framebuffer::Format::R32G32B32A32_INT: return DXGI_FORMAT_R32G32B32A32_SINT;
+		case Framebuffer::Format::R32G32B32_INT: return DXGI_FORMAT_R32G32B32_SINT;
 		case Framebuffer::Format::R32G32B32A32F: return DXGI_FORMAT_R32G32B32A32_FLOAT;
 		case Framebuffer::Format::R32G32B32F: return DXGI_FORMAT_R32G32B32_FLOAT;
 		case Framebuffer::Format::R32G32F: return DXGI_FORMAT_R32G32_FLOAT;
@@ -75,7 +77,7 @@ namespace Helios
 		return m_colorBuffers[bufferIndex].shaderResourceView.Get();
     }
 
-	Color DirectXFramebuffer::GetPixel(uint32_t attachment, uint32_t x, uint32_t y)
+	Color DirectXFramebuffer::GetPixelColor(uint32_t attachment, uint32_t x, uint32_t y)
 	{
 		// Assert if out of bounds
 		HL_ASSERT_EXCEPTION((x < m_Width), "Error while reading Pixel data! (X coordinate out of bounds!)");
@@ -123,6 +125,12 @@ namespace Helios
 		case Format::R32F:
 			color = Color(*(float*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(float))), 0.0f, 0.0f, 1.0f);
 			break;
+		case Format::R32G32B32A32_INT:
+			color.r = *(int*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(int)));
+			color.g = *(int*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(int)) + 1);
+			color.b = *(int*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(int)) + 2);
+			color.a = *(int*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(int)) + 3);
+			break;
 		/*case Format::R32G32B32A32F:
 		{
 			float* data = (float*)mappedResource.pData;
@@ -160,7 +168,59 @@ namespace Helios
 		return color;
 	}
 
-    Size DirectXFramebuffer::GetSize() const
+	Vector4Int DirectXFramebuffer::GetPixelInt4(uint32_t attachment, uint32_t x, uint32_t y)
+	{
+		// Assert if out of bounds
+		HL_ASSERT_EXCEPTION((x < m_Width), "Error while reading Pixel data! (X coordinate out of bounds!)");
+		HL_ASSERT_EXCEPTION((y < m_Height), "Error while reading Pixel data! (Y coordinate out of bounds!)");
+
+		// Copy the	render target to a staging texture so we can read it back from the CPU
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> stagingTexture;
+		D3D11_TEXTURE2D_DESC stagingTextureDesc;
+		ZeroMemory(&stagingTextureDesc, sizeof(D3D11_TEXTURE2D_DESC));
+		stagingTextureDesc.Width = m_Width;
+		stagingTextureDesc.Height = m_Height;
+		stagingTextureDesc.MipLevels = 1;
+		stagingTextureDesc.ArraySize = 1;
+		stagingTextureDesc.Format = GetDXGIFormat(m_colorBuffers[attachment].format);
+		stagingTextureDesc.SampleDesc.Count = 1;
+		stagingTextureDesc.SampleDesc.Quality = 0;
+		stagingTextureDesc.Usage = D3D11_USAGE_STAGING;
+		stagingTextureDesc.BindFlags = 0;
+		stagingTextureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+		stagingTextureDesc.MiscFlags = 0;
+
+		HRESULT hr;
+
+		hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateTexture2D(&stagingTextureDesc, nullptr, stagingTexture.GetAddressOf());
+
+		HL_EXCEPTION_HR(FAILED(hr), "Failed to create staging texture!", hr);
+
+		Direct3D11Context::GetCurrentContext()->GetContext()->CopyResource(stagingTexture.Get(), m_colorBuffers[attachment].texture.Get());
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		hr = Direct3D11Context::GetCurrentContext()->GetContext()->Map(stagingTexture.Get(), 0, D3D11_MAP_READ, 0, &mappedResource);
+
+		HL_EXCEPTION_HR(FAILED(hr), "Failed to map staging texture!", hr);
+
+		Vector4Int buffer;
+
+		switch (m_colorBuffers[attachment].format)
+		{
+		case Format::R32G32B32A32_INT:
+			buffer = *(Vector4Int*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(Vector4Int)));
+			break;
+		default:
+			HL_ASSERT_EXCEPTION(false, "Unknown format for Vector4Int!");
+			break;
+		}
+
+		Direct3D11Context::GetCurrentContext()->GetContext()->Unmap(stagingTexture.Get(), 0);
+
+		return buffer;
+	}
+
+	Size DirectXFramebuffer::GetSize() const
     {
         return { m_Width, m_Height };
     }

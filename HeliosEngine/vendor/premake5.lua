@@ -137,6 +137,16 @@ project "Yaml"
             "_GLFW_WIN32"
         }
 
+    filter "system:linux"
+        pic "on"
+        systemversion "latest"
+        staticruntime "on"
+
+        defines 
+        { 
+            "_GLFW_X11"
+        }
+
     filter "configurations:Debug"
         runtime "Debug"
         symbols "on"

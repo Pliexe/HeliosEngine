@@ -33,9 +33,6 @@ namespace Helios
 
 		GizmosRenderer::Tool current_tool = GizmosRenderer::Tool::None;
 
-		std::queue<Line> lines;
-		std::queue<Line> tool_lines;
-
 		inline static std::vector<ScenePanel*> m_ScenePanels;
 
 	public:
@@ -45,16 +42,16 @@ namespace Helios
 			title = "Scene";
 			m_Framebuffer = Framebuffer::Create(300, 300, {
 				Framebuffer::Format::R32G32B32A32F,
-				Framebuffer::Format::R32F,
+				Framebuffer::Format::R32G32B32A32_INT,
 				Framebuffer::Format::D32F,
 			});
 			assert(m_Framebuffer != nullptr);
 			m_ScenePanels.push_back(this);
 			m_custom_begin = true;
-		}
+		}    
 		~ScenePanel() { m_ScenePanels.erase(std::find(m_ScenePanels.begin(), m_ScenePanels.end(), this)); }
-
-		static void Render(Scene& scene);
+		
+		void RenderFramebuffer();
 
 		void ResetControls();
 

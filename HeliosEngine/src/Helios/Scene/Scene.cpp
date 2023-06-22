@@ -8,6 +8,9 @@
 #include "Helios/Graphics/Renderer.h"
 #include "Helios/Graphics/Renderer2D.h"
 #include "Scene.h"
+
+#include <execution>
+
 #include "Helios/Core/Time.h"
 
 #include "Components.h"
@@ -97,6 +100,7 @@ namespace Helios {
 		m_worldTransformCache.clear();
 		auto directional_light_view = m_components.view<TransformComponent, DirectionalLightComponent>(entt::exclude<DisabledObjectComponent>);
 
+		
 		HL_PROFILE_BEGIN("Scene - Renderer2D");
 		Renderer2D::BeginScene(projection);
 		{
@@ -125,25 +129,34 @@ namespace Helios {
 		Renderer::BeginScene(projection, { 1.0f, 1.0f, 1.0f, 0.2f }, directional_light_view);
 
 		{
-			auto view = m_components.view<TransformComponent, RelationshipComponent, MeshRendererComponent>(entt::exclude<DisabledObjectComponent>);
-			for (auto entity : view)
-			{
-				auto [transform, meshRenderer, relationship] = view.get<TransformComponent, MeshRendererComponent, RelationshipComponent>(entity);
+			//auto view = m_components.view<TransformComponent, RelationshipComponent, MeshRendererComponent>(entt::exclude<DisabledObjectComponent>);
+			//for (auto entity : view)
+			//{
+			//	auto [transform, meshRenderer, relationship] = view.get<TransformComponent, MeshRendererComponent, RelationshipComponent>(entity);
 
-			retry4:
-				try {
-					//Renderer::DrawMesh((uint32_t)entity, transform.GetWorldMatrixLight(relationship, m_components), meshRenderer);
-					Renderer::DrawMesh((uint32_t)entity, Transform(entity, this).GetWorldTransformCache().GetModelMatrix(), meshRenderer);
-				}
-				catch (HeliosException ex) {
-					switch (ex.what())
-					{
-					case IDRETRY: goto retry4;
-					case IDABORT: Application::GetInstance().Quit(); break;
-					}
-				}
-			}
+			//retry4:
+			//	try {
+			//		//Renderer::DrawMesh((uint32_t)entity, transform.GetWorldMatrixLight(relationship, m_components), meshRenderer);
+			//		//Renderer::DrawMesh((uint64_t)entity, 0, Transform(entity, this).GetWorldTransformCache().GetModelMatrix(), meshRenderer);
+			//	}
+			//	catch (HeliosException ex) {
+			//		switch (ex.what())
+			//		{
+			//		case IDRETRY: goto retry4;
+			//		case IDABORT: Application::GetInstance().Quit(); break;
+			//		}
+			//	}
+			//}
+
+			m_components.group<TransformComponent, RelationshipComponent, MeshRendererComponent>(entt::exclude<DisabledObjectComponent>).each([&](auto entity, TransformComponent& transform, RelationshipComponent& relationship, MeshRendererComponent& meshRenderer)
+			{
+				Renderer::SubmitMesh((uint64_t)entity, 0, Transform(entity, transform, relationship, this).GetTransformComponent().GetModelMatrix(), meshRenderer);
+				//Renderer::DrawMesh((uint64_t)entity, 0, Transform(entity, transform, relationship, this).GetTransformComponent().GetModelMatrix(), meshRenderer);
+				//Renderer::DrawMesh((uint64_t)entity, 0, Transform(entity, transform, relationship, this).GetWorldTransformCache().GetModelMatrix(), meshRenderer);
+				//Renderer::DrawMesh((uint64_t)entity, 0, Transform(entity, this).GetWorldTransformCache().GetModelMatrix(), meshRenderer);
+			});
 		}
+		Renderer::EndScene();
 		HL_PROFILE_END();
 	}
 
@@ -160,17 +173,17 @@ namespace Helios {
 
 	Entity Scene::InstantiateObject()
 	{
-		return InstantiateObject("GameObject (" + std::to_string(m_components.size() + 1) + ")");
+		return InstantiateObject("Entity (" + std::to_string(m_components.size() + 1) + ")");
 	}
 
 	Entity Scene::InstantiateObject(Vector3 position)
 	{
-		return InstantiateObject("GameObject (" + std::to_string(m_components.size() + 1) + ")", position);
+		return InstantiateObject("Entity (" + std::to_string(m_components.size() + 1) + ")", position);
 	}
 
-	Entity Scene::InstantiateObject(entt::entity& parent)
+	Entity Scene::InstantiateObject(entt::entity parent)
 	{
-		return InstantiateObject("GameObject (" + std::to_string(m_components.size() + 1) + ")", parent);
+		return InstantiateObject("Entity (" + std::to_string(m_components.size() + 1) + ")", parent);
 	}
 
 	Entity Scene::InstantiateObject(std::string name, Vector3 position)

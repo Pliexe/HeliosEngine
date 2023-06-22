@@ -31,11 +31,11 @@ struct PSIn
     float3 fragPos : Position;
     float4 color : Color;
     float2 texCoord : TexCoord;
-    int entityIdlow : EntityIdLow;
-    int entityIdhigh : EntityIdHigh;
+    int entityId : EntityId;
     int sceneIndex : SceneIndex;
     float3 normal : Normal;
     float3 worldPos : WorldPos;
+    float4 position : SV_Position;
 };
 
 PSOut main(PSIn pin)
@@ -64,7 +64,7 @@ PSOut main(PSIn pin)
     if (pin.color[3] == 0.0f)
         output.engine_select = int4(0, 0, -1, 0);
     else
-        output.engine_select = int4(pin.entityIdlow, pin.entityIdhigh, pin.sceneIndex, 0);
+        output.engine_select = int4(pin.entityId, 0, pin.sceneIndex, 0);
 
     return output;
 }

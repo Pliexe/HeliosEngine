@@ -22,6 +22,7 @@ workspace "HeliosEngine"
     defines
     {
         "HELIOS_IMGUI_ENABLED",
+        "HL_PROFILE",
     }
 
 outdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -108,5 +109,10 @@ newaction {
         os.remove('**.sln')
         os.remove('**.vcxproj')
         os.remove('**.vcxproj.*')
+        print("Removing Makefile and Makefile.*")
+        os.remove('**Makefile')
+        os.remove('**Makefile.*')
+        os.remove('**.make')
+        print("Done")
     end
 }

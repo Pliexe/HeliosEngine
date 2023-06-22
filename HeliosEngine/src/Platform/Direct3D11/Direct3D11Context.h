@@ -12,6 +12,11 @@ namespace Helios
 			HL_CORE_ASSERT_WITH_MSG(m_WindowHandle, "HWND Window handle is null!");
 		}
 
+		void BindDefaultFramebuffer() override
+		{
+			m_Context->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), nullptr);
+		}
+
 		bool Init() override
 		{
 			HRESULT hr;

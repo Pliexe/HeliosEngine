@@ -29,7 +29,7 @@ namespace Helios
 	{
 		Matrix4x4 transform;
 		Color color;
-		float id;
+		int32_t id;
 	};
 
 	struct LineGizmos
@@ -38,14 +38,14 @@ namespace Helios
 		Color color;
 		int32_t mode;
 		float thickness;
-		float id;
+		int32_t id;
 	};
 
 	struct DynamicGizmos
 	{
 		Vector3 position;
 		Color color;
-		float id;
+		int32_t id;
 	};
 
 	struct GizmosData
@@ -170,30 +170,30 @@ namespace Helios
 			{ "Position", Shader::DataType::Float3 },
 			{ "Transform", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "Id",  Shader::DataType::Float, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance }
-		}));
+			{ "Id",  Shader::DataType::Int32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance }
+		}, Shader::Topology::TriangleList, DepthFunc::Always));
 
 		s_Data.quad_gizmos_shader = CreateRef<Shader>(Shader("QuadGizmo", {
 			{ "Position", Shader::DataType::Float2 },
 
 			{ "World", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "Data",  Shader::DataType::Float, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance }
-		}));
+			{ "Data",  Shader::DataType::Int32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance }
+		}, Shader::Topology::TriangleList, DepthFunc::Always));
 
 		s_Data.line_gizmos_shader = CreateRef<Shader>(Shader("Line", {
 			{ "Position", Shader::DataType::Float3 },
 			{ "Color", Shader::DataType::Float4 },
 			{ "Mode", Shader::DataType::Int32 },
 			{ "Thickness", Shader::DataType::Float },
-			{ "Id", Shader::DataType::Float }
-		}, Shader::Topology::LineList));
+			{ "Id", Shader::DataType::Int32 }
+		}, Shader::Topology::LineList, DepthFunc::Always));
 
 		s_Data.dynamic_gizmos_shader = CreateRef<Shader>(Shader("DynamicGizmos", {
 			{ "Position", Shader::DataType::Float3 },
 			{ "Color", Shader::DataType::Float4 },
-			{ "Id", Shader::DataType::Float }
-		}));
+			{ "Id", Shader::DataType::Int32 }
+		}, Shader::Topology::TriangleList, DepthFunc::Always));
 
 #pragma endregion
 
@@ -359,7 +359,7 @@ namespace Helios
 		HL_PROFILE_END();
 	}
 
-	void GizmosRenderer::DrawTriangle(Vector3 a, Vector3 b, Vector3 c, Color color, float id)
+	void GizmosRenderer::DrawTriangle(Vector3 a, Vector3 b, Vector3 c, Color color, int32_t id)
 	{
 		if (s_Data.m_dynamic_gizmos.m_verticesPtr + 3 >= s_Data.m_dynamic_gizmos.m_vertices + GizmosData::MaxDynamicGizmoVertices)
 			Flush();
@@ -458,17 +458,17 @@ namespace Helios
 		DrawLine(root, root + b_normal * radius, 0.5f, color, -1, LineMode::Rounded_Solid);
 	}
 
-	void GizmosRenderer::DrawLine(Vector3 a, Vector3 b, float width, Color color, int64_t id, LineMode mode)
+	void GizmosRenderer::DrawLine(Vector3 a, Vector3 b, float width, Color color, int32_t id, LineMode mode)
 	{
 		if ((s_Data.m_lines.m_index - s_Data.m_lines.m_Lines) >= GizmosData::MaxLineGizmos - 1)
 			Flush();
 
 		*s_Data.m_lines.m_index = LineGizmos{
-			a, color, (int32_t)mode, width, (float)id
+			a, color, (int32_t)mode, width, id
 		};
 		s_Data.m_lines.m_index++;
 		*s_Data.m_lines.m_index = LineGizmos{
-			b, color, (int32_t)mode, width, (float)id
+			b, color, (int32_t)mode, width, id
 		};
 		s_Data.m_lines.m_index++;
 	}
@@ -532,12 +532,12 @@ namespace Helios
 			
 
 			static GizmosData::QuadTool::QuadInstance xx[] = {
-				{ { }, Color::Red, (float)Tool::MoveZY },
-				{ { }, Color::Red, (float)Tool::MoveZY },
-				{ { }, Color::Green, (float)Tool::MoveXY },
-				{ { }, Color::Green, (float)Tool::MoveXY },
-				{ { }, Color::Blue, (float)Tool::MoveXZ },
-				{ { }, Color::Blue, (float)Tool::MoveXZ },
+				{ { }, Color::Red, (int32_t)Tool::MoveZY },
+				{ { }, Color::Red, (int32_t)Tool::MoveZY },
+				{ { }, Color::Green, (int32_t)Tool::MoveXY },
+				{ { }, Color::Green, (int32_t)Tool::MoveXY },
+				{ { }, Color::Blue, (int32_t)Tool::MoveXZ },
+				{ { }, Color::Blue, (int32_t)Tool::MoveXZ },
 			};
 
 			if (*s_Data.m_GizmosInstanceData.ArrowGizmoInstanceCount >= GizmosData::MaxGizmosInstances - 3)
@@ -547,9 +547,9 @@ namespace Helios
 				Flush();
 
 			GizmosInstance x[4] = {
-				{ { }, operation == Tool::MoveY ? Color::Yellow : Color::Blue, (float)Tool::MoveY },
-				{ { }, operation == Tool::MoveX ? Color::Yellow : Color::Red, (float)Tool::MoveX },
-				{ { }, operation == Tool::MoveZ ? Color::Yellow : Color::Green, (float)Tool::MoveZ },
+				{ { }, operation == Tool::MoveY ? Color::Yellow : Color::Blue, (int32_t)Tool::MoveY },
+				{ { }, operation == Tool::MoveX ? Color::Yellow : Color::Red, (int32_t)Tool::MoveX },
+				{ { }, operation == Tool::MoveZ ? Color::Yellow : Color::Green, (int32_t)Tool::MoveZ },
 			};
 
 			x[0].transform = transform;
@@ -583,8 +583,8 @@ namespace Helios
 
 			memcpy(&s_Data.quads.quadInstances[s_Data.quads.quadInstanceIndex], xx, sizeof(xx));
 			s_Data.quads.quadInstanceIndex += std::size(xx);
-
-			s_Data.m_GizmosInstanceData.m_GizmosInstances[1][*s_Data.m_GizmosInstanceData.SphereGizmoInstanceCount] = { transform * Matrix4x4::Scale(0.1f), operation == Tool::MoveXYZ ? Color::Yellow : Color::White, (float)Tool::MoveXYZ};
+			
+			s_Data.m_GizmosInstanceData.m_GizmosInstances[1][*s_Data.m_GizmosInstanceData.SphereGizmoInstanceCount] = { transform * Matrix4x4::Scale(0.1f), operation == Tool::MoveXYZ ? Color::Yellow : Color::White, (int32_t)Tool::MoveXYZ};
 			(*s_Data.m_GizmosInstanceData.SphereGizmoInstanceCount)++;
 
 			break;

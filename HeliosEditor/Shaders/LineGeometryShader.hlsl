@@ -7,7 +7,7 @@ struct VSIn
     float4 col : Color;
     float thickness : Thickness;
     int mode : Mode;
-    float id : Id;
+    int id : Id;
     float4 pos : SV_Position;
 };
 
@@ -17,7 +17,7 @@ struct GSOutput
     float3 progress : Progress;
     float thickness : Thickness;
     int mode : Mode;
-    float id : Id;
+    int id : Id;
     float4 pos : SV_Position;
 };
 

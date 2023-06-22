@@ -44,9 +44,7 @@ namespace Helios
     private:
 
         static std::unordered_map<std::string, Ref<Mesh>> s_Meshes;
-
-		uint32_t m_VertexCount;
-		uint32_t m_IndexCount;
+        
 
 		std::vector<MeshVertex> m_Vertices;
 

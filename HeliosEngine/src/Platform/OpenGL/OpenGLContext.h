@@ -13,6 +13,12 @@ namespace Helios
 			HL_CORE_ASSERT_WITH_MSG(m_WindowHandle, "GLFW Window handle is null!");
 		}
 
+		void BindDefaultFramebuffer() override
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+
+
 		bool Init() override
 		{
 			UseContext();

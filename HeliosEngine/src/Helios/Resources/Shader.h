@@ -6,6 +6,22 @@
 #include "Platform/Direct3D11/Direct3D11Context.h"
 
 namespace Helios {
+
+	enum class DepthFunc
+	{
+		Always,
+		Never,
+		Less,
+		LessEqual,
+		Greater,
+		GreaterEqual,
+		Equal,
+		NotEqual
+	};
+
+	D3D11_COMPARISON_FUNC GetDepthFuncNative(DepthFunc func);
+
+
 	class HELIOS_API Shader
 	{
 	public:
@@ -61,9 +77,11 @@ namespace Helios {
 		
 		//Shader(std::string filepath, const std::initializer_list<ShaderElement> elements)
 		template <std::size_t N>
-		Shader(std::string filepath, const ShaderElement(&elements)[N], Topology topology = Topology::TriangleList) : m_topology(topology)
+		Shader(std::string filepath, const ShaderElement(&elements)[N], Topology topology = Topology::TriangleList, DepthFunc depth_func = DepthFunc::Less) : m_topology(topology)
 		{
 			Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
+
+			filepath = "CompiledShaders/" + filepath;
 
 			std::string geometryShaderPath = (filepath + "GeometryShader.cso");
 
@@ -130,6 +148,8 @@ namespace Helios {
 					is++;
 					if(is < 4)
 						i--;
+					else
+						is = 0;
 				}
 				else {
 					is = 0;
@@ -175,6 +195,18 @@ namespace Helios {
 			);
 #endif // DEBUG
 
+			D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+			ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
+
+			depthStencilDesc.DepthEnable = true;
+			depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+			depthStencilDesc.DepthFunc = GetDepthFuncNative(depth_func);
+
+			HL_EXCEPTION_HR(
+				FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilState)),
+				"Failed to create depth stencil state!\n" + vertexShaderPath, hr
+			);
+
 			delete[] ied;
 		}
 		Shader(const Shader& other) = default;
@@ -183,12 +215,19 @@ namespace Helios {
 		void Bind();
 		void Unbind();
 
+		
+
+		void SetDepthFunc(DepthFunc func);
+
 	private:
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
 		Microsoft::WRL::ComPtr<ID3D11GeometryShader> m_geometryShader;
 		Topology m_topology;
 
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 	};
+
+
 }

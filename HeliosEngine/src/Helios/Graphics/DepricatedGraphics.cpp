@@ -95,7 +95,7 @@ bool Helios::DepricatedGraphics::Init()
 	
     if (FAILED(hr = m_device->CreateRasterizerState(&rasterizerDesc, &wireframeRasterizerState)))
     {
-		MessageBox(m_hWnd, (std::wstring(L"Failed to create rasterizer state! Reason: ") + GetLastMessageAsReadable()).c_str(), L"DepricatedGraphics Error!", MB_ICONERROR);
+        MessageBox(m_hWnd, (std::wstring(L"Failed to create rasterizer state! Reason: ") + GetLastMessageAsReadable()).c_str(), L"DepricatedGraphics Error!", MB_ICONERROR);
 		return false;
     }
 

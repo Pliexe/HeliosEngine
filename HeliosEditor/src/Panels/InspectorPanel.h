@@ -22,22 +22,32 @@ namespace Helios {
 	public:
 
 		static InspectorPanel& GetInstance() { return *instance; }
+		void CheckIfValid()
+		{
+			if (SelectedType::Entity == type) if (SelectedType::Entity == type)
+			{
+				if (!std::any_cast<Entity>(handle).IsValid())
+				{
+					Reset();
+				}
+			}
+		}
 
-		const std::any GetHandle() { return handle; }
-		const SelectedType GetType() { return type; }
+		const std::any GetHandle() { CheckIfValid(); return handle; }
+		const SelectedType GetType() { CheckIfValid(); return type; }
 
 		static void Reset() { instance->handle = nullptr; instance->type = SelectedType::None; }
 
 		enum class SelectedType {
 			None,
-			GameObject
+			Entity
 		};
 
 		template <typename T>
 		typename std::enable_if<std::is_same<T, Entity>::value, bool>::type
 		operator == (T anything) {
-			if (type != SelectedType::GameObject) return false;
-			return std::any_cast<T>(handle) == anything;
+			if (type != SelectedType::Entity) return false;
+			return std::any_cast<T>(handle).GetHandle() == anything.GetHandle();
 		}
 
 		template <typename type>
@@ -48,23 +58,20 @@ namespace Helios {
 		template <typename T>
 		typename std::enable_if<std::is_same<T, Entity>::value, InspectorPanel&>::type
 		operator << (T entity) {
-			this->type = SelectedType::GameObject;
+			this->type = SelectedType::Entity;
 			this->handle = entity;
 			return *this;
 		}
 
-		template <typename T>
-		typename std::enable_if<std::is_same<T, entt::entity>::value, InspectorPanel&>::type
-		operator << (T entity) {
-			this->type = SelectedType::GameObject;
-			//this->handle = GameObject { entity, SceneRegistry::get_current_scene() };
-			return *this;
+		void FocusRename(Entity entity) {
+			this->type = SelectedType::Entity;
+			this->handle = entity;
+			focus_next_name_input = true;
 		}
 
-		void FocusRename(entt::entity gameObject) {
-			this->type = SelectedType::GameObject;
-			this->handle = gameObject;
-			focus_next_name_input = true;
+		static void FocusMain()
+		{
+			ImGui::SetWindowFocus("Inspector###inspector_main");
 		}
 
 		InspectorPanel(std::string id = "main") { if (instance == nullptr) instance = this; title = "Inspector###inspector_" + id; }

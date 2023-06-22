@@ -5,7 +5,7 @@ sampler samp : register(s0);
 struct PSOut
 {
     float4 Color : SV_Target0;
-    float4 EngineSelect : SV_Target1;
+    int4 EngineSelect : SV_Target1;
 };
 
 PSOut main(float4 color : Color, uint id : TextureID, float2 texCoord : TexCoord, float entityId : EntityId)
@@ -150,7 +150,7 @@ PSOut main(float4 color : Color, uint id : TextureID, float2 texCoord : TexCoord
     if(o.Color[3] == 0.0f)
         o.EngineSelect = float4(-1.0f, 0.0f, 0.0f, 0.0f);
     else
-        o.EngineSelect = float4(entityId, 0.0f, 0.0f, 0.0f);
+        o.EngineSelect = int4(entityId, 0.0f, 0.0f, 0.0f);
 
     return o;
 }

@@ -6,14 +6,14 @@ struct GSOutput
     float3 progress : Progress;
     float thickness : Thickness;
     int mode : Mode;
-    float id : Id;
+    int id : Id;
     float4 pos : SV_Position;
 };
 
 struct PSOut
 {
     float4 color : SV_Target0;
-    float4 id : SV_Target1;
+    int4 id : SV_Target1;
 };
 
 PSOut main(GSOutput pin)
@@ -160,7 +160,7 @@ PSOut main(GSOutput pin)
             }
     }
 
-    pout.id = float4(pin.id, 0.0f, 0.0f, 0.0f);
+    pout.id = int4(0, 0, pin.id, 0);
 
     return pout;
 }

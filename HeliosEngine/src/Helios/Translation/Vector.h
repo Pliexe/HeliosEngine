@@ -9,6 +9,19 @@
 
 namespace Helios {
 
+	struct HELIOS_API Vector4Int
+	{
+		int32_t x, y, z, w;
+	};
+
+	struct HELIOS_API Vector3Int
+	{
+		int32_t x, y, z;
+	};
+
+#define Int4 Vector4Int
+#define Int3 Vector3Int
+
 	struct Matrix4x4;
 	struct HELIOS_API Vector2 {
 		float x;

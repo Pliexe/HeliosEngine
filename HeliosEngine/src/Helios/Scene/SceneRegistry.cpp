@@ -226,8 +226,14 @@ namespace Helios {
 
 		for (auto& scene : m_activeScenes)
 		{
-			scene->RenderScene(camera);
+			scene->RenderScene(camera); 
 		}
 		HL_PROFILE_END();
+	}
+
+	WeakRef<Scene> SceneRegistry::GetSceneByIndex(uint32_t scene_index)
+	{
+		assert(scene_index < m_activeScenes.size());
+		return m_activeScenes[scene_index];
 	}
 }

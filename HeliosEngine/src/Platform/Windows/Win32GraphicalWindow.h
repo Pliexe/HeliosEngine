@@ -77,6 +77,8 @@ namespace Helios
 
 			glfwGetMonitorPos(monitors[0], &monitorX, &monitorY);
 
+			m_Width = specs.width;
+			m_Height = specs.height;
 			m_Window = glfwCreateWindow(specs.width, specs.height, specs.title.c_str(), nullptr, nullptr);
 
 			if (!m_Window)
@@ -129,6 +131,8 @@ namespace Helios
 			{
 				Win32GraphicalWindow* win = (Win32GraphicalWindow*)glfwGetWindowUserPointer(window);
 				win->m_Context->SetViewport(width, height);
+				win->m_Width = width;
+				win->m_Height = height;
 
 				if (win->m_EventCallback)
 				{
@@ -268,12 +272,15 @@ namespace Helios
 
 	    void SetVSync(bool enabled) override;
 		void SetTitle(const std::string& title) override;
+	    uint32_t GetWidth() const override { return m_Width; }
+	    uint32_t GetHeight() const override { return m_Height; }
 
     private:
 		GLFWwindow* m_Window;
 		Scope<GraphicsContext> m_Context;
 		ImGuiContext* m_ImGuiContext;
 		bool useimgui = false;
+		uint32_t m_Width, m_Height;
 
         inline static uint32_t s_WindowCount = 0;
     };

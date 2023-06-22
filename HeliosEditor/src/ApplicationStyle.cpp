@@ -12,6 +12,7 @@ namespace Helios
 		ImGuiIO& io = ImGui::GetIO();
 		//io.Fonts->AddFontDefault();
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("fonts/NotoSans/NotoSans-Regular.ttf", 17.0f, nullptr, io.Fonts->GetGlyphRangesDefault());
+		io.Fonts->AddFontFromFileTTF("fonts/NotoSans/NotoSans-Bold.ttf", 17.0f, nullptr, io.Fonts->GetGlyphRangesDefault());
 
 		auto add_col = [](ImVec4 col, float offset) {
 			return ImVec4{ col.x + offset, col.y + offset, col.z + offset, 1.0f };

@@ -35,6 +35,7 @@ namespace Helios
 	class HeliosEditor : public Application
 	{
 		bool isGameSceneActive = true;
+		bool m_barebones = false;
 
 		bool show_profiler_window = false;
 

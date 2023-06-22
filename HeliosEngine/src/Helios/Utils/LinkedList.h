@@ -50,7 +50,7 @@ namespace Helios {
 			item += 5;
 
 			if (newItem == NULL) {
-				MessageBox(NULL, L"Out of memory!", L"Critical!", MB_ICONERROR);
+				ShowMessage(NULL, L"Out of memory!", L"Critical!", MB_ICONERROR);
 				exit(-50);
 			}
 
