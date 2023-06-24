@@ -5,7 +5,6 @@
 #include "AssetRegistry.h"
 #include "LoadResources.h"
 #include "ProjectManager.h"
-#include "Graphics/StackedGraph.h"
 #include "Helios/Core/Application.h"
 #include "Helios/Graphics/Framebuffer.h"
 #include "Helios/Resources/Texture.h"
@@ -48,8 +47,6 @@ namespace Helios
 			Vector2 pos;
 			Color col;
 		};
-
-		Ref<StackedGraph> profilerGraph;
 
 		enum class RSState
 		{

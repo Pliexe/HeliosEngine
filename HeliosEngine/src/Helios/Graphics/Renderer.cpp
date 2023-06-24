@@ -76,58 +76,126 @@ namespace Helios
 	};
 
 	void merge(std::vector<RendererData::Renderable>& lA, std::vector<RendererData::Renderable>& rA, std::vector<RendererData::Renderable>& x);
+	void merge(RendererData::Renderable* lA, RendererData::Renderable* rA, RendererData::Renderable* arr, uint32_t n);
+	
+	void mergeSortRenderablesNative(RendererData::Renderable* arr, int const l, int const r);
+	void mergeSortRenderablesThreaded(RendererData::Renderable* arr, int const l, int const r, int depth = 0);
 
-	/*void mergeSortRenderables(std::vector<RendererData::Renderable>& x)
+	void mergeSortRenderables(std::vector<RendererData::Renderable>& x)
 	{
-		
-	}*/
-
-	void mergeSortRenderables(std::vector<RendererData::Renderable> &x)
-	{
-		int length = x.size();
-		if (length <= 1) return;
-
-		int mid = length / 2;
-		std::vector<RendererData::Renderable> left;
-		std::vector<RendererData::Renderable> right;
-		left.reserve(mid);
-		left.reserve(length - mid);
-
-		int i = 0; // left
-		int j = 0; // right
-
-		for (; i < length; i++)
-		{
-			if (i < mid)
-				left.push_back(x[i]);
-			else
-			{
-				right.push_back(x[i]);
-				j++;
-			}
-		}
-		mergeSortRenderables(left);
-		mergeSortRenderables(right);
-		merge(left, right, x);
+		//mergeSortRenderables(x.data(), 0, x.size() - 1);
+		mergeSortRenderablesThreaded(x.data(), 0, x.size() - 1);
 	}
 
-	void merge(std::vector<RendererData::Renderable>& lA, std::vector<RendererData::Renderable>& rA, std::vector<RendererData::Renderable>& x)
+	void merge(RendererData::Renderable* arr, int const l, int const mid, int const r)
 	{
-		int leftsize = x.size() / 2;
-		int rightsize = x.size() - leftsize;
+		int const leftLength = mid - l + 1;
+		int const rightLength = r - mid;
+
+		auto left = new RendererData::Renderable[leftLength];
+		auto right = new RendererData::Renderable[rightLength];
+
+		for (int i = 0; i < leftLength; i++)
+			left[i] = arr[l + i];
+		for (int j = 0; j < rightLength; j++)
+			right[j] = arr[mid + 1 + j];
+
+		int i = 0;
+		int j = 0;
+		int k = l;
+
+		while (i < leftLength && j < rightLength)
+		{
+			if (left[i].material < right[j].material || (left[i].material == right[j].material && left[i].mesh < right[j].mesh))
+			{
+				arr[k] = left[i];
+				i++;
+			}
+			else
+			{
+				arr[k] = right[j];
+				j++;
+			}
+			k++;
+		}
+
+		while (i < leftLength)
+		{
+			arr[k] = left[i];
+			i++;
+			k++;
+		}
+
+		while (j < rightLength)
+		{
+			arr[k] = right[j];
+			j++;
+			k++;
+		}
+
+		delete[] left;
+		delete[] right;
+	}
+
+	void mergeSortRenderablesNative(RendererData::Renderable* arr, int const l, int const r)
+	{
+		if (l >= r) return;
+
+		int mid = l + (r - l) / 2;
+		mergeSortRenderablesNative(arr, l, mid);
+		mergeSortRenderablesNative(arr, mid + 1, r);
+		merge(arr, l, mid, r);
+	}
+
+	void mergeSortRenderablesThreaded(RendererData::Renderable* arr, int const l, int const r, int depth)
+	{
+		if (l >= r) return;
+		
+		int mid = l + (r - l) / 2;
+
+		if ( mid - l > 500 && depth < 4)
+		{
+			if (depth > 1)
+			{
+				std::thread leftThread(mergeSortRenderablesNative, arr, l, mid);
+				std::thread rightThread(mergeSortRenderablesNative, arr, mid + 1, r);
+				leftThread.join();
+				rightThread.join();
+			}
+			else
+			{
+				std::thread leftThread(mergeSortRenderablesThreaded, arr, l, mid, depth + 1);
+				std::thread rightThread(mergeSortRenderablesThreaded, arr, mid + 1, r, depth + 1);
+				leftThread.join();
+				rightThread.join();
+			}
+		}
+		else
+		{
+			mergeSortRenderablesNative(arr, l, mid);
+			mergeSortRenderablesNative(arr, mid + 1, r);
+		}
+		
+		merge(arr, l, mid, r);
+	}
+
+	void merge(RendererData::Renderable* lA, RendererData::Renderable* rA, RendererData::Renderable* arr, uint32_t n)
+	{
+		int leftsize =  n / 2;
+		int rightsize = n - leftsize;
 		int i = 0, l = 0, r = 0;
 
 		while (l < leftsize && r < rightsize)
 		{
 			if (lA[l].material < rA[r].material || (lA[l].material == rA[r].material && lA[l].mesh < rA[r].mesh))
 			{
-				x[i] = lA[l];
+				arr[i] = lA[l];
 				i++;
 				l++;
 			}
 			else
 			{
-				x[i] = rA[r];
+				arr[i] = rA[r];
 				i++;
 				r++;
 			}
@@ -135,17 +203,17 @@ namespace Helios
 
 		while (l < leftsize)
 		{
-			x[i] = lA[l];
+			arr[i] = lA[l];
 			i++;
 			l++;
 		}
 		while (r < rightsize)
 		{
-			x[i] = rA[r];
+			arr[i] = rA[r];
 			i++;
 			r++;
 		}
-	}	
+	}
 
 	RendererData rendererData;
 

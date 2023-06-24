@@ -13,6 +13,23 @@ namespace Helios
 	{
 	public:
 
+		struct CpuFrameProfile
+		{
+			unsigned long long startTime, frameTime;
+			uint64_t starts_at = 0u;
+		};
+
+		struct CpuTaskProfile
+		{
+			std::string Name;
+			const char* ThreadName;
+			unsigned long long StartTime, EndTime;
+			int Depth = 0u;
+
+			CpuTaskProfile(const char* name, const char* thread_name, unsigned long long startTime, unsigned long long endTime, int depth) : Name(name), ThreadName(thread_name), StartTime(startTime), EndTime(endTime), Depth(depth) { }
+			CpuTaskProfile(std::string name, const char* thread_name, unsigned long long startTime, unsigned long long endTime, int depth) : Name(name), ThreadName(thread_name), StartTime(startTime), EndTime(endTime), Depth(depth) { }
+		};
+
 		struct CpuProfileResult
 		{
 			std::string Name;
@@ -35,7 +52,7 @@ namespace Helios
 		{
 			if (s_ProfileEnabled)
 			{
-				s_ProfileResults.emplace_back(Time::currentTimeMicroseconds());
+				s_tmpFrame = CpuFrameProfile{ Time::currentTimeMicroseconds(), 0u, s_CpuProfileTasks.size() };
 			}
 		}
 
@@ -43,9 +60,8 @@ namespace Helios
 		{
 			if (s_ProfileEnabled)
 			{
-				auto tmp = s_ProfileResults.back();
-				tmp.frameTime = Time::currentTimeMicroseconds() - s_ProfileResults.back().startTime;
-				s_ProfileResults[s_ProfileResults.size()-1] = tmp;
+				s_tmpFrame.frameTime = Time::currentTimeMicroseconds() - s_tmpFrame.startTime;
+				s_CpuProfileFrames.emplace_back(s_tmpFrame);
 			}
 			if (s_toggleQueue)
 			{
@@ -57,11 +73,10 @@ namespace Helios
 		{
 			if (s_ProfileEnabled)
 			{
-				auto& r = s_ProfileResults.back().results;
-				s_profileQueue.emplace_back(r.size());
-				r.emplace_back(
+				s_profileQueue.emplace_back(s_CpuProfileTasks.size());
+				s_CpuProfileTasks.emplace_back(
 					name, threadName,
-					Time::currentTimeMicroseconds(), 0
+					Time::currentTimeMicroseconds(), 0, s_profileQueue.size()-1
 				);
 			}
 		}
@@ -70,11 +85,10 @@ namespace Helios
 		{
 			if (s_ProfileEnabled)
 			{
-				auto& r = s_ProfileResults.back().results;
-				s_profileQueue.emplace_back(r.size());
-				r.emplace_back(
+				s_profileQueue.emplace_back(s_CpuProfileTasks.size());
+				s_CpuProfileTasks.emplace_back(
 					name, threadName,
-					Time::currentTimeMicroseconds(), 0
+					Time::currentTimeMicroseconds(), 0, s_profileQueue.size()-1
 				);
 			}
 		}
@@ -83,7 +97,7 @@ namespace Helios
 		{
 			if (s_ProfileEnabled)
 			{
-				s_ProfileResults.back().results[s_profileQueue.back()].EndTime = Time::currentTimeMicroseconds();
+				s_CpuProfileTasks[s_profileQueue.back()].EndTime = Time::currentTimeMicroseconds();
 				s_profileQueue.pop_back();
 			}
 		}
@@ -107,15 +121,18 @@ namespace Helios
 
 		inline static bool isProfiling() { return s_ProfileEnabled; }
 
-		inline static std::vector<FrameProfile>& getResults() { return s_ProfileResults; }
-		inline static void clear() { s_ProfileEnabled = false; s_ProfileResults.clear(); }
+		inline static std::vector<CpuFrameProfile>& getFrameResults() { return s_CpuProfileFrames; }
+		inline static std::vector<CpuTaskProfile>& getTaskResults() { return s_CpuProfileTasks; }
+		inline static void clear() { s_ProfileEnabled = false; s_CpuProfileTasks.clear(); s_CpuProfileFrames.clear(); }
 	private:
 		inline static bool s_toggleQueue = false;
 		inline static bool s_ProfileEnabled = false;
-		inline static std::vector<FrameProfile> s_ProfileResults;
 		inline static std::deque<uint32_t> s_profileQueue;
-		inline static uint32_t depth = 0u;
 		inline static uint32_t select = 1u;
+
+		inline static std::vector<CpuFrameProfile> s_CpuProfileFrames;
+		inline static std::vector<CpuTaskProfile> s_CpuProfileTasks;
+		inline static CpuFrameProfile s_tmpFrame;
 	};
 }
 
