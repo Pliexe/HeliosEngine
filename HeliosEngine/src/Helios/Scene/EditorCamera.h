@@ -27,6 +27,9 @@ namespace Helios
 		Vector3 ScreenToWorldPoint(float x, float y, float z);
 		Vector3 ScreenToWorldPoint(const Vector3& screenPoint);
 
+		Vector2 WorldToScreenPoint(const Vector3& worldPoint);
+		Vector2 WorldToScreenPoint(float x, float y, float z);
+
 		void HandleMovement(Vector2 direction);
 		void Reset();
 

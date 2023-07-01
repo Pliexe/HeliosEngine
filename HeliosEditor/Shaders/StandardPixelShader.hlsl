@@ -44,10 +44,10 @@ PSOut main(PSIn pin)
     output.color = tex.Sample(samp, pin.texCoord) * pin.color;
 
     clip(0.1f <= output.color.a ? 1 : 0);
-    if(dot(pin.normal, pin.fragPos) >= 0.0f)
-    {
-        pin.normal = -pin.normal;
-    }
+    //if(dot(pin.normal, pin.fragPos) >= 0.0f)
+    //{
+    //    pin.normal = -pin.normal;
+    //}
 
     float3 lighting = ambient_color * (ambient_intensity * 1.0f);
     

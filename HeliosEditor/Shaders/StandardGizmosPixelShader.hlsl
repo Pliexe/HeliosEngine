@@ -4,7 +4,7 @@ struct PSOut
     int4 EngineSelect : SV_Target1;
 };
 
-PSOut main(float4 color : Color, int data : Id)
+PSOut main(float4 color : Color, int data : Id, float3 cameraNormal : CameraNormal)
 {
     PSOut pso;
     pso.color = color;

@@ -62,6 +62,8 @@ namespace Helios
 					if (ImGui::MenuItem(panel->GetName().c_str())) { panel->m_window_open = true; }
 				}
 
+				if (ImGui::MenuItem("Scene View")) { panels.push_back(new ScenePanel()); }
+
 				ImGui::EndMenu();
 			}
 

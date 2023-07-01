@@ -17,12 +17,12 @@ namespace Helios
             R32G32B32F,
             R32G32F,
             R32F,
-
-			R8B8G8A8_UNORM,
+            
             R32G32B32A32_INT,
             R32G32B32_INT,
             Rgb32Int = R32G32B32_INT,
-			
+            R8G8B8A8_UNORM,
+
 			D24S8,
             D32F
         };

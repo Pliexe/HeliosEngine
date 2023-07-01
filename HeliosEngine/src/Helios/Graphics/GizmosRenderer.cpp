@@ -5,6 +5,7 @@
 #include "Helios/Resources/Material.h"
 #include "Helios/Resources/Material.h"
 #include "Helios/Scene/EditorCamera.h"
+#include "Helios/Scene/Entity.h"
 
 namespace Helios
 {
@@ -75,7 +76,7 @@ namespace Helios
 
 		struct Gizmos
 		{
-			static const uint64_t GizmosObjectCount = 2;
+			static const uint64_t GizmosObjectCount = 3;
 
 			std::array<GizmosObject, GizmosObjectCount> m_GizmosObjects;
 			uint32_t m_GizmosInstancesCount[GizmosObjectCount] = { 0 };
@@ -86,6 +87,9 @@ namespace Helios
 
 			GizmosObject* SphereGizmo = nullptr;
 			uint32_t* SphereGizmoInstanceCount = nullptr;
+
+			GizmosObject* TorusGizmo = nullptr;
+			uint32_t* TorusGizmoInstanceCount = nullptr;
 
 			Ref<VertexBuffer> m_InstanceBuffer;
 		} m_GizmosInstanceData;
@@ -119,7 +123,7 @@ namespace Helios
 			{
 				Matrix4x4 position;
 				Color color;
-				float data;
+				int data;
 			};
 
 			Ref<VertexBuffer> vertexBuffer;
@@ -162,6 +166,10 @@ namespace Helios
 
 		s_Data.m_GizmosInstanceData.SphereGizmo = s_Data.m_GizmosInstanceData.m_GizmosObjects.data() + 1;
 		s_Data.m_GizmosInstanceData.SphereGizmoInstanceCount = s_Data.m_GizmosInstanceData.m_GizmosInstancesCount + 1;
+
+		s_Data.m_GizmosInstanceData.TorusGizmo = s_Data.m_GizmosInstanceData.m_GizmosObjects.data() + 2;
+		s_Data.m_GizmosInstanceData.TorusGizmoInstanceCount = s_Data.m_GizmosInstanceData.m_GizmosInstancesCount + 2;
+
 #pragma endregion
 
 #pragma region Initilization Shaders
@@ -237,6 +245,19 @@ namespace Helios
 		s_Data.m_GizmosInstanceData.SphereGizmo->m_IndexBuffer = IndexBuffer::Create((uint32_t*)sphereBuilder.GetTriangles().data(), sphereBuilder.GetTriangles().size() * 3);
 
 #pragma endregion
+
+		MeshBuilder torusBuilder = Mesh::CreateTorus(32, 32, 1.0f, 0.01f);
+
+		std::vector<GizmosVertex> torusVertices;
+
+		for (auto& vertex : torusBuilder.GetVertices())
+		{
+			torusVertices.emplace_back(GizmosVertex{ vertex.position });
+		}
+
+		s_Data.m_GizmosInstanceData.TorusGizmo->m_VertexBuffer = VertexBuffer::Create(torusVertices.data(), torusVertices.size() * sizeof(GizmosVertex));
+		s_Data.m_GizmosInstanceData.TorusGizmo->m_VertexBuffer->SetStride<GizmosVertex>();
+		s_Data.m_GizmosInstanceData.TorusGizmo->m_IndexBuffer = IndexBuffer::Create((uint32_t*)torusBuilder.GetTriangles().data(), torusBuilder.GetTriangles().size() * 3);
 
 #pragma endregion
 
@@ -473,7 +494,12 @@ namespace Helios
 		s_Data.m_lines.m_index++;
 	}
 
-	void GizmosRenderer::DrawQuad(SceneCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, float data = -1.0f)
+	void GizmosRenderer::SubmitLine(Vector2 a, Vector2 b, float width, Color color, int32_t id, LineMode mode)
+	{
+		
+	}
+
+	void GizmosRenderer::DrawQuad(SceneCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, int data = -1)
 	{
 		if(s_Data.quads.quadInstanceIndex >= GizmosData::MaxQuadInstances)
 			Flush();
@@ -501,8 +527,8 @@ namespace Helios
 	inline void GizmosRenderer::DrawMeshVertices(EditorCamera camera, TransformComponent& transform, std::vector<MeshVertex>& vertices)
 	{
 		static Matrix4x4 scale = Matrix4x4::Scale({ 0.1f, 0.1f, 1.0f });
-		Matrix4x4 vertexMatrix = scale * Matrix4x4::RotationRow(Quaternion::Conjugate(transform.Rotation) * camera.GetRotation());
-		Matrix4x4 worldMatrix = transform.GetRowModelMatrix();
+		Matrix4x4 vertexMatrix = scale * Matrix4x4::RotationRow(Quaternion::Conjugate(transform.Rotation) * camera.GetOrientation());
+		Matrix4x4 worldMatrix = Matrix4x4::TranslationRow(transform.Position) * Matrix4x4::RotationRow(transform.Rotation);
 
 		int i = 0;
 		for(auto& v : vertices)
@@ -516,28 +542,53 @@ namespace Helios
 					Matrix4x4::TranslationRow(v.position) *
 					worldMatrix
 				),
-				Color::Yellow, (float)i
+				Color::Yellow, i
 			};
 			s_Data.quads.quadInstanceIndex++;
 			i++;
 		}
 	}
 
-	void GizmosRenderer::DrawTool(Matrix4x4 transform, ToolType type, Tool operation)
+	void GizmosRenderer::DrawTool(Transform transform, EditorCamera camera, ToolType type, Tool operation)
 	{
+		TransformComponent transform_component = transform.GetWorldTransformCache();
+		Matrix4x4 transform_matrix = Matrix4x4::TranslationColumn(transform_component.Position) * Matrix4x4::RotationColumn(transform_component.Rotation);
+
 		switch (type)
 		{
+		case ToolType::Rotate:
+		{
+			if (*s_Data.m_GizmosInstanceData.TorusGizmoInstanceCount >= GizmosData::MaxGizmosInstances - 4)
+				Flush();
+
+			GizmosInstance x[] = {
+				{ { }, Color::Red, (int32_t)Tool::RotateX },
+				{ { }, Color::Blue, (int32_t)Tool::RotateY },
+				{ { }, Color::Green, (int32_t)Tool::RotateZ },
+				{ { }, Color::White, (int32_t)Tool::RotateXYZ },
+			};
+
+			x[1].transform = transform_matrix;
+			x[0].transform = transform_matrix * Matrix4x4::RotationZRow(M_PI_2);
+			x[2].transform = transform_matrix * Matrix4x4::RotationXRow(M_PI_2);
+			x[3].transform = Matrix4x4::TranslationColumn(transform_component.Position) * Matrix4x4::RotationColumn(Quaternion::Conjugate(transform_component.Rotation) * camera.GetOrientation()) * Matrix4x4::RotationXRow(M_PI_2) * Matrix4x4::Scale(1.5f, 1.5f, 1.5f);
+
+			GizmosInstance* ptr = &s_Data.m_GizmosInstanceData.m_GizmosInstances[2][*s_Data.m_GizmosInstanceData.TorusGizmoInstanceCount];
+
+			memcpy(ptr, x, sizeof(x));
+			(*s_Data.m_GizmosInstanceData.TorusGizmoInstanceCount) += std::size(x);
+
+			break;
+		}
 		case ToolType::Move:
 		{
-			
-
 			static GizmosData::QuadTool::QuadInstance xx[] = {
-				{ { }, Color::Red, (int32_t)Tool::MoveZY },
-				{ { }, Color::Red, (int32_t)Tool::MoveZY },
-				{ { }, Color::Green, (int32_t)Tool::MoveXY },
-				{ { }, Color::Green, (int32_t)Tool::MoveXY },
-				{ { }, Color::Blue, (int32_t)Tool::MoveXZ },
-				{ { }, Color::Blue, (int32_t)Tool::MoveXZ },
+				{ { }, Color::Red, (int32_t)Tool::TranslateZY },
+				{ { }, Color::Red, (int32_t)Tool::TranslateZY },
+				{ { }, Color::Green, (int32_t)Tool::TranslateXY },
+				{ { }, Color::Green, (int32_t)Tool::TranslateXY },
+				{ { }, Color::Blue, (int32_t)Tool::TranslateXZ },
+				{ { }, Color::Blue, (int32_t)Tool::TranslateXZ },
 			};
 
 			if (*s_Data.m_GizmosInstanceData.ArrowGizmoInstanceCount >= GizmosData::MaxGizmosInstances - 3)
@@ -547,12 +598,12 @@ namespace Helios
 				Flush();
 
 			GizmosInstance x[4] = {
-				{ { }, operation == Tool::MoveY ? Color::Yellow : Color::Blue, (int32_t)Tool::MoveY },
-				{ { }, operation == Tool::MoveX ? Color::Yellow : Color::Red, (int32_t)Tool::MoveX },
-				{ { }, operation == Tool::MoveZ ? Color::Yellow : Color::Green, (int32_t)Tool::MoveZ },
+				{ { }, operation == Tool::TranslateY ? Color::Yellow : Color::Blue, (int32_t)Tool::TranslateY },
+				{ { }, operation == Tool::TranslateX ? Color::Yellow : Color::Red, (int32_t)Tool::TranslateX },
+				{ { }, operation == Tool::TranslateZ ? Color::Yellow : Color::Green, (int32_t)Tool::TranslateZ },
 			};
 
-			x[0].transform = transform;
+			x[0].transform = transform_matrix;
 			x[1].transform = x[0].transform * Matrix4x4::RotationZRow(-(PI * 0.5f));
 			x[2].transform = x[1].transform * Matrix4x4::RotationXRow(-(PI * 0.5f));
 
@@ -572,19 +623,79 @@ namespace Helios
 			static const auto xx3 = Matrix4x4::TranslationColumn(0.5f, 0.0f, 0.5f) * Matrix4x4::Scale(scale) * Matrix4x4::RotationXRow(-(PI * 0.5f));
 			static const auto xy3 = xx3 * Matrix4x4::RotationXRow(PI);
 
-			xx[0].position = transform * xx1;
-			xx[1].position = transform * xy1;
+			xx[0].position = transform_matrix * xx1;
+			xx[1].position = transform_matrix * xy1;
 
-			xx[2].position = transform * xx2;
-			xx[3].position = transform * xy2;
+			xx[2].position = transform_matrix * xx2;
+			xx[3].position = transform_matrix * xy2;
 
-			xx[4].position = transform * xx3;
-			xx[5].position = transform * xy3;
+			xx[4].position = transform_matrix * xx3;
+			xx[5].position = transform_matrix * xy3;
 
 			memcpy(&s_Data.quads.quadInstances[s_Data.quads.quadInstanceIndex], xx, sizeof(xx));
 			s_Data.quads.quadInstanceIndex += std::size(xx);
 			
-			s_Data.m_GizmosInstanceData.m_GizmosInstances[1][*s_Data.m_GizmosInstanceData.SphereGizmoInstanceCount] = { transform * Matrix4x4::Scale(0.1f), operation == Tool::MoveXYZ ? Color::Yellow : Color::White, (int32_t)Tool::MoveXYZ};
+			s_Data.m_GizmosInstanceData.m_GizmosInstances[1][*s_Data.m_GizmosInstanceData.SphereGizmoInstanceCount] = { transform_matrix * Matrix4x4::Scale(0.1f), operation == Tool::TranslateXYZ ? Color::Yellow : Color::White, (int32_t)Tool::TranslateXYZ};
+			(*s_Data.m_GizmosInstanceData.SphereGizmoInstanceCount)++;
+
+			break;
+		}
+		case ToolType::Scale:
+		{
+			static GizmosData::QuadTool::QuadInstance xx[] = {
+				{ { }, Color::Red, (int32_t)Tool::ScaleZY },
+				{ { }, Color::Red, (int32_t)Tool::ScaleZY },
+				{ { }, Color::Green, (int32_t)Tool::ScaleXY },
+				{ { }, Color::Green, (int32_t)Tool::ScaleXY },
+				{ { }, Color::Blue, (int32_t)Tool::ScaleXZ },
+				{ { }, Color::Blue, (int32_t)Tool::ScaleXZ },
+			};
+
+			if (*s_Data.m_GizmosInstanceData.ArrowGizmoInstanceCount >= GizmosData::MaxGizmosInstances - 3)
+				Flush();
+
+			if (s_Data.quads.quadInstanceIndex >= GizmosData::MaxQuadInstances - std::size(xx) - 5)
+				Flush();
+
+			GizmosInstance x[4] = {
+				{ { }, operation == Tool::ScaleY ? Color::Yellow : Color::Blue, (int32_t)Tool::ScaleY },
+				{ { }, operation == Tool::ScaleX ? Color::Yellow : Color::Red, (int32_t)Tool::ScaleX },
+				{ { }, operation == Tool::ScaleZ ? Color::Yellow : Color::Green, (int32_t)Tool::ScaleZ },
+			};
+
+			x[0].transform = transform_matrix;
+			x[1].transform = x[0].transform * Matrix4x4::RotationZRow(-(PI * 0.5f));
+			x[2].transform = x[1].transform * Matrix4x4::RotationXRow(-(PI * 0.5f));
+
+			GizmosInstance* ptr = &s_Data.m_GizmosInstanceData.m_GizmosInstances[0][*s_Data.m_GizmosInstanceData.ArrowGizmoInstanceCount];
+
+			memcpy(ptr, x, sizeof(x));
+			(*s_Data.m_GizmosInstanceData.ArrowGizmoInstanceCount) += std::size(x);
+
+
+			static const float scale = 0.2f; 
+			static const auto xx1 = Matrix4x4::TranslationColumn(0.0f, 0.5f, 0.5f) * Matrix4x4::Scale(scale) * Matrix4x4::RotationYRow(-(PI * 0.5f));
+			static const auto xy1 = xx1 * Matrix4x4::RotationXRow(PI);
+
+			static const auto xx2 = Matrix4x4::TranslationColumn(0.5f, 0.5f, 0.0f) * Matrix4x4::Scale(scale);
+			static const auto xy2 = xx2 * Matrix4x4::RotationXRow(PI);
+
+			static const auto xx3 = Matrix4x4::TranslationColumn(0.5f, 0.0f, 0.5f) * Matrix4x4::Scale(scale) * Matrix4x4::RotationXRow(-(PI * 0.5f));
+			static const auto xy3 = xx3 * Matrix4x4::RotationXRow(PI);
+
+			xx[0].position = transform_matrix * xx1;
+			xx[1].position = transform_matrix * xy1;
+
+			xx[2].position = transform_matrix * xx2;
+			xx[3].position = transform_matrix * xy2;
+
+			xx[4].position = transform_matrix * xx3;
+			xx[5].position = transform_matrix * xy3;
+
+			memcpy(&s_Data.quads.quadInstances[s_Data.quads.quadInstanceIndex], xx, sizeof(xx));
+			s_Data.quads.quadInstanceIndex += std::size(xx);
+			
+			s_Data.m_GizmosInstanceData.m_GizmosInstances[1][*s_Data.m_GizmosInstanceData.SphereGizmoInstanceCount] = { transform_matrix * Matrix4x4::Scale(0.1f), operation == Tool::ScaleXYZ ? Color::Yellow : Color::White, (int32_t)Tool::ScaleXYZ};
 			(*s_Data.m_GizmosInstanceData.SphereGizmoInstanceCount)++;
 
 			break;

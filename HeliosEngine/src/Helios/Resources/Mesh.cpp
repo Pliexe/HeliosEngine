@@ -284,6 +284,59 @@ namespace Helios
 		}
 	}
 
+	Ref<Mesh> Mesh::GetTorusMesh(uint32_t segments_ring, uint32_t segments_cylinder, float R, float r)
+	{
+		std::string name = "Torus_" + std::to_string(segments_ring) + "_" + std::to_string(segments_cylinder) + "_" + std::to_string(R) + "_" + std::to_string(r);
+
+		if (s_Meshes.find(name) != s_Meshes.end())
+		{
+			return s_Meshes[name];
+		}
+		else
+		{
+			Ref<Mesh> mesh = CreateRef<Mesh>(name, CreateTorus(segments_ring, segments_cylinder, R, r));
+			s_Meshes[name] = mesh;
+			return mesh;
+		}
+	}
+
+	/*
+	 * Creates a torus mesh with the given parameters.
+	 * @param segments_ring The number of segments in the ring.
+	 * @param segments_cylinder The number of segments in the cylinder.
+	 * @param R The radius of the ring.
+	 * @param r The radius of the cylinder.
+	 * @return The mesh.
+	*/
+	MeshBuilder Mesh::CreateTorus(uint32_t segments_ring, uint32_t segments_cylinder, float R, float r)
+	{
+		MeshBuilder builder;
+
+		for (int i = 0; i < segments_ring; i++)
+		{
+			float angle = (float)i / (float)segments_ring * 2.0f * PI;
+			for (int j = 0; j < segments_cylinder; j++)
+			{
+				float angle2 = (float)j / (float)segments_cylinder * 2.0f * PI;
+				float x = (R + r * cos(angle2)) * cos(angle);
+				float y = r * sin(angle2);
+				float z = (R + r * cos(angle2)) * sin(angle);
+				builder.AddVertex({ Vector3(x, y, z), Vector2(angle / (PI * 2), angle2 / (PI * 2)), Vector3(cos(angle2) * cos(angle), sin(angle2), cos(angle2) * sin(angle)) });
+			}
+		}
+
+		for (int i = 0; i < segments_ring; i++)
+		{
+			for (int j = 0; j < segments_cylinder; j++)
+			{
+				int i2 = (i + 1) % segments_ring;
+				int j2 = (j + 1) % segments_cylinder;
+				builder.AddQuad(i * segments_cylinder + j, i * segments_cylinder + j2, i2 * segments_cylinder + j2, i2 * segments_cylinder + j);
+			}
+		}
+		return builder;
+	}
+
 	MeshBuilder Mesh::CreateGizmosArrow(uint32_t segments)
 	{
 		MeshBuilder arrowBuilder;

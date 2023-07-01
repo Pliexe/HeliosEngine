@@ -146,6 +146,11 @@ namespace Helios
 		//Vector3 forward() { return rotation * Vector3::Forward(); }
 		inline Vector3 Right() { return Rotation * Vector3::Right(); }
 		inline Vector3 Up() { return Rotation.up(); }
+		void RotateAround(const Vector3& target, const Vector3& axis, float angle)
+		{
+			Position = Quaternion::FromAxisAngle(axis, angle) * (Position - target) + target;
+			Rotation = Quaternion::FromAxisAngle(axis, angle) * Rotation;
+		}
 
 		static inline Matrix4x4 ToModelMatrix(TransformComponent transform) { return Matrix4x4::TranslationColumn(transform.Position) * Matrix4x4::RotationColumn(transform.Rotation) * Matrix4x4::Scale(transform.Scale); }
 		inline Matrix4x4 ToRowModelMatrix(TransformComponent transform) { return Matrix4x4::TranslationRow(transform.Position) * Matrix4x4::RotationRow(transform.Rotation) * Matrix4x4::Scale(transform.Scale); }

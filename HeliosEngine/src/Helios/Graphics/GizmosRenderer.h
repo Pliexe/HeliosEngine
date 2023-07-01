@@ -19,24 +19,29 @@ namespace Helios
 		enum class Tool
 		{
 			None = -1,
-			MoveX = -2,
-			MoveY = -3,
-			MoveZ = -4,
-			MoveXY = -5,
-			MoveXZ = -6,
-			MoveZY = -7,
-			MoveXYZ = -8,
+			TranslateX = -2,
+			TranslateY = -3,
+			TranslateZ = -4,
+			TranslateXY = -5,
+			TranslateXZ = -6,
+			TranslateZY = -7,
+			TranslateXYZ = -8,
 			ScaleX = -9,
 			ScaleY = -10,
 			ScaleZ = -11,
-			ScaleXYZ = -12,
-			RotateX = -13,
-			RotateY = -14,
-			RotateZ = -15,
+			ScaleXY = -12,
+			ScaleXZ = -13,
+			ScaleZY = -14,
+			ScaleXYZ = -15,
+			RotateX = -16,
+			RotateY = -17,
+			RotateZ = -18,
+			RotateXYZ = -19,
 		};
 
 		enum class ToolType
 		{
+			Grab,
 			Move,
 			Scale,
 			Rotate
@@ -68,11 +73,12 @@ namespace Helios
 		static void DrawAngle(float angle, float radius, Color color, Matrix4x4 model_matrix);
 		static void DrawAngle(Vector3 root, Vector3 a_normal, Vector3 b_normal, float radius, Color color, Matrix4x4 model_matrix);
 		static void DrawLine(Vector3 a, Vector3 b, float width = 0.5f, Color color = Color::White, int32_t id = -1, LineMode mode = LineMode::Solid);
-		static void DrawQuad(SceneCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, float
+		void SubmitLine(Vector2 a, Vector2 b, float width, Color color, int32_t id, LineMode mode);
+		static void DrawQuad(SceneCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, int
 		                     data);
 		static void DrawMeshVertices(EditorCamera camera, TransformComponent& transform, std::vector<MeshVertex>& vertices);
 
-		static void DrawTool(Matrix4x4 transform, ToolType type, Tool operation = Tool::None);
+		static void DrawTool(Transform transform, EditorCamera camera, ToolType type, Tool operation = Tool::None);
 
 		static void SetDisplayedVertices(Ref<std::vector<MeshVertex>> vertices);
 		static void ClearDisplayedVertices();

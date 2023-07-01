@@ -239,6 +239,7 @@ namespace Helios {
 
 		inline Vector3 Forward() { return m_transform.Forward(); }
 		inline Vector3 Right() { return m_transform.Right(); }
+		void RotateAround(const Vector3& target, const Vector3& axis, float angle) { return m_transform.RotateAround(target, axis, angle); }
 
 	private:
 		Entity m_GameObject;

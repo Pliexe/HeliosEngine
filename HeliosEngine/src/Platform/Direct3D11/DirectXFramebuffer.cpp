@@ -15,7 +15,7 @@ namespace Helios
 		case Framebuffer::Format::R32G32B32F: return DXGI_FORMAT_R32G32B32_FLOAT;
 		case Framebuffer::Format::R32G32F: return DXGI_FORMAT_R32G32_FLOAT;
 		case Framebuffer::Format::R32F: return DXGI_FORMAT_R32_FLOAT;
-		case Framebuffer::Format::R8B8G8A8_UNORM: return DXGI_FORMAT_R8G8B8A8_UNORM;
+		case Framebuffer::Format::R8G8B8A8_UNORM: return DXGI_FORMAT_R8G8B8A8_UNORM;
 		case Framebuffer::Format::D24S8: return DXGI_FORMAT_D24_UNORM_S8_UINT;
 		case Framebuffer::Format::D32F: return DXGI_FORMAT_D32_FLOAT;
 		default:
@@ -119,7 +119,7 @@ namespace Helios
 		case Format::R32G32B32A32F:
 			color = *(Color*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(Color)));
 			break;
-		case Format::R8B8G8A8_UNORM:
+		case Format::R8G8B8A8_UNORM:
 			color = *(Color*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(Color)));
 			break;
 		case Format::R32F:

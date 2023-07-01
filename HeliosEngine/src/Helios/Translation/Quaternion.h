@@ -68,6 +68,24 @@ namespace Helios {
             return { -quat.x, -quat.y, -quat.z, quat.w };
         }
 
+        static Quaternion Multiply(const Quaternion& lhs, const Quaternion& rhs)
+        {
+            // Quaternion result;
+            // result.w = lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z;
+            // result.x = lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y;
+            // result.y = lhs.w * rhs.y - lhs.x * rhs.z + lhs.y * rhs.w + lhs.z * rhs.x;
+            // result.z = lhs.w * rhs.z + lhs.x * rhs.y - lhs.y * rhs.x + lhs.z * rhs.w;
+            // return result;
+
+            // I don't know if this implementation is faster, but it's less readable 
+            return {
+                lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y, // i
+                lhs.w * rhs.y - lhs.x * rhs.z + lhs.y * rhs.w + lhs.z * rhs.x, // j
+                lhs.w * rhs.z + lhs.x * rhs.y - lhs.y * rhs.x + lhs.z * rhs.w, // k
+                lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z  // r
+            };
+		}
+
         Vector3 eulerRads();
         Vector3 euler() { return eulerRads() * (180.0f / (float)M_PI); }
 
@@ -79,10 +97,10 @@ namespace Helios {
         Quaternion operator*(const Quaternion& rhs)
         {
             return {
-                this->w * rhs.x + this->x * rhs.w + this->y * rhs.z - this->z * rhs.y,
-                this->w * rhs.y + this->y * rhs.w + this->z * rhs.x - this->x * rhs.z,
-                this->w * rhs.z + this->z * rhs.w + this->x * rhs.y - this->y * rhs.x,
-                this->w * rhs.w - this->x * rhs.x - this->y * rhs.y - this->z * rhs.z
+                this->w * rhs.x + this->x * rhs.w + this->y * rhs.z - this->z * rhs.y, // i
+                this->w * rhs.y - this->x * rhs.z + this->y * rhs.w + this->z * rhs.x, // j
+                this->w * rhs.z + this->x * rhs.y - this->y * rhs.x + this->z * rhs.w, // k
+                this->w * rhs.w - this->x * rhs.x - this->y * rhs.y - this->z * rhs.z  // r
             };
         }
 

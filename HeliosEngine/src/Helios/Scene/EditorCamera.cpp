@@ -88,6 +88,16 @@ namespace Helios
 		return Camera::ScreenToWorldPoint(screenPoint, GetViewMatrix());
 	}
 
+	Vector2 EditorCamera::WorldToScreenPoint(const Vector3& worldPoint)
+	{
+		return Camera::WorldToScreenPoint(worldPoint, GetViewMatrix());
+	}
+
+	Vector2 EditorCamera::WorldToScreenPoint(float x, float y, float z)
+	{
+		return Camera::WorldToScreenPoint(x, y, z, GetViewMatrix());
+	}
+
 	void EditorCamera::HandleMovement(Vector2 direction)
     {
 		m_TransformComponent.Rotation = Quaternion::FromEuler(m_TransformComponent.Rotation.euler() + direction * Time::deltaTime() * m_Sensitivity);

@@ -8,6 +8,6 @@ PSOut main(float4 color : Color, int data : Data)
 {
     PSOut pso;
     pso.color = color;
-    pso.EngineSelect = float4(0, 0, data, 0);
+    pso.EngineSelect = float4(0, 0, 0, data);
 	return pso;
 }

@@ -52,12 +52,14 @@ namespace Helios
 			Matrix4x4 transform;
 			uint32_t entityId;
 			uint32_t sceneIndex;
+			Color color;
 		};
 
 		struct InstancedRenderable
 		{
 			Matrix4x4 wrdViewProj;
 			Matrix4x4 wrdProj;
+			Color color;
 			uint32_t entityId;
 			uint32_t sceneIndex;
 		};
@@ -226,6 +228,7 @@ namespace Helios
 		renderable.mesh = meshRenderer.mesh;
 		renderable.material = meshRenderer.material;
 		renderable.transform = worldMatrix;
+		renderable.color = meshRenderer.material->Color;
 		rendererData.renderables.push_back(renderable);
 	}
 
@@ -238,6 +241,7 @@ namespace Helios
 			{ "Normal",   Shader::DataType::Float3 },
 			{ "WorldViewProj", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "WorldProj", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
+			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "EntityId", Shader::DataType::Int32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "SceneIndex", Shader::DataType::Int32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 		}));
@@ -295,7 +299,7 @@ namespace Helios
 				currentMesh->Bind();
 			}
 
-			*instancedRenderablesPtr++ = RendererData::InstancedRenderable{ rendererData.projectionMatrix * renderable.transform, renderable.transform, renderable.entityId, renderable.sceneIndex };
+			*instancedRenderablesPtr++ = RendererData::InstancedRenderable{ rendererData.projectionMatrix * renderable.transform, renderable.transform, renderable.color, renderable.entityId, renderable.sceneIndex };
 			uint32_t size = (instancedRenderablesPtr - instancedRenderables);
 
  			if ((instancedRenderablesPtr - instancedRenderables) >= RendererData::MAX_INSTANCES)
@@ -349,7 +353,7 @@ namespace Helios
 			auto [transform, light] = directional_light_view.get<TransformComponent, DirectionalLightComponent>(entity);
 
 			light_data.directionalLights[light_data.directional_light_count] = {
-				transform.Forward(),
+				transform.Up(),
 				light.intensity,
 				light.color,
 			};

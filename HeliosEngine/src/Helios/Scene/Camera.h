@@ -36,7 +36,9 @@ namespace Helios
         Vector3 ScreenToWorldPoint(const Vector3& screenPoint, const Matrix4x4& viewMatrix) const;
         Vector3 ScreenToWorldPoint(const Vector2& screenPoint, float z, const Matrix4x4& viewMatrix) const;
         Vector3 ScreenToWorldPoint(float x, float y, float z, const Matrix4x4& viewMatrix) const;
+        Vector2 WorldToScreenPoint(const Vector3& worldPoint, const Matrix4x4& viewMatrix) const;
 
+        Vector2 WorldToScreenPoint(float x, float y, float z, const Matrix4x4& viewMatrix) const;
         void InvalidateProjection();
 
         PerspectiveData GetPerspective() const;

@@ -17,9 +17,9 @@ struct VSIn
     float3 normal : Normal;
     matrix worldViewProj : WorldViewProj;
     matrix worldProj : WorldProj;
+    float4 color : Color;
     int entityId : EntityId;
     int sceneIndex : SceneIndex;
-
 };
 
 struct VSOut
@@ -40,7 +40,7 @@ VSOut main(VSIn vin)
     vout.viewPos = (float3) mul(float4(vin.position, 1.0f), vin.worldProj);
     vout.position = mul(float4(vin.position, 1.0f), vin.worldViewProj);
     vout.texCoord =  vin.texCoord;
-    vout.color = float4(1,1,1,1);
+    vout.color = vin.color;
     vout.entityId = vin.entityId;
     vout.sceneIndex = vin.sceneIndex;
     vout.normal = normalize(mul(float4(vin.normal, 0.0f), vin.worldProj));

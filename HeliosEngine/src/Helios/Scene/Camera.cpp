@@ -79,6 +79,28 @@ namespace Helios
 		return Vector3(rayWorld.x, rayWorld.y, rayWorld.z);		
 	}
 
+	Vector2 Camera::WorldToScreenPoint(const Vector3& worldPoint, const Matrix4x4& viewMatrix) const
+	{
+		return WorldToScreenPoint(worldPoint.x, worldPoint.y, worldPoint.z, viewMatrix);
+	}
+
+	Vector2 Camera::WorldToScreenPoint(float x, float y, float z, const Matrix4x4& viewMatrix) const
+	{
+		Vector4 pointWorld = Vector4(x, y, z, 1.0f);
+		Vector4 pointEye = Matrix4x4::Inverse(viewMatrix) * pointWorld; // Convert to eye space (Do the same as the vertex shader)
+		Vector4 pointClip = m_ProjectionMatrix * pointEye;
+
+		// Convert to normalized device coordinates
+		float ndcX = pointClip.x / pointClip.w;
+		float ndcY = pointClip.y / pointClip.w;
+
+		// Convert to screen coordinates
+		float screenX = (ndcX + 1.0f) / 2.0f * static_cast<float>(m_ViewportSize.width);
+		float screenY = (1.0f - ndcY) / 2.0f * static_cast<float>(m_ViewportSize.height);
+
+		return Vector2(screenX, screenY);
+	}
+
 	void Helios::Camera::InvalidateProjection()
 	{
 		switch (m_Type)

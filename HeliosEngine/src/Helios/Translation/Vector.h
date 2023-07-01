@@ -30,8 +30,12 @@ namespace Helios {
 		Vector2() : x(0.0f), y(0.0f) { };
 		Vector2(float x, float y) : x(x), y(y) { };
 		Vector2(const Vector2& other) : x(other.x), y(other.y) { };
+		Vector2(Vector2& other) : x(other.x), y(other.y) { };
 
 		operator float* () { return &x; }
+		static inline float Magnitude(const Vector2& dir) { return sqrtf(dir.x * dir.x + dir.y * dir.y); }
+		static inline float Magnitude(Vector2& dir) { return sqrtf(dir.x * dir.x + dir.y * dir.y); }
+		static inline float Magnitude(Vector2 dir) { return sqrtf(dir.x * dir.x + dir.y * dir.y); }
 
 		static inline Vector2 Right()	{ return {  1.0f,  0.0f }; }
 		static inline Vector2 Left()	{ return { -1.0f,  0.0f }; }
@@ -50,6 +54,7 @@ namespace Helios {
 		inline float length();
 		inline float sqrLength();
 		inline Vector2 normalize();
+		inline float magnitude() { return sqrtf(x * x + y * y); }
 
 		bool operator==(const Vector2& other) const;
 		bool operator==(Vector2& other) const;
@@ -170,6 +175,7 @@ namespace Helios {
 		Vector3(float x, float y, float z) : Vector2(x, y), z(z) { };
 		Vector3(const Vector2& other) : Vector2(other), z(0.0f) { };
 		Vector3(const Vector3& other) : Vector2(other.x, other.y), z(other.z) { };
+		Vector3(Vector3& other) noexcept : Vector2(other.x, other.y), z(other.z) { };
 
 		static inline Vector3 Right()		{ return {  1.0f,  0.0f,  0.0f }; }
 		static inline Vector3 Left()		{ return { -1.0f,  0.0f,  0.0f }; }
@@ -223,7 +229,9 @@ namespace Helios {
 		
 		Vector3 operator+(Vector2& other);
 		Vector3 operator-(Vector2& other);
-			  
+
+		
+
 		Vector3 operator*(float n) const;
 		Vector3 operator/(float n) const;
 
@@ -244,10 +252,15 @@ namespace Helios {
 		std::string operator<<(const Vector3& other) const;
 		std::string operator<<(Vector3& other) const;
 		std::string to_string() const;
+		static float AngleBetween(const Vector3& unit_vec1, const Vector3& unit_vec2);
+		static Vector3 ProjectOnPlane(Vector3 pointOnPlane, Vector3 planeNormal, Vector3 point);
 
 		/*Vector3 operator=(Vector3& other);
 		Vector3 operator=(Vector3 other);*/
 	};
+
+	Vector3 HELIOS_API operator*(float n, const Vector3& other);
+	Vector3 HELIOS_API operator*(float n, Vector3& other);
 
 	struct HELIOS_API Vector4 : public Vector3 {
 		float w;

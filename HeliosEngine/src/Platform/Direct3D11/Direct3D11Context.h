@@ -44,6 +44,7 @@ namespace Helios
 			ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
 			swapChainDesc.Windowed = TRUE;
 			swapChainDesc.BufferCount = 2;
+			//swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 			swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 			swapChainDesc.SampleDesc.Count = 1;

@@ -81,6 +81,14 @@ namespace Helios {
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
+			if (ImGui::MenuItem("Torus"))
+			{
+				auto obj = scene->InstantiateObject("Torus");
+				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
+				meshRenderer.mesh = Mesh::GetTorusMesh(64, 32, .5f,.2f);
+				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				InspectorPanel::GetInstance() << obj;
+			}
 			ImGui::EndMenu();
 		}
 
@@ -220,7 +228,7 @@ namespace Helios {
 				ImGui::PushID(i);
 
 				// bg color of first treenode = redish mixed with bg
-				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen;
 				ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
 				bool opened = ImGui::TreeNodeEx("scene", flags, scene->GetName().c_str());
 				ImGui::PopStyleColor();

@@ -14,6 +14,7 @@ namespace Helios
 		{
 			title = "Profiler";
 			m_custom_begin = true;
+			m_window_open = false;
 		}
 
 		void DrawTimline()
@@ -145,8 +146,14 @@ namespace Helios
 
 			for (int i = start_at; i < tasks.size(); i++)
 			{
-				if (tasks[i].StartTime > frame.startTime + frame.frameTime) 
+				if (tasks[i].StartTime > frame.startTime + frame.frameTime)
+				{
+					long long diff = (tasks[i].StartTime - frame.startTime);
+					ImVec2 pos = ImVec2((diff / 1000.0f * 100.f) * ms_size + frame_pixel_start,  60);
+					ImGui::SetCursorPos(pos);
+					ImGui::InvisibleButton("##extend", ImVec2(10, 10));
 					break;
+				}
 
 				ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(tasks[i].Name[0] * 200 % 255, tasks[i].Name[1] * 200 % 255, tasks[i].Name[2] * 200 % 255, 255));
 				//ImGui::PushStyleColor(ImGuiCol_Button, i >= start_at ? IM_COL32(255, 255, 255, 255) : IM_COL32(255, 0, 0, 255));

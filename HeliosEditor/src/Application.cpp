@@ -232,7 +232,7 @@ namespace Helios
 			MessageBoxA(nullptr, "Error loading icons!", "ICON_FOLDER_EMPTY == nullptr", MB_ICONERROR);
 		
 		gameFrame = Framebuffer::Create(300, 300, {
-            Framebuffer::Format::R8B8G8A8_UNORM,
+            Framebuffer::Format::R8G8B8A8_UNORM,
             //Framebuffer::Format::R32F,
             Framebuffer::Format::D32F
         });		
@@ -249,10 +249,14 @@ namespace Helios
 		// tmp
 
 		SceneRegistry::LoadEmptyScene("New Scene");
-		auto ent = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 0, -5 });
+		auto ent = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 0, 0 });
+		//auto ent = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 0, -5 });
 		auto& mrc = ent.AddComponent<MeshRendererComponent>();
 		mrc.mesh = Mesh::GenerateCube();
 		mrc.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Clamp);
+		auto ent2 = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 10, 0 });
+		ent2.AddComponent<DirectionalLightComponent>(Color::White, 1.0f);
+		Transform(ent2).SetLocalRotation(Quaternion::FromEuler(45, 0, 0));
 
 		panels.push_back(&inspector);
 		panels.push_back(&hierarchy);

@@ -23,6 +23,12 @@ namespace Helios {
 
 	float Vector2::Length(Vector2 a) { return sqrt(Dot(a, a)); }
 	float Vector2::SqrLength(Vector2 a) { return Dot(a, a); }
+
+	float Vector2::Distance(Vector2 a, Vector2 b)
+	{
+		return Length(a - b);
+	}
+
 	float distance(Vector2 a, Vector2 b) { return Vector2::Length(a - b); }
 	Vector2 Vector2::Project(Vector2 a, Vector2 n) { return n * (Vector2::Dot(a, n) / Vector2::Dot(n, n)); }
 
@@ -158,7 +164,17 @@ namespace Helios {
 
 	Vector3 Vector3::operator+(Vector2& other) { return { x + other.x, y + other.y, z }; }
 	Vector3 Vector3::operator-(Vector2& other) { return { x - other.x, y - other.y, z }; }
-		  		  
+
+	Vector3 operator*(float n, const Vector3& other)
+	{
+		return { other.x * n, other.y * n, other.z * n };
+	}
+
+	Vector3 operator*(float n, Vector3& other)
+	{
+		return { other.x * n, other.y * n, other.z * n };
+	}
+
 	Vector3 Vector3::operator*(float n) const { return { x * n, y * n, z * n }; }
 	Vector3 Vector3::operator/(float n) const { return { x / n, y / n, z / n }; }
 	Vector3 Vector3::operator*(float n) { return { x * n, y * n, z * n }; }
@@ -232,6 +248,18 @@ namespace Helios {
 	std::string Vector3::to_string() const
 	{
 		return std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z);
+	}
+
+	float Vector3::AngleBetween(const Vector3& unit_vec1, const Vector3& unit_vec2)
+	{
+		float dot = Vector3::Dot(unit_vec1, unit_vec2);
+		dot = std::clamp(dot, -1.0f, 1.0f);
+		return acos(dot);
+	}
+
+	Vector3 Vector3::ProjectOnPlane(Vector3 pointOnPlane, Vector3 planeNormal, Vector3 point)
+	{
+		return point - Vector3::Project(point - pointOnPlane, planeNormal);
 	}
 
 	Vector3 Vector3::Rotate(const Vector3& normal, const Vector3& axis, float angle)
