@@ -31,6 +31,7 @@
 #include <fstream>
 #include <memory>
 #include <deque>
+#include <random>
 
 // Windows
 #define D3D_DEBUG_INFO

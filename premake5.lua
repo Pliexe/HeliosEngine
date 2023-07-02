@@ -23,6 +23,9 @@ workspace "HeliosEngine"
     {
         "HELIOS_IMGUI_ENABLED",
         "HL_PROFILE",
+
+        -- Windows
+        "NOMINMAX",
     }
 
 outdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
