@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "Helios/Core/Base.h"
 #include "Helios/Scene/Components.h"
-#include "Helios/Translation/Matrix.h"
+#include "Helios/Math/Matrix.h"
 
 namespace Helios {
 	class HELIOS_API Renderer2D

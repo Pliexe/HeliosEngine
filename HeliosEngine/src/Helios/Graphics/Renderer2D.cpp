@@ -11,7 +11,7 @@
 
 #include "Helios/Resources/Buffer.h"
 
-#include "Helios/Translation/Matrix.h"
+#include "Helios/Math/Matrix.h"
 
 #include "Framebuffer.h"
 
@@ -25,7 +25,7 @@ namespace Helios {
 	{
 		static const uint16_t MaxQuads = 10000;
 		static const uint8_t MaxTextureSlots = 128;
-
+		
 		struct QuadVertex
 		{
 			Vector2 position;
@@ -34,9 +34,9 @@ namespace Helios {
 
 		struct QuadInstanceData
 		{
-			uint8_t textureIndex;
-			Color color;
 			Matrix4x4 transform;
+			Color color;
+			uint32_t textureIndex;
 			uint32_t entityId;
 		};
 
@@ -80,11 +80,11 @@ namespace Helios {
 			{ "Position", Shader::DataType::Float2 },
 			{ "TexCoord", Shader::DataType::Float2 },
 
-			{ "TextureID", Shader::DataType::UInt8, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
 			{ "World", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "EntityId", Shader::DataType::Float, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			}));
+			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
+			{ "TextureID", Shader::DataType::UInt32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
+			{ "EntityId", Shader::DataType::UInt32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
+		}));
 
 		// const Renderer2DData::QuadVertex vertices[] = {
 		// 	{ { -0.5f,  0.5f } },
@@ -150,6 +150,7 @@ namespace Helios {
 		HL_PROFILE_BEGIN("Renderer2D Flush");
 		if ((s_Data.quadInstanceDataPtr - s_Data.quadInstanceData) > 0)
 		{
+			s_Data.quadInstanceBuffer->SetStride<Renderer2DData::QuadInstanceData>();
 			s_Data.quadInstanceBuffer->SetData(s_Data.quadInstanceData, (s_Data.quadInstanceDataPtr - s_Data.quadInstanceData) * sizeof(Renderer2DData::QuadInstanceData));
 			s_Data.quadShader->Bind();
 			s_Data.quadVertexBuffer->Bind();
@@ -161,7 +162,7 @@ namespace Helios {
 			{
 				s_Data.textureSlots[i]->Bind(i);
 			}
-
+			
 			Direct3D11Context::GetCurrentContext()->GetContext()->PSSetSamplers(0u, 1u, sampler.GetAddressOf());
 			
 			HL_PROFILE_BEGIN("Renderer2D Wait for GPU");
@@ -181,11 +182,9 @@ namespace Helios {
 		if(sprite.texture == nullptr)
 		{
 			*s_Data.quadInstanceDataPtr = {
+				worldMatrix,
+				sprite.color,
 				128u,
-				{ sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
-				{
-					worldMatrix
-				},
 				entityId
 			};
 		}
@@ -196,11 +195,9 @@ namespace Helios {
 
 			s_Data.textureSlots[s_Data.textureSlotIndex] = sprite.texture;
 			*s_Data.quadInstanceDataPtr = {
-				s_Data.textureSlotIndex,
+				worldMatrix,
 				{ sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a },
-				{
-					worldMatrix
-				},
+				s_Data.textureSlotIndex,
 				entityId
 			};
 			s_Data.textureSlotIndex++;
