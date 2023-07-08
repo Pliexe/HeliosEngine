@@ -227,6 +227,9 @@ namespace Helios
 
     void DirectXFramebuffer::Invalidate()
     {
+		if (m_Width <= 0 || m_Height <= 0)
+			return;
+
 		int i = 0;
 		for (auto& colorBuffer : m_colorBuffers)
 		{
@@ -348,6 +351,7 @@ namespace Helios
 
     void DirectXFramebuffer::Resize(uint32_t width, uint32_t height)
     {
+		HL_ASSERT_EXCEPTION( width > 0 && height > 0 && width <= D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION && height <= D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION, "Invalid framebuffer size" );
         m_Width = width;
         m_Height = height;
         Invalidate();
