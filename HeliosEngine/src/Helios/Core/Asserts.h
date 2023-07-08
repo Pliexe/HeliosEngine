@@ -11,7 +11,7 @@
 
 #else
 
-#define HL_CORE_ASSERT(condition)
+#define HELIOS_ASSERT(condition)
 #define HL_CORE_ASSERT_WITH_MSG(condition, message)
 
 #endif // HELIOS_DEBUG
@@ -60,5 +60,5 @@ namespace Helios {
 #define HL_EXCEPTION(condition, message) { if(condition) throw Helios::HeliosException(message, __FUNCTION__, __FILE__, __LINE__); }
 #define HL_EXCEPTION_HR(condition, message, hr) { if(condition) throw Helios::HeliosException(std::string(message) + "\nReason: " + GetLastErrorAsString(hr) + "\nCode: " + std::to_string(hr), __FUNCTION__, __FILE__, __LINE__); }
 
-#define HL_ASSERT_EXCEPTION_RETRY(condition, message) { retry: try { if(!condition) throw Helios::HeliosException(message, __FUNCTION__, __FILE__, __LINE__); } catch(Helios::HeliosException ex) { switch(ex.what()) { case: IDRETRY: goto retry; break; case IDOK:case IDABORT: abort(); } } }
-#define HL_ASSERT_EXCEPTION(condition, message) { if(!(condition)) throw Helios::HeliosException(message, __FUNCTION__, __FILE__, __LINE__); }
+#define HL_EXCEPTION_RETRY(condition, message) { retry: try { if(!(condition)) throw Helios::HeliosException(message, __FUNCTION__, __FILE__, __LINE__); } catch(Helios::HeliosException ex) { switch(ex.what()) { case IDRETRY: goto retry; break; case IDOK:case IDABORT: abort(); } } }
+#define HL_ASSERT_EXCEPTION(condition, message) { if(!(condition)) throw Helios::HeliosException(message, __FUNCTION__, __FILE__, __LINE__); assert(true); }

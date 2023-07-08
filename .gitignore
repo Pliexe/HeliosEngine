@@ -50,3 +50,4 @@
 # gmake
 *.make
 Makefile
+HeliosEditor/Test.scene

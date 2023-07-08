@@ -69,6 +69,7 @@ namespace Helios {
 
 		template <typename T>
 		void SetStride() { m_Stride = sizeof(T); }
+		void SetStride(uint32_t stride) { m_Stride = stride; }
 
 		template <typename T>
 		inline uint32_t getCount() const { return m_Size / sizeof(T); }

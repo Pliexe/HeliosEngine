@@ -4,6 +4,13 @@
  */
 #pragma once
 
+#if (defined(_M_IX86) || defined(_M_X64) || __i386__ || __x86_64__) && !defined(M_HYBRID_X86_ARM64) && !defined(_M_ARM64EC)
+#define __SSE_ENABLED__
+#include <xmmintrin.h>
+#endif
+
+#define ENTT_ID_TYPE std::uint64_t
+
 #ifdef _DEBUG
 #define HL_DEBUG
 #endif
@@ -77,7 +84,6 @@ using json = nlohmann::json;
 
 // entt
 #include <entt.hpp>
-
 // Custom
 
 // https://docs.microsoft.com/en-us/windows/win32/medfound/saferelease

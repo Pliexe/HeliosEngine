@@ -33,6 +33,7 @@ namespace Helios
 
 
 		virtual void OnUpdate() = 0;
+		virtual void OnRender() = 0;
 
 	private:
 	private:

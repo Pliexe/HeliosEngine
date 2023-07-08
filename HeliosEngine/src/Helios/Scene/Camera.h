@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Helios/Core/Base.h"
-#include "Helios/Translation/Matrix.h"
+#include "Helios/Math/Matrix.h"
 
 namespace Helios
 {

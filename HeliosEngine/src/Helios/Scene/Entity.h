@@ -7,7 +7,7 @@
 #include "pch.h"
 #include "Helios/Core/Base.h"
 #include "Helios/Core/Asserts.h"
-#include "Helios/Translation/Quaternion.h"
+#include "Helios/Math/Quaternion.h"
 #include "Components.h"
 #include "Helios/Scene/Scene.h"
 #include "Helios/Scene/SceneRegistry.h"
@@ -32,7 +32,7 @@ namespace Helios {
 		}
 		Entity(entt::entity entity_id, Scene* scene)
 		{
-			HL_CORE_ASSERT_WITH_MSG(entity_id != entt::null, "entity handle is invalid!");
+			//HL_CORE_ASSERT_WITH_MSG(entity_id != entt::null, "entity handle is invalid!");
 			m_scene = scene;
 			m_entityHandle = entity_id;
 		}
@@ -93,7 +93,9 @@ namespace Helios {
 
 		Scene* GetScene() { return m_scene; }
 		entt::entity GetHandle() { return m_entityHandle; }
-
+		entt::entity GetHandle() const { return m_entityHandle; }
+		UUID GetUUID() { return GetComponent<UUIDComponent>().uuid; }
+		
 	private:
 
 		Scene* m_scene;
@@ -241,6 +243,7 @@ namespace Helios {
 		inline Vector3 Right() { return m_transform.Right(); }
 		void RotateAround(const Vector3& target, const Vector3& axis, float angle) { return m_transform.RotateAround(target, axis, angle); }
 
+
 	private:
 		Entity m_GameObject;
 		TransformComponent& m_transform;
@@ -248,3 +251,14 @@ namespace Helios {
 	};
 }
 
+namespace std
+{
+	template<>
+	struct hash<Helios::Entity>
+	{
+		size_t operator()(const Helios::Entity& entity) const
+		{
+			return (uint32_t)entity.GetHandle();
+		}
+	};
+}

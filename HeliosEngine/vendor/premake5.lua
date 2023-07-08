@@ -187,3 +187,49 @@ project "GLAD"
     filter "configurations:Release"
         runtime "Release"
         optimize "on"
+project "Box2D"
+    kind "StaticLib"
+    language "C++"
+    cppdialect "C++11"
+    staticruntime "off"
+
+    -- kind "SharedLib"
+    -- language "C++"
+    -- staticruntime "off"
+    -- cppdialect "C++11"
+
+    -- removeflags "MultiProcessorCompile"
+    
+    targetdir ("%{wks.location}/bin/" .. outdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin-int/" .. outdir .. "/%{prj.name}")
+
+    files
+    {
+        "box2d/src/**.cpp",
+        "box2d/src/**.h",
+    }
+
+    -- postbuildcommands
+    -- {
+    --     ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outdir .. "/HeliosEditor"),
+    -- }
+
+    includedirs
+    { 
+        "box2d/include"
+    }
+
+    filter "system:windows"
+        systemversion "latest"
+    
+    filter "system:linux"
+        pic "on"
+        systemversion "latest"
+
+    filter "configurations:Debug"
+        runtime "Debug"
+        symbols "on"
+
+    filter "configurations:Release"
+        runtime "Release"
+        optimize "on"

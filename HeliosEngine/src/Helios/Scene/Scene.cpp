@@ -2,7 +2,7 @@
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
-#include "Helios/Translation/Vector.h"
+#include "Helios/Math/Vector.h"
 #include "Helios/Scene/Entity.h"
 #include "Helios/Core/Asserts.h"
 #include "Helios/Graphics/Renderer.h"
@@ -18,6 +18,7 @@
 #include "Helios/Core/Application.h"
 #include "Helios/Graphics/GizmosRenderer.h"
 #include "Helios/Core/Profiler.h"
+#include "Helios/Physics/Physics2D.h"
 
 namespace Helios {
 
@@ -30,7 +31,33 @@ namespace Helios {
 		return m_components.valid(entity);
 	}
 
+	Entity Scene::GetEntity(UUID uuid)
+	{
+		if (m_UUIDMap.find(uuid) != m_UUIDMap.end())
+		{
+			return Entity{ m_UUIDMap[uuid], this };
+		}
+		return Entity{ entt::null, this };
+	}
+
+	Entity Scene::GetEntity(entt::entity entity)
+	{
+		return Entity{ entity, this };
+	}
+
 	Entity Scene::DuplicateEntity(Entity entity)
+	{
+		assert(entity.IsValid());
+		Entity newEntity = InstantiateObject(entity.GetName());
+		CopyComponentIfExists(AllComponents{}, newEntity, entity);
+		if (newEntity.HasComponent<BoxCollider2D>()) newEntity.GetComponent<BoxCollider2D>().body = nullptr;
+		if (newEntity.HasComponent<CircleCollider2D>()) newEntity.GetComponent<CircleCollider2D>().body = nullptr;
+		newEntity.AddOrReplaceComponent<UUID>();
+
+		return newEntity;
+	}
+
+	Entity Scene::CopyEntity(Entity entity)
 	{
 		assert(entity.IsValid());
 		Entity newEntity = InstantiateObject(entity.GetName());
@@ -85,17 +112,145 @@ namespace Helios {
 	void Scene::RenderScene(EditorCamera& camera)
 	{
 		Matrix4x4 projection = camera.GetViewProjection();
-		RenderScene(projection);
+		RenderScene(camera.GetTransformComponent(), projection);
 		RenderGizmos(projection);
+	}
+
+	void Scene::PerformCleanupAndSync()
+	{
+		for (auto entity : m_entitiesToDestroy)
+		{
+			if (m_components.any_of<BoxCollider2D>(entity))
+			{
+				auto& collider = m_components.get<BoxCollider2D>(entity);
+			}
+			m_components.destroy(entity);
+		}
+		m_entitiesToDestroy.clear();
+
+		// sync physics
+
+		for (auto entity : m_components.view<TransformComponent, Rigidbody2D>())
+		{
+			auto& transform = m_components.get<TransformComponent>(entity);
+			auto& rigidbody = m_components.get<Rigidbody2D>(entity);
+
+			if (m_components.any_of<BoxCollider2D>(entity))
+			{
+				auto& collider = m_components.get<BoxCollider2D>(entity);
+
+				if (collider.body == nullptr) collider.body = Physics2D::CreateBox(Entity{ entity, this }, collider);
+				else
+				{
+					if (m_components.any_of<RelationshipComponent>(entity))
+					{
+						auto& relationship = m_components.get<RelationshipComponent>(entity);
+						if (transform.changed)
+							collider.body->SetPosition(transform.GetWorldPosition(relationship, m_components));
+						else
+							transform.SetWorldPosition(collider.body->GetPosition(), relationship, m_components);
+						transform.SetWorldRotation(Quaternion::FromEuler(0.f, 0.f, collider.body->GetRotation()), relationship, m_components);
+						transform.changed = false;
+					}
+					else
+					{
+						if (transform.changed)
+							collider.body->SetPosition(transform.Position);
+						else
+							transform.SetLocalPosition(collider.body->GetPosition());
+						transform.SetLocalRotation(Quaternion::FromEuler(0.f, 0.f, collider.body->GetRotation()));
+						transform.changed = false;
+					}
+				}
+
+				//Physics2D::SyncTransform(Entity(entity, this), transform, rigidbody, collider);
+			}
+			else if (m_components.any_of<CircleCollider2D>(entity))
+			{
+				auto& collider = m_components.get<CircleCollider2D>(entity);
+
+				if (collider.body == nullptr) collider.body = Physics2D::CreateCircle(Entity{ entity, this }, collider);
+				else
+				{
+					if (m_components.any_of<RelationshipComponent>(entity))
+					{
+						auto& relationship = m_components.get<RelationshipComponent>(entity);
+						if (transform.changed)
+							collider.body->SetPosition(transform.GetWorldPosition(relationship, m_components));
+						else
+							transform.SetWorldPosition(collider.body->GetPosition(), relationship, m_components);
+						transform.SetWorldRotation(Quaternion::FromEuler(0.f, 0.f, collider.body->GetRotation()), relationship, m_components);
+						transform.changed = false;
+					}
+					else
+					{
+						if (transform.changed)
+							collider.body->SetPosition(transform.Position);
+						else
+							transform.SetLocalPosition(collider.body->GetPosition());
+						transform.SetLocalRotation(Quaternion::FromEuler(0.f, 0.f, collider.body->GetRotation()));
+						transform.changed = false;
+					}
+				}
+				//Physics2D::SyncTransform(Entity(entity, this), transform, rigidbody, collider);
+			}
+
+		}
+	}
+
+	void Scene::UpdatePhysics()
+	{
+		//HL_PROFILE_BEGIN("Scene - Physics2D");
+		/*HL_PROFILE_BEGIN("Scene - Physics2D - Submit");
+		{
+			auto view = m_components.view<TransformComponent, CircleCollider2D>(entt::exclude<DisabledObjectComponent>);
+
+			for (auto entity : view)
+			{
+				auto [transform, collider] = view.get<TransformComponent, CircleCollider2D>(entity);
+
+				if (m_components.any_of<Rigidbody2D>(entity))
+				{
+					auto& rigidbody = m_components.get<Rigidbody2D>(entity);
+
+					Physics2D::Submit(Entity(entity, this), transform, rigidbody, collider);
+				}
+				else Physics2D::Submit(transform, collider);
+			}
+		}
+
+		{
+			auto view = m_components.view<TransformComponent, BoxCollider2D>(entt::exclude<DisabledObjectComponent>);
+			for (auto entity : view)
+			{
+				auto [transform, collider] = view.get<TransformComponent, BoxCollider2D>(entity);
+				if (m_components.any_of<Rigidbody2D>(entity))
+				{
+					auto& rigidbody = m_components.get<Rigidbody2D>(entity);
+					Physics2D::Submit(Entity(entity, this), transform, rigidbody, collider);
+				}
+				else Physics2D::Submit(transform, collider);
+			}
+		}
+		HL_PROFILE_END();
+
+		HL_PROFILE_BEGIN("Scene - Physics2D - OnUpdate");
+		Physics2D::DepricatedOnStep();
+		HL_PROFILE_END();*/
+
+
+		
+
+		//HL_PROFILE_END();
 	}
 
 	void Scene::RenderScene(SceneCamera camera)
 	{
 		Matrix4x4 projection = camera.GetViewProjection();
-		RenderScene(projection);
+		RenderScene(camera.GetTransform(), projection);
 		RenderGizmos(projection);
 	}
-	void Scene::RenderScene(Matrix4x4 projection)
+	void Scene::RenderScene(TransformComponent world_camera, Matrix4x4 projection)
 	{
 		m_worldTransformCache.clear();
 		auto directional_light_view = m_components.view<TransformComponent, DirectionalLightComponent>(entt::exclude<DisabledObjectComponent>);
@@ -127,7 +282,7 @@ namespace Helios {
 
 		HL_PROFILE_BEGIN("Scene - Renderer3D");
 		Renderer::BeginScene(projection, { 1.0f, 1.0f, 1.0f, 0.2f }, directional_light_view);
-
+		HL_PROFILE_BEGIN("Scene - Renderer3D - Submit");
 		{
 			//auto view = m_components.view<TransformComponent, RelationshipComponent, MeshRendererComponent>(entt::exclude<DisabledObjectComponent>);
 			//for (auto entity : view)
@@ -147,15 +302,24 @@ namespace Helios {
 			//		}
 			//	}
 			//}
+			
 
 			m_components.group<TransformComponent, RelationshipComponent, MeshRendererComponent>(entt::exclude<DisabledObjectComponent>).each([&](auto entity, TransformComponent& transform, RelationshipComponent& relationship, MeshRendererComponent& meshRenderer)
 			{
-				Renderer::SubmitMesh((uint64_t)entity, 0, Transform(entity, transform, relationship, this).GetTransformComponent().GetModelMatrix(), meshRenderer);
+				TransformComponent transformComponent = Transform(entity, transform, relationship, this).GetWorldTransformCache();
+				float dot = Vector3::Dot(world_camera.Forward(), transformComponent.Position - world_camera.Position);
+				
+				if (dot < 0.0f) return;
+
+				//static Matrix4x4 modelMatrix = Matrix4x4::Identity();
+				//Renderer::SubmitMesh((uint64_t)entity, 0, modelMatrix, meshRenderer);
+				Renderer::SubmitMesh((uint64_t)entity, 0, transformComponent.GetModelMatrix(), meshRenderer);
 				//Renderer::DrawMesh((uint64_t)entity, 0, Transform(entity, transform, relationship, this).GetTransformComponent().GetModelMatrix(), meshRenderer);
 				//Renderer::DrawMesh((uint64_t)entity, 0, Transform(entity, transform, relationship, this).GetWorldTransformCache().GetModelMatrix(), meshRenderer);
 				//Renderer::DrawMesh((uint64_t)entity, 0, Transform(entity, this).GetWorldTransformCache().GetModelMatrix(), meshRenderer);
 			});
 		}
+		HL_PROFILE_END();
 		Renderer::EndScene();
 		HL_PROFILE_END();
 	}
@@ -192,6 +356,7 @@ namespace Helios {
 		obj.AddComponent<InfoComponent>(name);
 		obj.AddComponent<TransformComponent>(position);
 		obj.AddComponent<RelationshipComponent>();
+		m_UUIDMap[obj.AddComponent<UUIDComponent>().uuid] = obj;
 		return obj;
 	}
 
@@ -201,6 +366,7 @@ namespace Helios {
 		obj.AddComponent<InfoComponent>(name);
 		obj.AddComponent<TransformComponent>();
 		obj.AddComponent<RelationshipComponent>(m_components, obj, parent);
+		m_UUIDMap[obj.AddComponent<UUIDComponent>().uuid] = obj;
 		return obj;
 	}
 

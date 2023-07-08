@@ -5,7 +5,7 @@
 #include "pch.h"
 
 #include "InputManager.h"
-#include "Helios/Translation/Vector.h"
+#include "Helios/Math/Vector.h"
 
 bool Helios::InputManager::IsKeyPressed(int key)
 {

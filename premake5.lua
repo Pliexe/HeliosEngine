@@ -38,6 +38,7 @@ IncludeDir["Yaml"] = "%{wks.location}/HeliosEngine/vendor/yaml-cpp/include"
 IncludeDir["ProjectManager"] = "%{wks.location}/ProjectManager/src"
 IncludeDir["GLFW"] = "%{wks.location}/HeliosEngine/vendor/glfw/include"
 IncludeDir["GLAD"] = "%{wks.location}/HeliosEngine/vendor/glad/include"
+IncludeDir["Box2D"] = "%{wks.location}/HeliosEngine/vendor/box2d/include"
 
 group "Dependencies"
     include "HeliosEngine/vendor"

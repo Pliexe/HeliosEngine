@@ -185,7 +185,9 @@ namespace Helios {
 		for (auto& scene : m_activeScenes)
 		{
 			Scene::UpdateChildTransforms(scene);
+			scene->UpdatePhysics();
 		}
+
 		HL_PROFILE_END();
 	}
 
@@ -198,11 +200,15 @@ namespace Helios {
 
 		auto camt = cam.GetComponent<CameraComponent>();
 
-		Matrix4x4 projection = SceneCamera::GetViewProjection(Transform(cam, cam.GetScene()).GetWorldTransformCache(), camt);
+		TransformComponent worldTransform = Transform(cam, cam.GetScene()).GetWorldTransformCache();
+
+		Matrix4x4 projection = SceneCamera::GetViewProjection(worldTransform, camt);
 
 		for (auto& scene : m_activeScenes)
 		{
-			scene->RenderScene(projection);
+			scene->RenderScene(worldTransform, projection);
+
+			scene->PerformCleanupAndSync();
 		}
 
 		HL_PROFILE_END();
@@ -215,6 +221,8 @@ namespace Helios {
 		for (auto& scene : m_activeScenes)
 		{
 			scene->RenderScene(camera);
+
+			scene->PerformCleanupAndSync();
 		}
 
 		HL_PROFILE_END();
@@ -227,6 +235,8 @@ namespace Helios {
 		for (auto& scene : m_activeScenes)
 		{
 			scene->RenderScene(camera); 
+
+			scene->PerformCleanupAndSync();
 		}
 		HL_PROFILE_END();
 	}

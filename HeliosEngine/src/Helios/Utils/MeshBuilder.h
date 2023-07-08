@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Helios/Translation/Vector.h"
+#include "Helios/Math/Vector.h"
 
 namespace Helios
 {

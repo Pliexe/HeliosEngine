@@ -13,8 +13,8 @@ extern Helios::Application* Helios::CreateApplication(int argc, char** argv);
 
 #include "Asserts.h"
 
-#include "Helios/Translation/Matrix.h"
-#include "Helios/Translation/Vector.h"
+#include "Helios/Math/Matrix.h"
+#include "Helios/Math/Vector.h"
 
 int main(int argc, char** argv)
 {

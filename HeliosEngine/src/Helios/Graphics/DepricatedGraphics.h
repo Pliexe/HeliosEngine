@@ -6,7 +6,7 @@
 
 #include "pch.h"
 #include "Helios/Core/Base.h"
-#include "Helios/Translation/Vector.h"
+#include "Helios/Math/Vector.h"
 
 namespace Helios {
 	class HELIOS_API DepricatedGraphics

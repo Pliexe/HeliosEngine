@@ -2,7 +2,7 @@
 
 #include "Helios/Core/Base.h"
 #include "Buffer.h"
-#include "Helios/Translation/Vector.h"
+#include "Helios/Math/Vector.h"
 #include "Helios/Utils/MeshBuilder.h"
 
 namespace Helios

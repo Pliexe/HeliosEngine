@@ -4,7 +4,7 @@
  */
 #include "pch.h"
 #include "Mouse.h"
-#include "Helios/Translation/Vector.h"
+#include "Helios/Math/Vector.h"
 
 using namespace Helios;
 

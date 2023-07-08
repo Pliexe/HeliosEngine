@@ -3,7 +3,7 @@
 #include "Helios/Core/Base.h"
 #include "Helios/Resources/Mesh.h"
 #include "Helios/Scene/Components.h"
-#include "Helios/Translation/Matrix.h"
+#include "Helios/Math/Matrix.h"
 
 namespace Helios
 {

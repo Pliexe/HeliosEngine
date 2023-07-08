@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include "Helios/Core/UUID.h"
 #include "Helios/Resources/Color.h"
 
 namespace Helios
@@ -8,10 +9,18 @@ namespace Helios
 	struct HELIOS_API DontDestroyOnLoadComponent { byte a; };
 	struct HELIOS_API DisabledObjectComponent { byte a; };
 
+	struct HELIOS_API UUIDComponent
+	{
+		::Helios::UUID uuid;
+		UUIDComponent() = default;
+		UUIDComponent(const UUIDComponent&) = default;
+		UUIDComponent(const UUID& uuid) : uuid(uuid) { }
+	};
+
 	struct HELIOS_API InfoComponent
 	{
 		std::string name;
-
+		
 		InfoComponent() = default;
 		InfoComponent(const InfoComponent&) = default;
 		InfoComponent(const std::string& name) : name(name) { }

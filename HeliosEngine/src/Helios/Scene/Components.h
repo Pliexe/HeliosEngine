@@ -3,6 +3,7 @@
 #include "Components/Basic.h"
 #include "Components/Relationship.h"
 #include "Components/Lighting.h"
+#include "Components/Physics2D.h"
 #include "Components/Renderers.h"
 #include "Components/Transforms.h"
 
@@ -27,6 +28,9 @@ namespace Helios
 		MeshRendererComponent,
 		//Transforms
 		TransformComponent,
-		Transform2DComponent
+		Transform2DComponent,
+		// Physics2D
+		Rigidbody2D,
+		CircleCollider2D
 	>;
 }

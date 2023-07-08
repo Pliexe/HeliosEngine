@@ -23,6 +23,8 @@ namespace Helios
 		const Matrix4x4 GetViewProjection();
 		const Matrix4x4 GetViewProjection() const;
 
+		TransformComponent GetTransformComponent() const { return m_TransformComponent; }
+
 		Vector3 ScreenToWorldPoint(const Vector2& screenPoint, float z);
 		Vector3 ScreenToWorldPoint(float x, float y, float z);
 		Vector3 ScreenToWorldPoint(const Vector3& screenPoint);

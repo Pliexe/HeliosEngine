@@ -32,6 +32,7 @@ project "HeliosEngine"
         "%{IncludeDir.Yaml}",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLAD}",
+        "%{IncludeDir.Box2D}",
     }
 
     links
@@ -40,6 +41,7 @@ project "HeliosEngine"
         "Yaml",
         "GLFW",
         "GLAD",
+        "Box2D",
         "opengl32.lib",
     }
 

@@ -165,6 +165,7 @@ namespace Helios {
 				}
 				index++;
 			}
+			HRESULT hr;
 
 #ifdef _DEBUG
 			std::stringstream ss;
@@ -182,7 +183,6 @@ namespace Helios {
 				ss << "-----------------------\n";
 			}
 
-			HRESULT hr;
 
 			HL_EXCEPTION_HR(
 				FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateInputLayout(ied, (UINT)index, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &m_inputLayout)),

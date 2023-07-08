@@ -20,7 +20,7 @@ namespace Helios
 			m_IndexBuffer->Bind();
 		}
 	};
-
+	
 	struct GizmosVertex
 	{
 		Vector3 position;
@@ -93,7 +93,7 @@ namespace Helios
 
 			Ref<VertexBuffer> m_InstanceBuffer;
 		} m_GizmosInstanceData;
-
+		
 		struct VertexLocationDotVertex
 		{
 			Vector3 position;
@@ -528,7 +528,7 @@ namespace Helios
 	{
 		static Matrix4x4 scale = Matrix4x4::Scale({ 0.1f, 0.1f, 1.0f });
 		Matrix4x4 vertexMatrix = scale * Matrix4x4::RotationRow(Quaternion::Conjugate(transform.Rotation) * camera.GetOrientation());
-		Matrix4x4 worldMatrix = Matrix4x4::TranslationRow(transform.Position) * Matrix4x4::RotationRow(transform.Rotation);
+		Matrix4x4 worldMatrix = Matrix4x4::RotationRow(transform.Rotation) * Matrix4x4::TranslationRow(transform.Position);
 
 		int i = 0;
 		for(auto& v : vertices)
@@ -539,7 +539,7 @@ namespace Helios
 			s_Data.quads.quadInstances[s_Data.quads.quadInstanceIndex] = {
 				Matrix4x4::Transpose(
 					vertexMatrix *
-					Matrix4x4::TranslationRow(v.position) *
+					Matrix4x4::TranslationRow(v.position * transform.Scale) *
 					worldMatrix
 				),
 				Color::Yellow, i

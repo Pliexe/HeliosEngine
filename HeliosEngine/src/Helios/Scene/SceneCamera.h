@@ -2,7 +2,7 @@
 
 #include "Helios/Core/Base.h"
 #include "Components.h"
-#include "Helios/Translation/Matrix.h"
+#include "Helios/Math/Matrix.h"
 
 namespace Helios {
 	class HELIOS_API SceneCamera

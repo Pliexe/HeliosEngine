@@ -25,6 +25,7 @@ namespace Helios {
 			}
 			PCFreq = double(li.QuadPart);
 			m_firstFrame = li.QuadPart;
+			frameUpdate();
 		}
 
 		static const void frameUpdate() {

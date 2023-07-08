@@ -1,8 +1,8 @@
 #pragma once
 #include "Relationship.h"
-#include "Helios/Translation/Quaternion.h"
-#include "Helios/Translation/Vector.h"
-#include "Helios/Translation/Matrix.h"
+#include "Helios/Math/Quaternion.h"
+#include "Helios/Math/Vector.h"
+#include "Helios/Math/Matrix.h"
 #include "../Enums.h"
 
 namespace Helios
@@ -12,6 +12,7 @@ namespace Helios
 		Vector3		Position = Vector3::Zero();
 		Quaternion	Rotation = Quaternion::Identity();
 		Vector3		Scale = { 1.0f, 1.0f, 1.0f };
+		bool changed = false;
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
@@ -67,6 +68,10 @@ namespace Helios
 
 		void SetWorldPosition(const Vector3& position, RelationshipComponent relationship, entt::registry& registry)
 		{
+			if (position.x != position.x || position.y != position.y || position.z != position.z)
+				return;
+
+			changed = true;
 			if (relationship.parent_handle != entt::null)
 			{
 				auto parentTransform = registry.get<TransformComponent>(relationship.parent_handle);
@@ -77,6 +82,10 @@ namespace Helios
 
 		void SetWorldRotation(const Quaternion& rotation, RelationshipComponent relationship, entt::registry& registry)
 		{
+			if (rotation.x != rotation.x || rotation.y != rotation.y || rotation.z != rotation.z || rotation.w != rotation.w)
+				return;
+
+			changed = true;
 			if (relationship.parent_handle != entt::null)
 			{
 				auto parentTransform = registry.get<TransformComponent>(relationship.parent_handle);
@@ -87,6 +96,10 @@ namespace Helios
 
 		void SetWorldScale(const Vector3& scale, RelationshipComponent relationship, entt::registry& registry)
 		{
+			if (scale.x != scale.x || scale.y != scale.y || scale.z != scale.z)
+				return;
+
+			changed = true;
 			if (relationship.parent_handle != entt::null)
 			{
 				auto parentTransform = registry.get<TransformComponent>(relationship.parent_handle);
@@ -97,6 +110,10 @@ namespace Helios
 
 		void SetWorldTransform(const TransformComponent& transform, RelationshipComponent relationship, entt::registry& registry)
 		{
+			if (transform.Position.x != transform.Position.x || transform.Position.y != transform.Position.y || transform.Position.z != transform.Position.z)
+				return;
+
+			changed = true;
 			if (relationship.parent_handle != entt::null)
 			{
 				auto parentTransform = registry.get<TransformComponent>(relationship.parent_handle);
@@ -111,33 +128,62 @@ namespace Helios
 			}
 		}
 
-		inline void SetLocalPosition(const Vector3& position) { Position = position; }
-		inline void SetLocalRotation(const Quaternion& rotation) { Rotation = rotation; }
-		inline void SetLocalScale(const Vector3& scale) { Scale = scale; }
-		inline void SetLocalTransform(const TransformComponent& transform) { Position = transform.Position; Rotation = transform.Rotation; Scale = transform.Scale; }
+		inline void SetLocalPosition(const Vector3& position)
+		{
+			if (position.x != position.x || position.y != position.y || position.z != position.z)
+				return;
+
+			changed = true; Position = position;
+		}
+		inline void SetLocalRotation(const Quaternion& rotation)
+		{
+			if (rotation.x != rotation.x || rotation.y != rotation.y || rotation.z != rotation.z || rotation.w != rotation.w)
+				return;
+
+			changed = true; Rotation = rotation;
+		}
+		inline void SetLocalScale(const Vector3& scale)
+		{
+			if (scale.x != scale.x || scale.y != scale.y || scale.z != scale.z)
+				return;
+
+			changed = true; Scale = scale;
+		}
+		inline void SetLocalTransform(const TransformComponent& transform)
+		{
+			if (transform.Position.x != transform.Position.x || transform.Position.y != transform.Position.y || transform.Position.z != transform.Position.z)
+				return;
+
+			changed = true; Position = transform.Position; Rotation = transform.Rotation; Scale = transform.Scale;
+		}
 
 		void Rotate(const Vector3& axis, float angle)
 		{
+			changed = true;
 			Rotation = Quaternion::FromAxisAngle(axis, angle) * Rotation;
 		}
 
 		void Rotate(const Vector3& euler)
 		{
+			changed = true;
 			Rotation *= Quaternion::FromEuler(euler);
 		}
 
 		void Rotate(const Quaternion& quat)
 		{
+			changed = true;
 			Rotation *= quat;
 		}
 
 		void RotateRads(const Vector3& euler)
 		{
+			changed = true;
 			Rotation = Quaternion::FromEulerRads(euler) * Rotation;
 		}
 
 		void Translate(const Vector3& translation)
 		{
+			changed = true;
 			Position += translation;
 		}
 
@@ -148,6 +194,7 @@ namespace Helios
 		inline Vector3 Up() { return Rotation.up(); }
 		void RotateAround(const Vector3& target, const Vector3& axis, float angle)
 		{
+			changed = true;
 			Position = Quaternion::FromAxisAngle(axis, angle) * (Position - target) + target;
 			Rotation = Quaternion::FromAxisAngle(axis, angle) * Rotation;
 		}
@@ -157,12 +204,13 @@ namespace Helios
 		//inline Matrix4x4 GetModelMatrix() const { return Matrix4x4::TranslationColumn(Position) * Matrix4x4::RotationColumn(RotationRow) * Matrix4x4::Scale(Scale); }
 
 		//inline Matrix4x4 GetModelMatrix() const { return Matrix4x4::TranslationColumn(Position) * Matrix4x4::RotationColumn(Rotation) * Matrix4x4::Scale(Scale); }
+
 		Matrix4x4 GetModelMatrix() const
 		{
 			return (
 				Matrix4x4::Translation(Position) *
-				Matrix4x4::Scale(Scale) *
-				Matrix4x4::Rotation(Rotation)
+				Matrix4x4::Rotation(Rotation) *
+				Matrix4x4::Scale(Scale)
 			);
 		}
 

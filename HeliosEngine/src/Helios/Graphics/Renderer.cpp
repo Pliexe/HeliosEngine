@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
 #include "Helios/Core/Profiler.h"
-#include "Helios/Translation/Matrix.h"
+#include "Helios/Math/Matrix.h"
 #include "Helios/Resources/Shader.h"
 
 namespace Helios
@@ -54,7 +54,7 @@ namespace Helios
 			uint32_t sceneIndex;
 			Color color;
 		};
-
+		
 		struct InstancedRenderable
 		{
 			Matrix4x4 wrdViewProj;
@@ -72,7 +72,8 @@ namespace Helios
 			uint64_t count;
 		};
 
-		static constexpr uint32_t MAX_INSTANCES = 1024;
+		static constexpr uint32_t MAX_INSTANCES = 50000;
+		//static constexpr uint32_t MAX_INSTANCES = 1024;
 		Ref<VertexBuffer> instancedBuffer;
 		std::vector<Renderable> renderables;
 	};
@@ -222,18 +223,12 @@ namespace Helios
 	void Renderer::SubmitMesh(uint64_t entityId, int32_t sceneIndex, Matrix4x4 worldMatrix,
 		MeshRendererComponent& meshRenderer)
 	{
-		RendererData::Renderable renderable;
-		renderable.entityId = entityId;
-		renderable.sceneIndex = sceneIndex;
-		renderable.mesh = meshRenderer.mesh;
-		renderable.material = meshRenderer.material;
-		renderable.transform = worldMatrix;
-		renderable.color = meshRenderer.material->Color;
-		rendererData.renderables.push_back(renderable);
+		rendererData.renderables.emplace_back(meshRenderer.mesh, meshRenderer.material, worldMatrix, (uint32_t)entityId, sceneIndex, meshRenderer.material->Color);
 	}
 
 	void Renderer::Flush()
 	{
+		HL_PROFILE_BEGIN("Renderer::Flush");
 		// merge sort renderables by material, shader and mesh
 		static Ref<Shader> shader = CreateRef<Shader>(Shader("StandardInstanced", {
 			{ "Position", Shader::DataType::Float3 },
@@ -248,11 +243,29 @@ namespace Helios
 
 		shader->Bind();
 
-		HL_PROFILE_BEGIN("Renderer::Flush::Sort");
+		/*HL_PROFILE_BEGIN("Renderer::Flush::Sort");
 		mergeSortRenderables(rendererData.renderables);
+		HL_PROFILE_END();*/
+
+		HL_PROFILE_BEGIN("Renderer::Flush::Sort");
+		// sort renderables by material, shader and mesh
+
+		std::sort (rendererData.renderables.begin(), rendererData.renderables.end(), [](const RendererData::Renderable& a, const RendererData::Renderable& b) -> bool
+		{
+			if (a.material < b.material)
+				return true;
+			else if (a.material == b.material)
+			{
+				if (a.mesh < b.mesh)
+					return true;
+			}
+			return false;
+		});
+
 		HL_PROFILE_END();
 
-		RendererData::InstancedRenderable instancedRenderables[RendererData::MAX_INSTANCES];
+		static RendererData::InstancedRenderable* instancedRenderables = new RendererData::InstancedRenderable[RendererData::MAX_INSTANCES];
+		
 		RendererData::InstancedRenderable* instancedRenderablesPtr = instancedRenderables;
 
 		Ref<Material> currentMaterial = nullptr;
@@ -271,6 +284,8 @@ namespace Helios
 
 			instancedRenderablesPtr = instancedRenderables;
 		};
+
+		auto test = sizeof(RendererData::InstancedRenderable);
 
 		for (auto& renderable : rendererData.renderables)
 		{
@@ -298,11 +313,10 @@ namespace Helios
 				currentMesh = renderable.mesh;
 				currentMesh->Bind();
 			}
-
+			
 			*instancedRenderablesPtr++ = RendererData::InstancedRenderable{ rendererData.projectionMatrix * renderable.transform, renderable.transform, renderable.color, renderable.entityId, renderable.sceneIndex };
-			uint32_t size = (instancedRenderablesPtr - instancedRenderables);
 
- 			if ((instancedRenderablesPtr - instancedRenderables) >= RendererData::MAX_INSTANCES)
+			if ((instancedRenderablesPtr - instancedRenderables) >= RendererData::MAX_INSTANCES)
 			{
 				draw();
 			}
@@ -314,6 +328,7 @@ namespace Helios
 		}
 
 		rendererData.renderables.clear();
+		HL_PROFILE_END();
 	}
 
 	bool Renderer::Init()

@@ -2,7 +2,7 @@
 
 #include "pch.h"
 #include "Helios/Core/Base.h"
-#include "Helios/Translation/Vector.h"
+#include "Helios/Math/Vector.h"
 #include "Helios/Resources/Color.h"
 
 namespace Helios

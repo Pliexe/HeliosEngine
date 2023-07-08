@@ -2,7 +2,7 @@
 
 #include "pch.h"
 #include "Helios/Core/Asserts.h"
-#include "Helios/Translation/Vector.h"
+#include "Helios/Math/Vector.h"
 
 namespace Helios
 {

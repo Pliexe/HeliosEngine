@@ -21,10 +21,14 @@ namespace Helios {
 		std::filesystem::path path;
 
 		std::unordered_map<entt::entity, TransformComponent> m_worldTransformCache;
-
+		
 		entt::registry m_components;
 
 		std::function<void(Scene&)> initCallback;
+
+		std::unordered_set<entt::entity> m_entitiesToDestroy;
+
+		std::unordered_map<UUID, entt::entity> m_UUIDMap;
 
 	public:
 
@@ -48,13 +52,21 @@ namespace Helios {
 
 		inline bool contains(entt::entity entity);
 
+		Entity GetEntity(UUID uuid);
+
+		Entity GetEntity(entt::entity entity);
+
 		Entity DuplicateEntity(Entity entity);
-		
+		Entity CopyEntity(Entity entity);
+
 		uint64_t GetEntityCount() const { return m_components.size(); }
+
+		void PerformCleanupAndSync();
+		void UpdatePhysics();
 
 		inline void RenderScene(SceneCamera camera);
 		void RenderScene(EditorCamera& camera);
-		void RenderScene(Matrix4x4 projection);
+		void RenderScene(TransformComponent world_camera, Matrix4x4 projection);
 #ifdef HELIOS_EDITOR
 		void RenderGizmos(Matrix4x4 projection);
 #endif
@@ -87,6 +99,9 @@ namespace Helios {
 		friend class SceneManager;
 		friend class Entity;
 		friend class Transform;
+		friend class SceneSerializer;
+
+		friend static void DeserializeEntity(YAML::Node entityNode, Scene* scene);
 
 		extern friend class DepricatedGameEngine;
 		extern friend class HierarchyPanel;
