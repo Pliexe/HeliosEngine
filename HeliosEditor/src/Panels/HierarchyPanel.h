@@ -5,7 +5,7 @@ namespace Helios {
 	class HierarchyPanel : public Editor::IPanel
 	{
 	public:
-		HierarchyPanel() { title = "Hierarchy"; m_custom_begin = true; };
+		HierarchyPanel() { title = "Hierarchy"; m_custom_begin = true; }
 
 		virtual void OnUpdate() override;
 	};

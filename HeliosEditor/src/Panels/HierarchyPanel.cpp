@@ -260,7 +260,7 @@ namespace Helios {
 			}
 			ImGui::PopStyleVar(2);
 
-			if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(ImGuiKey_D))
+			if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(ImGuiKey_F))
 			//if (ImGui::IsKeyPressed(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_D))
 			{
 				if (InspectorPanel::GetInstance().GetType() == InspectorPanel::SelectedType::Entity)
@@ -270,7 +270,23 @@ namespace Helios {
 					if (entity.IsValid())
 					{
 						//entity.GetScene()->DuplicateEntity(entity);
-						for (int i = 0; i < 50; i++)
+						for (int i = 0; i < 150000; i++)
+						{
+							entity.GetScene()->DuplicateEntity(entity);
+						}
+					}
+				}
+			} else if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(ImGuiKey_D))
+				//if (ImGui::IsKeyPressed(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_D))
+			{
+				if (InspectorPanel::GetInstance().GetType() == InspectorPanel::SelectedType::Entity)
+				{
+					Entity entity = std::any_cast<Entity>(InspectorPanel::GetInstance().GetHandle());
+
+					if (entity.IsValid())
+					{
+						//entity.GetScene()->DuplicateEntity(entity);
+						for (int i = 0; i < 150; i++)
 						{
 							entity.GetScene()->DuplicateEntity(entity);
 						}

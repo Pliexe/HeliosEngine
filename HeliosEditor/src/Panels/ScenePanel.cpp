@@ -5,6 +5,7 @@
 #include "Helios/Input/InputManager.h"
 #include "Helios/Input/KeyCodes.h"
 #include "Application.h"
+#include "Helios/Core/Time.h"
 
 namespace Helios
 {
@@ -464,6 +465,8 @@ namespace Helios
 
 	void ScenePanel::OnUpdate()
 	{
+		static bool show_fps = false;
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		if(ImGui::Begin(GetName().c_str(), &m_window_open, ImGuiWindowFlags_MenuBar))
 		{
@@ -491,6 +494,7 @@ namespace Helios
 
 
 				ImGui::Checkbox("Show ID Frame", &showIdFrame);
+				ImGui::Checkbox("Show FPS", &show_fps);
 				//static bool wireframe = false;
 				//ImGui::Checkbox("Wireframe", &wireframe);
 				/*if (wireframe)
@@ -511,12 +515,38 @@ namespace Helios
 
 			ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 			auto currentvpsize = m_Framebuffer->GetSize();
-			if (viewportSize.x != currentvpsize.width || viewportSize.y != currentvpsize.height)
+			if ((viewportSize.x != currentvpsize.width || viewportSize.y != currentvpsize.height) && viewportSize.x > 0 && viewportSize.y > 0 && viewportSize.x < 10000 && viewportSize.y < 10000)
 			{
 				m_Framebuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 				m_EditorCamera.SetViewportSize(viewportSize.x, viewportSize.y);
 			}
 			ImGui::Image(m_Framebuffer->GetTextureID((uint32_t)showIdFrame), ImVec2(viewportSize));
+
+			if (show_fps)
+			{
+				// Show Avarage FPS
+				ImGui::SetCursorPos(ImVec2(20, 60));
+
+				static float fps[100];
+
+				static int fps_index = 0;
+
+				fps[fps_index] = Time::getFPS();
+
+				fps_index++;
+
+				 if (fps_index >= 100)
+					fps_index = 0;
+
+				 float fps_sum = 0.0f;
+
+				 for (int i = 0; i < 100; i++)
+					 fps_sum += fps[i];
+
+				 float fps_avg = fps_sum / 100.0f;
+
+				 ImGui::Text("FPS: %f", fps_avg);
+			}
 
 			ImGui::Begin("Mouse Location Stats");
 

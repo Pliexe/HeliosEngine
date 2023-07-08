@@ -75,7 +75,10 @@ namespace Helios {
 					TransformComponent& comp = transform.GetTransformComponent();
 					ImVec2 size = ImGui::GetContentRegionAvail();
 
-					ImGui::EditVector3("Position", size.x, comp.Position);
+					if (ImGui::EditVector3("Position", size.x, comp.Position))
+					{
+						comp.changed = true;
+					}
 					ImGui::EditQuanterionEuler("Rotation", size.x, comp.Rotation);
 					ImGui::EditVector3("Scale", size.x, comp.Scale);
 
@@ -87,7 +90,7 @@ namespace Helios {
 
 			if (entity.HasComponent<CameraComponent>())
 			{
-				if (ImGui::CollapsingHeader("CameraComponent", ImGuiTreeNodeFlags_DefaultOpen)) {
+				if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen)) {
 					auto& cam = entity.GetComponent<CameraComponent>();
 					ImGui::ColorEdit4("Clear Color", cam.clear_color);
 
@@ -118,7 +121,7 @@ namespace Helios {
 
 			if (entity.HasComponent<SpriteRendererComponent>())
 			{
-				if (ImGui::CollapsingHeader("SpriteRendererComponent", ImGuiTreeNodeFlags_DefaultOpen)) {
+				if (ImGui::CollapsingHeader("Sprite Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
 					auto& sRenderer = entity.GetComponent<SpriteRendererComponent>();
 
 					ImGui::ColorEdit4("Color", sRenderer.color);
@@ -139,7 +142,7 @@ namespace Helios {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				if (ImGui::CollapsingHeader("MeshRendererComponent", ImGuiTreeNodeFlags_DefaultOpen)) {
+				if (ImGui::CollapsingHeader("Mesh Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
 					auto& sRenderer = entity.GetComponent<MeshRendererComponent>();
 
 					ImGui::ColorEdit4("Color", sRenderer.material->Color);
@@ -168,6 +171,49 @@ namespace Helios {
 				}
 			}
 
+			if (entity.HasComponent<Rigidbody2D>())
+			{
+				if (ImGui::CollapsingHeader("Rigidbody2DComponent", ImGuiTreeNodeFlags_DefaultOpen)) {
+					auto& rigidbody = entity.GetComponent<Rigidbody2D>();
+
+					// rigidbody.type enum { Static, Dynamic, Kinematic }; make a dropdown to select type
+					if (ImGui::BeginCombo("Type", rigidbody.type == BodyType::Static ? "Static" : rigidbody.type == BodyType::Dynamic ? "Dynamic" : "Kinematic"))
+					{
+						if (ImGui::Selectable("Static", rigidbody.type == BodyType::Static)) rigidbody.type = BodyType::Static;
+						if (ImGui::Selectable("Dynamic", rigidbody.type == BodyType::Dynamic)) rigidbody.type = BodyType::Dynamic;
+						if (ImGui::Selectable("Kinematic", rigidbody.type == BodyType::Kinematic)) rigidbody.type = BodyType::Kinematic;
+
+						ImGui::EndCombo();
+					}
+
+					ImGui::Checkbox("Is Kinematic", &rigidbody.isKinematic);
+					ImGui::Checkbox("Is Gravity", &rigidbody.useGravity);
+
+					ImGui::DragFloat("Mass", &rigidbody.mass, 0.1f, 0.0f, 100.0f);
+
+					ImGui::EditVector2("Velocity", 0.0f, rigidbody.velocity);
+				}
+			}
+
+			if (entity.HasComponent<BoxCollider2D>())
+			{
+				if (ImGui::CollapsingHeader("BoxCollider2D", ImGuiTreeNodeFlags_DefaultOpen)) {
+					auto& collider = entity.GetComponent<BoxCollider2D>();
+
+					ImGui::EditVector2("Size", 0.0f, collider.size);
+					ImGui::EditVector2("Offset", 0.0f, collider.offset);
+				}
+			}
+
+			if (entity.HasComponent<CircleCollider2D>())
+			{
+				if (ImGui::CollapsingHeader("CircleCollider2D", ImGuiTreeNodeFlags_DefaultOpen)) {
+					auto& collider = entity.GetComponent<CircleCollider2D>();
+
+					ImGui::DragFloat("Radius", &collider.radius, 0.1f, 0.0f, 100.0f);
+					ImGui::EditVector2("Offset", 0.0f, collider.offset);
+				}
+			}
 
 			ImVec2 lastSize = ImGui::GetWindowSize();
 			ImVec2 lastPos = ImGui::GetWindowPos();
@@ -190,8 +236,11 @@ namespace Helios {
 			ImGui::SetNextWindowPos(pos);
 			if (ImGui::BeginPopupContextItem("Add Component"))
 			{
-				AddComponentItem<CameraComponent>("CameraComponent", entity);
-				AddComponentItem<SpriteRendererComponent>("SpriteRendererComponent", entity);
+				AddComponentItem<CameraComponent>("Camera", entity);
+				AddComponentItem<SpriteRendererComponent>("SpriteRenderer", entity);
+				AddComponentItem<Rigidbody2D>("Rigidbody2D", entity);
+				AddComponentItem<BoxCollider2D>("BoxCollider2D", entity);
+				AddComponentItem<CircleCollider2D>("SphereCollider2D", entity);
 
 				ImGui::EndPopup();
 			}

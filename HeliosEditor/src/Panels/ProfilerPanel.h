@@ -159,7 +159,9 @@ namespace Helios
 				//ImGui::PushStyleColor(ImGuiCol_Button, i >= start_at ? IM_COL32(255, 255, 255, 255) : IM_COL32(255, 0, 0, 255));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 255));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 255));
-				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255));
+				float brightness = 0.299f * tasks[i].Name[0] + 0.587f * tasks[i].Name[1] + 0.114f * tasks[i].Name[2];
+				ImGui::PushStyleColor(ImGuiCol_Text, brightness > 127 ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
+				//ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255));
 
 				long long diff = (tasks[i].StartTime - frame.startTime);
 				float start = diff / 1000.0f;
@@ -244,7 +246,7 @@ namespace Helios
 						ImGui::Text((std::to_string(Profiler::getFrameResults().size() - 1) + " Frames!").c_str());
 						ImGui::Text(("Last frame time: " + std::to_string(frameResult.frameTime / 1000.0f) + "ms.").c_str());
 
-						ImGui::PlotLines("Frametime", [](void* data, int idx) { return (Profiler::getFrameResults()[min(max(Profiler::getFrameResults().size() - 300, 0) + idx, Profiler::getFrameResults().size() - 1)].frameTime / 1000.0f); }, nullptr, min(Profiler::getFrameResults().size() - 1, 299), 0, 0, FLT_MAX, FLT_MAX, ImVec2(1800, 150));
+						ImGui::PlotLines("Frametime", [](void* data, int idx) { return (Profiler::getFrameResults()[std::min(std::max<uint64_t>(Profiler::getFrameResults().size() - 300, 0ull) + idx, Profiler::getFrameResults().size() - 1)].frameTime / 1000.0f); }, nullptr, std::min(Profiler::getFrameResults().size() - 1, 299ull), 0, 0, FLT_MAX, FLT_MAX, ImVec2(1800, 150));
 
 
 						ImGui::Checkbox("Slow Mode", &slow_mode);

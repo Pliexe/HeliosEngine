@@ -60,7 +60,7 @@ namespace Helios
 			assert(m_Framebuffer != nullptr);
 			m_ScenePanels.push_back(this);
 			m_custom_begin = true;
-			m_EditorCamera.SetRotation(Vector3(0.0f, 90.0f, 0.0f));
+			m_EditorCamera.SetPosition(Vector3(0.0f, 0.0f, -10.0f));
 		}    
 		~ScenePanel() { m_ScenePanels.erase(std::find(m_ScenePanels.begin(), m_ScenePanels.end(), this)); }
 		
