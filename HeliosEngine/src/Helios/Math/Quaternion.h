@@ -152,6 +152,8 @@ namespace Helios {
 
         Quaternion operator*(const Quaternion& rotation) const;
 
+        static Quaternion FromMatrix(const Matrix4x4& projection);
+
         static Quaternion FromAxisAngle(const Vector3& axis, float angle)
         {
 			float halfAngle = angle * 0.5f;

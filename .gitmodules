@@ -9,3 +9,6 @@
 	path = HeliosEngine/vendor/glfw
 	url = https://github.com/glfw/glfw.git
 	branch = 3.3-stable
+[submodule "HeliosEngine/vendor/box2d"]
+	path = HeliosEngine/vendor/box2d
+	url = https://github.com/erincatto/box2d

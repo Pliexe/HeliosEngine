@@ -16,6 +16,19 @@ namespace Helios {
 		else return { x / length, y / length };
 	}
 
+	Vector2 Vector2::operator*(const Vector2& vector2) const
+	{
+		Vector2 result;
+		result.x = x * vector2.x;
+		result.y = y * vector2.y;
+		return result;
+	}
+
+	Vector2 Vector2::Clamp(Vector2 value, Vector2 min, Vector2 max)
+	{
+		return { std::clamp(value.x, min.x, max.x), std::clamp(value.y, min.y, max.y) };
+	}
+
 	float Vector2::Dot(Vector2 lhv, Vector2 rhv)
 	{
 		return { lhv.x * rhv.x + lhv.y * rhv.y };
@@ -248,6 +261,11 @@ namespace Helios {
 	std::string Vector3::to_string() const
 	{
 		return std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z);
+	}
+
+	Vector3 Vector3::GetPosition(const Matrix4x4& projection)
+	{
+		return  { projection._14, projection._24, projection._34 };
 	}
 
 	float Vector3::AngleBetween(const Vector3& unit_vec1, const Vector3& unit_vec2)

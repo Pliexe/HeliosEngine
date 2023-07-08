@@ -33,6 +33,8 @@ namespace Helios {
 		Vector2(Vector2& other) : x(other.x), y(other.y) { };
 
 		operator float* () { return &x; }
+		Vector2 operator*(const Vector2& vector2) const;
+		static inline Vector2 Clamp (Vector2 value, Vector2 min, Vector2 max);
 		static inline float Magnitude(const Vector2& dir) { return sqrtf(dir.x * dir.x + dir.y * dir.y); }
 		static inline float Magnitude(Vector2& dir) { return sqrtf(dir.x * dir.x + dir.y * dir.y); }
 		static inline float Magnitude(Vector2 dir) { return sqrtf(dir.x * dir.x + dir.y * dir.y); }
@@ -252,6 +254,7 @@ namespace Helios {
 		std::string operator<<(const Vector3& other) const;
 		std::string operator<<(Vector3& other) const;
 		std::string to_string() const;
+		static Vector3 GetPosition(const Matrix4x4& projection);
 		static float AngleBetween(const Vector3& unit_vec1, const Vector3& unit_vec2);
 		static Vector3 ProjectOnPlane(Vector3 pointOnPlane, Vector3 planeNormal, Vector3 point);
 
