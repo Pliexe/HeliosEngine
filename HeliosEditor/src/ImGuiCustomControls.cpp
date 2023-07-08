@@ -8,6 +8,63 @@ namespace Helios
 	
 }
 
+bool ImGui::EditVector2(const char* label, float width, Helios::Vector2& vec, float speed, float min, float max)
+{
+	bool edited = false;
+
+	ImGui::PushID(label);
+
+	
+	ImGui::PushStyleVar( ImGuiStyleVar_ItemSpacing, ImVec2(0, 0) );
+	ImGui::BeginChild("##vector3", ImVec2(width, 25.0f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus);
+	ImVec2 size = ImGui::GetContentRegionAvail();
+
+	ImGui::Text(label);
+
+	float x = size.x / 3.5f;
+	float w = size.x - x;
+	float offset = w / 3.0f;
+	float input_width = w / 3.0f - size.y;
+
+	ImGui::SetCursorPos(ImVec2(x, 0.0f));
+
+	ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 0, 0, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 0, 0, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive,	 IM_COL32(255, 0, 0, 255));
+	ImGui::Button("X", ImVec2(size.y, size.y));
+	ImGui::PopStyleColor(3);
+	ImGui::PopFont();
+	ImGui::SameLine();
+
+	ImGui::SetNextItemWidth(input_width);
+	if (ImGui::DragFloat((std::string("##x") + label).c_str(), &vec[0], speed, min, max) )
+		edited = true;
+	ImGui::SameLine();
+
+	ImGui::SetCursorPos(ImVec2(x + offset, 0.0f));
+
+	ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 255, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(0, 0, 255, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive,	 IM_COL32(0, 0, 255, 255));
+	ImGui::Button("Y", ImVec2(size.y, size.y));
+	ImGui::PopStyleColor(3);
+	ImGui::PopFont();
+	ImGui::SameLine();
+
+	ImGui::SetNextItemWidth(input_width);
+	if (ImGui::DragFloat((std::string("##y") + label).c_str(), &vec[1], speed, min, max))
+		edited = true;
+	
+	ImGui::EndChild();
+	ImGui::PopStyleVar();
+
+	ImGui::PopID();
+
+	return edited;
+}
+
 bool ImGui::EditVector3(const char* label, float width, Helios::Vector3& vec, float speed, float min, float max)
 {
 	bool edited = false;

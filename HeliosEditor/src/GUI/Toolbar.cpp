@@ -5,6 +5,7 @@
 
 #include "imgui.h"
 #include "ProjectManager.h"
+#include "Helios/Scene/SceneSerializer.h"
 //#include "Panels/InspectorPanel.h"
 
 namespace Helios
@@ -22,13 +23,52 @@ namespace Helios
 				if (ImGui::MenuItem("Open Scene", "Ctrl+O", false, mode == EditorMode::Editor))
 				{
 					InspectorPanel::Reset();
-					Project::OpenSceneDialog();
+					//Project::OpenSceneDialog();
+
+
+					wchar_t file[MAX_PATH];
+					ZeroMemory(file, sizeof(MAX_PATH));
+
+					OPENFILENAMEW props;
+					ZeroMemory(&props, sizeof(props));
+					props.lStructSize = sizeof(props);
+					props.hwndOwner = glfwGetWin32Window((GLFWwindow*)Application::GetInstance().GetWindow()->GetNativeWindow());
+					props.lpstrFilter = L"Scene (*.scene)\0*.scene\0All Files (*.*)\0*.*\0";
+					props.lpstrFile = file;
+					props.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+					props.lpstrDefExt = L"scene";
+					props.nMaxFile = MAX_PATH;
+					//props.lpstrInitialDir = L"C:\\";
+					//props.lpstrInitialDir = Project::GetAssetsPath().wstring().c_str();
+
+					if (GetSaveFileName(&props)) {
+						std::wstring wstr(file);
+						std::string str(wstr.begin(), wstr.end());
+						if (str.ends_with(".scene"))
+						{
+							SceneRegistry::LoadEmptyScene("Empty");
+							SceneSerializer serializer(SceneRegistry::GetActiveScenes()[0]);
+
+							if (serializer.DeserializeEditor(str))
+							 MessageBoxA(NULL, "Scene loaded successfully!", "Success!", MB_ICONINFORMATION);
+							else MessageBoxA(NULL, "Failed to load scene!", "Failed!", MB_ICONERROR);
+
+						}
+						else
+							MessageBoxA(NULL, "File must end with .scene extention!", "Failed to load scene!", MB_ICONERROR);
+					}
 				}
 
 				ImGui::Separator();
 
 				if (ImGui::MenuItem("Save", "Ctrl+S", false, mode == EditorMode::Editor))
-					Project::SaveScene();
+				{
+					for (auto& scene : SceneRegistry::GetActiveScenes())
+					{
+						SceneSerializer serializer(scene);
+						serializer.SerializeEditor("Test.scene");
+					}
+				}
 
 				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S", false, mode == EditorMode::Editor))
 					Project::SaveScene(true);

@@ -84,6 +84,7 @@ namespace Helios
 		explicit HeliosEditor(const Specifications& specs);
 
 		void OnUpdate() override;
+		void OnRender() override;
 		void OnGUI();
 
 		friend class ScenePanel;

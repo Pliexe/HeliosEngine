@@ -25,8 +25,8 @@
 #include <imgui_impl_dx11.cpp>
 #include <Shlwapi.h>
 
-#include "Helios/Translation/Matrix.h"
-#include <Helios/Translation/Quaternion.h>
+#include "Helios/Math/Matrix.h"
+#include <Helios/Math/Quaternion.h>
 #include <sstream>
 #include <Helios/Graphics/Framebuffer.h>
 
@@ -44,6 +44,7 @@
 #include "DirectXMath.h"
 #include "InitWindow.h"
 #include "GUI/Toolbar.h"
+#include "Helios/Core/UUID.h"
 #include "Helios/Resources/Material.h"
 #include "Panels/ProfilerPanel.h"
 #include "Platform/Windows/Win32GraphicalWindow.h"
@@ -254,9 +255,9 @@ namespace Helios
 		auto& mrc = ent.AddComponent<MeshRendererComponent>();
 		mrc.mesh = Mesh::GenerateCube();
 		mrc.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Clamp);
-		auto ent2 = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 10, 0 });
+		auto ent2 = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 0, 0 });
 		ent2.AddComponent<DirectionalLightComponent>(Color::White, 1.0f);
-		Transform(ent2).SetLocalRotation(Quaternion::FromEuler(45, 0, 0));
+		Transform(ent2).SetLocalRotation(Quaternion::FromEuler(-45, 0, 0));
 
 		panels.push_back(&inspector);
 		panels.push_back(&hierarchy);
@@ -264,6 +265,34 @@ namespace Helios
 		panels.push_back(&scenePanel);
 		panels.push_back(new ProfilerPanel());
 		//panels.push_back(&AssetRegistry::Get());
+
+		UUID uuid = UUID();
+		UUID uuid2 = UUID();
+		UUID uuid3 = UUID(uuid);
+
+		std::cout << uuid.toString() << std::endl;
+		std::cout << uuid2.toString() << std::endl;
+		std::cout << uuid3.toString() << std::endl;
+
+		std::cout << uuid.toString() << " == " << uuid2.toString() << " = " << (uuid == uuid2) << std::endl;
+		std::cout << uuid.toString() << " == " << uuid3.toString() << " = " << (uuid == uuid3) << std::endl;
+
+		uint8_t data[16];
+		std::memcpy(data, (uint8_t*)uuid, 16);
+
+		// print whole hex
+		std::cout << std::hex;
+
+		for (int i = 0; i < 16; i++)
+		{
+			std::cout << (int)data[i] << " ";
+		}
+
+		UUID uuid4 = UUID::fromString(uuid.toString());
+		std::cout << std::endl << uuid4.toString() << std::endl;
+		std::cout << uuid4.toString() << " == " << uuid.toString() << " = " << (uuid4 == uuid) << std::endl;
+
+		std::cout << std::endl;
 
 		GetWindow()->Show();
 	}
@@ -314,15 +343,21 @@ namespace Helios
 			m_barebones = !m_barebones;
 		}
 
+		if (!m_barebones) 
+			OnGUI();
+	}
+
+	void HeliosEditor::OnRender()
+	{
 		if (m_barebones)
 		{
 			GetWindow()->GetContext().BindDefaultFramebuffer();
 			static EditorCamera camera;
-			camera.SetViewportSize( { GetWindow()->GetWidth(), GetWindow()->GetHeight() } );
+			camera.SetViewportSize({ GetWindow()->GetWidth(), GetWindow()->GetHeight() });
 			SceneRegistry::OnEditorRender(camera);
-		} else
+		}
+		else
 		{
-			OnGUI();
 
 			for (auto& panel : panels)
 			{
@@ -334,7 +369,7 @@ namespace Helios
 			}
 		}
 	}
-	  
+
 	void HeliosEditor::OnGUI()
 	{
 		//static ImGuiIO& io = ImGui::GetIO(); (void)io;
