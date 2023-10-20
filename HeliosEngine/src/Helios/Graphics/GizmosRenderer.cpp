@@ -11,7 +11,7 @@ namespace Helios
 {
 	struct GizmosObject
 	{
-		Ref<VertexBuffer> m_VertexBuffer;
+		Ref<DepricatedVertexBuffer> m_VertexBuffer;
 		Ref<IndexBuffer> m_IndexBuffer;
 
 		void Bind()
@@ -63,7 +63,7 @@ namespace Helios
 			DynamicGizmos* m_vertices;
 			DynamicGizmos* m_verticesPtr;
 
-			Ref<VertexBuffer> m_vertex_buffer;
+			Ref<DepricatedVertexBuffer> m_vertex_buffer;
 		} m_dynamic_gizmos;
 
 		struct Lines
@@ -71,7 +71,7 @@ namespace Helios
 			LineGizmos* m_Lines;
 			LineGizmos* m_index;
 
-			Ref<VertexBuffer> m_vertexBuffer;
+			Ref<DepricatedVertexBuffer> m_vertexBuffer;
 		} m_lines;
 
 		struct Gizmos
@@ -91,7 +91,7 @@ namespace Helios
 			GizmosObject* TorusGizmo = nullptr;
 			uint32_t* TorusGizmoInstanceCount = nullptr;
 
-			Ref<VertexBuffer> m_InstanceBuffer;
+			Ref<DepricatedVertexBuffer> m_InstanceBuffer;
 		} m_GizmosInstanceData;
 		
 		struct VertexLocationDotVertex
@@ -106,11 +106,11 @@ namespace Helios
 			Matrix4x4 viewProjection;
 		};
 
-		Ref<Shader> quad_gizmos_shader;
-		Ref<Shader> standard_gizmos_shader;
-		Ref<Shader> tool_gizmos_shader;
-		Ref<Shader> line_gizmos_shader;
-		Ref<Shader> dynamic_gizmos_shader;
+		Ref<DepricatedShader> quad_gizmos_shader;
+		Ref<DepricatedShader> standard_gizmos_shader;
+		Ref<DepricatedShader> tool_gizmos_shader;
+		Ref<DepricatedShader> line_gizmos_shader;
+		Ref<DepricatedShader> dynamic_gizmos_shader;
 
 		struct QuadTool
 		{
@@ -126,15 +126,15 @@ namespace Helios
 				int data;
 			};
 
-			Ref<VertexBuffer> vertexBuffer;
-			Ref<VertexBuffer> instanceBuffer;
+			Ref<DepricatedVertexBuffer> vertexBuffer;
+			Ref<DepricatedVertexBuffer> instanceBuffer;
 			Ref<IndexBuffer> indexBuffer;
 
 			QuadInstance quadInstances[MaxQuadInstances];
 			uint32_t quadInstanceIndex = 0;
 		} quads;
 
-		Ref<ConstantBuffer<TransformData>> transformBuffer;
+		Ref<UniformBuffer<TransformData>> transformBuffer;
 		Ref<Material> defaultMaterial;
 	};
 
@@ -151,10 +151,10 @@ namespace Helios
 		s_Data.defaultMaterial = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 		s_Data.m_lines.m_Lines = new LineGizmos[GizmosData::MaxLineGizmos];
 		s_Data.m_lines.m_index = s_Data.m_lines.m_Lines;
-		s_Data.m_lines.m_vertexBuffer = VertexBuffer::Create(sizeof(LineGizmos) * GizmosData::MaxLineGizmos, BufferUsage::Dynamic);
+		s_Data.m_lines.m_vertexBuffer = DepricatedVertexBuffer::Create(sizeof(LineGizmos) * GizmosData::MaxLineGizmos, BufferUsage::Dynamic);
 		s_Data.m_lines.m_vertexBuffer->SetStride<LineGizmos>();
 
-		s_Data.m_dynamic_gizmos.m_vertex_buffer = VertexBuffer::Create(sizeof(DynamicGizmos) * GizmosData::MaxDynamicGizmoVertices, BufferUsage::Dynamic);
+		s_Data.m_dynamic_gizmos.m_vertex_buffer = DepricatedVertexBuffer::Create(sizeof(DynamicGizmos) * GizmosData::MaxDynamicGizmoVertices, BufferUsage::Dynamic);
 		s_Data.m_dynamic_gizmos.m_vertex_buffer->SetStride<DynamicGizmos>();
 		s_Data.m_dynamic_gizmos.m_vertices = new DynamicGizmos[GizmosData::MaxDynamicGizmoVertices];
 		s_Data.m_dynamic_gizmos.m_verticesPtr = s_Data.m_dynamic_gizmos.m_vertices;
@@ -174,40 +174,40 @@ namespace Helios
 
 #pragma region Initilization Shaders
 
-		s_Data.standard_gizmos_shader = CreateRef<Shader>(Shader("StandardGizmos", {
-			{ "Position", Shader::DataType::Float3 },
-			{ "Transform", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "Id",  Shader::DataType::Int32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance }
-		}, Shader::Topology::TriangleList, DepthFunc::Always));
+		s_Data.standard_gizmos_shader = CreateRef<DepricatedShader>(DepricatedShader("StandardGizmos", {
+			{ "Position", DepricatedShader::DataType::Float3 },
+			{ "Transform", DepricatedShader::DataType::Matrix4x4, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance },
+			{ "Color", DepricatedShader::DataType::Float4, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance },
+			{ "Id",  DepricatedShader::DataType::Int32, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance }
+		}, DepricatedShader::Topology::TriangleList, DepthFunc::Always));
 
-		s_Data.quad_gizmos_shader = CreateRef<Shader>(Shader("QuadGizmo", {
-			{ "Position", Shader::DataType::Float2 },
+		s_Data.quad_gizmos_shader = CreateRef<DepricatedShader>(DepricatedShader("QuadGizmo", {
+			{ "Position", DepricatedShader::DataType::Float2 },
 
-			{ "World", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "Data",  Shader::DataType::Int32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance }
-		}, Shader::Topology::TriangleList, DepthFunc::Always));
+			{ "World", DepricatedShader::DataType::Matrix4x4, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance },
+			{ "Color", DepricatedShader::DataType::Float4, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance },
+			{ "Data",  DepricatedShader::DataType::Int32, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance }
+		}, DepricatedShader::Topology::TriangleList, DepthFunc::Always));
 
-		s_Data.line_gizmos_shader = CreateRef<Shader>(Shader("Line", {
-			{ "Position", Shader::DataType::Float3 },
-			{ "Color", Shader::DataType::Float4 },
-			{ "Mode", Shader::DataType::Int32 },
-			{ "Thickness", Shader::DataType::Float },
-			{ "Id", Shader::DataType::Int32 }
-		}, Shader::Topology::LineList, DepthFunc::Always));
+		s_Data.line_gizmos_shader = CreateRef<DepricatedShader>(DepricatedShader("Line", {
+			{ "Position", DepricatedShader::DataType::Float3 },
+			{ "Color", DepricatedShader::DataType::Float4 },
+			{ "Mode", DepricatedShader::DataType::Int32 },
+			{ "Thickness", DepricatedShader::DataType::Float },
+			{ "Id", DepricatedShader::DataType::Int32 }
+		}, DepricatedShader::Topology::LineList, DepthFunc::Always));
 
-		s_Data.dynamic_gizmos_shader = CreateRef<Shader>(Shader("DynamicGizmos", {
-			{ "Position", Shader::DataType::Float3 },
-			{ "Color", Shader::DataType::Float4 },
-			{ "Id", Shader::DataType::Int32 }
-		}, Shader::Topology::TriangleList, DepthFunc::Always));
+		s_Data.dynamic_gizmos_shader = CreateRef<DepricatedShader>(DepricatedShader("DynamicGizmos", {
+			{ "Position", DepricatedShader::DataType::Float3 },
+			{ "Color", DepricatedShader::DataType::Float4 },
+			{ "Id", DepricatedShader::DataType::Int32 }
+		}, DepricatedShader::Topology::TriangleList, DepthFunc::Always));
 
 #pragma endregion
 
 #pragma region Create Gizmos Meshes
 
-		s_Data.m_GizmosInstanceData.m_InstanceBuffer = VertexBuffer::Create(sizeof(GizmosInstance) * GizmosData::MaxGizmosInstances, BufferUsage::Dynamic);
+		s_Data.m_GizmosInstanceData.m_InstanceBuffer = DepricatedVertexBuffer::Create(sizeof(GizmosInstance) * GizmosData::MaxGizmosInstances, BufferUsage::Dynamic);
 		s_Data.m_GizmosInstanceData.m_InstanceBuffer->SetStride<GizmosInstance>();
 
 #pragma region Create Arrow
@@ -221,7 +221,7 @@ namespace Helios
 			arrowVertices.emplace_back(GizmosVertex{ vertex.position });
 		}
 
-		s_Data.m_GizmosInstanceData.ArrowGizmo->m_VertexBuffer = VertexBuffer::Create(arrowVertices.data(), arrowVertices.size() * sizeof(GizmosVertex));
+		s_Data.m_GizmosInstanceData.ArrowGizmo->m_VertexBuffer = DepricatedVertexBuffer::Create(arrowVertices.data(), arrowVertices.size() * sizeof(GizmosVertex));
 		s_Data.m_GizmosInstanceData.ArrowGizmo->m_VertexBuffer->SetStride<GizmosVertex>();
 		//s_Data.m_GizmosInstanceData.ArrowGizmo->m_IndexBuffer = IndexBuffer::Create(arrowIndicies.data(), arrowIndicies.Size());
 		s_Data.m_GizmosInstanceData.ArrowGizmo->m_IndexBuffer = IndexBuffer::Create((uint32_t*)arrowBuilder.GetTriangles().data(), arrowBuilder.GetTriangles().size() * 3);
@@ -240,7 +240,7 @@ namespace Helios
 			sphereVertices.emplace_back(GizmosVertex{ vertex.position });
 		}
 
-		s_Data.m_GizmosInstanceData.SphereGizmo->m_VertexBuffer = VertexBuffer::Create(sphereVertices.data(), sphereVertices.size() * sizeof(GizmosVertex));
+		s_Data.m_GizmosInstanceData.SphereGizmo->m_VertexBuffer = DepricatedVertexBuffer::Create(sphereVertices.data(), sphereVertices.size() * sizeof(GizmosVertex));
 		s_Data.m_GizmosInstanceData.SphereGizmo->m_VertexBuffer->SetStride<GizmosVertex>();
 		s_Data.m_GizmosInstanceData.SphereGizmo->m_IndexBuffer = IndexBuffer::Create((uint32_t*)sphereBuilder.GetTriangles().data(), sphereBuilder.GetTriangles().size() * 3);
 
@@ -255,7 +255,7 @@ namespace Helios
 			torusVertices.emplace_back(GizmosVertex{ vertex.position });
 		}
 
-		s_Data.m_GizmosInstanceData.TorusGizmo->m_VertexBuffer = VertexBuffer::Create(torusVertices.data(), torusVertices.size() * sizeof(GizmosVertex));
+		s_Data.m_GizmosInstanceData.TorusGizmo->m_VertexBuffer = DepricatedVertexBuffer::Create(torusVertices.data(), torusVertices.size() * sizeof(GizmosVertex));
 		s_Data.m_GizmosInstanceData.TorusGizmo->m_VertexBuffer->SetStride<GizmosVertex>();
 		s_Data.m_GizmosInstanceData.TorusGizmo->m_IndexBuffer = IndexBuffer::Create((uint32_t*)torusBuilder.GetTriangles().data(), torusBuilder.GetTriangles().size() * 3);
 
@@ -273,7 +273,7 @@ namespace Helios
 			0, 2, 3
 		};
 		
-		s_Data.transformBuffer = ConstantBuffer<GizmosData::TransformData>::Create();
+		s_Data.transformBuffer = UniformBuffer<GizmosData::TransformData>::Create(0u);
 		//s_Data.quads.vertexBuffer = VertexBuffer::Create<GizmosData::QuadTool::QuadVertex>({
 		//	{ { -1.0f, -1.0f } },
 		//	{ {  1.0f, -1.0f } },
@@ -282,11 +282,11 @@ namespace Helios
 		//}, BufferUsage::Static);
 		//s_Data.quads.indexBuffer = IndexBuffer::Create({ 0, 1, 2, 0, 2, 3 });
 
-		s_Data.quads.vertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices), BufferUsage::Static);
+		s_Data.quads.vertexBuffer = DepricatedVertexBuffer::Create(vertices, sizeof(vertices), BufferUsage::Static);
 		s_Data.quads.vertexBuffer->SetStride<GizmosData::QuadTool::QuadVertex>();
 		s_Data.quads.indexBuffer = IndexBuffer::Create(indices, std::size(indices));
 
-		s_Data.quads.instanceBuffer = VertexBuffer::Create(sizeof(GizmosData::QuadTool::QuadInstance) * GizmosData::MaxQuadInstances, BufferUsage::Dynamic);
+		s_Data.quads.instanceBuffer = DepricatedVertexBuffer::Create(sizeof(GizmosData::QuadTool::QuadInstance) * GizmosData::MaxQuadInstances, BufferUsage::Dynamic);
 		s_Data.quads.instanceBuffer->SetStride<GizmosData::QuadTool::QuadInstance>();
 
 		return true; 
@@ -311,7 +311,7 @@ namespace Helios
 	{
 		HL_PROFILE_BEGIN("Gizmos Renderer - Flush");
 
-		s_Data.transformBuffer->BindVS(0);
+		s_Data.transformBuffer->Bind();
 
 		HL_PROFILE_BEGIN("Gizmos Renderer - Quads");
 		if (s_Data.quads.quadInstanceIndex > 0)
@@ -342,7 +342,7 @@ namespace Helios
 				s_Data.m_GizmosInstanceData.m_GizmosObjects[i].Bind();
 				s_Data.m_GizmosInstanceData.m_InstanceBuffer->Bind(1u);
 				
-				Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexedInstanced(s_Data.m_GizmosInstanceData.m_GizmosObjects[i].m_IndexBuffer->count(), instances, 0u, 0u, 0u);
+				Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexedInstanced(s_Data.m_GizmosInstanceData.m_GizmosObjects[i].m_IndexBuffer->GetCount(), instances, 0u, 0u, 0u);
 				instances = 0u;
 			}
 			i++;
@@ -355,7 +355,7 @@ namespace Helios
 			s_Data.m_lines.m_vertexBuffer->SetData(s_Data.m_lines.m_Lines, (s_Data.m_lines.m_index - s_Data.m_lines.m_Lines) * sizeof(LineGizmos));
 			s_Data.line_gizmos_shader->Bind();
 			s_Data.m_lines.m_vertexBuffer->Bind();
-			s_Data.transformBuffer->BindGS(0);
+			s_Data.transformBuffer->Bind();
 
 			Direct3D11Context::GetCurrentContext()->GetContext()->Draw((s_Data.m_lines.m_index - s_Data.m_lines.m_Lines), 0u);
 			s_Data.m_lines.m_index = s_Data.m_lines.m_Lines;

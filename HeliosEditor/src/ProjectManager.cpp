@@ -47,8 +47,8 @@ namespace Helios {
 			if (in["LastScene"].IsDefined()) lastScene = in["LastScene"].as<std::string>();
 		}
 
-		inline const std::filesystem::path GetProjectPath() { return s_projectPath; }
-		inline const std::filesystem::path GetAssetsPath() { return s_projectPath / "Assets"; }
+		const std::filesystem::path GetProjectPath() { return s_projectPath; }
+		const std::filesystem::path GetAssetsPath() { return s_projectPath / "Assets"; }
 
 		const ProjectSettings& GetProjectSettings()
 		{
@@ -80,7 +80,8 @@ namespace Helios {
 			try
 			{
 				if (!std::filesystem::exists(path))
-					std::filesystem::create_directory(path);
+					std::filesystem::create_directories(path);
+
 			} catch (std::filesystem::filesystem_error e)
 			{
 #ifdef HELIOS_PLATFORM_WINDOWS
@@ -239,6 +240,12 @@ namespace Helios {
 			scene->CreateMainCamera({});
 			scene->Init();*/
 		}
+
+		void LoadAssets()
+		{
+			// Check 
+		}
+
 		void OpenSceneDialog() {
 		/*	if (SceneRegistry::get_current_scene()) {
 				wchar_t file[MAX_PATH];

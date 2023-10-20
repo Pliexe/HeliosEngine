@@ -1,5 +1,6 @@
 #include "Application.h"
 
+#include "AssetManager.h"
 #include "Profiler.h"
 #include "Time.h"
 #include "Helios/Graphics/Renderer.h"
@@ -60,7 +61,7 @@ namespace Helios
 				s_PhysicsCV.wait(lock, [] { return s_PhysicsEnabled; });
 			}
 
-			std::cout << "Physics thread sync" << std::endl;
+			//std::cout << "Physics thread sync" << std::endl;
 
 			float fixedTimestep = 1.f / 60.f;
 
@@ -69,7 +70,7 @@ namespace Helios
 
 			while (m_accumulator >= fixedTimestep)
 			{
-				std::cout << "Physics step" << std::endl;
+				//std::cout << "Physics step" << std::endl;
 				Physics2D::OnStep();
 				m_accumulator -= fixedTimestep;
 			}
@@ -90,37 +91,48 @@ namespace Helios
 
 		Time::frameUpdate(); // Update time before first frame to avoid huge delta time
 
-		while(m_Running)
-		{
-			HL_PROFILE_FRAME_BEGIN();
-			std::cout << "Frame" << std::endl;
-
-			Time::frameUpdate();
-
-			m_Window->BeginFrame();
-			
-			OnUpdate();
-			s_PhysicsEnabled = true;
-			s_PhysicsCV.notify_one();
-			OnRender();
-
-			m_Window->EndFrame();
-
-			InputManager::s_MouseWheelDelta = 0.0f;
-
-			HL_PROFILE_BEGIN("Wait for physics thread");
-
+		try {
+			while (m_Running)
 			{
-				std::unique_lock<std::mutex> lock(s_PhysicsMutex);
-				s_PhysicsCV.wait(lock, [] { return s_PhysicsFinished; });
-				s_PhysicsFinished = false;
-			}
-			s_PhysicsEnabled = false;
+				HL_PROFILE_FRAME_BEGIN();
+				//std::cout << "Frame" << std::endl;
 
-			HL_PROFILE_END();
-			HL_PROFILE_FRAME_END();
-			GraphicalWindow::PollEvents();
+				Time::frameUpdate();
+
+				m_Window->BeginFrame();
+
+				OnUpdate();
+				s_PhysicsEnabled = true;
+				s_PhysicsCV.notify_one();
+				OnRender();
+
+				m_Window->EndFrame();
+
+				InputManager::s_MouseWheelDelta = 0.0f;
+
+				HL_PROFILE_BEGIN("Wait for physics thread");
+
+				{
+					std::unique_lock<std::mutex> lock(s_PhysicsMutex);
+					s_PhysicsCV.wait(lock, [] { return s_PhysicsFinished; });
+					s_PhysicsFinished = false;
+				}
+				s_PhysicsEnabled = false;
+
+				HL_PROFILE_END();
+
+				HL_PROFILE_BEGIN("AssetManager::OnUpdate()");
+				AssetManager::OnUpdate();
+				HL_PROFILE_END();
+
+				HL_PROFILE_FRAME_END();
+				GraphicalWindow::PollEvents();
+			}
 		}
+		catch (Helios::HeliosException e) {
+			e.what(false);
+		}
+		
 		s_PhysicsEnabled = true;
 		s_PhysicsCV.notify_one();
 

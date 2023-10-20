@@ -15,8 +15,8 @@ namespace Helios {
 			void Deserialize();
 		};
 
-		inline const std::filesystem::path GetProjectPath();
-		inline const std::filesystem::path GetAssetsPath();
+		const std::filesystem::path GetProjectPath();
+		const std::filesystem::path GetAssetsPath();
 		const ProjectSettings& GetProjectSettings();
 		
 		bool HasProjectFile(std::filesystem::path path);
@@ -33,5 +33,7 @@ namespace Helios {
 		const std::filesystem::path GetLastScenePath();
 		void TryLoad(std::filesystem::path path = Project::GetLastScenePath());
 		void LoadSampleScene();
+
+		void LoadAssets();
 	}
 }

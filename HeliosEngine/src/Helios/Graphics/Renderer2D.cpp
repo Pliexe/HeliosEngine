@@ -8,6 +8,7 @@
 #include "Helios/Core/Time.h"
 
 #include "Helios/Resources/Shader.h"
+#include "Helios/Resources/ShaderBuilder.h"
 
 #include "Helios/Resources/Buffer.h"
 
@@ -52,12 +53,12 @@ namespace Helios {
 		QuadInstanceData* quadInstanceDataPtr = quadInstanceData;
 		
 		Ref<Shader> quadShader;
-		Ref<VertexBuffer> quadVertexBuffer;
+		Ref<DepricatedVertexBuffer> quadVertexBuffer;
 		Ref<IndexBuffer> quadIndexBuffer;
-		Ref<VertexBuffer> quadInstanceBuffer;
+		Ref<DepricatedVertexBuffer> quadInstanceBuffer;
 
 
-		Ref<ConstantBuffer<TransformData>> viewProjBuffer;
+		Ref<UniformBuffer<TransformData>> viewProjBuffer;
 	};
 
 	Renderer2DData s_Data;
@@ -76,15 +77,24 @@ namespace Helios {
 
 	bool Renderer2D::Init()
 	{
-		s_Data.quadShader = CreateRef<Shader>(Shader("Sprite", {
-			{ "Position", Shader::DataType::Float2 },
-			{ "TexCoord", Shader::DataType::Float2 },
+		ShaderBuilder builder;
+		builder.SetName("SpriteShader");
+		builder.SetVertexShader("Shaders/SpriteVertexShader");
+		builder.SetPixelShader("Shaders/SpritePixelShader");
+		builder.SetInputLayouts({
+			{
+				{ "Position", ShaderDataType::Float32_2 },
+				{ "TexCoord", ShaderDataType::Float32_2 },
+			},
+			{
+				{ "World", ShaderDataType::MatrixFloat4x4 },
+				{ "Color", ShaderDataType::Float32_4 },
+				{ "TextureID", ShaderDataType::UInt32 },
+				{ "EntityId", ShaderDataType::UInt32 },
+			}
+		});
 
-			{ "World", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "TextureID", Shader::DataType::UInt32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "EntityId", Shader::DataType::UInt32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-		}));
+		s_Data.quadShader = builder.Create();
 
 		// const Renderer2DData::QuadVertex vertices[] = {
 		// 	{ { -0.5f,  0.5f } },
@@ -106,13 +116,13 @@ namespace Helios {
 			0, 2, 3
 		};
 
-		s_Data.quadVertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));
+		s_Data.quadVertexBuffer = DepricatedVertexBuffer::Create(vertices, sizeof(vertices));
 		s_Data.quadVertexBuffer->SetStride<Renderer2DData::QuadVertex>();
 		s_Data.quadIndexBuffer = IndexBuffer::Create(indices, std::size(indices));
-		s_Data.quadInstanceBuffer = VertexBuffer::Create(sizeof(Renderer2DData::QuadInstanceData) * Renderer2DData::MaxQuads, BufferUsage::Dynamic);
+		s_Data.quadInstanceBuffer = DepricatedVertexBuffer::Create(sizeof(Renderer2DData::QuadInstanceData) * Renderer2DData::MaxQuads, BufferUsage::Dynamic);
 		s_Data.quadInstanceBuffer->SetStride<Renderer2DData::QuadInstanceData>();
 
-		s_Data.viewProjBuffer = ConstantBuffer<Renderer2DData::TransformData>::Create();
+		s_Data.viewProjBuffer = UniformBuffer<Renderer2DData::TransformData>::Create(0u);
 		//assert(s_Data.viewProjBuffer == nullptr);
 
 		D3D11_SAMPLER_DESC samplerDesc = {};
@@ -156,7 +166,7 @@ namespace Helios {
 			s_Data.quadVertexBuffer->Bind();
 			s_Data.quadIndexBuffer->Bind();
 			s_Data.quadInstanceBuffer->Bind(1u);
-			s_Data.viewProjBuffer->BindVS(0u);
+			s_Data.viewProjBuffer->Bind();
 
 			for (uint8_t i = 0; i < s_Data.textureSlotIndex; i++)
 			{

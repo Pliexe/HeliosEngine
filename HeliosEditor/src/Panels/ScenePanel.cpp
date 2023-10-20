@@ -588,7 +588,6 @@ namespace Helios
 							if (entity.HasComponent<MeshRendererComponent>())
 							{
 								Ref<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().mesh;
-								ImGui::Begin("Mesh Stats");
 								auto transform = Transform(entity);
 
 								auto dir = (transform.GetWorldPosition() - m_EditorCamera.GetPosition()).normalize();
@@ -605,20 +604,23 @@ namespace Helios
 								float B = std::sqrt(std::pow(C, 2.0f) - std::pow(A, 2.0f));
 
 								//float angle = std::acos(Vector3::Dot(camTrans.Position, trans.Position)) / (camTrans.Position.magnitude() * trans.Position.magnitude());
+								//if (ImGui::Begin("Mesh Stats"))
+								//{
+								//	ImGui::Text("Angle: %f", alpha);
+								//	ImGui::Text("C: %f, B: %f, A: %f", C, B, A);
+								//	ImGui::Text("Direction: %f %f %f", dir.x, dir.y, dir.z);
+								//	ImGui::Text("Forward: %f %f %f", cameraForward.x, cameraForward.y, cameraForward.z);
 
-								ImGui::Text("Angle: %f", alpha);
-								ImGui::Text("C: %f, B: %f, A: %f", C, B, A);
-								ImGui::Text("Direction: %f %f %f", dir.x, dir.y, dir.z);
-								ImGui::Text("Forward: %f %f %f", cameraForward.x, cameraForward.y, cameraForward.z);
+								//	uint32_t indeciesCount = mesh->getIndexCount();
 
-								uint32_t indeciesCount = mesh->getIndexCount();
+								//	ImGui::Text("Vertex Count: %d", mesh->getVertexCount());
+								//	ImGui::Text("Index Count: %d", indeciesCount);
 
-								ImGui::Text("Vertex Count: %d", mesh->getVertexCount());
-								ImGui::Text("Index Count: %d", indeciesCount);
+								//	ImGui::Text(mesh->getIndexBuffer()->m_DataStr.c_str());
 
-								ImGui::Text(mesh->getIndexBuffer()->m_DataStr.c_str());
-
-								ImGui::End();
+								//}
+								//
+								//ImGui::End();
 
 
 								if (show_vertecies)

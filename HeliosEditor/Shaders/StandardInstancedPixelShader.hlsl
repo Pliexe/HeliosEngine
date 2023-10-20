@@ -12,7 +12,7 @@ struct DirectionalLight
     float4 color;
 };
 
-cbuffer lightBuffer : register(b0)
+cbuffer lightBuffer : register(b1)
 {
     float3 ambient_color;
     float ambient_intensity;

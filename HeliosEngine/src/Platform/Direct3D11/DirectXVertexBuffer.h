@@ -2,14 +2,14 @@
 
 namespace Helios
 {
-    class VertexBuffer;
-    class  DirectXVertexBuffer : public VertexBuffer
+    class DepricatedVertexBuffer;
+    class  DepricatedDirectXVertexBuffer : public DepricatedVertexBuffer
     {
     private:
         Microsoft::WRL::ComPtr<ID3D11Buffer> m_VertexBuffer;
     public:
-        DirectXVertexBuffer(uint32_t size, BufferUsage usage);
-        DirectXVertexBuffer(const void* data, uint32_t size, BufferUsage usage);
+        DepricatedDirectXVertexBuffer(uint32_t size, BufferUsage usage);
+        DepricatedDirectXVertexBuffer(const void* data, uint32_t size, BufferUsage usage);
 
         virtual void Bind(uint32_t slot = 0u) const override;
         virtual void Unbind() const override;

@@ -46,6 +46,7 @@
 #include "GUI/Toolbar.h"
 #include "Helios/Core/UUID.h"
 #include "Helios/Resources/Material.h"
+#include "Panels/ExplorerPanel.h"
 #include "Panels/ProfilerPanel.h"
 #include "Platform/Windows/Win32GraphicalWindow.h"
 
@@ -193,41 +194,63 @@ namespace Helios
 
 		try
 		{
-			initWindow->SetB("Loading icon. 0 out of 14", 0.0);
-			ICON_FOLDER = Texture2D::Create("Resources/Icons/folder.png");
-			initWindow->SetB("Loading icon. 1 out of 14", 1.0f / 14.0f);
+			constexpr static float to_load_count = 22.f;
+
+			initWindow->SetB("Loading icon. 1 out of " + std::to_string(to_load_count), 1.0f / to_load_count);
 			ICON_FOLDER_EMPTY = Texture2D::Create("Resources/Icons/folder_empty.png");
-			initWindow->SetB("Loading icon. 2 out of 14", 2.0f / 14.0f);
+			initWindow->SetB("Loading icon. 2 out of " + std::to_string(to_load_count), 2.0f / to_load_count);
 			ICON_FILE_UNKNOWN = Texture2D::Create("Resources/Icons/unknown_file.png");
-			initWindow->SetB("Loading icon. 3 out of 14", 3.0f / 14.0f);
+			initWindow->SetB("Loading icon. 3 out of " + std::to_string(to_load_count), 3.0f / to_load_count);
 			ICON_FILE_TXT = Texture2D::Create("Resources/Icons/text_file.png");
-			initWindow->SetB("Loading icon. 4 out of 14", 4.0f / 14.0f);
+			initWindow->SetB("Loading icon. 4 out of " + std::to_string(to_load_count), 4.0f / to_load_count);
 			ICON_FILE_C = Texture2D::Create("Resources/Icons/c_file.png");
-			initWindow->SetB("Loading icon. 5 out of 14", 5.0f / 14.0f);
+			initWindow->SetB("Loading icon. 5 out of " + std::to_string(to_load_count), 5.0f / to_load_count);
 			ICON_FILE_H = Texture2D::Create("Resources/Icons/h_file.png");
-			initWindow->SetB("Loading icon. 6 out of 14", 6.0f / 14.0f);
+			initWindow->SetB("Loading icon. 6 out of " + std::to_string(to_load_count), 6.0f / to_load_count);
 			ICON_FILE_CPP = Texture2D::Create("Resources/Icons/cpp_file.png");
-			initWindow->SetB("Loading icon. 7 out of 14", 7.0f / 14.0f);
+			initWindow->SetB("Loading icon. 7 out of " + std::to_string(to_load_count), 7.0f / to_load_count);
 			ICON_FILE_HPP = Texture2D::Create("Resources/Icons/hpp_file.png");
-			initWindow->SetB("Loading icon. 8 out of 14", 8.0f / 14.0f);
+			initWindow->SetB("Loading icon. 8 out of " + std::to_string(to_load_count), 8.0f / to_load_count);
 			ICON_FILE_FONT = Texture2D::Create("Resources/Icons/ttf_file.png");
-			initWindow->SetB("Loading icon. 9 out of 14", 9.0f / 14.0f);
+			initWindow->SetB("Loading icon. 9 out of " + std::to_string(to_load_count), 9.0f / to_load_count);
 			ICON_FILE_SCENE = Texture2D::Create("Resources/Icons/scene_file.png");
-			initWindow->SetB("Loading icon. 10 out of 14", 10.0f / 14.0f);
+			initWindow->SetB("Loading icon. 10 out of " + std::to_string(to_load_count), 10.0f / to_load_count);
 			ICON_FILE_IMAGE = Texture2D::Create("Resources/Icons/image_file.png");
-			initWindow->SetB("Loading icon. 11 out of 14", 11.0f / 14.0f);
+			initWindow->SetB("Loading icon. 11 out of " + std::to_string(to_load_count), 11.0f / to_load_count);
 			ICON_PLAY_WHITE = Texture2D::Create("Resources/Icons/play_white.png");
-			initWindow->SetB("Loading icon. 12 out of 14", 12.0f / 14.0f);
+			initWindow->SetB("Loading icon. 12 out of " + std::to_string(to_load_count), 12.0f / to_load_count);
 			ICON_PAUSE_WHITE = Texture2D::Create("Resources/Icons/pause_white.png");
-			initWindow->SetB("Loading icon. 13 out of 14", 13.0f / 14.0f);
+			initWindow->SetB("Loading icon. 13 out of " + std::to_string(to_load_count), 13.0f / to_load_count);
 			ICON_STOP_WHITE = Texture2D::Create("Resources/Icons/stop_white.png");
-			initWindow->SetB("Loading icon. 14 out of 14", 1.0);
+			initWindow->SetB("Loading icon. 14 out of " + std::to_string(to_load_count), 14.0f / to_load_count);
+			ICON_FOLDER = Texture2D::Create("Resources/Icons/folder.png");
+
+			initWindow->SetB("Loading icon. 15 out of " + std::to_string(to_load_count), 15.0f / to_load_count);
+			ICON_UI_GROUP_TILES_WHITE = Texture2D::Create("Resources/ui_explorer_group_tiles_white.png");
+			initWindow->SetB("Loading icon. 16 out of " + std::to_string(to_load_count), 16.0f / to_load_count);
+			ICON_UI_GROUP_LIST_WHITE = Texture2D::Create("Resources/ui_explorer_group_list_white.png");
+			initWindow->SetB("Loading icon. 17 out of " + std::to_string(to_load_count), 17.0f / to_load_count);
+			ICON_UI_GROUP_ICONS_WHITE = Texture2D::Create("Resources/ui_explorer_group_icons_white.png");
+
+			initWindow->SetB("Loading icon. 18 out of " + std::to_string(to_load_count), 18.0f / to_load_count);
+			ICON_UI_GROUP_TILES_BLACK = Texture2D::Create("Resources/ui_explorer_group_tiles_black.png");
+			initWindow->SetB("Loading icon. 19 out of " + std::to_string(to_load_count), 19.0f / to_load_count);
+			ICON_UI_GROUP_LIST_WHITE = Texture2D::Create("Resources/ui_explorer_group_list_black.png");
+			initWindow->SetB("Loading icon. 20 out of " + std::to_string(to_load_count), 20.0f / to_load_count);
+			ICON_UI_GROUP_ICONS_WHITE = Texture2D::Create("Resources/ui_explorer_group_icons_black.png");
+
+			initWindow->SetB("Loading icon. 21 out of " + std::to_string(to_load_count), 21.0f / to_load_count);
+			ICON_UI_REFRESH_WHITE = Texture2D::Create("Resources/ui_refresh_white.png");
+			initWindow->SetB("Loading icon. 22 out of " + std::to_string(to_load_count), 22.0f / to_load_count);
+			ICON_UI_REFRESH_BLACK = Texture2D::Create("Resources/ui_refresh_black.png");
+
 		} catch (HeliosException e)
 		{
 			MessageBoxA(nullptr, "Error loading icons!", std::to_string(e.what()).c_str(), MB_ICONERROR);
 			exit(-100);
 		}
 
+		Project::LoadAssets();
 
 		if(ICON_FOLDER_EMPTY == nullptr)
 			MessageBoxA(nullptr, "Error loading icons!", "ICON_FOLDER_EMPTY == nullptr", MB_ICONERROR);
@@ -252,11 +275,11 @@ namespace Helios
 		SceneRegistry::LoadEmptyScene("New Scene");
 		auto ent = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 0, 0 });
 		//auto ent = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 0, -5 });
-		auto& mrc = ent.AddComponent<MeshRendererComponent>();
+		auto& mrc = ent.AddScopedComponent<MeshRendererComponent>();
 		mrc.mesh = Mesh::GenerateCube();
 		mrc.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Clamp);
 		auto ent2 = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 0, 0 });
-		ent2.AddComponent<DirectionalLightComponent>(Color::White, 1.0f);
+		ent2.AddScopedComponent<DirectionalLightComponent>(Color::White, 1.0f);
 		Transform(ent2).SetLocalRotation(Quaternion::FromEuler(-45, 0, 0));
 
 		panels.push_back(&inspector);
@@ -264,6 +287,7 @@ namespace Helios
 		panels.push_back(&gameViewPanel);
 		panels.push_back(&scenePanel);
 		panels.push_back(new ProfilerPanel());
+		panels.push_back(new Editor::ExplorerPanel());
 		//panels.push_back(&AssetRegistry::Get());
 
 		UUID uuid = UUID();
@@ -395,6 +419,15 @@ namespace Helios
 			Project::SaveScene(ImGui::IsKeyReleased(ImGuiKey_LeftShift) || ImGui::IsKeyReleased(ImGuiKey_RightShift));
 
 		DrawToolbar(currentMode, panels);
+
+		static bool showStyleEditor = true;
+
+		/*if (showStyleEditor)
+		{
+			ImGui::Begin("Style Editor", &showStyleEditor);
+			ImGui::ShowStyleEditor();
+			ImGui::End();
+		}*/
 
 		ImGui::Begin("Colors");
 

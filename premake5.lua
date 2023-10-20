@@ -4,6 +4,7 @@
 
 
 
+
 workspace "HeliosEngine"
     architecture "x64"
     startproject "HeliosEditor"
@@ -27,6 +28,27 @@ workspace "HeliosEngine"
         -- Windows
         "NOMINMAX",
     }
+
+local function getDotNetSdkPath()
+    local dotnet = os.getenv("DOTNET_EXE") or "dotnet"
+    local pipe = io.popen('"' .. dotnet .. '" --list-sdks')
+    local sdks = pipe:read('*a')
+    pipe:close()
+
+    local sdk = sdks:match('([^\n]+)')
+
+    if not sdk then
+        error("Failed to find .NET SDK")
+    end
+
+    return sdk
+end
+    
+local DOTNETSDK_DIR = getDotNetSdkPath()
+
+if DOTNETSDK_DIR then
+    print("Found .NET SDK at " .. DOTNETSDK_DIR)
+end
 
 outdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 

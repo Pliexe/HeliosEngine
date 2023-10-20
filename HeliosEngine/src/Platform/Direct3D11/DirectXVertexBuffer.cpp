@@ -7,7 +7,7 @@
 
 namespace Helios
 {
-	DirectXVertexBuffer::DirectXVertexBuffer(uint32_t size, BufferUsage usage)
+	DepricatedDirectXVertexBuffer::DepricatedDirectXVertexBuffer(uint32_t size, BufferUsage usage)
     {
         m_Usage = usage;
 		m_Size = size;
@@ -39,7 +39,7 @@ namespace Helios
         );
     }
 
-    DirectXVertexBuffer::DirectXVertexBuffer(const void* data, uint32_t size, BufferUsage usage)
+    DepricatedDirectXVertexBuffer::DepricatedDirectXVertexBuffer(const void* data, uint32_t size, BufferUsage usage)
     {
         m_Usage = usage;
 		m_Size = size;
@@ -75,18 +75,18 @@ namespace Helios
         );
     }
 
-    void DirectXVertexBuffer::Bind(uint32_t slot) const
+    void DepricatedDirectXVertexBuffer::Bind(uint32_t slot) const
     {
         uint32_t offset = 0;
         Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(slot, 1, m_VertexBuffer.GetAddressOf(), &m_Stride, &offset);
     }
 
-    void DirectXVertexBuffer::Unbind() const
+    void DepricatedDirectXVertexBuffer::Unbind() const
     {
         Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(0, 1, nullptr, nullptr, nullptr);
     }
 
-    void DirectXVertexBuffer::SetData(const void* data, uint32_t size)
+    void DepricatedDirectXVertexBuffer::SetData(const void* data, uint32_t size)
     {
         HL_CORE_ASSERT_WITH_MSG(m_Usage == BufferUsage::Dynamic, "Buffer is not dynamic!");
 

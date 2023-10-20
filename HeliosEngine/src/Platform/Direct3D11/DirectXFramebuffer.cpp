@@ -79,9 +79,15 @@ namespace Helios
 
 	Color DirectXFramebuffer::GetPixelColor(uint32_t attachment, uint32_t x, uint32_t y)
 	{
+		HL_ASSERT_EXCEPTION((attachment < m_colorBuffers.size()), "Error while reading Pixel data! (Attachment index out of bounds!)");
 		// Assert if out of bounds
 		HL_ASSERT_EXCEPTION((x < m_Width), "Error while reading Pixel data! (X coordinate out of bounds!)");
 		HL_ASSERT_EXCEPTION((y < m_Height), "Error while reading Pixel data! (Y coordinate out of bounds!)");
+		
+		HL_ASSERT_EXCEPTION((x >= 0), "Error while reading Pixel data! (X coordinate out of bounds!)");
+		HL_ASSERT_EXCEPTION((y >= 0), "Error while reading Pixel data! (Y coordinate out of bounds!)");
+
+
 
 		// Copy the	render target to a staging texture so we can read it back from the CPU
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> stagingTexture;
@@ -120,7 +126,7 @@ namespace Helios
 			color = *(Color*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(Color)));
 			break;
 		case Format::R8G8B8A8_UNORM:
-			color = *(Color*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(Color)));
+			color = *(Color*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(std::uint8_t)));
 			break;
 		case Format::R32F:
 			color = Color(*(float*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(float))), 0.0f, 0.0f, 1.0f);

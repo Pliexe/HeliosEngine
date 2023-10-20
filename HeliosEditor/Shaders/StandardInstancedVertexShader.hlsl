@@ -43,8 +43,8 @@ VSOut main(VSIn vin)
     vout.color = vin.color;
     vout.entityId = vin.entityId;
     vout.sceneIndex = vin.sceneIndex;
-    vout.normal = normalize(mul(float4(vin.normal, 0.0f), vin.worldProj));
+    vout.normal = normalize(mul(float4(vin.normal, 0.0f), vin.worldProj)).xyz;
     //vout.normal = mul(float4(vin.normal, 1.0f), vin.worldProj);
-    vout.worldPos = mul(float4(vin.position, 1.0f), vin.worldProj);
+    vout.worldPos = mul(float4(vin.position, 1.0f), vin.worldProj).xyz;
     return vout;
 }

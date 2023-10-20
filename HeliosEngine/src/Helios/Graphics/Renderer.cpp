@@ -3,6 +3,7 @@
 #include "Helios/Core/Profiler.h"
 #include "Helios/Math/Matrix.h"
 #include "Helios/Resources/Shader.h"
+#include "Helios/Resources/ShaderBuilder.h"
 
 namespace Helios
 {
@@ -39,8 +40,8 @@ namespace Helios
 			uint32_t directional_light_count; // 4 bytes 
 		};  
 
-		Ref<ConstantBuffer<CBD>> transformBuffer;
-		Ref<ConstantBuffer<LightData>> lightBuffer;
+		Ref<UniformBuffer<CBD>> transformBuffer;
+		Ref<UniformBuffer<LightData>> lightBuffer;
 
 		Ref<Texture2D> whiteTexture;
 		Ref<Material> default_material;
@@ -74,7 +75,7 @@ namespace Helios
 
 		static constexpr uint32_t MAX_INSTANCES = 50000;
 		//static constexpr uint32_t MAX_INSTANCES = 1024;
-		Ref<VertexBuffer> instancedBuffer;
+		Ref<DepricatedVertexBuffer> instancedBuffer;
 		std::vector<Renderable> renderables;
 	};
 
@@ -230,16 +231,30 @@ namespace Helios
 	{
 		HL_PROFILE_BEGIN("Renderer::Flush");
 		// merge sort renderables by material, shader and mesh
-		static Ref<Shader> shader = CreateRef<Shader>(Shader("StandardInstanced", {
-			{ "Position", Shader::DataType::Float3 },
-			{ "TexCoord", Shader::DataType::Float2 },
-			{ "Normal",   Shader::DataType::Float3 },
-			{ "WorldViewProj", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "WorldProj", Shader::DataType::Matrix4x4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "Color", Shader::DataType::Float4, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "EntityId", Shader::DataType::Int32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-			{ "SceneIndex", Shader::DataType::Int32, 1u, 1u, Shader::ShaderElement::InputClassification::PerInstance },
-		}));
+		
+		ShaderBuilder shaderBuilder;
+		shaderBuilder.SetName("StandardInstancedShader");
+		shaderBuilder.SetVertexShader("Shaders/StandardInstancedVertexShader");
+		shaderBuilder.SetPixelShader("Shaders/StandardInstancedPixelShader");
+
+		SafeInputLayouts<2> inputLayouts({
+			InputLayout {
+				{ "Position", ShaderDataType::Float32_3 },
+				{ "TexCoord", ShaderDataType::Float32_2 },
+				{ "Normal", ShaderDataType::Float32_3 }
+			},
+			InputLayout {
+				{ "WorldViewProj", ShaderDataType::MatrixFloat4x4 },
+				{ "WorldProj", ShaderDataType::MatrixFloat4x4 },
+				{ "Color", ShaderDataType::Float32_4 },
+				{ "EntityId", ShaderDataType::Int32 },
+				{ "SceneIndex", ShaderDataType::Int32 }
+			}
+		});
+
+		shaderBuilder.SetInputLayouts(inputLayouts);
+
+		static Ref<Shader> shader = shaderBuilder.Create();
 
 		shader->Bind();
 
@@ -333,15 +348,15 @@ namespace Helios
 
 	bool Renderer::Init()
 	{
-		rendererData.transformBuffer = ConstantBuffer<RendererData::CBD>::Create();
-		rendererData.lightBuffer = ConstantBuffer<RendererData::LightData>::Create();
+		rendererData.transformBuffer = UniformBuffer<RendererData::CBD>::Create(0u);
+		rendererData.lightBuffer = UniformBuffer<RendererData::LightData>::Create(1u);
 		rendererData.whiteTexture = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
 		rendererData.whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 		rendererData.default_material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 		rendererData.default_material->texture = rendererData.whiteTexture;
 
-		rendererData.instancedBuffer = VertexBuffer::Create(sizeof(RendererData::InstancedRenderable) * RendererData::MAX_INSTANCES, BufferUsage::Dynamic);
+		rendererData.instancedBuffer = DepricatedVertexBuffer::Create(sizeof(RendererData::InstancedRenderable) * RendererData::MAX_INSTANCES, BufferUsage::Dynamic);
 		rendererData.instancedBuffer->SetStride<RendererData::InstancedRenderable>();
 		return true;
 	}
@@ -377,7 +392,7 @@ namespace Helios
 		}
 
 		rendererData.lightBuffer->SetData(light_data);
-		rendererData.lightBuffer->BindPS(0u);
+		rendererData.lightBuffer->Bind();
 		rendererData.projectionMatrix = projection;
 	}
 
@@ -398,10 +413,10 @@ namespace Helios
 		if (meshRenderer.mesh == nullptr || meshRenderer.material == nullptr) return;
 		HL_PROFILE_BEGIN("Draw Mesh");
 		HL_PROFILE_BEGIN("Create Shader");
-		static Ref<Shader> shader = CreateRef<Shader>(Shader("Standard", {
-			{ "Position", Shader::DataType::Float3 },
-			{ "TexCoord", Shader::DataType::Float2 },
-			{ "Normal",   Shader::DataType::Float3 },
+		static Ref<DepricatedShader> shader = CreateRef<DepricatedShader>(DepricatedShader("Standard", {
+			{ "Position", DepricatedShader::DataType::Float3 },
+			{ "TexCoord", DepricatedShader::DataType::Float2 },
+			{ "Normal",   DepricatedShader::DataType::Float3 },
 		}));
 		HL_PROFILE_END();
 
@@ -426,7 +441,7 @@ namespace Helios
 		};
 
 		rendererData.transformBuffer->SetData(cb);
-		rendererData.transformBuffer->BindVS(0);
+		rendererData.transformBuffer->Bind();
 		HL_PROFILE_END();
 
 		HL_PROFILE_BEGIN("Draw Call");

@@ -57,7 +57,7 @@ namespace Helios {
 	};
 }
 
-#define HL_EXCEPTION(condition, message) { if(condition) throw Helios::HeliosException(message, __FUNCTION__, __FILE__, __LINE__); }
+#define HL_EXCEPTION(condition, message) { if(condition) throw Helios::HeliosException(std::string(message), __FUNCTION__, __FILE__, __LINE__); }
 #define HL_EXCEPTION_HR(condition, message, hr) { if(condition) throw Helios::HeliosException(std::string(message) + "\nReason: " + GetLastErrorAsString(hr) + "\nCode: " + std::to_string(hr), __FUNCTION__, __FILE__, __LINE__); }
 
 #define HL_EXCEPTION_RETRY(condition, message) { retry: try { if(!(condition)) throw Helios::HeliosException(message, __FUNCTION__, __FILE__, __LINE__); } catch(Helios::HeliosException ex) { switch(ex.what()) { case IDRETRY: goto retry; break; case IDOK:case IDABORT: abort(); } } }

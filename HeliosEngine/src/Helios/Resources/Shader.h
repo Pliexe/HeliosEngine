@@ -4,6 +4,8 @@
 #include "Helios/Core/Asserts.h"
 #include <d3dcompiler.h>
 #include "Platform/Direct3D11/Direct3D11Context.h"
+#include "Buffer.h"
+
 
 namespace Helios {
 
@@ -19,10 +21,42 @@ namespace Helios {
 		NotEqual
 	};
 
-	D3D11_COMPARISON_FUNC GetDepthFuncNative(DepthFunc func);
+	enum class Topology
+	{
+		TriangleList,
+		LineList,
+		PointList,
+	};
+
+	class Shader
+	{
+	public:
+		virtual const std::string& GetName() const = 0;
+
+		virtual const InputLayouts& GetInputLayouts() const = 0;
+		virtual const DepthFunc GetDepthFunc() const = 0;
+		virtual const Topology GetTopology() const = 0;
+
+		virtual void SetDepthFunc(DepthFunc depthFunc) = 0;
+		virtual void SetTopology(Topology topology) = 0;
+
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
+
+		static Ref<Shader> Create(const std::string& name, const std::string& vertex_path, InputLayouts inputLayouts, DepthFunc depthFunc, Topology topology);
+		static Ref<Shader> Create(const std::string& name, const std::string& vertex_path, const std::string& pixel_path, InputLayouts inputLayouts, DepthFunc depthFunc, Topology topology);
+		static Ref<Shader> Create(const std::string& name, const std::string& vertex_path, const std::string& pixel_path, const std::string& geometry_path, InputLayouts inputLayouts, DepthFunc depthFunc, Topology topology);
+	};
+
+	D3D11_COMPARISON_FUNC GetDepthFuncNative2(DepthFunc func);
+
+	// class HELIOS_API Shader
+	// {
+	// public:
+	// }
 
 
-	class HELIOS_API Shader
+	class HELIOS_API DepricatedShader
 	{
 	public:
 
@@ -73,11 +107,11 @@ namespace Helios {
 			PointList = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST
 		};
 
-		Shader() = delete;
+		DepricatedShader() = delete;
 		
 		//Shader(std::string filepath, const std::initializer_list<ShaderElement> elements)
 		template <std::size_t N>
-		Shader(std::string filepath, const ShaderElement(&elements)[N], Topology topology = Topology::TriangleList, DepthFunc depth_func = DepthFunc::Less) : m_topology(topology)
+		DepricatedShader(std::string filepath, const ShaderElement(&elements)[N], Topology topology = Topology::TriangleList, DepthFunc depth_func = DepthFunc::Less) : m_topology(topology)
 		{
 			Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 
@@ -200,7 +234,7 @@ namespace Helios {
 
 			depthStencilDesc.DepthEnable = true;
 			depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-			depthStencilDesc.DepthFunc = GetDepthFuncNative(depth_func);
+			depthStencilDesc.DepthFunc = GetDepthFuncNative2(depth_func);
 
 			HL_EXCEPTION_HR(
 				FAILED(hr = Direct3D11Context::GetCurrentContext()->GetDevice()->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilState)),
@@ -209,7 +243,7 @@ namespace Helios {
 
 			delete[] ied;
 		}
-		Shader(const Shader& other) = default;
+		DepricatedShader(const DepricatedShader& other) = default;
 
 
 		void Bind();

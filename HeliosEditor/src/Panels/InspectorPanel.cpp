@@ -10,7 +10,7 @@ namespace Helios {
 
 	InspectorPanel* InspectorPanel::instance = nullptr;
 
-	template <typename T> void AddComponentItem(const char* name, Entity& obj) { if (!obj.HasComponent<T>() && ImGui::Button(name)) obj.AddComponent<T>(); }
+	template <typename T> void AddComponentItem(const char* name, Entity& obj) { if (!obj.HasComponent<T>() && ImGui::Button(name)) obj.AddScopedComponent<T>(); }
 
 	void InspectorPanel::OnUpdate() {
 		switch (type)
@@ -29,7 +29,7 @@ namespace Helios {
 			if(ImGui::Checkbox("##gm_enabled", &enabled))
 			{
 				if (enabled) entity.RemoveComponent<DisabledObjectComponent>();
-				else entity.AddComponent <DisabledObjectComponent>();
+				else entity.AddScopedComponent <DisabledObjectComponent>();
 			}
 			
 			/*ImGui::Checkbox("##active", &gm.active);

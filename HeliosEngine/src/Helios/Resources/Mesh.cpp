@@ -235,7 +235,7 @@ namespace Helios
 	Mesh::Mesh(std::string name, const MeshVertex* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount)
 	{
 		m_Vertices = std::vector<MeshVertex>(vertices, vertices + vertexCount);
-		m_VertexBuffer = VertexBuffer::Create(vertices, vertexCount * sizeof(MeshVertex));
+		m_VertexBuffer = DepricatedVertexBuffer::Create(vertices, vertexCount * sizeof(MeshVertex));
 		m_VertexBuffer->SetStride<MeshVertex>();
 		m_IndexBuffer = IndexBuffer::Create(indices, indexCount);
 	}
@@ -243,7 +243,7 @@ namespace Helios
 	Mesh::Mesh(std::string name, const MeshBuilder& meshBuilder)
 	{
 		m_Vertices = std::vector<MeshVertex>(meshBuilder.m_Vertices);
-		m_VertexBuffer = VertexBuffer::Create(meshBuilder.m_Vertices.data(), meshBuilder.m_Vertices.size() * sizeof(MeshVertex));
+		m_VertexBuffer = DepricatedVertexBuffer::Create(meshBuilder.m_Vertices.data(), meshBuilder.m_Vertices.size() * sizeof(MeshVertex));
 		m_VertexBuffer->SetStride<MeshVertex>();
 		m_IndexBuffer = IndexBuffer::Create((uint32_t*)meshBuilder.m_Triangles.data(), meshBuilder.m_Triangles.size() * 3);
 	}

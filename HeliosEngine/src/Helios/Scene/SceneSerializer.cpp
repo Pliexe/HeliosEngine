@@ -361,7 +361,7 @@ namespace Helios
 		}
 		if (entityNode["Camera"])
 		{
-			auto& cameraComponent = entity.AddComponent<CameraComponent>();
+			auto& cameraComponent = entity.AddScopedComponent<CameraComponent>();
 			auto cameraNode = entityNode["Camera"];
 			cameraComponent.isPrimary = cameraNode["Primary"].as<bool>();
 			cameraComponent.size = cameraNode["Size"].as<float>();
@@ -373,21 +373,21 @@ namespace Helios
 		}
 		if (entityNode["DirectionalLight"])
 		{
-			auto& lightComponent = entity.AddComponent<DirectionalLightComponent>();
+			auto& lightComponent = entity.AddScopedComponent<DirectionalLightComponent>();
 			auto lightNode = entityNode["DirectionalLight"];
 			lightComponent.color = lightNode["Color"].as<Color>();
 			lightComponent.intensity = lightNode["Intensity"].as<float>();
 		}
 		if (entityNode["SpriteRenderer"])
 		{
-			auto& spriteComponent = entity.AddComponent<SpriteRendererComponent>();
+			auto& spriteComponent = entity.AddScopedComponent<SpriteRendererComponent>();
 			auto spriteNode = entityNode["SpriteRenderer"];
 			spriteComponent.color = spriteNode["Color"].as<Color>();
 			//spriteComponent.texture = spriteNode["Texture"].as<Texture2D>();
 		}
 		if (entityNode["MeshRenderer"])
 		{
-			auto& meshComponent = entity.AddComponent<MeshRendererComponent>();
+			auto& meshComponent = entity.AddScopedComponent<MeshRendererComponent>();
 			auto meshNode = entityNode["MeshRenderer"];
 			meshComponent.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Clamp);
 			//meshComponent.material = meshNode["Material"].as<Material>();
@@ -397,7 +397,7 @@ namespace Helios
 		}
 		if (entityNode["Rigidbody2D"])
 		{
-			auto& rigidbodyComponent = entity.AddComponent<Rigidbody2D>();
+			auto& rigidbodyComponent = entity.AddScopedComponent<Rigidbody2D>();
 			auto rigidbodyNode = entityNode["Rigidbody2D"];
 
 			rigidbodyComponent.type = (BodyType)rigidbodyNode["BodyType"].as<int>();
@@ -408,14 +408,14 @@ namespace Helios
 		}
 		if (entityNode["BoxCollider2D"])
 		{
-			auto& colliderComponent = entity.AddComponent<BoxCollider2D>();
+			auto& colliderComponent = entity.AddScopedComponent<BoxCollider2D>();
 			auto colliderNode = entityNode["BoxCollider2D"];
 			colliderComponent.offset = colliderNode["Offset"].as<Vector2>();
 			colliderComponent.size = colliderNode["Size"].as<Vector2>();
 		}
 		if (entityNode["CircleCollider2D"])
 		{
-			auto& colliderComponent = entity.AddComponent<CircleCollider2D>();
+			auto& colliderComponent = entity.AddScopedComponent<CircleCollider2D>();
 			auto colliderNode = entityNode["CircleCollider2D"];
 			colliderComponent.offset = colliderNode["Offset"].as<Vector2>();
 			colliderComponent.radius = colliderNode["Radius"].as<float>();

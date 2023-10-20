@@ -99,9 +99,9 @@ namespace Helios {
 		friend class RadialGradientBrush;
 		friend class BitmapBrush;
 
-		friend class Shader;
+		friend class DepricatedShader;
 		friend class IndexBuffer;
-		friend class DirectXVertexBuffer;
+		friend class DepricatedDirectXVertexBuffer;
 		template <typename T>
 		friend class DirectXConstantBuffer;
 		friend class DirectXTexture2D;

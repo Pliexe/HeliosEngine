@@ -37,9 +37,9 @@ namespace Helios
 
         void Bind();
         inline uint32_t getVertexCount() const { return m_VertexBuffer->getCount<MeshVertex>(); }
-		inline uint32_t getIndexCount() const { return m_IndexBuffer->count(); }
+		inline uint32_t getIndexCount() const { return m_IndexBuffer->GetCount(); }
 		inline Ref<IndexBuffer> getIndexBuffer() const { return m_IndexBuffer; }
-		inline Ref<VertexBuffer> getVertexBuffer() const { return m_VertexBuffer; }
+		inline Ref<DepricatedVertexBuffer> getVertexBuffer() const { return m_VertexBuffer; }
 
         inline std::vector<MeshVertex>& GetVertices() { return m_Vertices; }
 
@@ -52,7 +52,7 @@ namespace Helios
 
         std::string m_Name;
 
-        Ref<VertexBuffer> m_VertexBuffer;
+        Ref<DepricatedVertexBuffer> m_VertexBuffer;
         Ref<IndexBuffer> m_IndexBuffer;
 
     };

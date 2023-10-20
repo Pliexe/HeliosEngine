@@ -34,7 +34,7 @@ namespace Helios {
 		{
 			if (ImGui::MenuItem("Cube")) {
 				auto obj = scene->InstantiateObject("Cube");
-				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
+				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::GetCubeMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
@@ -44,7 +44,7 @@ namespace Helios {
 				MeshBuilder arrowBuilder = Mesh::CreateGizmosArrow();
 
 				auto obj = scene->InstantiateObject("Arrow");
-				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
+				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::Create("Arrow", arrowBuilder);
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
@@ -52,7 +52,7 @@ namespace Helios {
 			if(ImGui::MenuItem("Plane"))
 			{
 				auto obj = scene->InstantiateObject("Plane");
-				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
+				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::GetPlaneMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
@@ -60,7 +60,7 @@ namespace Helios {
 			if (ImGui::MenuItem("Cylinder"))
 			{
 				auto obj = scene->InstantiateObject("Cylinder");
-				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
+				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::GetCylinderMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
@@ -68,7 +68,7 @@ namespace Helios {
 			if (ImGui::MenuItem("Cone"))
 			{
 				auto obj = scene->InstantiateObject("Cone");
-				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
+				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::GetConeMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
@@ -76,7 +76,7 @@ namespace Helios {
 			if (ImGui::MenuItem("Sphere"))
 			{
 				auto obj = scene->InstantiateObject("Sphere");
-				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
+				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::GetSphereMesh();
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
@@ -84,7 +84,7 @@ namespace Helios {
 			if (ImGui::MenuItem("Torus"))
 			{
 				auto obj = scene->InstantiateObject("Torus");
-				auto& meshRenderer = obj.AddComponent<MeshRendererComponent>();
+				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::GetTorusMesh(64, 32, .5f,.2f);
 				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
@@ -97,7 +97,7 @@ namespace Helios {
 			if (ImGui::MenuItem("Directional Light"))
 			{
 				auto obj = scene->InstantiateObject("Directional Light");
-				obj.AddComponent<DirectionalLightComponent>(Color::White, 1.0f);
+				obj.AddScopedComponent<DirectionalLightComponent>(Color::White, 1.0f);
 				InspectorPanel::GetInstance() << obj;
 			}
 			ImGui::EndMenu();
@@ -105,7 +105,7 @@ namespace Helios {
 
 		if (ImGui::MenuItem("Create Object With Sprite")) {
 			auto obj = scene->InstantiateObject("Sprite");
-			obj.AddComponent<SpriteRendererComponent>();
+			obj.AddScopedComponent<SpriteRendererComponent>();
 			InspectorPanel::GetInstance() << obj;
 		}
 		

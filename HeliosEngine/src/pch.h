@@ -39,6 +39,7 @@
 #include <memory>
 #include <deque>
 #include <random>
+#include <ranges>
 
 // Windows
 #define D3D_DEBUG_INFO

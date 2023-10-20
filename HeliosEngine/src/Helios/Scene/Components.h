@@ -6,6 +6,7 @@
 #include "Components/Physics2D.h"
 #include "Components/Renderers.h"
 #include "Components/Transforms.h"
+#include "Components/Scripting.h"
 
 //https://en.cppreference.com/w/cpp/language/parameter_pack
 template <class... Types>
@@ -32,5 +33,7 @@ namespace Helios
 		// Physics2D
 		Rigidbody2D,
 		CircleCollider2D
+		//// Scripting
+		//ScriptComponent
 	>;
 }

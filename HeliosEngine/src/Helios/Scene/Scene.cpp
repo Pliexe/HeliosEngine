@@ -353,33 +353,33 @@ namespace Helios {
 	Entity Scene::InstantiateObject(std::string name, Vector3 position)
 	{
 		Entity obj(m_components.create(), this);
-		obj.AddComponent<InfoComponent>(name);
-		obj.AddComponent<TransformComponent>(position);
-		obj.AddComponent<RelationshipComponent>();
-		m_UUIDMap[obj.AddComponent<UUIDComponent>().uuid] = obj;
+		obj.AddScopedComponent<InfoComponent>(name);
+		obj.AddScopedComponent<TransformComponent>(position);
+		obj.AddScopedComponent<RelationshipComponent>();
+		m_UUIDMap[obj.AddScopedComponent<UUIDComponent>().uuid] = obj;
 		return obj;
 	}
 
 	Entity Scene::InstantiateObject(std::string name, entt::entity& parent)
 	{
 		Entity obj(m_components.create(), this);
-		obj.AddComponent<InfoComponent>(name);
-		obj.AddComponent<TransformComponent>();
-		obj.AddComponent<RelationshipComponent>(m_components, obj, parent);
-		m_UUIDMap[obj.AddComponent<UUIDComponent>().uuid] = obj;
+		obj.AddScopedComponent<InfoComponent>(name);
+		obj.AddScopedComponent<TransformComponent>();
+		obj.AddScopedComponent<RelationshipComponent>(m_components, obj, parent);
+		m_UUIDMap[obj.AddScopedComponent<UUIDComponent>().uuid] = obj;
 		return obj;
 	}
 
 	Entity& Scene::CreateMainCamera(Vector3 position) {
 		Entity gameObject = InstantiateObject("MainCamera", position);
-		gameObject.AddComponent<CameraComponent>().isPrimary = true;
+		gameObject.AddScopedComponent<CameraComponent>().isPrimary = true;
 		return gameObject;
 	}
 
 	Entity& Scene::CreateCamera(Vector3 position)
 	{
 		Entity gameObject = InstantiateObject("MainCamera", position);
-		gameObject.AddComponent<CameraComponent>();
+		gameObject.AddScopedComponent<CameraComponent>();
 		return gameObject;
 	}
 

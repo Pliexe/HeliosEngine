@@ -1,9 +1,14 @@
 #include "Shader.h"
 #include "Helios/Graphics/DepricatedGraphics.h"
+#include "Helios/Graphics/Graphics.h"
+
+#ifdef HELIOS_PLATFORM_WINDOWS
+#include "Platform/Direct3D11/Shader/D3D11Shader.h"
+#endif
 
 namespace Helios
 {
-	void Shader::Bind()
+	void DepricatedShader::Bind()
 	{
 		const auto& context = Direct3D11Context::GetCurrentContext()->GetContext();
 
@@ -18,7 +23,7 @@ namespace Helios
 		
 	}
 
-	void Shader::Unbind()
+	void DepricatedShader::Unbind()
 	{
 		const auto& context = Direct3D11Context::GetCurrentContext()->GetContext();
 
@@ -33,7 +38,7 @@ namespace Helios
 		context->OMSetDepthStencilState(nullptr, 1u);
 	}
 
- 	D3D11_COMPARISON_FUNC GetDepthFuncNative(DepthFunc func)
+ 	D3D11_COMPARISON_FUNC GetDepthFuncNative2(DepthFunc func)
 	{
 		switch (func)
 		{
@@ -48,13 +53,13 @@ namespace Helios
 		}
 	}
 
-	void Shader::SetDepthFunc(DepthFunc func)
+	void DepricatedShader::SetDepthFunc(DepthFunc func)
 	{
 		D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 		ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
 
 		m_depthStencilState->GetDesc(&depthStencilDesc);
-		depthStencilDesc.DepthFunc = GetDepthFuncNative(func);
+		depthStencilDesc.DepthFunc = GetDepthFuncNative2(func);
 
 		HRESULT hr;
 
@@ -63,4 +68,39 @@ namespace Helios
 			"Failed to create depth stencil state!", hr
 		);
 	}
+
+	#define DX_SHADER_EXTENSION ".hlsl"
+	
+	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertex_path, InputLayouts inputLayouts, DepthFunc depthFunc, Topology topology)
+	{
+		switch (Graphics::GetAPI())
+		{
+		case Graphics::API::Direct3D11: return CreateRef<D3D11Shader>(name, vertex_path + DX_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
+		}
+
+		HELIOS_ASSERT(false, "Unknown Graphics API!");
+		return nullptr;
+	}
+	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertex_path, const std::string& pixel_path, InputLayouts inputLayouts, DepthFunc depthFunc, Topology topology)
+	{
+		switch (Graphics::GetAPI())
+		{
+		case Graphics::API::Direct3D11: return CreateRef<D3D11Shader>(name, vertex_path + DX_SHADER_EXTENSION, pixel_path + DX_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
+		}
+
+		HELIOS_ASSERT(false, "Unknown Graphics API!");
+		return nullptr;
+	}
+
+	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertex_path, const std::string& pixel_path, const std::string& geometry_path, InputLayouts inputLayouts, DepthFunc depthFunc, Topology topology)
+	{
+		switch (Graphics::GetAPI())
+		{
+		case Graphics::API::Direct3D11: return CreateRef<D3D11Shader>(name, vertex_path + DX_SHADER_EXTENSION, pixel_path + DX_SHADER_EXTENSION, geometry_path + DX_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
+		}
+
+		HELIOS_ASSERT(false, "Unknown Graphics API!");
+		return nullptr;
+	}
+
 }

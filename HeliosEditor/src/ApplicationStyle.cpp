@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "ApplicationStyle.h"
+
+#include "Icons.h"
 #include "pch.h"
 
 #define COL32A(R,G,B,A) ImVec4((R)/255.0f, (G)/255.0f, (B)/255.0f, (A)/255.0f)
@@ -11,8 +13,19 @@ namespace Helios
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		//io.Fonts->AddFontDefault();
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("fonts/NotoSans/NotoSans-Regular.ttf", 17.0f, nullptr, io.Fonts->GetGlyphRangesDefault());
-		io.Fonts->AddFontFromFileTTF("fonts/NotoSans/NotoSans-Bold.ttf", 17.0f, nullptr, io.Fonts->GetGlyphRangesDefault());
+
+		ImFontConfig icons_config;
+		icons_config.MergeMode = true;
+
+		static const ImWchar icons_ranges[] = { ICONS_FONT_MIN, ICONS_FONT_MAX, 0 };
+
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("fonts/NotoSans/NotoSans-Regular.ttf", 17.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("fonts/icons.ttf", 17.0f, &icons_config, icons_ranges);
+
+
+		io.Fonts->AddFontFromFileTTF("fonts/NotoSans/NotoSans-Bold.ttf", 17.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());		
+		io.Fonts->AddFontFromFileTTF("fonts/icons.ttf", 17.0f, &icons_config, icons_ranges);
+		
 
 		auto add_col = [](ImVec4 col, float offset) {
 			return ImVec4{ col.x + offset, col.y + offset, col.z + offset, 1.0f };

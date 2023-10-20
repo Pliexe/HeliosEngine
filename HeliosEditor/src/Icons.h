@@ -1,24 +1,9 @@
 #pragma once
 
-#include <iostream>
+#define ICONS_FONT_MIN 0xe800
+#define ICONS_FONT_MAX 0xe8ff
 
-#include "Helios/Core/Base.h"
-
-using Helios::Ref;
-
-//inline Ref<Helios::EngineTexture> ICON_FOLDER			= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_FOLDER_EMPTY		= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_FILE_UNKNOWN		= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_FILE_TXT			= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_FILE_C			= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_FILE_H			= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_FILE_CPP			= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_FILE_HPP			= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_FILE_IMAGE		= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_FILE_FONT		= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_FILE_SCENE		= nullptr;
-//
-//inline Ref<Helios::EngineTexture> ICON_PLAY_WHITE		= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_PAUSE_WHITE		= nullptr;
-//inline Ref<Helios::EngineTexture> ICON_STOP_WHITE		= nullptr;
-
+#define ICON_UI_REFRESH		u8"\ue800"
+#define ICON_UI_GROUP_ICONS u8"\ue801"
+#define ICON_UI_GROUP_LIST	u8"\ue802"
+#define ICON_UI_GROUP_TILES u8"\ue803"

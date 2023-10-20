@@ -76,9 +76,24 @@ namespace Helios
 		inline static Ref<Texture2D> ICON_FILE_FONT = nullptr;
 		inline static Ref<Texture2D> ICON_FILE_SCENE = nullptr;
 		inline static Ref<Texture2D> ICON_FILE_IMAGE = nullptr;
+
 		inline static Ref<Texture2D> ICON_PLAY_WHITE = nullptr;
 		inline static Ref<Texture2D> ICON_PAUSE_WHITE = nullptr;
 		inline static Ref<Texture2D> ICON_STOP_WHITE = nullptr;
+
+
+		inline static Ref<Texture2D> ICON_UI_REFRESH_WHITE = nullptr;
+
+		inline static Ref<Texture2D> ICON_UI_GROUP_TILES_WHITE = nullptr;
+		inline static Ref<Texture2D> ICON_UI_GROUP_LIST_WHITE = nullptr;
+		inline static Ref<Texture2D> ICON_UI_GROUP_ICONS_WHITE = nullptr;
+
+		inline static Ref<Texture2D> ICON_UI_REFRESH_BLACK = nullptr;
+
+		inline static Ref<Texture2D> ICON_UI_GROUP_TILES_BLACK = nullptr;
+		inline static Ref<Texture2D> ICON_UI_GROUP_LIST_BLACK = nullptr;
+		inline static Ref<Texture2D> ICON_UI_GROUP_ICONS_BLACK = nullptr;
+		
 #pragma endregion
 
 		explicit HeliosEditor(const Specifications& specs);

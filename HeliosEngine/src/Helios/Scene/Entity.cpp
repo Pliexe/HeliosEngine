@@ -28,7 +28,7 @@ namespace Helios
 
 	//Transform2DComponent GameObject::relationship = Transform2DComponent();
 
-	void Entity::MakeGlobal() { AddComponent<GlobalObjectComponent>(); }
+	void Entity::MakeGlobal() { AddScopedComponent<GlobalObjectComponent>(); }
 
 	void Entity::Destroy()
 	{

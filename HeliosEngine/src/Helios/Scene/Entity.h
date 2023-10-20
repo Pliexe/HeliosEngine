@@ -46,10 +46,17 @@ namespace Helios {
 		}
 
 		template <typename T, typename... Args>
-		T& AddComponent(Args &&...args)
+		T& AddScopedComponent(Args &&...args)
 		{
 			HL_CORE_ASSERT_WITH_MSG(!HasComponent<T>(), "GameObject arleady has this component!");
 			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!")
+			T& comp = m_scene->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
+			return comp;
+		}
+
+		template <typename T, typename... Args>
+		T& AddComponent(Args &&...args)
+		{
 			T& comp = m_scene->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
 			return comp;
 		}
