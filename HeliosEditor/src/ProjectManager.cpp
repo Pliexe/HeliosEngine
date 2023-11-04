@@ -1,16 +1,13 @@
-#include "ProjectBaseManager.h"
 
 #include "ProjectManager.h"
 
-#include <Helios/Scene/SceneRegistry.h>
-#include <Helios/Scene/Scene.h>
 
 #include "HeliosEditor_Macros.h"
 
 #include <filesystem>
 #include <fstream>
-#include <Windows.h>
-#include <atlstr.h>
+// #include <Windows.h>
+// #include <atlstr.h>
 
 namespace Helios {
 	namespace Project {
@@ -149,44 +146,44 @@ namespace Helios {
 
 		inline StartupConfig& GetStartupConfig() { return s_startupConfig; }
 
-		void AttemptLoad() {
-			if (__argc > 1) {
-				int argCount;
-				LPWSTR* args = CommandLineToArgvW(GetCommandLineW(), &argCount);
-				args[1][wcslen(args[1]) - 1] = '\0';
-				std::filesystem::path selected_path(args[1]);
-				LocalFree(args);
+		// void AttemptLoad() {
+		// 	if (__argc > 1) {
+		// 		int argCount;
+		// 		LPWSTR* args = CommandLineToArgvW(GetCommandLineW(), &argCount);
+		// 		args[1][wcslen(args[1]) - 1] = '\0';
+		// 		std::filesystem::path selected_path(args[1]);
+		// 		LocalFree(args);
 
-				std::cout << "Project Location: " <<  selected_path << std::endl;
+		// 		std::cout << "Project Location: " <<  selected_path << std::endl;
 
-				if (!std::filesystem::is_directory(selected_path)) {
-					MessageBoxA(NULL, "The path given is invalid!", "Failed to open project!", MB_ICONERROR);
-					throw HELIOS_EXIT_CODE_INVALID_PROJECT_PATH;
-				}
+		// 		if (!std::filesystem::is_directory(selected_path)) {
+		// 			MessageBoxA(NULL, "The path given is invalid!", "Failed to open project!", MB_ICONERROR);
+		// 			throw HELIOS_EXIT_CODE_INVALID_PROJECT_PATH;
+		// 		}
 
-				int code;
-				if ((code = Helios::Project::IsValidProject(selected_path.string().c_str())) < 0) {
-					std::cout << "Given directory: \"" << selected_path << "\" is not a valid project! Code: " << code << std::endl;
-					if (MessageBoxA(NULL, "The directory given is not a valid project! Do you want to create a new project in this directory", "Failed to open project!", MB_RETRYCANCEL | MB_ICONERROR) != IDRETRY)
-						throw HELIOS_EXIT_CODE_INVALID_PROJECT_PATH;
-					else {
-						Project::CreateNewProject(selected_path.string().c_str());
-						if ((code = Helios::Project::IsValidProject(selected_path.string().c_str())) < 0)
-						{
-							MessageBoxA(NULL, "Failed to recreate project!", "Failed to open project!", MB_ICONERROR);
-							throw HELIOS_EXIT_CODE_INVALID_PROJECT_PATH;
-						}
-					}
-				}
+		// 		int code;
+		// 		if ((code = Helios::Project::IsValidProject(selected_path.string().c_str())) < 0) {
+		// 			std::cout << "Given directory: \"" << selected_path << "\" is not a valid project! Code: " << code << std::endl;
+		// 			if (MessageBoxA(NULL, "The directory given is not a valid project! Do you want to create a new project in this directory", "Failed to open project!", MB_RETRYCANCEL | MB_ICONERROR) != IDRETRY)
+		// 				throw HELIOS_EXIT_CODE_INVALID_PROJECT_PATH;
+		// 			else {
+		// 				Project::CreateNewProject(selected_path.string().c_str());
+		// 				if ((code = Helios::Project::IsValidProject(selected_path.string().c_str())) < 0)
+		// 				{
+		// 					MessageBoxA(NULL, "Failed to recreate project!", "Failed to open project!", MB_ICONERROR);
+		// 					throw HELIOS_EXIT_CODE_INVALID_PROJECT_PATH;
+		// 				}
+		// 			}
+		// 		}
 
-				s_startupConfig = Project::DeserializeStartupConfig((selected_path / "Settings" / "Startup.config").string().c_str());
-				s_projectPath = selected_path;
-			}
-			else {
-				ShellExecuteA(NULL, "open", std::filesystem::current_path().append("ProjectExplorer.exe").string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
-				throw HELIOS_EXIT_CODE_INVALID_ARGS;
-			}
-		}
+		// 		s_startupConfig = Project::DeserializeStartupConfig((selected_path / "Settings" / "Startup.config").string().c_str());
+		// 		s_projectPath = selected_path;
+		// 	}
+		// 	else {
+		// 		ShellExecuteA(NULL, "open", std::filesystem::current_path().append("ProjectExplorer.exe").string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+		// 		throw HELIOS_EXIT_CODE_INVALID_ARGS;
+		// 	}
+		// }
 		void SaveScene(bool as_new) {
 			//if (s_currentScenePath.empty() || as_new)
 			//	SaveSceneDialog();

@@ -2,15 +2,12 @@
 #include "Helios/Core/Application.h"
 
 #include <iostream>
-#include <windows.h>
 
 #include <Helios.h>
 #include <Helios/Resources/Color.h>
 #include <Helios/Graphics/Renderer2D.h>
 
 #include <Helios/Utils/ErrorHandling.h>
-
-#include <d2d1_3.h>
 
 #include "Helios/Utils/ErrorHandling.h"
 #include <filesystem>
@@ -21,9 +18,8 @@
 #include "Icons.h"
 
 #include "HeliosEditor_Macros.h"
-#include <imgui_impl_win32.cpp>
-#include <imgui_impl_dx11.cpp>
-#include <Shlwapi.h>
+
+// #include <Shlwapi.h> what is this lol?
 
 #include "Helios/Math/Matrix.h"
 #include <Helios/Math/Quaternion.h>
@@ -41,7 +37,6 @@
 
 #include "Helios/Scene/EditorCamera.h"
 
-#include "DirectXMath.h"
 #include "InitWindow.h"
 #include "GUI/Toolbar.h"
 #include "Helios/Core/UUID.h"

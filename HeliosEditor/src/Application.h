@@ -18,14 +18,12 @@
 #include "Panels/GameViewPanel.h"
 #include "Panels/ScenePanel.h"
 
-
 enum class EditorMode
 {
 	Editor,
 	Paused,
 	Playing
 };
-
 
 namespace Helios
 {
