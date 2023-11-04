@@ -8,10 +8,14 @@
 #define HL_DEBUG
 #endif
 
+#ifdef HELIOS_PLATFORM_WINDOWS
 #ifdef HELIOS_BUILD_DLL
 #define HELIOS_API __declspec(dllexport)
 #else
 #define HELIOS_API __declspec(dllimport)
+#endif
+#else
+#define HELIOS_API
 #endif
 
 typedef unsigned long long bitmask_t;

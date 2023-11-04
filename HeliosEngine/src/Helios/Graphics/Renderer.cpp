@@ -413,11 +413,15 @@ namespace Helios
 		if (meshRenderer.mesh == nullptr || meshRenderer.material == nullptr) return;
 		HL_PROFILE_BEGIN("Draw Mesh");
 		HL_PROFILE_BEGIN("Create Shader");
-		static Ref<DepricatedShader> shader = CreateRef<DepricatedShader>(DepricatedShader("Standard", {
-			{ "Position", DepricatedShader::DataType::Float3 },
-			{ "TexCoord", DepricatedShader::DataType::Float2 },
-			{ "Normal",   DepricatedShader::DataType::Float3 },
-		}));
+
+		static Ref<Shader> shader = Shader::Create("Standard", "StandardVertexShader", "StandardPixelShader", InputLayouts {
+			InputLayout {
+				{ "Position", ShaderDataType::Float32_3 },
+				{ "TexCoord", ShaderDataType::Float32_2 },
+				{ "Normal",   ShaderDataType::Float32_3 }
+			}
+		}, DepthFunc::Less, Topology::TriangleList);
+
 		HL_PROFILE_END();
 
 		HL_PROFILE_BEGIN("Bind shader, mesh, texture");

@@ -21,9 +21,6 @@ project "ImGui"
         "imgui/backends/imgui_impl_glfw.cpp",
         "imgui/backends/imgui_impl_glfw.h",
         "imgui/backends/imgui_impl_opengl3_loader.h",
-
-        "imgui/backends/imgui_impl_win32.cpp",
-        "imgui/backends/imgui_impl_win32.h",
     }
 
     includedirs { 
@@ -41,6 +38,9 @@ project "ImGui"
             "imgui/backends/imgui_impl_dx11.h",
             "imgui/backends/imgui_impl_dx10.cpp",
             "imgui/backends/imgui_impl_dx10.h",
+
+            "imgui/backends/imgui_impl_win32.cpp",
+            "imgui/backends/imgui_impl_win32.h",
         }
 
     filter "system:linux"

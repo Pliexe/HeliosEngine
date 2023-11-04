@@ -2,8 +2,8 @@
 -- HeliosEditor - A cross-platform game editor using HeliosEngine
 -- HeliosEditor dynamically links to HeliosEngine
 
-
-
+-- Build files for other editors
+require "vendor/premake-vscode/vscode"
 
 workspace "HeliosEngine"
     architecture "x64"
@@ -135,6 +135,14 @@ newaction {
         os.remove('**.sln')
         os.remove('**.vcxproj')
         os.remove('**.vcxproj.*')
+        -- codelite
+        os.remove('**.workspace')
+        os.remove('**.userprefs')
+        os.remove('**.project')
+        os.remove('**.mk')
+        os.remove('.codelite') -- Needs to fix it
+        -- vscode
+        os.remove('**.code-workspace')
         print("Removing Makefile and Makefile.*")
         os.remove('**Makefile')
         os.remove('**Makefile.*')

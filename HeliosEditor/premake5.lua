@@ -87,6 +87,11 @@ project "HeliosEditor"
         {
             "Gdiplus.lib"
         }
+
+    filter "system:linux"
+        pic "on"
+        systemversion "latest"
+        defines { "HELIOS_PLATFORM_LINUX" }
         
     filter "configurations:Debug"
         defines "HELIOS_DEBUG"

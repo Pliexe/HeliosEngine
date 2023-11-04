@@ -19,8 +19,13 @@ namespace Helios
 		Initialize(specs);
 	}
 
-	void Application::Initialize(Specifications specs)
-	{
+    void Application::MessageBox(const std::string &title, const std::string &message)
+    {
+		GraphicalWindow::MessageBox(title, message);
+    }
+
+    void Application::Initialize(Specifications specs)
+    {
 		Graphics::m_api = specs.graphicsAPI;
 #ifdef HELIOS_PLATFORM_WINDOWS
 		m_Window = CreateScope<Win32GraphicalWindow>();

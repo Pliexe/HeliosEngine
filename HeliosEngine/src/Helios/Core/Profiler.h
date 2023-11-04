@@ -1,14 +1,13 @@
 #pragma once
+#include "Base.h"
 #include "pch.h"
 
 #include <cstdint>
-#include <intrin.h>
 
 #include "Time.h"
 
 namespace Helios
 {
-
 	class HELIOS_API Profiler
 	{
 	public:

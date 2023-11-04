@@ -16,6 +16,7 @@ prt_help()
     echo   gmake2        - Generate GNU makefiles for POSIX, MinGW, and Cygwin
     echo   xcode4        - Generate Apple Xcode 4 project files
     echo   codelite      - Generate CodeLite project files
+    echo   vscode        - Generate Visual Studio Code project files
     echo   vs2015        - Generate Visual Studio 2015 project files
     echo   vs2017        - Generate Visual Studio 2017 project files
     echo   vs2019        - Generate Visual Studio 2019 project files
@@ -64,6 +65,12 @@ case $1 in
     vs2022)
         echo "Generating Visual Studio 2022 project files..."
         premake5 vs2022
+        ;;
+    vscode)
+        echo "Generating Visual Studio Code project files..."
+        premake5 gmake2
+        premake5 vscode
+        code HeliosEngine.code-workspace
         ;;
     clean)
         echo "Cleaning project files..."

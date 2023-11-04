@@ -22,6 +22,8 @@ namespace Helios
 
 		Scope<GraphicalWindow>& GetWindow() { return m_Window; }
 		
+		void MessageBox(const std::string& title, const std::string& message);
+
 		void Initialize(Specifications specs);
 		void Quit();
 

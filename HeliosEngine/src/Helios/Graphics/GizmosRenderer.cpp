@@ -106,11 +106,11 @@ namespace Helios
 			Matrix4x4 viewProjection;
 		};
 
-		Ref<DepricatedShader> quad_gizmos_shader;
-		Ref<DepricatedShader> standard_gizmos_shader;
-		Ref<DepricatedShader> tool_gizmos_shader;
-		Ref<DepricatedShader> line_gizmos_shader;
-		Ref<DepricatedShader> dynamic_gizmos_shader;
+		Ref<Shader> quad_gizmos_shader;
+		Ref<Shader> standard_gizmos_shader;
+		Ref<Shader> tool_gizmos_shader;
+		Ref<Shader> line_gizmos_shader;
+		Ref<Shader> dynamic_gizmos_shader;
 
 		struct QuadTool
 		{
@@ -174,34 +174,41 @@ namespace Helios
 
 #pragma region Initilization Shaders
 
-		s_Data.standard_gizmos_shader = CreateRef<DepricatedShader>(DepricatedShader("StandardGizmos", {
-			{ "Position", DepricatedShader::DataType::Float3 },
-			{ "Transform", DepricatedShader::DataType::Matrix4x4, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance },
-			{ "Color", DepricatedShader::DataType::Float4, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance },
-			{ "Id",  DepricatedShader::DataType::Int32, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance }
-		}, DepricatedShader::Topology::TriangleList, DepthFunc::Always));
+		s_Data.standard_gizmos_shader = Shader::Create("StandardGizmos", "Shaders/StandardGizmosVertexShader", "Shaders/StandardGizmosPixelShader", InputLayouts {
+			InputLayout { { "Position", ShaderDataType::Float32_3 } },
+			InputLayout {
+				{ "Transform", ShaderDataType::MatrixFloat4x4 },
+				{ "Color", ShaderDataType::Float32_4 },
+				{ "Id", ShaderDataType::Int32 }
+			}
+		}, DepthFunc::Always, Topology::TriangleList);
 
-		s_Data.quad_gizmos_shader = CreateRef<DepricatedShader>(DepricatedShader("QuadGizmo", {
-			{ "Position", DepricatedShader::DataType::Float2 },
+		s_Data.quad_gizmos_shader = Shader::Create("QuadGizmo", "Shaders/QuadGizmoVertexShader", "Shaders/QuadGizmoPixelShader", InputLayouts {
+			InputLayout { { "Position", ShaderDataType::Float32_2 } },
+			InputLayout {
+				{ "World", ShaderDataType::MatrixFloat4x4 },
+				{ "Color", ShaderDataType::Float32_4 },
+				{ "Data", ShaderDataType::Int32 }
+			}
+		}, DepthFunc::Always, Topology::TriangleList);
 
-			{ "World", DepricatedShader::DataType::Matrix4x4, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance },
-			{ "Color", DepricatedShader::DataType::Float4, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance },
-			{ "Data",  DepricatedShader::DataType::Int32, 1u, 1u, DepricatedShader::ShaderElement::InputClassification::PerInstance }
-		}, DepricatedShader::Topology::TriangleList, DepthFunc::Always));
+		s_Data.line_gizmos_shader = Shader::Create("Line", "Shaders/LineVertexShader", "Shaders/LinePixelShader", InputLayouts{
+			InputLayout {
+				{ "Position", ShaderDataType::Float32_3 },
+				{ "Color", ShaderDataType::Float32_4 },
+				{ "Mode", ShaderDataType::Int32 },
+				{ "Thickness", ShaderDataType::Float32 },
+				{ "Id", ShaderDataType::Int32 }
+			}
+		}, DepthFunc::Always, Topology::LineList);
 
-		s_Data.line_gizmos_shader = CreateRef<DepricatedShader>(DepricatedShader("Line", {
-			{ "Position", DepricatedShader::DataType::Float3 },
-			{ "Color", DepricatedShader::DataType::Float4 },
-			{ "Mode", DepricatedShader::DataType::Int32 },
-			{ "Thickness", DepricatedShader::DataType::Float },
-			{ "Id", DepricatedShader::DataType::Int32 }
-		}, DepricatedShader::Topology::LineList, DepthFunc::Always));
-
-		s_Data.dynamic_gizmos_shader = CreateRef<DepricatedShader>(DepricatedShader("DynamicGizmos", {
-			{ "Position", DepricatedShader::DataType::Float3 },
-			{ "Color", DepricatedShader::DataType::Float4 },
-			{ "Id", DepricatedShader::DataType::Int32 }
-		}, DepricatedShader::Topology::TriangleList, DepthFunc::Always));
+		s_Data.dynamic_gizmos_shader = Shader::Create("DynamicGizmos", "Shaders/DynamicGizmosVertexShader", "Shaders/DynamicGizmosPixelShader", InputLayouts {
+			InputLayout {
+				{ "Position", ShaderDataType::Float32_3 },
+				{ "Color", ShaderDataType::Float32_4 },
+				{ "Id", ShaderDataType::Int32 }
+			}
+		}, DepthFunc::Always, Topology::TriangleList);
 
 #pragma endregion
 

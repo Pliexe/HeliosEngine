@@ -1,6 +1,8 @@
 #pragma once
 #include "pch.h"
 
+#ifdef HELIOS_PLATFORM_WINDOWS
+
 #include "Win32Window.h"
 #include "Helios/Core/GraphicalWindow.h"
 #include "Helios/Graphics/Graphics.h"
@@ -285,3 +287,5 @@ namespace Helios
         inline static uint32_t s_WindowCount = 0;
     };
 }
+
+#endif

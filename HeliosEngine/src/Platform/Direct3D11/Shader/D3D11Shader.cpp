@@ -103,9 +103,9 @@ namespace Helios
 
 					switch (elem.type)
 					{
-					case ShaderDataType::MatrixFloat2x2: n = 2;
-					case ShaderDataType::MatrixFloat3x3: n = 3;
-					case ShaderDataType::MatrixFloat4x4: n = 4;
+					case ShaderDataType::MatrixFloat2x2: n = 2; break;
+					case ShaderDataType::MatrixFloat3x3: n = 3; break;
+					case ShaderDataType::MatrixFloat4x4: n = 4; break;
 					}
 
 					for (uint32_t i = 0; i < n; i++)
@@ -161,7 +161,7 @@ namespace Helios
 		);
 #else
 		HL_EXCEPTION(
-			FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateInputLayout(ied, (UINT)index, blob->GetBufferPointer(), blob->GetBufferSize(), inputLayoutPtr),
+			FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateInputLayout(ied.data(), (UINT)ied.size(), blob->GetBufferPointer(), blob->GetBufferSize(), inputLayoutPtr)),
 			"Failed to create input layout!\n" + vertex_path
 		);
 #endif // DEBUG

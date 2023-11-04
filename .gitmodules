@@ -12,3 +12,6 @@
 [submodule "HeliosEngine/vendor/box2d"]
 	path = HeliosEngine/vendor/box2d
 	url = https://github.com/erincatto/box2d
+[submodule "vendor/premake-vscode"]
+	path = vendor/premake-vscode
+	url = https://github.com/Enhex/premake-vscode.git

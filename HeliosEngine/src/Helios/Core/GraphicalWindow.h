@@ -95,6 +95,10 @@ namespace Helios
 #pragma endregion
 
 #pragma region Static Methods
+
+		static void MessageBox(const std::string& title, const std::string& message);
+
+
 		static void PollEvents()
 		{
 #if defined(HELIOS_PLATFORM_WINDOWS) || defined(HELIOS_PLATFORM_LINUX) || defined(HELIOS_PLATFORM_MACOS)

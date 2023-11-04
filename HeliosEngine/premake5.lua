@@ -78,6 +78,15 @@ project "HeliosEngine"
             "HELIOS_PLATFORM_WINDOWS",
         }
 
+    filter "system:linux"
+        pic "on"
+        systemversion "latest"
+        
+        defines
+        {
+            "HELIOS_PLATFORM_LINUX",
+        }
+
     filter "configurations:Debug"
         defines "HELIOS_DEBUG"
         runtime "Debug"

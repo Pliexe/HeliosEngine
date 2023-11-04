@@ -51,3 +51,8 @@
 *.make
 Makefile
 HeliosEditor/Test.scene
+
+# codelite
+.codelite
+*.project
+*.workspace
