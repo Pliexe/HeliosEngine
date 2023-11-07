@@ -32,7 +32,7 @@ namespace Helios {
 		}
 		Entity(entt::entity entity_id, Scene* scene)
 		{
-			//HL_CORE_ASSERT_WITH_MSG(entity_id != entt::null, "entity handle is invalid!");
+			//HL_ASSERT(entity_id != entt::null, "entity handle is invalid!");
 			m_scene = scene;
 			m_entityHandle = entity_id;
 		}
@@ -40,16 +40,16 @@ namespace Helios {
 		template <typename... T>
 		bool HasComponent()
 		{
-			HL_CORE_ASSERT_WITH_MSG(m_entityHandle != entt::null, "entity handle is invalid!")
-			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!")
+			HL_ASSERT(m_entityHandle != entt::null, "entity handle is invalid!");
+			//HL_ASSERT(!m_scene.expired(), "Scene does not exist anymore!")
 			return m_scene->m_components.template any_of<T...>(m_entityHandle);
 		}
 
 		template <typename T, typename... Args>
 		T& AddScopedComponent(Args &&...args)
 		{
-			HL_CORE_ASSERT_WITH_MSG(!HasComponent<T>(), "GameObject arleady has this component!");
-			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!")
+			HL_ASSERT(!HasComponent<T>(), "GameObject arleady has this component!");
+			//HL_ASSERT(!m_scene.expired(), "Scene does not exist anymore!")
 			T& comp = m_scene->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
 			return comp;
 		}
@@ -71,16 +71,16 @@ namespace Helios {
 		template <typename T>
 		void RemoveComponent()
 		{
-			HL_CORE_ASSERT_WITH_MSG(HasComponent<T>(), "GameObject does not have the component!");
-			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!");
+			HL_ASSERT(HasComponent<T>(), "GameObject does not have the component!");
+			//HL_ASSERT(!m_scene.expired(), "Scene does not exist anymore!");
 			m_scene->m_components.remove<T>(m_entityHandle);
 		}
 
 		template <typename... T>
 		decltype(auto) GetComponent()
 		{
-			HL_CORE_ASSERT_WITH_MSG(HasComponent<T...>(), "GameObject does not have the component!");
-			//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Scene does not exist anymore!");
+			HL_ASSERT(HasComponent<T...>(), "GameObject does not have the component!");
+			//HL_ASSERT(!m_scene.expired(), "Scene does not exist anymore!");
 			return m_scene->m_components.template get<T...>(m_entityHandle);
 		}
 

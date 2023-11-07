@@ -10,7 +10,7 @@ namespace Helios
 	public:
 		OpenGLContext(GLFWwindow* windowHandle) : m_WindowHandle(windowHandle)
 		{
-			HL_CORE_ASSERT_WITH_MSG(m_WindowHandle, "GLFW Window handle is null!");
+			HL_ASSERT(m_WindowHandle, "GLFW Window handle is null!");
 		}
 
 		void BindDefaultFramebuffer() override
@@ -24,9 +24,9 @@ namespace Helios
 			UseContext();
 
 			int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-			HL_CORE_ASSERT_WITH_MSG(status, "Failed to initialize Glad!");
+			HL_ASSERT(status, "Failed to initialize Glad!");
 
-			HL_CORE_ASSERT_WITH_MSG(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "Helios requires at least OpenGL version 4.5!")
+			HL_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "Helios requires at least OpenGL version 4.5!");
 
 			return true;
 		}

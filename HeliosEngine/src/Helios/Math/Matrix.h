@@ -5,7 +5,7 @@
 
 namespace Helios
 {
-	__declspec(align(16)) struct Matrix4x4
+	__declspec(align(16)) struct Matrix4x4 
 	{
 		union
 		{

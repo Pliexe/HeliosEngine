@@ -10,19 +10,19 @@ namespace Helios
 {	
 	void Entity::SetParent(Entity& object)
 	{
-		//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Cannot reset Parent while Scene is unloaded!");
+		//HL_ASSERT(!m_scene.expired(), "Cannot reset Parent while Scene is unloaded!");
 		GetComponent<RelationshipComponent>().SetParent(m_scene->m_components, m_entityHandle, object);
 	}
 
 	void Entity::SetParent(entt::entity& object)
 	{
-		//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Cannot reset Parent while Scene is unloaded!");
+		//HL_ASSERT(!m_scene.expired(), "Cannot reset Parent while Scene is unloaded!");
 		GetComponent<RelationshipComponent>().SetParent(m_scene->m_components, m_entityHandle, object);
 	}
 
 	void Entity::ResetParent()
 	{
-		//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Cannot reset Parent while Scene is unloaded!");
+		//HL_ASSERT(!m_scene.expired(), "Cannot reset Parent while Scene is unloaded!");
 		GetComponent<RelationshipComponent>().Reset(m_scene->m_components);
 	}
 
@@ -32,7 +32,7 @@ namespace Helios
 
 	void Entity::Destroy()
 	{
-		//HL_CORE_ASSERT_WITH_MSG(!m_scene.expired(), "Can't destory GameObject if a scene is unloaded!");
+		//HL_ASSERT(!m_scene.expired(), "Can't destory GameObject if a scene is unloaded!");
 		//auto scene = m_scene.lock();
 		m_scene->m_components.destroy(m_entityHandle);
 	}

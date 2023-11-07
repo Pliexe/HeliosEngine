@@ -357,7 +357,15 @@ namespace Helios
 		rendererData.default_material->texture = rendererData.whiteTexture;
 
 		rendererData.instancedBuffer = DepricatedVertexBuffer::Create(sizeof(RendererData::InstancedRenderable) * RendererData::MAX_INSTANCES, BufferUsage::Dynamic);
-		rendererData.instancedBuffer->SetStride<RendererData::InstancedRenderable>();
+		//rendererData.instancedBuffer->SetStride<RendererData::InstancedRenderable>();
+		rendererData.instancedBuffer->SetStride(InputLayout{
+				{ "WorldViewProj", ShaderDataType::MatrixFloat4x4 },
+				{ "WorldProj", ShaderDataType::MatrixFloat4x4 },
+				{ "Color", ShaderDataType::Float32_4 },
+				{ "EntityId", ShaderDataType::Int32 },
+				{ "SceneIndex", ShaderDataType::Int32 }
+		}.GetStride());
+
 		return true;
 	}
 

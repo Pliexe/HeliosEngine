@@ -109,7 +109,7 @@ namespace Helios
 					m_Context = CreateScope<Direct3D11Context>(glfwGetWin32Window(m_Window));
 					break;
 				default:
-					HL_CORE_ASSERT_WITH_MSG(false, "Unsupported Graphics API!");
+					HL_ASSERT(false, "Unsupported Graphics API!");
 					break;
 			}
 

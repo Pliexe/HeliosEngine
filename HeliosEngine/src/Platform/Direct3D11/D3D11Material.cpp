@@ -15,7 +15,7 @@ namespace Helios {
             samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
             break;
         default:
-            HELIOS_ASSERT(false, "Unknown Filter!");
+            HL_ASSERT(false, "Unknown Filter!");
             break;
         }
 
@@ -46,7 +46,7 @@ namespace Helios {
             samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
             break;
         default:
-            HELIOS_ASSERT(false, "Unknown Type!");
+            HL_ASSERT(false, "Unknown Type!");
             break;
         }
 

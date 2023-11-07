@@ -41,6 +41,62 @@ namespace Helios {
 		MatrixFloat = ShaderDataType::MatrixFloat4x4,
 	};
 
+	static uint32_t ShaderDataTypeAlignment(ShaderDataType type)
+	{
+		switch (type)
+		{
+			// Bool (1 byte)
+		case ShaderDataType::Bool: return 1;
+			// 8-bit (1 byte)
+		case ShaderDataType::Int8: return 1;
+		case ShaderDataType::UInt8: return 1;
+		case ShaderDataType::NormInt8: return 1;
+		case ShaderDataType::NormUInt8: return 1;
+			// 16-bit (2 bytes)
+		case ShaderDataType::Int16: return 2;
+		case ShaderDataType::Float16: return 2;
+		case ShaderDataType::UInt16: return 2;
+		case ShaderDataType::NormInt16: return 2;
+		case ShaderDataType::NormUInt16: return 2;
+			// 32-bit (4 bytes)
+		case ShaderDataType::Int32: return 4;
+		case ShaderDataType::Float32: return 4;
+		case ShaderDataType::UInt32: return 4;
+			// 8-bit x 2 (2 bytes) 1 * 2 = 2
+		case ShaderDataType::Int8_2: return 2;
+		case ShaderDataType::UInt8_2: return 2;
+		case ShaderDataType::NormInt8_2: return 2;
+		case ShaderDataType::NormUInt8_2: return 2;
+			// 16-bit x 2 (4 bytes) 2 * 2 = 4
+		case ShaderDataType::Int16_2: return 4;
+		case ShaderDataType::UInt16_2: return 4;
+		case ShaderDataType::NormInt16_2: return 4;
+		case ShaderDataType::NormUInt16_2: return 4;
+			// 32-bit x 2 (8 bytes) 4 * 2 = 8
+		case ShaderDataType::Int32_2: return 8;
+		case ShaderDataType::UInt32_2: return 8;
+			// 8-bit x 4 (2 bytes) 1 * 4 = 4
+		case ShaderDataType::Int8_4: return 4;
+		case ShaderDataType::UInt8_4: return 4;
+		case ShaderDataType::NormInt8_4: return 4;
+		case ShaderDataType::NormUInt8_4: return 4;
+			// 16-bit x 4 (4 bytes) 2 * 4 = 8
+		case ShaderDataType::Int16_4: return 8;
+		case ShaderDataType::UInt16_4: return 8;
+		case ShaderDataType::NormInt16_4: return 8;
+		case ShaderDataType::NormUInt16_4: return 8;
+			// 32-bit x 4 (8 bytes) 4 * 4 = 16
+		case ShaderDataType::Int32_4: return 16;
+		case ShaderDataType::UInt32_4: return 16;
+			// Matrixs
+		case ShaderDataType::MatrixFloat2x2: return 8;
+		case ShaderDataType::MatrixFloat3x3: return 12;
+		case ShaderDataType::MatrixFloat4x4: return 16;
+		}
+		HL_ASSERT(false, "Unknown ShaderDataType!");
+		return 0;
+	}
+
 	static uint32_t ShaderDataTypeSize(ShaderDataType type)
 	{
 		switch (type)
@@ -104,7 +160,7 @@ namespace Helios {
 			case ShaderDataType::MatrixFloat4x4: return 4 * 4 * 4;
 		}
 
-		HELIOS_ASSERT(false, "Unknown ShaderDataType!");
+		HL_ASSERT(false, "Unknown ShaderDataType!");
 		return 0;
 	}
 
@@ -150,7 +206,16 @@ namespace Helios {
 		uint32_t GetStride() const { return m_Stride; }
 
 	private:
-		void CalculateStride() { m_Stride = 0; for (auto& e : m_elements) { m_Stride += ShaderDataTypeSize(e.type); } }
+		void CalculateStride() {
+			m_Stride = 0;
+			uint32_t align = 0;
+			for (auto& e : m_elements) { 
+				m_Stride += ShaderDataTypeSize(e.type);
+				uint32_t a = ShaderDataTypeAlignment(e.type);
+				if (a > align) align = a;
+			}
+			m_Stride = (m_Stride + align - 1) & ~(align - 1);
+		}
 	private:
 		uint32_t m_Stride = 0;
 		std::vector<InputElement> m_elements;
@@ -317,15 +382,7 @@ namespace Helios {
 			BufferUsage usage = BufferUsage::Static;
 		};
 
-		template <int N>
-		static Ref<VertexArray> Create(const SafeInputLayouts<N>& inputLayouts, BufferSpecification(&bufferSpecifications)[N])
-		{
-			return Create(inputLayouts, bufferSpecifications);
-		}
-
-	private:
 		static Ref<VertexArray> Create(const InputLayouts& inputLayouts, std::initializer_list<BufferSpecification> bufferSpecifications);
-
 	};
 
 	class HELIOS_API DepricatedVertexBuffer

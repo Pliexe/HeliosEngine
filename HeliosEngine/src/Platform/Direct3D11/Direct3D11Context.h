@@ -9,7 +9,7 @@ namespace Helios
 	public:
 		Direct3D11Context(HWND windowHandle) : m_WindowHandle(windowHandle)
 		{
-			HL_CORE_ASSERT_WITH_MSG(m_WindowHandle, "HWND Window handle is null!");
+			HL_ASSERT(m_WindowHandle, "HWND Window handle is null!");
 		}
 
 		void BindDefaultFramebuffer() override

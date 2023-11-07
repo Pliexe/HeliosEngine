@@ -10,6 +10,7 @@
 #include "Platform/Direct3D11/Buffers/D3D11VertexBuffer.h"
 
 #endif
+#include <Platform/Direct3D11/Buffers/D3D11VertexArray.h>
 
 
 namespace Helios
@@ -22,7 +23,7 @@ namespace Helios
 		case DepricatedGraphics::API::DirectX11: return CreateRef<DirectXConstantBuffer>(sizeof(T) + (16 - sizeof(T) % 16));
 		}
 
-		HELIOS_ASSERT(false, "Unknown DepricatedGraphics API!");
+		HL_ASSERT(false, "Unknown DepricatedGraphics API!");
 		return nullptr;
 	}
 
@@ -34,7 +35,7 @@ namespace Helios
 		case DepricatedGraphics::API::DirectX11: return CreateRef<DirectXConstantBuffer>(data, sizeof(T) + (16 - sizeof(T) % 16));
 		}
 
-		HELIOS_ASSERT(false, "Unknown GraphicsAPI!");
+		HL_ASSERT(false, "Unknown GraphicsAPI!");
 		return nullptr;
 	}*/
 
@@ -47,7 +48,7 @@ namespace Helios
 		case Graphics::API::Direct3D11: return CreateRef<DepricatedDirectXVertexBuffer>(size, usage);
 		}
 
-		HELIOS_ASSERT(false, "Unknown DepricatedGraphics API!");
+		HL_ASSERT(false, "Unknown DepricatedGraphics API!");
 		return nullptr;
 	}
 	
@@ -58,7 +59,7 @@ namespace Helios
 		case Graphics::API::Direct3D11: return CreateRef<DepricatedDirectXVertexBuffer>(data, size, usage);
 		}
 
-		HELIOS_ASSERT(false, "Unknown DepricatedGraphics API!");
+		HL_ASSERT(false, "Unknown DepricatedGraphics API!");
 		return nullptr;
 	}
 
@@ -74,7 +75,7 @@ namespace Helios
 #endif
 		}
 
-		HELIOS_ASSERT(false, "Unknown Graphics API!");
+		HL_ASSERT(false, "Unknown Graphics API!");
 		return nullptr;
 	}
 
@@ -88,7 +89,7 @@ namespace Helios
 #endif
 		}
 
-		HELIOS_ASSERT(false, "Unknown Graphics API!");
+		HL_ASSERT(false, "Unknown Graphics API!");
 		return nullptr;
 	}
 
@@ -104,7 +105,7 @@ namespace Helios
 		case Graphics::API::Direct3D11: return CreateRef<D3D11IndexBuffer>(indices, count, usage);
 		}
 
-		HELIOS_ASSERT(false, "Unknown Graphics API!");
+		HL_ASSERT(false, "Unknown Graphics API!");
 		return nullptr;
 	}
 	
@@ -118,7 +119,7 @@ namespace Helios
 		case Graphics::API::Direct3D11: return CreateRef<D3D11VertexBuffer>(size, usage);
 		}
 
-		HELIOS_ASSERT(false, "Unknown Graphics API!");
+		HL_ASSERT(false, "Unknown Graphics API!");
 		return nullptr;
 	}
 
@@ -129,8 +130,19 @@ namespace Helios
 		case Graphics::API::Direct3D11: return CreateRef<D3D11VertexBuffer>(data, size, usage);
 		}
 
-		HELIOS_ASSERT(false, "Unknown Graphics API!");
+		HL_ASSERT(false, "Unknown Graphics API!");
 		return nullptr;
 	}
+	Ref<VertexArray> VertexArray::Create(const InputLayouts& inputLayouts, std::initializer_list<BufferSpecification> bufferSpecifications)
+	{
+		HL_ASSERT(bufferSpecifications.size() == inputLayouts.size(), "BufferSpecifications and InputLayouts must be the same size!");
 
+		switch (Graphics::GetAPI())
+		{
+		case Graphics::API::Direct3D11: return CreateRef<D3D11VertexArray>(inputLayouts, bufferSpecifications);
+		}
+
+		HL_ASSERT(false, "Unknown Graphics API!");
+		return nullptr;
+	}
 }

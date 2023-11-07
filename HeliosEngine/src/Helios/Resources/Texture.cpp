@@ -15,7 +15,7 @@ namespace Helios
         case Graphics::API::OpenGL: return CreateRef<OpenGLTexture2D>(path.string());
         }
 
-        HL_CORE_ASSERT_WITH_MSG(false, "Unknown DepricatedGraphics API!");
+        HL_ASSERT(false, "Unknown DepricatedGraphics API!");
         return nullptr;
     }
 
@@ -27,7 +27,7 @@ namespace Helios
         case Graphics::API::OpenGL: return CreateRef<OpenGLTexture2D>(width, height);
         }
 
-        HL_CORE_ASSERT_WITH_MSG(false, "Unknown DepricatedGraphics API!");
+        HL_ASSERT(false, "Unknown DepricatedGraphics API!");
         return nullptr;
     }
 }

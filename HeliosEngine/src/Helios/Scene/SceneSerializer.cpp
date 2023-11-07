@@ -172,8 +172,8 @@ namespace Helios
 
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
-		HELIOS_ASSERT(entity.HasComponent<UUIDComponent>(), "Entity has no uuid component!");
-		HELIOS_ASSERT(entity.HasComponent<InfoComponent>(), "Entity has no tag component!");
+		HL_ASSERT(entity.HasComponent<UUIDComponent>(), "Entity has no uuid component!");
+		HL_ASSERT(entity.HasComponent<InfoComponent>(), "Entity has no tag component!");
 
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID().toString();

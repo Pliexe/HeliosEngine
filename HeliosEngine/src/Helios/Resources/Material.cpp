@@ -14,10 +14,10 @@ namespace Helios
 		case Graphics::API::Direct3D11:
 			return CreateRef<D3D11Material>(filter, type);
 		case Graphics::API::OpenGL:
-			HELIOS_ASSERT(false, "OpenGL is not supported yet!");
+			HL_ASSERT(false, "OpenGL is not supported yet!");
 			return nullptr;
 		default:
-			HELIOS_ASSERT(false, "Unknown DepricatedGraphics API!");
+			HL_ASSERT(false, "Unknown DepricatedGraphics API!");
 			return nullptr;
 		}
 	}

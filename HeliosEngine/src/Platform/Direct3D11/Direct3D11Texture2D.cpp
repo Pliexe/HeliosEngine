@@ -19,7 +19,7 @@ namespace Helios
 			!data,
 			"Failed to load image at path: " + path
         )
-        //HL_CORE_ASSERT_WITH_MSG(data, "Failed to load image!");
+        //HL_ASSERT(data, "Failed to load image!");
         m_Width = width;
         m_Height = height;
 

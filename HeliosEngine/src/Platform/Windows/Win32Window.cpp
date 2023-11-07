@@ -9,13 +9,13 @@ namespace Helios
 
 	void Win32Window::Hide()
 	{
-		HELIOS_ASSERT(m_hWnd);
+		HL_ASSERT(m_hWnd);
 		ShowWindow(m_hWnd, SW_HIDE);
 	}
 
 	bool Win32Window::IsFocused()
 	{
-		HELIOS_ASSERT(m_hWnd);
+		HL_ASSERT(m_hWnd);
 		return GetForegroundWindow() == m_hWnd;
 	}
 
@@ -72,7 +72,7 @@ namespace Helios
 
 	HWND Win32Window::GetHWND() const
 	{
-		HELIOS_ASSERT(m_hWnd);
+		HL_ASSERT(m_hWnd);
 		return m_hWnd;
 	}
 }

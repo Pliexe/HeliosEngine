@@ -18,7 +18,7 @@ namespace Helios
 		case Graphics::API::Direct3D11: return CreateRef<D3D11Shader>(name, vertex_path + DX_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
 		}
 
-		HELIOS_ASSERT(false, "Unknown Graphics API!");
+		HL_ASSERT(false, "Unknown Graphics API!");
 		return nullptr;
 	}
 	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertex_path, const std::string& pixel_path, InputLayouts inputLayouts, DepthFunc depthFunc, Topology topology)
@@ -28,7 +28,7 @@ namespace Helios
 		case Graphics::API::Direct3D11: return CreateRef<D3D11Shader>(name, vertex_path + DX_SHADER_EXTENSION, pixel_path + DX_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
 		}
 
-		HELIOS_ASSERT(false, "Unknown Graphics API!");
+		HL_ASSERT(false, "Unknown Graphics API!");
 		return nullptr;
 	}
 
@@ -39,7 +39,7 @@ namespace Helios
 		case Graphics::API::Direct3D11: return CreateRef<D3D11Shader>(name, vertex_path + DX_SHADER_EXTENSION, pixel_path + DX_SHADER_EXTENSION, geometry_path + DX_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
 		}
 
-		HELIOS_ASSERT(false, "Unknown Graphics API!");
+		HL_ASSERT(false, "Unknown Graphics API!");
 		return nullptr;
 	}
 

@@ -6,13 +6,16 @@
 
 #ifdef HELIOS_DEBUG
 
-#define HELIOS_ASSERT(condition) assert(condition)
-#define HL_CORE_ASSERT_WITH_MSG(condition, message) if(!(condition)) { HL_MESSAGE(("Helios Assertion Failed!\n\nFunction:" + std::string(__FUNCTION__) + "\nLine: " + std::to_string(__LINE__) + "\n\nMessage: " + message ).c_str()); HL_DEBUGBREAK(); }
+#define HL_ASSERT_C(condition, message) if(!(condition)) { HL_MESSAGE(("Helios Assertion Failed!\n\nFunction:" + std::string(__FUNCTION__) + "\nLine: " + std::to_string(__LINE__) + "\n\nMessage: " + message ).c_str()); HL_DEBUGBREAK(); }
+#define HL_ASSERT_NM(condition) assert(condition)
+#define GET_ASSERT_MACRO(_1, _2, NAME, ...) NAME
+#define HL_ASSERT(...) GET_ASSERT_MACRO(__VA_ARGS__, HL_ASSERT_C, HL_ASSERT_NM)(__VA_ARGS__)
 
 #else
 
-#define HELIOS_ASSERT(condition)
-#define HL_CORE_ASSERT_WITH_MSG(condition, message)
+#define HL_ASSERT_C(condition, message)
+#define HL_ASSERT_NM(condition)
+#define HL_ASSERT(...)
 
 #endif // HELIOS_DEBUG
 

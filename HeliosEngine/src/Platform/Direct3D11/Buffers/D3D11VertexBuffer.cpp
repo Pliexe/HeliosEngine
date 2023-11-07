@@ -75,7 +75,7 @@ namespace Helios
 
 	void D3D11VertexBuffer::SetData(const void* data, uint32_t size)
 	{
-        HL_CORE_ASSERT_WITH_MSG(m_Usage != BufferUsage::Static, "Buffer is not dynamic!");
+        HL_ASSERT(m_Usage != BufferUsage::Static, "Buffer is not dynamic!");
 
 		D3D11_MAPPED_SUBRESOURCE mappedData;
 		Direct3D11Context::GetCurrentContext()->GetContext()->Map(m_Buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
