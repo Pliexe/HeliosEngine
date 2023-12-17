@@ -237,20 +237,7 @@ namespace Helios
 		shaderBuilder.SetVertexShader("Shaders/StandardInstancedVertexShader");
 		shaderBuilder.SetPixelShader("Shaders/StandardInstancedPixelShader");
 
-		SafeInputLayouts<2> inputLayouts({
-			InputLayout {
-				{ "Position", ShaderDataType::Float32_3 },
-				{ "TexCoord", ShaderDataType::Float32_2 },
-				{ "Normal", ShaderDataType::Float32_3 }
-			},
-			InputLayout {
-				{ "WorldViewProj", ShaderDataType::MatrixFloat4x4 },
-				{ "WorldProj", ShaderDataType::MatrixFloat4x4 },
-				{ "Color", ShaderDataType::Float32_4 },
-				{ "EntityId", ShaderDataType::Int32 },
-				{ "SceneIndex", ShaderDataType::Int32 }
-			}
-		});
+		const SafeInputLayouts<2> inputLayouts = Mesh::GetInputLayout();
 
 		shaderBuilder.SetInputLayouts(inputLayouts);
 

@@ -377,44 +377,38 @@ namespace Helios {
 
 		struct BufferSpecification
 		{
-			const void* data;
-			uint32_t size; // Total size of buffer in bytes
-			BufferUsage usage = BufferUsage::Static;
+			BufferSpecification(const void* data, uint32_t size, BufferUsage usage = BufferUsage::Static)
+			{
+				type = InputType::Create;
+				data = data;
+				size = size;
+				usage = usage;
+			}
+
+			BufferSpecification(const Ref<UnsafeVertexBuffer>& buffer)
+			{
+				type = InputType::Reference;
+				this->buffer = buffer;
+			}
+
+			enum class InputType
+			{
+				Create,
+				Reference
+			};
+
+			InputType type = InputType::Create;
+			union {
+				struct {
+					const void* data;
+					uint32_t size; // Total size of buffer in bytes
+					BufferUsage usage = BufferUsage::Static;
+				};
+				Ref<UnsafeVertexBuffer>& buffer;
+			};
 		};
 
 		static Ref<VertexArray> Create(const InputLayouts& inputLayouts, std::initializer_list<BufferSpecification> bufferSpecifications);
-	};
-
-	class HELIOS_API DepricatedVertexBuffer
-	{
-	protected:
-		BufferUsage m_Usage;
-		uint32_t m_Stride = 0u;
-		uint32_t m_Size = 0u;
-	public:
-
-		virtual void Bind(uint32_t slot = 0u) const = 0;
-		virtual void Unbind() const = 0;
-
-		virtual void SetData(const void* data, uint32_t size) = 0;
-
-		template <typename T>
-		static Ref<DepricatedVertexBuffer> Create(std::initializer_list<T> data, BufferUsage usage = BufferUsage::Static)
-		{
-			auto x = Create(data.begin(), data.Size(), usage);
-			x->m_Stride = sizeof(T);
-			return x;
-		}
-		static Ref<DepricatedVertexBuffer> Create(uint32_t size, BufferUsage usage = BufferUsage::Static);
-		static Ref<DepricatedVertexBuffer> Create(const void* data, uint32_t size, BufferUsage usage = BufferUsage::Static);
-
-		template <typename T>
-		void SetStride() { m_Stride = sizeof(T); }
-		void SetStride(uint32_t stride) { m_Stride = stride; }
-
-		template <typename T>
-		inline uint32_t getCount() const { return m_Size / sizeof(T); }
-
 	};
 
 	class HELIOS_API IndexBuffer

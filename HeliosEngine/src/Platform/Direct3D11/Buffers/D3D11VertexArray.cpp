@@ -22,19 +22,33 @@ namespace Helios
 		// Iterate over input_layouts and bufferSpecifications and create vertex buffers based on the BufferSpecifications
 		for (size_t i = 0; i < input_layouts.size(); i++)
 		{
-			Ref<D3D11VertexBuffer> vertex_buffer;
+			Ref<UnsafeVertexBuffer> vertex_buffer;
 
-			if (bufferSpecifications[i].data == nullptr)
-				vertex_buffer = CreateRef<D3D11VertexBuffer>(bufferSpecifications[i].size, bufferSpecifications[i].usage);
-			else
-				vertex_buffer = CreateRef<D3D11VertexBuffer>(bufferSpecifications[i].data, bufferSpecifications[i].size, bufferSpecifications[i].usage);
+			switch (bufferSpecifications[i].type)
+			{
+			case BufferSpecification::InputType::Create:
+			{
+				if (bufferSpecifications[i].data == nullptr)
+					vertex_buffer = CreateRef<D3D11VertexBuffer>(bufferSpecifications[i].size, bufferSpecifications[i].usage);
+				else
+					vertex_buffer = CreateRef<D3D11VertexBuffer>(bufferSpecifications[i].data, bufferSpecifications[i].size, bufferSpecifications[i].usage);
+				break;
+			}
+			case BufferSpecification::InputType::Reference:
+			{
+				vertex_buffer = bufferSpecifications[i].buffer;
+				break;
+			}
+			default:
+				HL_ASSERT(false, "Unknown buffer initialization type!");
+				break;
+			}
 
-			vertex_buffer->m_BoundSlot = i;
+			static_cast<D3D11VertexBuffer*>(vertex_buffer.get())->m_BoundSlot = i;
 			vertex_buffer->SetInputLayout(input_layouts[i]);
 
 			m_VertexBuffers.push_back(vertex_buffer);
 		}
-
 	}
 
 	void D3D11VertexArray::Bind() const
