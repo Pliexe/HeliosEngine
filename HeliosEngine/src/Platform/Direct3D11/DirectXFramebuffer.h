@@ -25,6 +25,8 @@ namespace Helios
         void Resize(uint32_t width, uint32_t height) override;
 
         void* GetTextureID(unsigned int bufferIndex) override;
+        void* GetDepthTextureID() override;
+
 
         // template GetPixel for uint and etc such as Color
 

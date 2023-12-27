@@ -47,6 +47,7 @@ namespace Helios
         virtual Size GetSize() const = 0;
 
         virtual void* GetTextureID(unsigned int bufferIndex) = 0;
+		virtual void* GetDepthTextureID() = 0;
 
         template <typename T>
         T GetPixel(uint32_t attachment, uint32_t x, uint32_t y)

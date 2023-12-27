@@ -77,6 +77,11 @@ namespace Helios
 		return m_colorBuffers[bufferIndex].shaderResourceView.Get();
     }
 
+	void* DirectXFramebuffer::GetDepthTextureID()
+	{
+		return m_depthStencilBuffer.depthStencilView.Get();
+	}
+
 	Color DirectXFramebuffer::GetPixelColor(uint32_t attachment, uint32_t x, uint32_t y)
 	{
 		HL_ASSERT_EXCEPTION((attachment < m_colorBuffers.size()), "Error while reading Pixel data! (Attachment index out of bounds!)");
