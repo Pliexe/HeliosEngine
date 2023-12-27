@@ -142,6 +142,8 @@ namespace Helios
 					win->m_EventCallback(event);
 				}
 			});
+
+			return true;
 	    }
 	    
 
