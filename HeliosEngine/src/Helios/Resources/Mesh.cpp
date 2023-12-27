@@ -230,16 +230,16 @@ namespace Helios
 		return Mesh::Create("Cylinder_" + std::to_string(segments), builder);
 	}
 	
-	std::unordered_map<std::string, Ref<Mesh>> Mesh::s_Meshes;
-	
 	Mesh::Mesh(std::string name, const MeshVertex* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount)
 	{
 		m_Vertices = std::vector<MeshVertex>(vertices, vertices + vertexCount);
 
-		m_VertexArray = VertexArray::Create(GetInputLayout(), {
-			{ vertices, vertexCount * sizeof(MeshVertex) },
-			{ GetInstanceVertexBuffer() }
-		});
+		m_VertexArray = VertexArray::Create(GetInputLayout(),
+			{ 
+				{ UnsafeVertexBuffer::Create(vertices, vertexCount * sizeof(MeshVertex)) },
+				{ GetInstanceVertexBuffer() }
+			}
+		);
 
 		m_IndexBuffer = IndexBuffer::Create(indices, indexCount);
 		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
@@ -248,9 +248,16 @@ namespace Helios
 	Mesh::Mesh(std::string name, const MeshBuilder& meshBuilder)
 	{
 		m_Vertices = std::vector<MeshVertex>(meshBuilder.m_Vertices);
-		m_VertexBuffer = DepricatedVertexBuffer::Create(meshBuilder.m_Vertices.data(), meshBuilder.m_Vertices.size() * sizeof(MeshVertex));
-		m_VertexBuffer->SetStride<MeshVertex>();
+		
+		m_VertexArray = VertexArray::Create(GetInputLayout(),
+			{
+				{ UnsafeVertexBuffer::Create(meshBuilder.m_Vertices.data(), meshBuilder.m_Vertices.size() * sizeof(MeshVertex)) },
+				{ GetInstanceVertexBuffer() }
+			}
+		);
+
 		m_IndexBuffer = IndexBuffer::Create((uint32_t*)meshBuilder.m_Triangles.data(), meshBuilder.m_Triangles.size() * 3);
+		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
 	}
 
 	Ref<Mesh> Mesh::Create(std::string name, const MeshVertex* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount)
@@ -383,7 +390,6 @@ namespace Helios
 
 	void Mesh::Bind()
 	{
-		m_VertexBuffer->Bind();
-		m_IndexBuffer->Bind();
+		m_VertexArray->Bind();
 	}
 }

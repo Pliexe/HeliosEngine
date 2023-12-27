@@ -73,9 +73,6 @@ namespace Helios
 			uint64_t count;
 		};
 
-		static constexpr uint32_t MAX_INSTANCES = 50000;
-		//static constexpr uint32_t MAX_INSTANCES = 1024;
-		Ref<DepricatedVertexBuffer> instancedBuffer;
 		std::vector<Renderable> renderables;
 	};
 
@@ -266,7 +263,7 @@ namespace Helios
 
 		HL_PROFILE_END();
 
-		static RendererData::InstancedRenderable* instancedRenderables = new RendererData::InstancedRenderable[RendererData::MAX_INSTANCES];
+		static RendererData::InstancedRenderable* instancedRenderables = new RendererData::InstancedRenderable[Mesh::GetMaxInstanceCount()];
 		
 		RendererData::InstancedRenderable* instancedRenderablesPtr = instancedRenderables;
 
@@ -277,8 +274,9 @@ namespace Helios
 		{
 			uint32_t size = (instancedRenderablesPtr - instancedRenderables);
 
-			rendererData.instancedBuffer->SetData(instancedRenderables, size * sizeof(RendererData::InstancedRenderable));
-			rendererData.instancedBuffer->Bind(1u);
+			Mesh::GetInstanceVertexBuffer()->SetData(instancedRenderables, size * sizeof(RendererData::InstancedRenderable));
+
+			RendererData::InstancedRenderable test = *instancedRenderables;
 
 			HL_PROFILE_BEGIN("Draw Call");
 			Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexedInstanced(currentMesh->getIndexCount(), size, 0u, 0u, 0u);
@@ -310,15 +308,18 @@ namespace Helios
 					currentMesh->Bind();
 				}
 
-				draw();
+				if ((instancedRenderablesPtr - instancedRenderables) > 0) draw();
 
 				currentMesh = renderable.mesh;
 				currentMesh->Bind();
 			}
-			
-			*instancedRenderablesPtr++ = RendererData::InstancedRenderable{ rendererData.projectionMatrix * renderable.transform, renderable.transform, renderable.color, renderable.entityId, renderable.sceneIndex };
 
-			if ((instancedRenderablesPtr - instancedRenderables) >= RendererData::MAX_INSTANCES)
+			RendererData::InstancedRenderable irptrtest = RendererData::InstancedRenderable{ rendererData.projectionMatrix * renderable.transform, renderable.transform, renderable.color, renderable.entityId, renderable.sceneIndex };
+			
+			*instancedRenderablesPtr++ = irptrtest;
+			//*instancedRenderablesPtr++ = RendererData::InstancedRenderable{ rendererData.projectionMatrix * renderable.transform, renderable.transform, renderable.color, renderable.entityId, renderable.sceneIndex };
+
+			if ((instancedRenderablesPtr - instancedRenderables) >= Mesh::GetMaxInstanceCount())
 			{
 				draw();
 			}
@@ -342,16 +343,6 @@ namespace Helios
 		rendererData.whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 		rendererData.default_material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
 		rendererData.default_material->texture = rendererData.whiteTexture;
-
-		rendererData.instancedBuffer = DepricatedVertexBuffer::Create(sizeof(RendererData::InstancedRenderable) * RendererData::MAX_INSTANCES, BufferUsage::Dynamic);
-		//rendererData.instancedBuffer->SetStride<RendererData::InstancedRenderable>();
-		rendererData.instancedBuffer->SetStride(InputLayout{
-				{ "WorldViewProj", ShaderDataType::MatrixFloat4x4 },
-				{ "WorldProj", ShaderDataType::MatrixFloat4x4 },
-				{ "Color", ShaderDataType::Float32_4 },
-				{ "EntityId", ShaderDataType::Int32 },
-				{ "SceneIndex", ShaderDataType::Int32 }
-		}.GetStride());
 
 		return true;
 	}

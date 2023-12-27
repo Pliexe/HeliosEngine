@@ -64,16 +64,16 @@ namespace Helios
 
         void Bind();
         inline uint32_t getVertexCount() const { return /*m_VertexBuffer->getCount<MeshVertex>();*/ -1; }
-		inline uint32_t getIndexCount() const { return m_IndexBuffer->GetCount(); }
+        inline uint32_t getIndexCount() const { return m_VertexArray->GetIndexBuffer()->GetCount(); /*m_IndexBuffer->GetCount();*/ }
 		inline Ref<IndexBuffer> getIndexBuffer() const { return m_IndexBuffer; }
-		inline Ref<VertexBuffer<MeshVertex>> getVertexBuffer() const { return m_VertexBuffer; }
+		inline Ref<UnsafeVertexBuffer> getVertexBuffer() const { return (m_VertexArray->GetVertexBuffers()[0]); }
 
         inline std::vector<MeshVertex>& GetVertices() { return m_Vertices; }
 
     private:
 
-        static std::unordered_map<std::string, Ref<Mesh>> s_Meshes;
-		static Ref<UnsafeVertexBuffer> s_InstanceVertexBuffer;
+        inline static std::unordered_map<std::string, Ref<Mesh>> s_Meshes;
+		inline static Ref<UnsafeVertexBuffer> s_InstanceVertexBuffer;
 
 		std::vector<MeshVertex> m_Vertices;
 

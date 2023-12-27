@@ -124,6 +124,7 @@ namespace Helios {
 			{ nullptr, sizeof(Renderer2DData::QuadInstanceData) * Renderer2DData::MaxQuads, BufferUsage::Dynamic }
 		});
 		s_Data.quadIndexBuffer = IndexBuffer::Create(indices, std::size(indices));
+		s_Data.quadVertexArray->SetIndexBuffer(s_Data.quadIndexBuffer);
 
 		s_Data.viewProjBuffer = UniformBuffer<Renderer2DData::TransformData>::Create(0u);
 		//assert(s_Data.viewProjBuffer == nullptr);
@@ -165,7 +166,7 @@ namespace Helios {
 		{
 			s_Data.quadVertexArray->GetVertexBuffers()[1]->SetData(s_Data.quadInstanceData, (s_Data.quadInstanceDataPtr - s_Data.quadInstanceData) * sizeof(Renderer2DData::QuadInstanceData));
 			s_Data.quadShader->Bind();
-			s_Data.quadIndexBuffer->Bind();
+			//s_Data.quadIndexBuffer->Bind();
 			s_Data.viewProjBuffer->Bind();
 			s_Data.quadVertexArray->Bind();
 
