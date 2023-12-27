@@ -74,6 +74,7 @@ namespace Helios {
 			// 32-bit x 2 (8 bytes) 4 * 2 = 8
 		case ShaderDataType::Int32_2: return 8;
 		case ShaderDataType::UInt32_2: return 8;
+		case ShaderDataType::Float32_2: return 8;
 			// 8-bit x 4 (2 bytes) 1 * 4 = 4
 		case ShaderDataType::Int8_4: return 4;
 		case ShaderDataType::UInt8_4: return 4;
@@ -326,6 +327,21 @@ namespace Helios {
 
 		static Ref<UnsafeVertexBuffer> Create(uint32_t size, BufferUsage usage = BufferUsage::Static);
 		static Ref<UnsafeVertexBuffer> Create(const void* data, uint32_t size, BufferUsage usage = BufferUsage::Static);
+
+		//// cast back to template <class T> Ref<VertexBuffer<T>>
+		//template <class T>
+		//operator Ref<VertexBuffer<T>>() const { 
+		//	Ref<VertexBuffer<T>> buff = CreateRef<VertexBuffer<T>>();
+		//	buff->m_buffer = this;
+		//	return buff;
+		//}
+		//
+		//template <class T>
+		//operator Ref<VertexBuffer<T>>() {
+		//	Ref<VertexBuffer<T>> buff = CreateRef<VertexBuffer<T>>();
+		//	buff->m_buffer = this;
+		//	return buff;
+		//}
 	};
 
 	template <class T>
