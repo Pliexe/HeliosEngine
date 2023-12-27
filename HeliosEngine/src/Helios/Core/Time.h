@@ -5,48 +5,33 @@
 #pragma once
 
 #include "pch.h"
-#include "Helios/Core/Base.h"
+#include "Base.h"
 
 namespace Helios {
-	class HELIOS_API Time {
-	private:
+    class HELIOS_API Time {
+    private:
+        static std::chrono::high_resolution_clock::time_point m_firstFrame;
+        static std::chrono::high_resolution_clock::time_point m_lastFrame;
+        static std::chrono::duration<float> m_deltaTime;
 
-		static __int64 m_firstFrame;
-		static __int64 m_lastFrame;
-		static float m_deltaTime;
-		static double PCFreq;
+        static void Init() {
+            m_firstFrame = std::chrono::high_resolution_clock::now();
+            frameUpdate();
+        }
 
-		static const void Init() {
-			LARGE_INTEGER li;
-			if (!QueryPerformanceFrequency(&li))
-			{
-				MessageBox(NULL, L"Failed to track PC frequency", L"CRITICAL", MB_ICONERROR);
-				exit(-9000);
-			}
-			PCFreq = double(li.QuadPart);
-			m_firstFrame = li.QuadPart;
-			frameUpdate();
-		}
+        static void frameUpdate() {
+            auto now = std::chrono::high_resolution_clock::now();
+            m_deltaTime = now - m_lastFrame;
+            m_lastFrame = now;
+        }
 
-		static const void frameUpdate() {
-			static LARGE_INTEGER li;
-			QueryPerformanceCounter(&li);
-			m_deltaTime = float(li.QuadPart - m_lastFrame) / PCFreq;
-			m_lastFrame = li.QuadPart;
-		}
+    public:
+        static float deltaTime() { return m_deltaTime.count(); }
+        static float getFPS() { return 1.0f / m_deltaTime.count(); }
+        static std::chrono::high_resolution_clock::time_point lastFrame() { return m_lastFrame; }
+        static double passedTime() { return std::chrono::duration<double>(m_lastFrame - m_firstFrame).count(); }
+        static unsigned long long currentTimeMicroseconds() { return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); }
 
-	public:
-
-		static const float deltaTime() { return m_deltaTime; }
-		static const float getFPS() { return CLOCKS_PER_SEC / (m_deltaTime * 1000.0f); }
-		static const __int64 lastFrame() { return m_lastFrame; }
-		static const long float passedTime() { return (m_lastFrame - m_firstFrame) / PCFreq; }
-		static const unsigned long long currentTimeMicroseconds() { return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); }
-		
-		friend class DepricatedApplication;
-		friend class Application;
-		extern friend class EngineScene;
-	};
+        friend class Application;
+    };
 }
-
-

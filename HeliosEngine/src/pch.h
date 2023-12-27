@@ -40,6 +40,7 @@
 #include <deque>
 #include <random>
 #include <ranges>
+#include <chrono>
 
 // Windows
 #define D3D_DEBUG_INFO
