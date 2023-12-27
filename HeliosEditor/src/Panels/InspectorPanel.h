@@ -10,8 +10,12 @@
 namespace Helios {
 	class InspectorPanel : public Editor::IPanel
 	{
+	public:
+		enum class SelectedType {
+			None,
+			Entity
+		};
 	private:
-		enum class SelectedType;
 
 		std::any handle;
 		SelectedType type = SelectedType::None;
@@ -37,11 +41,6 @@ namespace Helios {
 		const SelectedType GetType() { CheckIfValid(); return type; }
 
 		static void Reset() { instance->handle = nullptr; instance->type = SelectedType::None; }
-
-		enum class SelectedType {
-			None,
-			Entity
-		};
 
 		template <typename T>
 		typename std::enable_if<std::is_same<T, Entity>::value, bool>::type

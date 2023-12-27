@@ -69,7 +69,7 @@ namespace Helios
 			RegisterClassEx(&wc);
 		}
 
-		RECT wr = { 0, 0, width, height };
+		RECT wr = { 0, 0, (LONG)width, (LONG)height };
 
 		int screenwidth = GetSystemMetrics(SM_CXSCREEN);
 		int screenheight = GetSystemMetrics(SM_CYSCREEN);

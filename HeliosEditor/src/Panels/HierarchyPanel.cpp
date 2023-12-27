@@ -240,7 +240,7 @@ namespace Helios {
 				}
 
 				if (opened) {
-					scene->m_components.each([&](auto entity)
+					scene->GetComponents().each([&](auto entity)
 					{
 						Entity object{ entity, scene };
 						if (object.HasComponent<RelationshipComponent>())

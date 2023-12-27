@@ -268,12 +268,12 @@ namespace Helios
 		// tmp
 
 		SceneRegistry::LoadEmptyScene("New Scene");
-		auto ent = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 0, 0 });
+		auto ent = SceneRegistry::GetActiveScenes()[0]->InstantiateObject(Vector3{ 0, 0, 0 });
 		//auto ent = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 0, -5 });
 		auto& mrc = ent.AddScopedComponent<MeshRendererComponent>();
 		mrc.mesh = Mesh::GenerateCube();
 		mrc.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Clamp);
-		auto ent2 = SceneRegistry::m_activeScenes[0]->InstantiateObject(Vector3{ 0, 0, 0 });
+		auto ent2 = SceneRegistry::GetActiveScenes()[0]->InstantiateObject(Vector3{ 0, 0, 0 });
 		ent2.AddScopedComponent<DirectionalLightComponent>(Color::White, 1.0f);
 		Transform(ent2).SetLocalRotation(Quaternion::FromEuler(-45, 0, 0));
 
