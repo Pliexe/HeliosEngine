@@ -96,4 +96,29 @@ namespace Helios
 		HL_ASSERT(false, "Unknown Graphics API!");
 		return nullptr;
 	}
+
+	Ref<VertexArray> VertexArray::Create(const InputLayouts& inputLayouts, std::initializer_list<Ref<UnsafeVertexBuffer>> buffers)
+	{
+		HL_ASSERT(buffers.size() == inputLayouts.size(), "BufferSpecifications and InputLayouts must be the same size!");
+
+		switch (Graphics::GetAPI())
+		{
+		case Graphics::API::Direct3D11: return CreateRef<D3D11VertexArray>(inputLayouts, buffers);
+		}
+
+		HL_ASSERT(false, "Unknown Graphics API!");
+		return nullptr;
+	}
+	Ref<VertexArray> VertexArray::Create(const InputLayouts& inputLayouts, std::initializer_list<BufferSpecification> bufferSpecifications, Ref<UnsafeVertexBuffer> instanceBuffer)
+	{
+		HL_ASSERT(bufferSpecifications.size() == inputLayouts.size(), "BufferSpecifications and InputLayouts must be the same size!");
+
+		switch (Graphics::GetAPI())
+		{
+		case Graphics::API::Direct3D11: return CreateRef<D3D11VertexArray>(inputLayouts, bufferSpecifications, instanceBuffer);
+		}
+
+		HL_ASSERT(false, "Unknown Graphics API!");
+		return nullptr;
+	}
 }

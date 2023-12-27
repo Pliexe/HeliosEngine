@@ -44,51 +44,67 @@ namespace Helios {
 	{
 		switch (type)
 		{
-			// Bool (1 byte)
-		case ShaderDataType::Bool: return 1;
-			// 8-bit (1 byte)
-		case ShaderDataType::Int8: return 1;
-		case ShaderDataType::UInt8: return 1;
-		case ShaderDataType::NormInt8: return 1;
-		case ShaderDataType::NormUInt8: return 1;
-			// 16-bit (2 bytes)
-		case ShaderDataType::Int16: return 2;
-		case ShaderDataType::Float16: return 2;
-		case ShaderDataType::UInt16: return 2;
-		case ShaderDataType::NormInt16: return 2;
-		case ShaderDataType::NormUInt16: return 2;
-			// 32-bit (4 bytes)
-		case ShaderDataType::Int32: return 4;
-		case ShaderDataType::Float32: return 4;
-		case ShaderDataType::UInt32: return 4;
-			// 8-bit x 2 (2 bytes) 1 * 2 = 2
-		case ShaderDataType::Int8_2: return 2;
-		case ShaderDataType::UInt8_2: return 2;
-		case ShaderDataType::NormInt8_2: return 2;
-		case ShaderDataType::NormUInt8_2: return 2;
-			// 16-bit x 2 (4 bytes) 2 * 2 = 4
-		case ShaderDataType::Int16_2: return 4;
-		case ShaderDataType::UInt16_2: return 4;
-		case ShaderDataType::NormInt16_2: return 4;
-		case ShaderDataType::NormUInt16_2: return 4;
-			// 32-bit x 2 (8 bytes) 4 * 2 = 8
-		case ShaderDataType::Int32_2: return 8;
-		case ShaderDataType::UInt32_2: return 8;
-		case ShaderDataType::Float32_2: return 8;
-			// 8-bit x 4 (2 bytes) 1 * 4 = 4
-		case ShaderDataType::Int8_4: return 4;
-		case ShaderDataType::UInt8_4: return 4;
-		case ShaderDataType::NormInt8_4: return 4;
-		case ShaderDataType::NormUInt8_4: return 4;
-			// 16-bit x 4 (4 bytes) 2 * 4 = 8
-		case ShaderDataType::Int16_4: return 8;
-		case ShaderDataType::UInt16_4: return 8;
-		case ShaderDataType::NormInt16_4: return 8;
-		case ShaderDataType::NormUInt16_4: return 8;
-			// 32-bit x 4 (8 bytes) 4 * 4 = 16
-		case ShaderDataType::Int32_4: return 16;
-		case ShaderDataType::UInt32_4: return 16;
-			// Matrixs
+#pragma region 8-bit (1 byte) types
+// SInt
+		case ShaderDataType::Int8:
+		case ShaderDataType::Int8_2:
+		case ShaderDataType::Int8_4:
+// UInt
+		case ShaderDataType::UInt8:
+		case ShaderDataType::UInt8_2:
+		case ShaderDataType::UInt8_4:
+// NSInt
+		case ShaderDataType::NormInt8:
+		case ShaderDataType::NormInt8_2:
+		case ShaderDataType::NormInt8_4:
+// NUInt
+		case ShaderDataType::NormUInt8:
+		case ShaderDataType::NormUInt8_2:
+		case ShaderDataType::NormUInt8_4:
+// Bool (1 byte)
+		case ShaderDataType::Bool: return 1u;
+#pragma endregion
+#pragma region 16-bit (2 bytes) types
+// SInt
+		case ShaderDataType::Int16:
+		case ShaderDataType::Int16_2:
+		case ShaderDataType::Int16_4:
+// UInt
+		case ShaderDataType::UInt16:
+		case ShaderDataType::UInt16_2:
+		case ShaderDataType::UInt16_4:
+// NSInt
+ 		case ShaderDataType::NormInt16:
+		case ShaderDataType::NormInt16_2:
+		case ShaderDataType::NormInt16_4:
+// NUInt
+		case ShaderDataType::NormUInt16:
+		case ShaderDataType::NormUInt16_2:
+		case ShaderDataType::NormUInt16_4:
+// Float
+		case ShaderDataType::Float16_2:
+		case ShaderDataType::Float16_4:
+		case ShaderDataType::Float16: return 2u;
+#pragma endregion
+#pragma region 32-bit (4 bytes) types
+// SInt
+		case ShaderDataType::Int32:
+		case ShaderDataType::Int32_2:
+		case ShaderDataType::Int32_3:
+		case ShaderDataType::Int32_4:
+// UInt
+		case ShaderDataType::UInt32:
+		case ShaderDataType::UInt32_2:
+		case ShaderDataType::UInt32_3:
+		case ShaderDataType::UInt32_4:
+// Float
+		case ShaderDataType::Float32_2:
+		case ShaderDataType::Float32_3:
+		case ShaderDataType::Float32_4:
+		case ShaderDataType::Float32: return 4u;
+#pragma endregion
+
+// Matrixs
 		case ShaderDataType::MatrixFloat2x2: return 8;
 		case ShaderDataType::MatrixFloat3x3: return 12;
 		case ShaderDataType::MatrixFloat4x4: return 16;
@@ -400,7 +416,7 @@ namespace Helios {
 		};
 
 		static Ref<VertexArray> Create(const InputLayouts& inputLayouts, std::initializer_list<BufferSpecification> bufferSpecifications);
-
+		static Ref<VertexArray> Create(const InputLayouts& inputLayouts, std::initializer_list<BufferSpecification> bufferSpecifications, Ref<UnsafeVertexBuffer> instanceBuffer);
 		static Ref<VertexArray> Create(const InputLayouts& inputLayouts, std::initializer_list<Ref<UnsafeVertexBuffer>> buffers);
 
 		template <class T>
