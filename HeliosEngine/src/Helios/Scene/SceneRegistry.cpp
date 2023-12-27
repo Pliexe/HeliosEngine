@@ -154,7 +154,7 @@ namespace Helios {
 
 		for (auto& scene : m_activeScenes)
 		{
-			auto view = scene->GetComponents<CameraComponent>();
+			auto view = scene->GetComponentsWith<CameraComponent>();
 			for (auto& entity : view)
 			{
 				if (view.get<CameraComponent>(entity).isPrimary)

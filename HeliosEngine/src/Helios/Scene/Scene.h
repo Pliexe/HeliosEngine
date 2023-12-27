@@ -82,9 +82,14 @@ namespace Helios {
 		void Shutdown();
 		
 		template <typename... T>
-		decltype(auto) GetComponents()
+		auto GetComponentsWith()
 		{
 			return m_components.template view<T...>();
+		}
+
+		const entt::registry& GetComponents()
+		{
+			return m_components;
 		}
 
 
