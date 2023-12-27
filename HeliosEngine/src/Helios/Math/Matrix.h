@@ -502,24 +502,54 @@ namespace Helios
 	inline Vector4 Matrix4x4::operator*(const Vector4& vector4) const
 	{
 		Vector4 result;
-		
-		#if defined(__SSE_ENABLED__)
+
+#if defined(__SSE4_1__)
 
 		__m128 vec4row = _mm_set_ps(vector4.w, vector4.z, vector4.y, vector4.x);
-		
-		result.x = _mm_dp_ps(rows[0], vec4row, 0xFF).m128_f32[0];
-		result.y = _mm_dp_ps(rows[1], vec4row, 0xFF).m128_f32[0];
-		result.z = _mm_dp_ps(rows[2], vec4row, 0xFF).m128_f32[0];
-		result.w = _mm_dp_ps(rows[3], vec4row, 0xFF).m128_f32[0];
 
-		#else
+		float temp;
+		temp = _mm_cvtss_f32(_mm_dp_ps(rows[0], vec4row, 0xFF));
+		_mm_store_ss(&result.x, _mm_set_ss(temp));
+		temp = _mm_cvtss_f32(_mm_dp_ps(rows[1], vec4row, 0xFF));
+		_mm_store_ss(&result.y, _mm_set_ss(temp));
+		temp = _mm_cvtss_f32(_mm_dp_ps(rows[2], vec4row, 0xFF));
+		_mm_store_ss(&result.z, _mm_set_ss(temp));
+		temp = _mm_cvtss_f32(_mm_dp_ps(rows[3], vec4row, 0xFF));
+		_mm_store_ss(&result.w, _mm_set_ss(temp));
+
+#elif defined(__SSE_ENABLED__)
+
+		__m128 vec4row = _mm_set_ps(vector4.w, vector4.z, vector4.y, vector4.x);
+
+		__m128 temp1 = _mm_mul_ps(rows[0], vec4row);
+		__m128 temp2 = _mm_mul_ps(rows[1], vec4row);
+		__m128 temp3 = _mm_mul_ps(rows[2], vec4row);
+		__m128 temp4 = _mm_mul_ps(rows[3], vec4row);
+
+		temp1 = _mm_add_ps(temp1, _mm_movehl_ps(temp1, temp1));
+		temp1 = _mm_add_ps(temp1, _mm_shuffle_ps(temp1, temp1, _MM_SHUFFLE(2, 3, 0, 1)));
+		result.x = _mm_cvtss_f32(temp1);
+
+		temp2 = _mm_add_ps(temp2, _mm_movehl_ps(temp2, temp2));
+		temp2 = _mm_add_ps(temp2, _mm_shuffle_ps(temp2, temp2, _MM_SHUFFLE(2, 3, 0, 1)));
+		result.y = _mm_cvtss_f32(temp2);
+
+		temp3 = _mm_add_ps(temp3, _mm_movehl_ps(temp3, temp3));
+		temp3 = _mm_add_ps(temp3, _mm_shuffle_ps(temp3, temp3, _MM_SHUFFLE(2, 3, 0, 1)));
+		result.z = _mm_cvtss_f32(temp3);
+
+		temp4 = _mm_add_ps(temp4, _mm_movehl_ps(temp4, temp4));
+		temp4 = _mm_add_ps(temp4, _mm_shuffle_ps(temp4, temp4, _MM_SHUFFLE(2, 3, 0, 1)));
+		result.w = _mm_cvtss_f32(temp4);
+
+#else
 
 		result.x = _11 * vector4.x + _12 * vector4.y + _13 * vector4.z + _14 * vector4.w;
 		result.y = _21 * vector4.x + _22 * vector4.y + _23 * vector4.z + _24 * vector4.w;
 		result.z = _31 * vector4.x + _32 * vector4.y + _33 * vector4.z + _34 * vector4.w;
 		result.w = _41 * vector4.x + _42 * vector4.y + _43 * vector4.z + _44 * vector4.w;
-		
-		#endif
+
+#endif
 
 		return result;
 	}
