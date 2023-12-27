@@ -316,8 +316,8 @@ namespace Helios {
 	class HELIOS_API UnsafeVertexBuffer
 	{
 	public:
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
+		virtual void Bind(uint32_t slot = 0u) const = 0;
+		virtual void Unbind(uint32_t slot = 0u) const = 0;
 
 		virtual void SetData(const void* data, uint32_t size) = 0;
 
@@ -337,17 +337,17 @@ namespace Helios {
 
 		void SetData(const T* data, uint32_t count) { m_buffer->SetData((void*)data, sizeof(T) * count); }
 		
-		static Ref<VertexBuffer> Create(uint32_t binding_slot, uint32_t count, BufferUsage usage = BufferUsage::Static)
+		static Ref<VertexBuffer> Create(uint32_t count, BufferUsage usage = BufferUsage::Static)
 		{
 			Ref<VertexBuffer> buff = CreateRef<VertexBuffer>();
-			buff->m_buffer = UnsafeVertexBuffer::Create(binding_slot, sizeof(T) * count, usage);
+			buff->m_buffer = UnsafeVertexBuffer::Create(sizeof(T) * count, usage);
 			return buff;
 		}
 
-		static Ref<VertexBuffer> Create(uint32_t binding_slot, const T* data, uint32_t count, BufferUsage usage = BufferUsage::Static)
+		static Ref<VertexBuffer> Create(const T* data, uint32_t count, BufferUsage usage = BufferUsage::Static)
 		{
 			Ref<VertexBuffer> buff = CreateRef<VertexBuffer>();
-			buff->m_buffer = UnsafeVertexBuffer::Create(binding_slot, data, sizeof(T) * count, usage);
+			buff->m_buffer = UnsafeVertexBuffer::Create((void*)data, sizeof(T) * count, usage);
 			return buff;
 		}
 
@@ -357,6 +357,8 @@ namespace Helios {
 		// operator for casting to UnsafeVertexBuffer
 		operator Ref<UnsafeVertexBuffer>& () { return m_buffer; }
 		operator const Ref<UnsafeVertexBuffer>& () const { return m_buffer; }
+
+		friend class UnsafeVertexBuffer;
 
 	private:
 		Ref<UnsafeVertexBuffer> m_buffer;
@@ -376,38 +378,20 @@ namespace Helios {
 
 		struct BufferSpecification
 		{
-			BufferSpecification(const void* data, uint32_t size, BufferUsage usage = BufferUsage::Static)
-			{
-				type = InputType::Create;
-				data = data;
-				size = size;
-				usage = usage;
-			}
-
-			BufferSpecification(const Ref<UnsafeVertexBuffer>& buffer)
-			{
-				type = InputType::Reference;
-				this->buffer = buffer;
-			}
-
-			enum class InputType
-			{
-				Create,
-				Reference
-			};
-
-			InputType type = InputType::Create;
-			union {
-				struct {
-					const void* data;
-					uint32_t size; // Total size of buffer in bytes
-					BufferUsage usage = BufferUsage::Static;
-				};
-				Ref<UnsafeVertexBuffer>& buffer;
-			};
+			const void* data;
+			uint32_t size; // Total size of buffer in bytes
+			BufferUsage usage;
 		};
 
 		static Ref<VertexArray> Create(const InputLayouts& inputLayouts, std::initializer_list<BufferSpecification> bufferSpecifications);
+
+		static Ref<VertexArray> Create(const InputLayouts& inputLayouts, std::initializer_list<Ref<UnsafeVertexBuffer>> buffers);
+
+		template <class T>
+		static Ref<VertexArray> Create(const InputLayouts& inputLayouts, std::initializer_list<Ref<VertexBuffer<T>>> buffers)
+		{
+			return Create(inputLayouts, (std::initializer_list<Ref<UnsafeVertexBuffer>>)buffers);
+		}
 	};
 
 	class HELIOS_API IndexBuffer
