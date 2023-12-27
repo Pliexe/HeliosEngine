@@ -1,5 +1,6 @@
 #include "D3D11UniformBuffer.h"
 #include "Helios/Core/Asserts.h"
+#include "Platform/Direct3D11/Direct3D11Context.h"
 
 #ifdef HELIOS_PLATFORM_WINDOWS
 namespace Helios

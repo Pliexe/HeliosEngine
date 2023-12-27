@@ -1,5 +1,6 @@
 #include "D3D11IndexBuffer.h"
 #include "D3D11Usage.h"
+#include "Platform/Direct3D11/Direct3D11Context.h"
 
 #ifdef HELIOS_PLATFORM_WINDOWS
 namespace Helios

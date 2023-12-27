@@ -1,4 +1,5 @@
 #include "D3D11VertexBuffer.h"
+#include "Platform/Direct3D11/Direct3D11Context.h"
 
 namespace Helios
 {
