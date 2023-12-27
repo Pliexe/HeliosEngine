@@ -27,7 +27,6 @@ enum class EditorMode
 
 namespace Helios
 {
-	static Ref<Framebuffer> gameFrame;
 
 	class HeliosEditor : public Application
 	{
@@ -61,6 +60,7 @@ namespace Helios
 
 		RSState currentRSState = RSState::Normal;
 	public:
+		inline static Ref<Framebuffer> gameFrame;
 
 #pragma region Icons
 		inline static Ref<Texture2D> ICON_FOLDER = nullptr;
