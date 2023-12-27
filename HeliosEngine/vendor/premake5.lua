@@ -32,7 +32,6 @@ project "ImGui"
         systemversion "latest"
         cppdialect "C++17"
         staticruntime "on"
-        buildoptions { "/MP" }
         files {
             "imgui/backends/imgui_impl_dx11.cpp",
             "imgui/backends/imgui_impl_dx11.h",
@@ -80,7 +79,6 @@ project "Yaml"
     filter "system:windows"
         systemversion "latest"
         staticruntime "off"
-        buildoptions { "/MP" }
 
     filter "system:linux"
         pic "on"
