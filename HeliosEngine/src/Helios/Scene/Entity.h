@@ -143,9 +143,6 @@ namespace Helios {
 		friend class Scene;
 		friend void SerializeObject(YAML::Emitter& out, Entity& o);
 		friend class Transform;
-		
-		extern friend class GameEngine;
-		extern friend class InspectorPanel;
 	};
 
 	class Transform

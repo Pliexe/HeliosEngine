@@ -337,7 +337,7 @@ namespace Helios
 		fout << out.c_str();
 	}
 
-	static void DeserializeEntity(YAML::Node entityNode, Scene* scene)
+	void DeserializeEntity(YAML::Node entityNode, Scene* scene)
 	{
 		Entity entity = scene->InstantiateObject();
 

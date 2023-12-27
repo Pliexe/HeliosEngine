@@ -84,7 +84,7 @@ namespace Helios {
 		template <typename... T>
 		decltype(auto) GetComponents()
 		{
-			return m_components.view<T...>();
+			return m_components.template view<T...>();
 		}
 
 
@@ -101,13 +101,6 @@ namespace Helios {
 		friend class Transform;
 		friend class SceneSerializer;
 
-		friend static void DeserializeEntity(YAML::Node entityNode, Scene* scene);
-
-		extern friend class DepricatedGameEngine;
-		extern friend class HierarchyPanel;
-		extern friend class HeliosEditor;
-		extern friend class ScenePanel;
-		extern friend class SceneRegistry;
-
+		friend void DeserializeEntity(YAML::Node entityNode, Scene* scene);
 	};
 }

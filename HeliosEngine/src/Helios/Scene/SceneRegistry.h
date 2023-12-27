@@ -51,9 +51,6 @@ namespace Helios {
 		inline static std::unordered_map<std::string, std::filesystem::path> m_scenePaths;
 
 		inline static std::vector<std::future<void>> m_asyncTasks;
-
-		extern friend class GameEngine;
-		extern friend class HeliosEditor;
 	};
 }
 

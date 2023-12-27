@@ -16,6 +16,10 @@ namespace Helios
 		{
 			unsigned long long startTime, frameTime;
 			uint64_t starts_at = 0u;
+
+			CpuFrameProfile(unsigned long long startTime, unsigned long long frameTime, uint64_t startsAt = 0u)
+				: startTime(startTime), frameTime(frameTime), starts_at(startsAt) {}
+			CpuFrameProfile() : startTime(0), frameTime(0), starts_at(0) {}
 		};
 
 		struct CpuTaskProfile
@@ -51,7 +55,7 @@ namespace Helios
 		{
 			if (s_ProfileEnabled)
 			{
-				s_tmpFrame = CpuFrameProfile{ Time::currentTimeMicroseconds(), 0u, s_CpuProfileTasks.size() };
+				s_tmpFrame = CpuFrameProfile (Time::currentTimeMicroseconds(), 0u, s_CpuProfileTasks.size());
 			}
 		}
 

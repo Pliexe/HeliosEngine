@@ -112,6 +112,5 @@ namespace Helios {
 		friend class DirectXFramebuffer;
 
 		friend class EngineTexture;
-		extern friend class DepricatedGameEngine;
 	};
 }

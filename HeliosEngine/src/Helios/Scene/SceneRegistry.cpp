@@ -99,9 +99,9 @@ namespace Helios {
 		{
 			for (auto& scene : m_activeScenes)
 			{
-				scene->m_components.each([scene](auto entity)
+				scene->GetComponents().each([scene](auto entity)
 				{
-					if (scene->m_components.any_of<DontDestroyOnLoadComponent>(entity))
+					if (scene->GetComponents().any_of<DontDestroyOnLoadComponent>(entity))
 					{
 
 					}
