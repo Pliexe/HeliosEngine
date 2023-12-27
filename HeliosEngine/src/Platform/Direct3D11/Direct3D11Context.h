@@ -80,8 +80,8 @@ namespace Helios
 		void SwapBuffers() override
 		{
 			m_SwapChain->Present(m_SwapInterval, 0);
-			//float c[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
-			//m_Context->ClearRenderTargetView(m_RenderTargetView.Get(), c);
+			float c[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+			m_Context->ClearRenderTargetView(m_RenderTargetView.Get(), c);
 		}
 
 		void SetVSync(uint32_t interval) override
