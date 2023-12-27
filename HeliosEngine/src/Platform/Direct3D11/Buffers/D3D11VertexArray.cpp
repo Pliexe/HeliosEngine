@@ -24,53 +24,72 @@ namespace Helios
 		{
 			Ref<UnsafeVertexBuffer> vertex_buffer;
 
-			switch (bufferSpecifications[i].type)
-			{
-			case BufferSpecification::InputType::Create:
-			{
-				if (bufferSpecifications[i].data == nullptr)
-					vertex_buffer = CreateRef<D3D11VertexBuffer>(bufferSpecifications[i].size, bufferSpecifications[i].usage);
-				else
-					vertex_buffer = CreateRef<D3D11VertexBuffer>(bufferSpecifications[i].data, bufferSpecifications[i].size, bufferSpecifications[i].usage);
-				break;
-			}
-			case BufferSpecification::InputType::Reference:
-			{
-				vertex_buffer = bufferSpecifications[i].buffer;
-				break;
-			}
-			default:
-				HL_ASSERT(false, "Unknown buffer initialization type!");
-				break;
-			}
+			if (bufferSpecifications[i].data == nullptr)
+				vertex_buffer = CreateRef<D3D11VertexBuffer>(bufferSpecifications[i].size, bufferSpecifications[i].usage);
+			else
+				vertex_buffer = CreateRef<D3D11VertexBuffer>(bufferSpecifications[i].data, bufferSpecifications[i].size, bufferSpecifications[i].usage);
 
-			static_cast<D3D11VertexBuffer*>(vertex_buffer.get())->m_BoundSlot = i;
 			vertex_buffer->SetInputLayout(input_layouts[i]);
 
 			m_VertexBuffers.push_back(vertex_buffer);
 		}
 	}
 
+	D3D11VertexArray::D3D11VertexArray(const InputLayouts& input_layouts, std::vector<BufferSpecification> bufferSpecifications, Ref<UnsafeVertexBuffer> instanceBuffer) : m_InputLayouts(input_layouts)
+	{
+		assert(bufferSpecifications.size() == input_layouts.size()+1);
+		assert(instanceBuffer != nullptr);
+
+		for (size_t i = 0; i < bufferSpecifications.size(); i++)
+		{
+			Ref<UnsafeVertexBuffer> vertex_buffer;
+
+			if (bufferSpecifications[i].data == nullptr)
+				vertex_buffer = CreateRef<D3D11VertexBuffer>(bufferSpecifications[i].size, bufferSpecifications[i].usage);
+			else
+				vertex_buffer = CreateRef<D3D11VertexBuffer>(bufferSpecifications[i].data, bufferSpecifications[i].size, bufferSpecifications[i].usage);
+
+			vertex_buffer->SetInputLayout(input_layouts[i]);
+
+			m_VertexBuffers.push_back(vertex_buffer);
+		}
+
+		instanceBuffer->SetInputLayout(input_layouts[bufferSpecifications.size()]);
+		m_VertexBuffers.push_back(instanceBuffer);
+	}
+
+	D3D11VertexArray::D3D11VertexArray(const InputLayouts& inputLayouts, std::vector<Ref<UnsafeVertexBuffer>> buffers) : m_InputLayouts(inputLayouts)
+	{
+		assert(buffers.size() == inputLayouts.size());
+
+		m_VertexBuffers = buffers;
+
+		for (size_t i = 0; i < inputLayouts.size(); i++)
+		{
+			buffers[i]->SetInputLayout(inputLayouts[i]);
+		}
+	}
+
 	void D3D11VertexArray::Bind() const
 	{
-		assert(m_IndexBuffer == nullptr);
+		assert(m_IndexBuffer != nullptr);
 
 		if (m_IndexBuffer != nullptr)
 			m_IndexBuffer->Bind();
 
-		for (auto& vertex_buffer : m_VertexBuffers)
-			vertex_buffer->Bind();
+		for (size_t i = 0; i < m_VertexBuffers.size(); i++)
+			m_VertexBuffers[i]->Bind(i);
 	}
 
 	void D3D11VertexArray::Unbind() const
 	{
-		assert(m_IndexBuffer == nullptr);
+		assert(m_IndexBuffer != nullptr);
 
 		if (m_IndexBuffer != nullptr)
 			m_IndexBuffer->Unbind();
 
-		for (auto& vertex_buffer : m_VertexBuffers)
-			vertex_buffer->Unbind();
+		for (size_t i = 0; i < m_VertexBuffers.size(); i++)
+			m_VertexBuffers[i]->Unbind(i);
 	}
 
 	/*void D3D11VertexArray::AddVertexBuffer(const Ref<UnsafeVertexBuffer>& vertex_buffer)

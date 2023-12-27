@@ -63,15 +63,15 @@ namespace Helios
         );
 	}
 
-	void D3D11VertexBuffer::Bind() const
+	void D3D11VertexBuffer::Bind(uint32_t slot) const
 	{
         uint32_t offset = 0;
-		Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(m_BoundSlot, 1, m_Buffer.GetAddressOf(), &m_Stride, &offset);
+		Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(slot, 1, m_Buffer.GetAddressOf(), &m_Stride, &offset);
 	}
 
-	void D3D11VertexBuffer::Unbind() const
+	void D3D11VertexBuffer::Unbind(uint32_t slot) const
 	{
-		Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(m_BoundSlot, 0, nullptr, nullptr, nullptr);
+		Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(slot, 0, nullptr, nullptr, nullptr);
 	}
 
 	void D3D11VertexBuffer::SetData(const void* data, uint32_t size)

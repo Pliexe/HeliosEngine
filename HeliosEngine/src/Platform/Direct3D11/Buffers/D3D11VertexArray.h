@@ -10,6 +10,8 @@ namespace Helios
 	{
 	public:
 		D3D11VertexArray(const InputLayouts& input_layouts, std::vector<BufferSpecification> bufferSpecifications);
+		D3D11VertexArray(const InputLayouts& input_layouts, std::vector<BufferSpecification> bufferSpecifications, Ref<UnsafeVertexBuffer> instanceBuffer);
+		D3D11VertexArray(const InputLayouts& inputLayouts, std::vector<Ref<UnsafeVertexBuffer>> buffers);
 
 		void Bind() const override;
 
