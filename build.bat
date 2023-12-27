@@ -10,7 +10,7 @@ IF "%~1" == "-help" GOTO PrtHelp
 
 IF "%~1" == "compile" GOTO Compile
 
-vendor\premake\bin\premake5.exe %1
+vendor\premake\bin\premake5.exe --cc=clang %1
 GOTO Done
 
 :PrtHelp
@@ -39,13 +39,15 @@ GOTO Done
 
 :Compile
 
-vendor\premake\bin\premake5.exe vs2022
+vendor\premake\bin\premake5.exe --cc=clang vs2022
 
-if not defined DevEnvDir (
-    call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
-)
+@REM if not defined DevEnvDir (
+@REM     call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
+@REM )
 
-set solutionfile="HeliosEngine.sln"
-msbuild %solutionfile% /t:Build /p:Configuration=Debug /p:Platform=x64
+@REM set solutionfile="HeliosEngine.sln"
+@REM msbuild %solutionfile% /t:Build /p:Configuration=Debug /p:Platform=x64
+
+echo "Not supported yet"
 
 :Done

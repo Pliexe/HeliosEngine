@@ -1,7 +1,7 @@
 set +v
 
 premake5() {
-    ./vendor/premake/bin/premake5 $@
+    ./vendor/premake/bin/premake5 --cc=clang $@
 }
 
 prt_help()
