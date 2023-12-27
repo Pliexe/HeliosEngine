@@ -10,9 +10,9 @@
 namespace Helios {
     class HELIOS_API Time {
     private:
-        static std::chrono::high_resolution_clock::time_point m_firstFrame;
-        static std::chrono::high_resolution_clock::time_point m_lastFrame;
-        static std::chrono::duration<float> m_deltaTime;
+        inline static std::chrono::high_resolution_clock::time_point m_firstFrame;
+        inline static std::chrono::high_resolution_clock::time_point m_lastFrame;
+        inline static std::chrono::duration<float> m_deltaTime;
 
         static void Init() {
             m_firstFrame = std::chrono::high_resolution_clock::now();
