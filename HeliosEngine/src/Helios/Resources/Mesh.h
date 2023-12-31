@@ -4,6 +4,7 @@
 #include "Buffer.h"
 #include "Helios/Math/Vector.h"
 #include "Helios/Utils/MeshBuilder.h"
+#include "Helios/Core/UUID.h"
 
 namespace Helios
 {
@@ -12,12 +13,11 @@ namespace Helios
     public:
         Mesh() = delete;
         Mesh(const Mesh&) = default;
-        Mesh(std::string name, const MeshVertex* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
-        Mesh(std::string name, const MeshBuilder& meshBuilder);
+        Mesh(std::string name, const UUID& uuid, const MeshVertex* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
+        Mesh(std::string name, const UUID& uuid, const MeshBuilder& meshBuilder);
 		
-        static Ref<Mesh> Create(std::string name, const MeshVertex* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
-		static Ref<Mesh> Create(std::string name, const MeshBuilder& meshBuilder);
-        static void Destroy(std::string name);
+        static Ref<Mesh> Create(std::string name, const UUID& uuid, const MeshVertex* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
+        static Ref<Mesh> Create(std::string name, const UUID& uuid, const MeshBuilder& meshBuilder);
       
         static Ref<Mesh> GeneratePlane();
         static Ref<Mesh> GenerateCube();
@@ -70,14 +70,17 @@ namespace Helios
 
         inline std::vector<MeshVertex>& GetVertices() { return m_Vertices; }
 
+		inline std::string& GetName() { return m_Name; }
+		inline const Helios::UUID& GetID() { return m_ID; }
+
     private:
 
-        inline static std::unordered_map<std::string, Ref<Mesh>> s_Meshes;
 		inline static Ref<UnsafeVertexBuffer> s_InstanceVertexBuffer;
 
 		std::vector<MeshVertex> m_Vertices;
 
         std::string m_Name;
+		const Helios::UUID m_ID;
 
         //Ref<VertexBuffer<MeshVertex>> m_VertexBuffer;
 		Ref<VertexArray> m_VertexArray;

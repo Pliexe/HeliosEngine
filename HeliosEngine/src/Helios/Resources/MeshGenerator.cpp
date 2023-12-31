@@ -1,28 +1,22 @@
-#include "Mesh.h"
-#include "ResourceRegistry.h"
+#include "MeshGenerator.h"
 
 namespace Helios
 {
-	//using MeshVertex;
-
-	Ref<Mesh> Mesh::GeneratePlane()
+	MeshBuilder MeshGenerator::GeneratePlane()
 	{
-		static const MeshVertex vertices[4] = {
+		MeshBuilder builder;
+
+		builder.CreateQuadFace(
 			{ { -2.0f, 0.0f, -2.0f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
 			{ { -2.0f, 0.0f, 2.0f }, { 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f } },
 			{ { 2.0f, 0.0f, 2.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f, 0.0f } },
 			{ { 2.0f, 0.0f, -2.0f }, { 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } }
-		};
+		);
 
-		static uint32_t triangles[6] = {
-			0, 1, 2,
-			0, 2, 3
-		};
-
-		return CreateRef<Mesh>("Plane", Helios::UUID(), vertices, std::size(vertices), triangles, std::size(triangles));
+		return builder;
 	}
 
-	Ref<Mesh> Mesh::GenerateCube()
+	MeshBuilder MeshGenerator::GenerateCube()
 	{
 		MeshBuilder builder;
 
@@ -69,40 +63,10 @@ namespace Helios
 			{ { -0.5f, -0.5f, -0.5 }, { 0.0f, 0.0f }, { 0.0f, -1.0f, 0.0f } }
 		);
 
-		return Mesh::Create("Cube", Helios::UUID(), builder);
+		return builder;
 	}
 
-	Ref<Mesh> Mesh::GetCubeMesh()
-	{
-		static Ref<Mesh> cubeMesh = GenerateCube();
-		return cubeMesh;
-	}
-
-	Ref<Mesh> Mesh::GetPlaneMesh()
-	{
-		static Ref<Mesh> planeMesh = GeneratePlane();
-		return planeMesh;
-	}
-
-	Ref<Mesh> Mesh::GetCylinderMesh()
-	{
-		static Ref<Mesh> cylinderMesh = GetDynamicCylinderMesh(32);
-		return cylinderMesh;
-	}
-
-	Ref<Mesh> Mesh::GetConeMesh()
-	{
-		static Ref<Mesh> coneMesh = GetDynamicConeMesh(32);
-		return coneMesh;
-	}
-
-	Ref<Mesh> Mesh::GetSphereMesh()
-	{
-		static Ref<Mesh> sphereMesh = GetDynamicSphereMesh(32);
-		return sphereMesh;
-	}
-
-	MeshBuilder Mesh::CreateSphereMesh(uint32_t segments)
+	MeshBuilder MeshGenerator::GenerateSphere(uint32_t segments)
 	{
 		MeshBuilder builder(segments * segments, segments * segments * 6);
 
@@ -154,54 +118,7 @@ namespace Helios
 		return builder;
 	}
 
-	Ref<Mesh> Mesh::GetDynamicSphereMesh(uint32_t segments)
-	{		
-		return Mesh::Create("Sphere_" + std::to_string(segments), Helios::UUID(), CreateSphereMesh(segments));
-	}
-
-	Ref<Mesh> Mesh::GetDynamicConeMesh(uint32_t segments)
-	{
-		MeshVertex* vertices = new MeshVertex[segments * 3 + 2];
-		uint32_t* indices = new uint32_t[segments * 3 * 2];
-		ZeroMemory(indices, sizeof(indices));
-
-		vertices[0] = { { 0.0f,-1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f } };
-		vertices[1] = { { 0.0f, 1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.0f,  1.0f, 0.0f } };
-
-		for (uint32_t i = 0; i < segments; i++)
-		{
-			// Vertices 
-			float angle = (float)i / (float)segments * 2.0f * 3.14159265359f;
-			float x = cos(angle);
-			float z = sin(angle);
-
-			// Y = alpha
-			// a = 0.5
-			// b = 2.0
-			// c = sqrt(pow(a, 2) + pow(b, 2))
-			// c = sqrt(4.25)
-			// c = 2.06155281281
-			// alpha = asin(a / c)
-			// alpha = asin(0.5 / 2.06155281281)
-			static float alpha = 0.24497866312686414f;
-			vertices[i + 2] = { { x, -1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f }, { x, alpha , z } };
-			vertices[i + 2 + segments] = { { x, -1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f }, { 0.0f, -1.0f , 0.0f } };
-			vertices[i + 2 + segments * 2] = { { 0.0f, 1.0f, 0.0f , }, { 0.5f, 0.5f }, { x, alpha , z } };
-			
-			// Indices
-			indices[i * 3] = 0;
-			indices[i * 3 + 1] = i + 2 + segments;
-			indices[i * 3 + 2] = ((segments - 1) == i ? 2 : i + 3) + segments;
-
-			indices[(i * 3 + segments * 3) + 2] = i + 2;
-			indices[(i * 3 + segments * 3) + 1] = (segments - 1) == i ? 2 : i + 3;
-			indices[(i * 3 + segments * 3)] = ((segments - 1) == i ? 2 : i + 3) + segments + segments;
-		}
-
-		return Mesh::Create("Cone_" + std::to_string(segments), Helios::UUID(), vertices, segments * 3 + 2, indices, segments * 3 * 2);
-	}
-
-	Ref<Mesh> Mesh::GetDynamicCylinderMesh(uint32_t segments)
+	MeshBuilder MeshGenerator::GenerateCylinder(uint32_t segments)
 	{
 		MeshBuilder builder;
 
@@ -219,8 +136,8 @@ namespace Helios
 
 			auto vv = builder.AddVertex({ x, -1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f }, { 0.0f, -1.0f, 0.0f });
 			auto vv2 = builder.AddVertex({ x, 1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f }, { 0.0f, 1.0f, 0.0f });
-			
-			if(i > 0)
+
+			if (i > 0)
 			{
 				builder.AddQuad(v2 - 4, v2, v, v - 4);
 				builder.AddTriangle(vtop, vv2, vv2 - 4);
@@ -228,65 +145,44 @@ namespace Helios
 			}
 		}
 		
-		return Mesh::Create("Cylinder_" + std::to_string(segments), Helios::UUID(), builder);
+		return builder;
 	}
-	
-	Mesh::Mesh(std::string name, const Helios::UUID& uuid, const MeshVertex* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount) : m_Name(name), m_ID(uuid)
+
+	MeshBuilder MeshGenerator::GenerateCone(uint32_t segments)
 	{
-		m_Vertices = std::vector<MeshVertex>(vertices, vertices + vertexCount);
+		MeshBuilder builder;
 
-		m_VertexArray = VertexArray::Create(GetInputLayout(),
-			{ 
-				{ UnsafeVertexBuffer::Create(vertices, vertexCount * sizeof(MeshVertex)) },
-				{ GetInstanceVertexBuffer() }
-			}
-		);
+		builder.AddVertex({ 0.0f,-1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.0f, -1.0f, 0.0f });
+		builder.AddVertex({ 0.0f, 1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.0f,  1.0f, 0.0f });
 
-		m_IndexBuffer = IndexBuffer::Create(indices, indexCount);
-		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
+		// Y = alpha
+		// a = 0.5
+		// b = 2.0
+		// c = sqrt(pow(a, 2) + pow(b, 2))
+		// c = sqrt(4.25)
+		// c = 2.06155281281
+		// alpha = asin(a / c)
+		// alpha = asin(0.5 / 2.06155281281)
+
+		for (uint32_t i = 0; i < segments; i++)
+		{
+			float angle = (float)i / (float)segments * 2.0f * 3.14159265359f;
+			float x = cos(angle);
+			float z = sin(angle);
+
+			static float alpha = 0.24497866312686414f;
+			builder.AddVertex({ x, -1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f }, { x, alpha , z });
+			builder.AddVertex({ x, -1.0f, z }, { x * 0.5f + 0.5f, z * 0.5f + 0.5f }, { 0.0f, -1.0f , 0.0f });
+			builder.AddVertex({ 0.0f, 1.0f, 0.0f }, { 0.5f, 0.5f }, { x, alpha , z });
+
+			builder.AddTriangle(0, i + 2 + segments, ((segments - 1) == i ? 2 : i + 3) + segments);
+			builder.AddTriangle(i + 2, (segments - 1) == i ? 2 : i + 3, ((segments - 1) == i ? 2 : i + 3) + segments + segments);
+		}
+
+		return builder;
 	}
 
-	Mesh::Mesh(std::string name, const Helios::UUID& uuid, const MeshBuilder& meshBuilder) : m_Name(name), m_ID(uuid)
-	{
-		m_Vertices = std::vector<MeshVertex>(meshBuilder.m_Vertices);
-		
-		m_VertexArray = VertexArray::Create(GetInputLayout(),
-			{
-				{ UnsafeVertexBuffer::Create(meshBuilder.m_Vertices.data(), meshBuilder.m_Vertices.size() * sizeof(MeshVertex)) },
-				{ GetInstanceVertexBuffer() }
-			}
-		);
-
-		m_IndexBuffer = IndexBuffer::Create((uint32_t*)meshBuilder.m_Triangles.data(), meshBuilder.m_Triangles.size() * 3);
-		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
-	}
-
-	Ref<Mesh> Mesh::Create(std::string name, const Helios::UUID& uuid, const MeshVertex* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount)
-	{
-		return CreateRef<Mesh>(name, uuid, vertices, vertexCount, indices, indexCount);
-	}
-
-	Ref<Mesh> Mesh::Create(std::string name, const Helios::UUID& uuid, const MeshBuilder& meshBuilder)
-	{
-		return CreateRef<Mesh>(name, uuid, meshBuilder); // Create a new mesh if it doesn't exist
-	}
-
-	Ref<Mesh> Mesh::GetTorusMesh(uint32_t segments_ring, uint32_t segments_cylinder, float R, float r)
-	{
-		std::string name = "Torus_" + std::to_string(segments_ring) + "_" + std::to_string(segments_cylinder) + "_" + std::to_string(R) + "_" + std::to_string(r);
-
-		return CreateRef<Mesh>(name, UUID(), CreateTorus(segments_ring, segments_cylinder, R, r));
-	}
-
-	/*
-	 * Creates a torus mesh with the given parameters.
-	 * @param segments_ring The number of segments in the ring.
-	 * @param segments_cylinder The number of segments in the cylinder.
-	 * @param R The radius of the ring.
-	 * @param r The radius of the cylinder.
-	 * @return The mesh.
-	*/
-	MeshBuilder Mesh::CreateTorus(uint32_t segments_ring, uint32_t segments_cylinder, float R, float r)
+	MeshBuilder MeshGenerator::GenerateTorus(uint32_t segments_ring, uint32_t segments_cylinder, float R, float r)
 	{
 		MeshBuilder builder;
 
@@ -312,13 +208,16 @@ namespace Helios
 				builder.AddQuad(i * segments_cylinder + j, i * segments_cylinder + j2, i2 * segments_cylinder + j2, i2 * segments_cylinder + j);
 			}
 		}
+
 		return builder;
 	}
 
-	MeshBuilder Mesh::CreateGizmosArrow(uint32_t segments)
+	// ----------------------------------------------------------------------------
+
+	MeshBuilder MeshGenerator::GenerateGizmosArrow(uint32_t segments)
 	{
 		MeshBuilder arrowBuilder;
-		
+
 		const float arrowHeadHeight = 0.2f;
 		const float arrowHeadRadius = 0.1f;
 		const float arrowBodyHeight = 1.0f - arrowHeadHeight;
@@ -354,9 +253,5 @@ namespace Helios
 		return arrowBuilder;
 	}
 
-	void Mesh::Bind()
-	{
-		assert(m_VertexArray != nullptr);
-		m_VertexArray->Bind();
-	}
+
 }

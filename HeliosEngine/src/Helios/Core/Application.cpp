@@ -8,6 +8,7 @@
 #include "Helios/Graphics/GizmosRenderer.h"
 #include "Helios/Input/InputManager.h"
 #include "Helios/Physics/Physics2D.h"
+#include "Helios/Resources/MeshGenerator.h"
 #include "Platform/Windows/Win32GraphicalWindow.h"
 
 namespace Helios
@@ -34,10 +35,10 @@ namespace Helios
 		m_Window->SetEventCallback(callback);
 		m_Window->Create({ specs.title, specs.width, specs.height, WindowStyles::Decorated | WindowStyles::Resizable });
 		//m_Window->SetVSync(true);
-
 		if (!Renderer2D::Init()) HL_EXCEPTION(true, "Failed to initialize Renderer2D")
 		if (!Renderer::Init()) HL_EXCEPTION (true, "Failed to initialize Renderer")
 #ifdef HELIOS_EDITOR
+		MeshGenerator::InitalizeMeshTypeMapping();
 		if (!GizmosRenderer::Init()) HL_EXCEPTION(true, "Failed to initialize GizmosRenderer")
 #endif
 
