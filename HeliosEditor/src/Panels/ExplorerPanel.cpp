@@ -65,7 +65,7 @@ namespace Helios::Editor {
 				if (std::filesystem::is_directory((m_CurrentDirectory / path.filename())))
 				{
 					m_CurrentDirectory /= path.filename();
-					std::cout << "Opening directory: " << (m_CurrentDirectory / path.filename()).generic_string() << " | New path: " << m_CurrentDirectory.generic_string() << std::endl;
+					std::cout << "Opening directory: WHAT " << (m_CurrentDirectory / path.filename()).generic_string() << " | New path: " << m_CurrentDirectory.generic_string() << std::endl;
 					Refresh();
 				}
 				else
@@ -81,9 +81,56 @@ namespace Helios::Editor {
 
 	void ExplorerPanel::DisplayDirectoryOrFile(std::filesystem::path path)
 	{
-		ImGui::PushID(path.generic_string().c_str());
+		static std::filesystem::path hoveredPath;
+
+		bool hovered = !ImGui::IsWindowHovered() && ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && hoveredPath == path;
+
+		//ImGui::PushID(path.generic_string().c_str());
+
+		float size = 0.f;
+
+		if (m_SelectedFiles.contains(path))
+		{
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(1.0f, 1.0f, 1.0f, .5f));
+			hovered = true;
+		}
+		else if (hovered)
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(1.0f, 1.0f, 1.0f, .3f));
+		//ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+		//ImGui::SetNextWindowSize(ImVec2(16, 16), ImGuiCond_FirstUseEver);
+
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+
+		switch (m_CurrentGroupingStyle)
+		{
+		/*case Helios::Editor::ExplorerPanel::GroupStyle::List:
+			break;*/
+		case Helios::Editor::ExplorerPanel::GroupStyle::Grid:
+		{
+			ImVec2 size = ImGui::CalcTextSize(path.filename().string().c_str(), NULL, false, 64.f);
+			ImGui::BeginChild(path.generic_string().c_str(), ImVec2(64, 64 + size.y + 15), flags);
+			break;
+		}
+		case Helios::Editor::ExplorerPanel::GroupStyle::Tiles:
+		{
+			//ImVec2 size = ImGui::CalcTextSize(path.filename().string().c_str(), NULL, false, size);
+			ImGui::BeginChild(path.generic_string().c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 64), flags);
+			break;
+		}
+		case Helios::Editor::ExplorerPanel::GroupStyle::List:
+		{
+			ImGui::BeginChild(path.generic_string().c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 16), flags);
+			break;
+		}
+		default:
+			ImGui::BeginChild(path.generic_string().c_str());
+			break;
+		}
+
+		auto imgpos = ImGui::GetCursorPos();
 
 		bool is_directory = std::filesystem::is_directory((m_CurrentDirectory / path));
+#define MAX_PATH 256
 
 		switch (m_CurrentGroupingStyle)
 		{
@@ -96,49 +143,120 @@ namespace Helios::Editor {
 			}
 			case GroupStyle::Grid:
 			{
+				ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + 64.0f);
 				ImGui::Image(is_directory ? HeliosEditor::ICON_FOLDER->GetTextureID() : GetFileIcon(path), ImVec2(64, 64));
 				ImGui::Text(path.filename().string().c_str());
+				ImGui::PopTextWrapPos();
 				break;
 			}
 			case GroupStyle::Tiles:
 			{
+				ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x);
 				ImGui::Image(is_directory ? HeliosEditor::ICON_FOLDER->GetTextureID() : GetFileIcon(path), ImVec2(64, 64));
 				ImGui::SameLine();
 				ImGui::Text(path.filename().string().c_str());
+				ImGui::PopTextWrapPos();
 				break;
 			}
 		}
 
-		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemHovered())
+		if (ImGui::BeginPopupContextWindow((const char*)0,
+			ImGuiPopupFlags_MouseButtonRight |
+			ImGuiPopupFlags_NoOpenOverExistingPopup
+		))
 		{
-			if (is_directory)
+			if (ImGui::MenuItem("Open In Explorer"))
 			{
-				m_CurrentDirectory = std::filesystem::relative((m_CurrentDirectory / path), Project::GetProjectPath());
-				std::cout << "Opening directory: " << (m_CurrentDirectory / path).generic_string() << " | New path: " << m_CurrentDirectory.generic_string() << std::endl;
+				std::string params = "/select,\"" + (Project::GetProjectPath() / m_CurrentDirectory).string() + "\"";
+#if defined(HELIOS_PLATFORM_WINDOWS)
+				ShellExecuteA(NULL, "open", "explorer.exe", params.c_str(), NULL, SW_NORMAL);
+#elif defined(HELIOS_PLATFORM_LINUX)
+				std::string command = "xdg-open " + params;
+				system(command.c_str());
+#endif
+			}
+
+			if (ImGui::MenuItem("Refresh"))
+			{
 				Refresh();
 			}
+
+			if (ImGui::MenuItem("Rename"))
+			{
+				m_CurrentRenamePath = path;
+				std::strncpy(m_CurrentName, path.filename().string().c_str(), 260);
+				m_open_rename_popup = true;
+			}
+
+			ImGui::EndPopup();
 		}
 
-		ImGui::PopID();
-	}
+		ImGui::EndChild();
 
-	void ExplorerPanel::DisplayFile(std::filesystem::path file)
-	{
-		ImGui::PushID(file.generic_string().c_str());
-		switch (m_CurrentGroupingStyle)
+		if (ImGui::IsItemHovered())
 		{
-			case GroupStyle::List:
-			{
-				ImGui::Image(GetFileIcon(file), ImVec2(16, 16));
-				ImGui::SameLine();
-				ImGui::Text(file.filename().string().c_str());
-				break;
+			hoveredPath = path;
+			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+				if (is_directory)
+				{
+					m_CurrentDirectory = std::filesystem::relative((m_CurrentDirectory / path), Project::GetProjectPath());
+					std::cout << " Opening directory: " << (m_CurrentDirectory / path).generic_string() << " | New path: " << m_CurrentDirectory.generic_string() << std::endl;
+					Refresh();
+				}
+			}
+			else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+				if (ImGui::IsKeyDown(ImGuiKey_RightShift) || ImGui::IsKeyDown(ImGuiKey_LeftShift))
+				{
+					if (m_SelectedFiles.size() > 0) {
+						// Select all files from the last selected item to the current one
+						bool shouldSelect = false;
+						bool done = false;
+						// first in set = last selected
+						std::filesystem::path lastSelected = *(m_SelectedFiles.begin());
+						// iterate over the cached directories
+						for (const auto& cachedDir : m_CachedDirectories) {
+							if (cachedDir == lastSelected || cachedDir == path) {
+								if (shouldSelect) {
+									done = true;
+									break;
+								}
+								shouldSelect = !shouldSelect;
+							}
+
+							if (shouldSelect) {
+								m_SelectedFiles.insert(cachedDir);
+							}
+						}
+
+						if (!done) {
+							// iterate over the cached files
+							for (const auto& cachedFile : m_CachedFiles) {
+								if (cachedFile == lastSelected || cachedFile == path) {
+									if (shouldSelect) break;
+									shouldSelect = !shouldSelect;
+								}
+
+								if (shouldSelect) {
+									m_SelectedFiles.insert(cachedFile);
+								}
+							}
+						}
+					}
+				}
+				else if (!(ImGui::IsKeyDown(ImGuiKey_RightCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftCtrl)))
+				{
+					m_SelectedFiles.clear();
+				}
+				m_SelectedFiles.insert(path);
 			}
 		}
 
-		HandleDisplayInteractions(file, false);
-		
-		ImGui::PopID();
+		if (hovered)
+		{
+			ImGui::PopStyleColor();
+		}
+
+		//ImGui::PopID();
 	}
 
 	void ExplorerPanel::OnUpdate()
@@ -211,6 +329,8 @@ namespace Helios::Editor {
 				break;
 			}
 
+			looping_cache = true;
+
 			for (auto& dir : m_CachedDirectories)
 			{
 				DisplayDirectoryOrFile(dir);
@@ -222,12 +342,34 @@ namespace Helios::Editor {
 				ImGui::NextColumn();
 			}
 
+			looping_cache = false;
+
+			if (loop_next_time) {
+				Refresh();
+				loop_next_time = false;
+			}
+
 			bool tmp = ImGui::IsWindowHovered();
 
 			ImGui::Columns(1);
 
 			ImGui::Text(tmp ? "Hovered" : "Not Hovered");
 			ImGui::Text(ImGui::IsAnyItemHovered() ? "Any Item Hovered" : "No Item Hovered");
+
+			// Whole window ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows)
+			// Only window without children windows ImGui::IsWindowHovered()
+
+			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows))
+			{
+				if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+				{
+					m_SelectedFiles.clear();
+				}
+			}
+			if (ImGui::IsWindowHovered() && (ImGui::IsMouseClicked(ImGuiMouseButton_Right) || ImGui::IsMouseClicked(ImGuiMouseButton_Left)))
+			{
+				m_SelectedFiles.clear();
+			}
 
 			if (ImGui::BeginPopupContextWindow((const char*)0, 
 				ImGuiPopupFlags_NoOpenOverItems |
@@ -245,12 +387,40 @@ namespace Helios::Editor {
 					ImGui::EndMenu();
 				}
 
+				if (ImGui::MenuItem("Open In Explorer"))
+				{
+					std::string params = "/select,\"" + (Project::GetProjectPath() / m_CurrentDirectory).string() + "\"";
+#if defined(HELIOS_PLATFORM_WINDOWS)
+					ShellExecuteA(NULL, "open", "explorer.exe", params.c_str(), NULL, SW_NORMAL);
+#elif defined(HELIOS_PLATFORM_LINUX)
+					std::string command = "xdg-open " + params;
+					system(command.c_str());
+#endif
+				}
+
 				if (ImGui::MenuItem("Refresh"))
 				{
 					Refresh();
 				}
 
 				ImGui::EndPopup();
+			}
+
+			ImGui::SetNextWindowPos(ImGui::GetWindowPos(), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+			if (ImGui::BeginPopupModal("fileRename", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+			{
+				ImGui::Text("Renaming %s", std::filesystem::is_directory(m_CurrentRenamePath) ? "directory" : "file");
+				ImGui::InputTextMultiline("##rename", m_CurrentName, 256, ImVec2(400, ImGui::GetTextLineHeight() * 5), ImGuiInputTextFlags_EnterReturnsTrue);
+
+				ImGui::Button("Rename");
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+
+				ImGui::EndPopup();
+			}
+			if (m_open_rename_popup) {
+				ImGui::OpenPopup("fileRename");
+				m_open_rename_popup = false;
 			}
 
 			ImGui::End();

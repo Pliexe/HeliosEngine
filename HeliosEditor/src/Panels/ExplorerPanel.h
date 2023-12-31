@@ -19,11 +19,24 @@ namespace Helios::Editor {
 		// Cache
 		std::vector<std::filesystem::path> m_CachedDirectories;
 		std::vector<std::filesystem::path> m_CachedFiles;
+		std::unordered_set<std::filesystem::path> m_SelectedFiles;
+
+		bool looping_cache = false;
+		bool loop_next_time = false;
 
 		GroupStyle m_CurrentGroupingStyle = GroupStyle::List;
 
+		std::filesystem::path m_CurrentRenamePath;
+		char m_CurrentName[260];
+		bool m_open_rename_popup = false;
+
 		void Refresh()
 		{
+			if (looping_cache) {
+				loop_next_time = true;
+				return;
+			}
+
 			m_CachedDirectories.clear();
 			m_CachedFiles.clear();
 

@@ -39,7 +39,7 @@ namespace Helios
 					props.lpstrDefExt = L"scene";
 					props.nMaxFile = MAX_PATH;
 					//props.lpstrInitialDir = L"C:\\";
-					//props.lpstrInitialDir = Project::GetAssetsPath().wstring().c_str();
+					props.lpstrInitialDir = Project::GetAssetsPath().wstring().c_str();
 
 					if (GetSaveFileName(&props)) {
 						std::wstring wstr(file);
@@ -66,7 +66,7 @@ namespace Helios
 					for (auto& scene : SceneRegistry::GetActiveScenes())
 					{
 						SceneSerializer serializer(scene);
-						serializer.SerializeEditor("Test.scene");
+						serializer.SerializeEditor((Project::GetAssetsPath() / "Test.scene").string());
 					}
 				}
 
