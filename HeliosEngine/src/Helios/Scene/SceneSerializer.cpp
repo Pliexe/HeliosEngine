@@ -1,5 +1,6 @@
 #include "SceneSerializer.h"
 #include "Helios/Core/Asserts.h"
+#include "Helios/Resources/ResourceRegistry.h"
 
 #include "Entity.h"
 
@@ -158,6 +159,12 @@ namespace Helios
 		return out;
 	}
 
+	YAML::Emitter& operator<<(YAML::Emitter& out, const UUID& x)
+	{
+		out << x.toString();
+		return out;
+	}
+
 	YAML::Emitter& operator<<(YAML::Emitter& out, Entity entity)
 	{
 		// Either return the UUID or 0 if the entity is invalid
@@ -263,7 +270,7 @@ namespace Helios
 			auto& mesh = entity.GetComponent<MeshRendererComponent>();
 			out << YAML::Key << "MeshRenderer" << YAML::Value << YAML::BeginMap;
 			out << YAML::Key << "Color" << YAML::Value << mesh.material->Color;
-			//out << YAML::Key << "Mesh" << YAML::Value << mesh.mesh;
+			out << YAML::Key << "Mesh" << YAML::Value << mesh.mesh->GetID();
 			//out << YAML::Key << "Material" << YAML::Value << mesh.material;
 			out << YAML::EndMap;
 		}
@@ -393,7 +400,7 @@ namespace Helios
 			//meshComponent.material = meshNode["Material"].as<Material>();
 			meshComponent.material->Color = meshNode["Color"].as<Color>();
 			//meshComponent.mesh = meshNode["Mesh"].as<Mesh>();
-			meshComponent.mesh = entityNode["Info"]["Name"].as<std::string>().starts_with("Sphere") ? Mesh::GetSphereMesh() : Mesh::GetCubeMesh();
+			meshComponent.mesh = ResourceRegistry::GetResource<Mesh>(meshNode["Mesh"].as<Helios::UUID>());
 		}
 		if (entityNode["Rigidbody2D"])
 		{

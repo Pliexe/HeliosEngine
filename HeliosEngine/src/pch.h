@@ -2,7 +2,9 @@
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
-#pragma once
+
+#ifndef PCH_H
+#define PCH_H
 
 #if (defined(_M_IX86) || defined(_M_X64) || __i386__ || __x86_64__) && !defined(M_HYBRID_X86_ARM64) && !defined(_M_ARM64EC)
 #define __SSE_ENABLED__
@@ -140,3 +142,5 @@ namespace Helios {
     template <typename T>
     using WeakRef = std::weak_ptr<T>;
 }
+
+#endif

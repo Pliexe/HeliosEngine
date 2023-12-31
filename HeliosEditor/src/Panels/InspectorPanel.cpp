@@ -152,6 +152,8 @@ namespace Helios {
 					else
 						ImGui::Text("Texture: Unknown Name!");
 
+					ImGui::Text("Mesh UUID: %s", sRenderer.mesh == nullptr ? "None" : sRenderer.mesh->GetID().toString().c_str());
+
 					if (ImGui::Button("Select")) {
 						Entity selectedGm = entity;
 						AssetRegistry::OpenTextureSelect([selectedGm](Ref<Texture2D> nTexture) mutable {
