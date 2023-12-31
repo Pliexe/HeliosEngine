@@ -395,6 +395,21 @@ namespace Helios {
 		Ref<UnsafeVertexBuffer> m_buffer;
 	};
 
+	class HELIOS_API IndexBuffer
+	{
+	public:
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
+
+		virtual void SetData(const uint32_t* data, uint32_t count) = 0;
+
+		virtual uint32_t GetCount() const = 0;
+		virtual std::string ToString() const = 0;
+
+		static Ref<IndexBuffer> Create(std::initializer_list<uint32_t> indices, BufferUsage type = BufferUsage::Static);
+		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count, BufferUsage type = BufferUsage::Static);
+	};
+
 	class HELIOS_API VertexArray
 	{
 	public:
@@ -425,18 +440,5 @@ namespace Helios {
 		}
 	};
 
-	class HELIOS_API IndexBuffer
-	{
-	public:
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
-
-		virtual void SetData(const uint32_t* data, uint32_t count) = 0;
-
-		virtual uint32_t GetCount() const = 0;
-		virtual std::string ToString() const = 0;
-
-		static Ref<IndexBuffer> Create(std::initializer_list<uint32_t> indices, BufferUsage type = BufferUsage::Static);
-		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count, BufferUsage type = BufferUsage::Static);
-	};
+	
 }
