@@ -1,6 +1,5 @@
 #include "Renderer2D.h"
 
-#include "Helios/Graphics/DepricatedGraphics.h"
 #include "Helios/Core/Asserts.h"
 #include <d3dcompiler.h>
 #include <DirectXMath.h>

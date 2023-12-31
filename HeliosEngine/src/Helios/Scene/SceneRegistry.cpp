@@ -1,4 +1,4 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
@@ -10,79 +10,7 @@
 #include "Helios/Scene/Entity.h"
 #include "Helios/Core/Profiler.h"
 
-namespace Helios {
-	/*Ref<Scene> SceneRegistry::loadQueue;
-	Ref<Scene> SceneRegistry::currentScene;*/
-	//std::map<std::string, Ref<Scene>> SceneRegistry::scenes;
-
-	//void SceneRegistry::Render(DepricatedGraphics& graphics)
-	//{
-	//	/*auto currentCamera = currentScene->currentCamera;
-	//	if (currentCamera) {
-	//		graphics.m_renderTarget2D->Clear(currentCamera->backgroundColor);
-
-	//		for (auto& gm : GameObject::gameObjects)
-	//		{
-	//			if (gm->IsActive())
-	//				for (auto& oc : gm->components)
-	//					if (oc->IsActive())
-	//						oc->Render(graphics);
-	//		}
-	//	}*/
-
-	//	//if(currentScene) currentScene->RenderScene();
-	//}
-
-	//void SceneRegistry::Update()
-	//{
-	//	/*for (auto& gm : GameObject::gameObjects)
-	//	{
-	//		if (gm->IsActive())
-	//			for (auto& oc : gm->components)
-	//				if (oc->IsActive())
-	//					oc->Update();
-	//	}*/
-	//}
-
-	//const WeakRef<Scene>& SceneRegistry::AddScene(std::string name, std::function<void(Scene&)> onInitialization)
-	//{
-	//	const WeakRef<Scene>& scene = AddScene(name);
-	//	scene.lock()->initCallback = onInitialization;
-	//	return scene;
-	//}
-
-	//const WeakRef<Scene>& SceneRegistry::AddScene(std::string name)
-	//{
-	//	Ref<Scene> scene = CreateRef<Scene>();
-	//	scenes.insert({ name, scene });
-	//	return scene;
-	//}
-
-	//bool SceneRegistry::LoadScene(std::string name)
-	//{
-	//	auto pos = scenes.find(name);
-	//	if (pos == scenes.end()) return false;
-	//	else {
-	//		loadQueue = pos->second;
-	//		if (currentScene == NULL) CheckQueue();
-	//		return true;
-	//	}
-	//}
-
-	//void SceneRegistry::CheckQueue()
-	//{
-	//	if (loadQueue) {
-	//		if (currentScene) currentScene->Unload();
-	//		currentScene = loadQueue;
-	//		loadQueue = NULL;
-
-	//		currentScene->Init();
-
-	//		if (!currentScene->IsPrimaryCameraSet()) GameObject::CreateMainCamera();
-	//	}
-	//}
-	
-	
+namespace Helios {	
 
 	void SceneRegistry::Register(std::string name, std::filesystem::path path)
 	{
@@ -191,18 +119,21 @@ namespace Helios {
 		HL_PROFILE_END();
 	}
 
-	void SceneRegistry::OnRuntimeRender()
+	void SceneRegistry::OnRuntimeRender(std::vector<Ref<Framebuffer>> frameBuffers)
 	{
 		HL_PROFILE_BEGIN("Scene Render");
-		//SceneCamera::GetViewProjection()
 		auto cam = GetPrimaryCamera();
 		if (cam.IsNull()) return;
 
 		auto camt = cam.GetComponent<CameraComponent>();
 
+		frameBuffers[0]->Bind();
+		frameBuffers[0]->ClearBuffer(0u, camt.clear_color);
+		frameBuffers[0]->ClearDepthStencil();
+
 		TransformComponent worldTransform = Transform(cam, cam.GetScene()).GetWorldTransformCache();
 
-		Matrix4x4 projection = SceneCamera::GetViewProjection(worldTransform, camt);
+		Matrix4x4 projection = Camera::GetViewProjection(worldTransform, camt, frameBuffers[0]->GetSize());
 
 		for (auto& scene : m_activeScenes)
 		{
@@ -211,19 +142,7 @@ namespace Helios {
 			scene->PerformCleanupAndSync();
 		}
 
-		HL_PROFILE_END();
-	}
-
-	void SceneRegistry::OnEditorRender(SceneCamera camera)
-	{
-		HL_PROFILE_BEGIN("Editor Scene Render");
-
-		for (auto& scene : m_activeScenes)
-		{
-			scene->RenderScene(camera);
-
-			scene->PerformCleanupAndSync();
-		}
+		frameBuffers[0]->Unbind();
 
 		HL_PROFILE_END();
 	}

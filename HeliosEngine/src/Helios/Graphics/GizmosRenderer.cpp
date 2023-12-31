@@ -520,7 +520,7 @@ namespace Helios
 		
 	}
 
-	void GizmosRenderer::DrawQuad(SceneCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, int data = -1)
+	void GizmosRenderer::DrawQuad(EditorCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, int data = -1)
 	{
 		if(s_Data.quads.quadInstanceIndex >= GizmosData::MaxQuadInstances)
 			Flush();
@@ -530,7 +530,7 @@ namespace Helios
 			Matrix4x4::Transpose(
 				Matrix4x4::Scale(size) *
 				Matrix4x4::RotationRow(
-					(Quaternion::Conjugate(transform.Rotation)) * camera.GetTransform().Rotation
+					(Quaternion::Conjugate(transform.Rotation)) * camera.GetTransformComponent().Rotation
 				) *
 				Matrix4x4::TranslationRow(position) *
 				Matrix4x4::Scale(transform.Scale) *

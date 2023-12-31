@@ -244,12 +244,6 @@ namespace Helios {
 		//HL_PROFILE_END();
 	}
 
-	void Scene::RenderScene(SceneCamera camera)
-	{
-		Matrix4x4 projection = camera.GetViewProjection();
-		RenderScene(camera.GetTransform(), projection);
-		RenderGizmos(projection);
-	}
 	void Scene::RenderScene(TransformComponent world_camera, Matrix4x4 projection)
 	{
 		m_worldTransformCache.clear();

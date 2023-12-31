@@ -1,4 +1,4 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
@@ -9,8 +9,7 @@
 #include "Scene.h"
 #include "Entity.h"
 #include "Helios/Core/Base.h"
-#include "Helios/Graphics/DepricatedGraphics.h"
-#include "SceneCamera.h"
+#include <Helios/Graphics/Framebuffer.h>
 
 namespace Helios {
 	class Scene;

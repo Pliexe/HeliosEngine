@@ -4,7 +4,6 @@
 #include "Helios/Core/Base.h"
 #include "Helios/Resources/Color.h"
 #include "Helios/Scene/Components.h"
-#include "Helios/Scene/SceneCamera.h"
 #include "Helios/Math/Matrix.h"
 #include "Helios/Utils/MeshBuilder.h"
 
@@ -74,7 +73,7 @@ namespace Helios
 		static void DrawAngle(Vector3 root, Vector3 a_normal, Vector3 b_normal, float radius, Color color, Matrix4x4 model_matrix);
 		static void DrawLine(Vector3 a, Vector3 b, float width = 0.5f, Color color = Color::White, int32_t id = -1, LineMode mode = LineMode::Solid);
 		void SubmitLine(Vector2 a, Vector2 b, float width, Color color, int32_t id, LineMode mode);
-		static void DrawQuad(SceneCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, int
+		static void DrawQuad(EditorCamera camera, TransformComponent& transform, const Vector3& position, const Vector2& size, const Color& color, int
 		                     data);
 		static void DrawMeshVertices(EditorCamera camera, TransformComponent& transform, std::vector<MeshVertex>& vertices);
 

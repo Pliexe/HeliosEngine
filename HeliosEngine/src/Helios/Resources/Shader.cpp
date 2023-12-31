@@ -1,5 +1,4 @@
 #include "Shader.h"
-#include "Helios/Graphics/DepricatedGraphics.h"
 #include "Helios/Graphics/Graphics.h"
 
 #ifdef HELIOS_PLATFORM_WINDOWS

@@ -3,7 +3,6 @@
 
 #include "Graphics.h"
 #include "Helios/Core/Asserts.h"
-#include "Helios/Graphics/DepricatedGraphics.h"
 
 namespace Helios
 {

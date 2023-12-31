@@ -33,7 +33,7 @@ namespace Helios
 		inline static std::unordered_map<UUID, Ref<Material>> s_Materials;
 		inline static std::unordered_map<UUID, Ref<Mesh>> s_Meshes;
 		inline static std::unordered_map<UUID, Ref<Texture2D>> s_Textures;
-		inline static std::unordered_map<UUID, Ref<DepricatedShader>> s_Shaders;
+		inline static std::unordered_map<UUID, Ref<Shader>> s_Shaders;
 
 		inline static std::unordered_map<UUID, TextureData> s_TextureData;
 

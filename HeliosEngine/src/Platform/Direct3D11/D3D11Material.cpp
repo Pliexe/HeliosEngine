@@ -3,7 +3,6 @@
 #include "Direct3D11Context.h"
 #include "Helios/Core/Logger.h"
 #include "Helios/Core/Asserts.h"
-#include "Helios/Graphics/DepricatedGraphics.h"
 
 namespace Helios {
     D3D11Material::D3D11Material(Filter filter, Type type) {

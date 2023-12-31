@@ -1,5 +1,4 @@
 #include "Texture.h"
-#include "Helios/Graphics/DepricatedGraphics.h"
 #include "Helios/Core/Asserts.h"
 #include "Helios/Graphics/Graphics.h"
 #include "Platform/Direct3D11/Direct3D11Texture2D.h"
