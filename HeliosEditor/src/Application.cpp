@@ -1,5 +1,5 @@
 ﻿#include "Application.h"
-#include "Helios/Core/Application.h"
+#include <Helios/Core/Application.h>
 
 #include <iostream>
 
@@ -345,13 +345,9 @@ namespace Helios
 		//}
 
 		if (isGameSceneActive) {
-			gameFrame->Bind();
-			gameFrame->ClearBuffer(0u, { 0.0f, 0.0f, 0.0f });
-			gameFrame->ClearDepthStencil();
+			static std::vector<Ref<Framebuffer>> buffers = { gameFrame };
 
-			SceneRegistry::OnRuntimeRender();
-
-			gameFrame->Unbind();
+			SceneRegistry::OnRuntimeRender(buffers);
 		}
 
 		//ScenePanel::Render(*SceneRegistry::get_current_scene().get());

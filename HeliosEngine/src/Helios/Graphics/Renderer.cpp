@@ -221,6 +221,7 @@ namespace Helios
 	void Renderer::SubmitMesh(uint64_t entityId, int32_t sceneIndex, Matrix4x4 worldMatrix,
 		MeshRendererComponent& meshRenderer)
 	{
+		if (meshRenderer.mesh == nullptr || meshRenderer.material == nullptr) return;
 		rendererData.renderables.emplace_back(meshRenderer.mesh, meshRenderer.material, worldMatrix, (uint32_t)entityId, sceneIndex, meshRenderer.material->Color);
 	}
 

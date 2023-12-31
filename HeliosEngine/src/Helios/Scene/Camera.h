@@ -2,6 +2,8 @@
 
 #include "Helios/Core/Base.h"
 #include "Helios/Math/Matrix.h"
+#include "Components/Basic.h"
+#include "Components/Transforms.h"
 
 namespace Helios
 {
@@ -49,6 +51,16 @@ namespace Helios
         float GetSize() { return m_Size; }
         float GetFov() { return m_Fov; }
         Type GetType() { return m_Type; }
+
+		static Matrix4x4 GetViewProjection(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix) { return projectionMatrix * Matrix4x4::Inverse(viewMatrix); }
+        static Matrix4x4 GetViewProjection(const TransformComponent& transform, const CameraComponent& camera, const Size& viewport)
+        {
+            Matrix4x4 projectionMatrix = camera.ortographic ?
+				Matrix4x4::OrthographicLH(camera.fov, (float)viewport.width / (float)viewport.height, camera.near_z, camera.far_z) :
+				Matrix4x4::PerspectiveLH(camera.size, (float)viewport.width / (float)viewport.height, camera.near_z, camera.far_z);
+
+			return GetViewProjection(transform.GetModelMatrix(), projectionMatrix);
+        }
 
     protected:
         Matrix4x4 m_ProjectionMatrix = Matrix4x4::Identity();
