@@ -3,6 +3,7 @@
 
 namespace Helios
 {
+
 	Ref<Texture2D> ResourceRegistry::GetTextureResource(const Helios::UUID& id)
 	{
 		return Ref<Texture2D>();

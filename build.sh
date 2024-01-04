@@ -34,6 +34,10 @@ case $1 in
         premake5 gmake
         make
         ;;
+    cmake)
+        echo "Generating CMake project files..."
+        premake5 cmake
+        ;;
     gmake)
         echo "Generating GNU makefiles..."
         premake5 gmake

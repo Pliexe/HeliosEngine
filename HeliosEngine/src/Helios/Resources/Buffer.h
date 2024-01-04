@@ -383,7 +383,7 @@ namespace Helios {
 		}
 
 		void SetInputLayout(const InputLayout& layout) { m_buffer->SetInputLayout(layout); }
-		const Ref<InputLayout>& GetInputLayout() const { return m_buffer->GetInputLayout(); }
+		const InputLayout& GetInputLayout() const { return m_buffer->GetInputLayout(); }
 
 		// operator for casting to UnsafeVertexBuffer
 		operator Ref<UnsafeVertexBuffer>& () { return m_buffer; }

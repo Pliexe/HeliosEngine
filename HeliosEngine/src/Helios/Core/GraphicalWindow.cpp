@@ -21,7 +21,7 @@ namespace Helios
 	void GraphicalWindow::MessageBox(const std::string &title, const std::string &message)
 	{
 		#if defined(HELIOS_PLATFORM_WINDOWS)
-			MessageBoxA(NULL, message.c_str(), title.c_str(), MB_ICONERROR);
+			::MessageBoxA(NULL, message.c_str(), title.c_str(), MB_ICONERROR);
 		#elif defined(HELIOS_PLATFORM_LINUX)
 			GtkWidget* dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", message.c_str());
 		    gtk_window_set_title(GTK_WINDOW(dialog), title.c_str());

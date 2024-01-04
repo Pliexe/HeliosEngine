@@ -5,8 +5,7 @@
 #include <string>
 
 #ifdef HELIOS_DEBUG
-
-#define HL_ASSERT_C(condition, message) if(!(condition)) { HL_MESSAGE(("Helios Assertion Failed!\n\nFunction:" + std::string(__FUNCTION__) + "\nLine: " + std::to_string(__LINE__) + "\n\nMessage: " + message ).c_str()); HL_DEBUGBREAK(); }
+#define HL_ASSERT_C(condition, message) if(!(condition)) { HL_MESSAGE((std::string("Helios Assertion Failed!\n\nFunction:") + std::string(__FUNCTION__) + "\nLine: " + std::to_string(__LINE__) + "\n\nMessage: " + message ).c_str()); HL_DEBUGBREAK(); }
 #define HL_ASSERT_NM(condition) assert(condition)
 #define GET_ASSERT_MACRO(_1, _2, NAME, ...) NAME
 #define HL_ASSERT(...) GET_ASSERT_MACRO(__VA_ARGS__, HL_ASSERT_C, HL_ASSERT_NM)(__VA_ARGS__)
@@ -26,18 +25,21 @@ namespace Helios {
 		const char* file;
 		const char* function;
 		int line;
+		const char* message;
 	protected:
 		virtual const char* ExceptionName() const { return "HeliosException"; }
 	public:
-		HeliosException(const char* message, const char* function, const char* file, int line) : std::exception(message)
+		HeliosException(const char* message, const char* function, const char* file, int line) : std::exception()
 		{
+			this->message = message;
 			this->function = function;
 			this->file = file;
 			this->line = line;
 		}
 
-		HeliosException(std::string message, const char* function, const char* file, int line) : std::exception(message.c_str())
+		HeliosException(std::string message, const char* function, const char* file, int line) : std::exception()
 		{
+			this->message = message.c_str();
 			this->function = function;
 			this->file = file;
 			this->line = line;
@@ -54,7 +56,7 @@ namespace Helios {
 				"\n\nIn function: " + function +
 				"\n\n" +
 #endif // HL_DEBUG
-				"Message: " + exception::what()
+				"Message: " + /*exception::what()*/this->message
 				).c_str(), (std::string("Triggered: ") + ExceptionName()).c_str(), retry ? (MB_ABORTRETRYIGNORE | MB_ICONERROR) : (MB_OK | MB_ICONERROR));
 		}
 	};

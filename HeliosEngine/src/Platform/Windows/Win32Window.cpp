@@ -1,4 +1,5 @@
 #include "Win32Window.h"
+#include <winuser.h>
 
 namespace Helios
 {
@@ -37,24 +38,24 @@ namespace Helios
 	{
 		HINSTANCE hInstance = GetModuleHandle(nullptr);
 
-		WNDCLASSEX wc;
-		ZeroMemory(&wc, sizeof(WNDCLASSEX));
+		WNDCLASSEXW wc;
+		ZeroMemory(&wc, sizeof(WNDCLASSEXW));
 
-		if(!GetClassInfoEx(hInstance, ClassName(), &wc))
+		if(!::GetClassInfoExW(hInstance, ClassName(), &wc))
 		{
-			wc.cbSize = sizeof(WNDCLASSEX);
+			wc.cbSize = sizeof(WNDCLASSEXW);
 			wc.style = m_wcStyle;
 			wc.lpfnWndProc = StaticWindowProc;
 			wc.hInstance = hInstance;
 			wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 			wc.lpszClassName = ClassName();
-			RegisterClassEx(&wc);
+			RegisterClassExW(&wc);
 		}
 
 		RECT wr = { 0, 0, (long)specs.width, (long)specs.height };
 		AdjustWindowRectEx(&wr, m_dwStyle, FALSE, m_dwExStyle);
 
-		m_hWnd = CreateWindowEx(
+		m_hWnd = CreateWindowExW(
 			m_dwExStyle,
 			ClassName(),
 			std::wstring(specs.title.begin(), specs.title.end()).c_str(),

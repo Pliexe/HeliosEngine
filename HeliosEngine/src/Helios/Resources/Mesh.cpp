@@ -115,9 +115,9 @@ namespace Helios
 			// Go trough segments in vertical direction and skip the top and bottom vertices.
 			for (uint32_t j = 1; j < segments - 1; j++)
 			{
-				float x = cosf((float)i / (float)segments * 2.0f * (float)M_PI) * sinf((float)j / (float)segments * (float)M_PI);
-				float y = cosf((float)j / (float)segments * (float)M_PI);
-				float z = sinf((float)i / (float)segments * 2.0f * (float)M_PI) * sinf((float)j / (float)segments * (float)M_PI);
+				float x = cosf((float)i / (float)segments * 2.0f * (float)H_PI) * sinf((float)j / (float)segments * (float)H_PI);
+				float y = cosf((float)j / (float)segments * (float)H_PI);
+				float z = sinf((float)i / (float)segments * 2.0f * (float)H_PI) * sinf((float)j / (float)segments * (float)H_PI);
 
 				//auto v = builder.AddVertex({ x, y, z }, { (float)i / (float)segments, (float)j / (float)segments }, );
 				auto v = builder.AddVertex({ x, y, z }, { (float)i / (float)segments, (float)j / (float)segments }, { x, y, z });

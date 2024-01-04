@@ -56,3 +56,7 @@ HeliosEditor/Test.scene
 .codelite
 *.project
 *.workspace
+
+#etc
+.cache
+compile_commands.json

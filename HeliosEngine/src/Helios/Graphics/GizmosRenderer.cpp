@@ -590,9 +590,9 @@ namespace Helios
 			};
 
 			x[1].transform = transform_matrix;
-			x[0].transform = transform_matrix * Matrix4x4::RotationZRow(M_PI_2);
-			x[2].transform = transform_matrix * Matrix4x4::RotationXRow(M_PI_2);
-			x[3].transform = Matrix4x4::TranslationColumn(transform_component.Position) * Matrix4x4::RotationColumn(Quaternion::Conjugate(transform_component.Rotation) * camera.GetOrientation()) * Matrix4x4::RotationXRow(M_PI_2) * Matrix4x4::Scale(1.5f, 1.5f, 1.5f);
+			x[0].transform = transform_matrix * Matrix4x4::RotationZRow(H_PI_2);
+			x[2].transform = transform_matrix * Matrix4x4::RotationXRow(H_PI_2);
+			x[3].transform = Matrix4x4::TranslationColumn(transform_component.Position) * Matrix4x4::RotationColumn(Quaternion::Conjugate(transform_component.Rotation) * camera.GetOrientation()) * Matrix4x4::RotationXRow(H_PI_2) * Matrix4x4::Scale(1.5f, 1.5f, 1.5f);
 
 			GizmosInstance* ptr = &s_Data.m_GizmosInstanceData.m_GizmosInstances[2][*s_Data.m_GizmosInstanceData.TorusGizmoInstanceCount];
 

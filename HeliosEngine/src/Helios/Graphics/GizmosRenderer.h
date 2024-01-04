@@ -3,9 +3,9 @@
 #include "pch.h"
 #include "Helios/Core/Base.h"
 #include "Helios/Resources/Color.h"
-#include "Helios/Scene/Components.h"
 #include "Helios/Math/Matrix.h"
 #include "Helios/Utils/MeshBuilder.h"
+#include "Helios/Scene/Entity.h"
 
 namespace Helios
 {

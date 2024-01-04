@@ -4,6 +4,7 @@
 
 -- Build files for other editors
 require "vendor/premake-vscode/vscode"
+require "vendor/premake-cmake/cmake"
 
 workspace "HeliosEngine"
     architecture "x64"

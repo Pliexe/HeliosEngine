@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "Helios/Core/Asserts.h"
 #include "Helios/Math/Vector.h"
+#include <stdexcept>
 
 namespace Helios
 {
@@ -43,8 +44,8 @@ namespace Helios
 		
 	};
 
-	class NoFileException : public std::exception { public: NoFileException() : std::exception("NoFile") { } };
-	class InvalidFileException : public std::exception { public: InvalidFileException() : std::exception("InvalidFile") { } };
+	class NoFileException : public std::runtime_error { public: NoFileException() : std::runtime_error("NoFile") { } };
+	class InvalidFileException : public std::runtime_error { public: InvalidFileException() : std::runtime_error("InvalidFile") { } };
 
 	class VisualScript
 	{

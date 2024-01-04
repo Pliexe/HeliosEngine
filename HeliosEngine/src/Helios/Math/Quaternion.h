@@ -30,8 +30,8 @@ namespace Helios {
 
         static const Quaternion Identity() { return { 0.0f, 0.0f, 0.0f, 1.0f }; }
 
-        static Quaternion FromEuler(Vector3 vec) { return FromEulerRads(vec * ((float)M_PI / 180.0f)); }
-        static Quaternion FromEuler(float x, float y, float z) { return FromEulerRads(x * ((float)M_PI / 180.0f), y * ((float)M_PI / 180.0f), z * ((float)M_PI / 180.0f)); }
+        static Quaternion FromEuler(Vector3 vec) { return FromEulerRads(vec * ((float)H_PI / 180.0f)); }
+        static Quaternion FromEuler(float x, float y, float z) { return FromEulerRads(x * ((float)H_PI / 180.0f), y * ((float)H_PI / 180.0f), z * ((float)H_PI / 180.0f)); }
         static Quaternion FromEulerRads(Vector3 vec) { return FromEulerRads(vec.x, vec.y, vec.z); }
         // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
         static Quaternion FromEulerRads(float x, float y, float z) // YXZ
@@ -87,7 +87,7 @@ namespace Helios {
 		}
 
         Vector3 eulerRads();
-        Vector3 euler() { return eulerRads() * (180.0f / (float)M_PI); }
+        Vector3 euler() { return eulerRads() * (180.0f / (float)H_PI); }
 
         Quaternion operator/(float other) const
         {

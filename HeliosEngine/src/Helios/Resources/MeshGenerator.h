@@ -3,7 +3,6 @@
 #include "pch.h"
 #include "Helios/Core/UUID.h"
 #include "Mesh.h"
-#include "ResourceResolver.h"
 
 namespace Helios
 {
@@ -23,23 +22,7 @@ namespace Helios
 		inline static std::unordered_map<MeshType, UUID> meshTypeToUuuidMap;
 		inline static std::unordered_map<UUID, MeshType> uuidToMehTypeMap;
 
-		static void InitalizeMeshTypeMapping() {
-			// Populate the mapping of mesh to UUID - uuid that begins from 00000000-0000-0000-0000-000000000000
-			meshTypeToUuuidMap[MeshType::Plane] = UUID::fromString("00000000-0000-0000-0000-000000000000");
-			meshTypeToUuuidMap[MeshType::Cube] = UUID::fromString("00000000-0000-0000-0000-000000000001");
-			meshTypeToUuuidMap[MeshType::Sphere] = UUID::fromString("00000000-0000-0000-0000-000000000002");
-			meshTypeToUuuidMap[MeshType::Cylinder] = UUID::fromString("00000000-0000-0000-0000-000000000003");
-			meshTypeToUuuidMap[MeshType::Cone] = UUID::fromString("00000000-0000-0000-0000-000000000004");
-			meshTypeToUuuidMap[MeshType::Torus] = UUID::fromString("00000000-0000-0000-0000-000000000005");
-
-			// Populate the mapping of UUID to MeshType
-			for (const auto& pair : meshTypeToUuuidMap)
-			{
-				uuidToMehTypeMap[pair.second] = pair.first;
-				static ResourceResolver::ResourceInfo info = { ResourceResolver::ResourceInfo::INBUILT };
-				ResourceResolver::RegisterResource(pair.second, info);
-			}
-		}
+		static void InitalizeMeshTypeMapping();
 	public:
 
 		static UUID GetMeshUUID(MeshType meshType) { return meshTypeToUuuidMap[meshType]; }

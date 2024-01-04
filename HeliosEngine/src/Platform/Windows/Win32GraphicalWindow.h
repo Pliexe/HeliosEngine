@@ -1,5 +1,7 @@
 #pragma once
+#include "Helios/Core/Asserts.h"
 #include "pch.h"
+#include <string>
 
 #ifdef HELIOS_PLATFORM_WINDOWS
 

@@ -88,20 +88,6 @@ namespace Helios {
 		return *this;
 	}
 
-	Vector2& Vector2::operator=(Vector2 other)
-	{
-		this->x = other.x;
-		this->y = other.y;
-		return *this;
-	}
-
-	Vector2& Vector2::operator=(Vector2& other)
-	{
-		this->x = other.x;
-		this->y = other.y;
-		return *this;
-	}
-
 #pragma endregion
 
 #pragma region Vector3

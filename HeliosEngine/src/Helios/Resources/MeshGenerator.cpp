@@ -1,7 +1,33 @@
 #include "MeshGenerator.h"
+#include "ResourceResolver.h"
 
 namespace Helios
 {
+	void MeshGenerator::InitalizeMeshTypeMapping() {
+          // Populate the mapping of mesh to UUID - uuid that begins from
+          // 00000000-0000-0000-0000-000000000000
+          meshTypeToUuuidMap[MeshType::Plane] =
+              UUID::fromString("00000000-0000-0000-0000-000000000000");
+          meshTypeToUuuidMap[MeshType::Cube] =
+              UUID::fromString("00000000-0000-0000-0000-000000000001");
+          meshTypeToUuuidMap[MeshType::Sphere] =
+              UUID::fromString("00000000-0000-0000-0000-000000000002");
+          meshTypeToUuuidMap[MeshType::Cylinder] =
+              UUID::fromString("00000000-0000-0000-0000-000000000003");
+          meshTypeToUuuidMap[MeshType::Cone] =
+              UUID::fromString("00000000-0000-0000-0000-000000000004");
+          meshTypeToUuuidMap[MeshType::Torus] =
+              UUID::fromString("00000000-0000-0000-0000-000000000005");
+
+          // Populate the mapping of UUID to MeshType
+          for (const auto &pair : meshTypeToUuuidMap) {
+            uuidToMehTypeMap[pair.second] = pair.first;
+            static ResourceResolver::ResourceInfo info = {
+                ResourceResolver::ResourceInfo::INBUILT};
+            ResourceResolver::RegisterResource(pair.second, info);
+		}
+	}
+
 	MeshBuilder MeshGenerator::GeneratePlane()
 	{
 		MeshBuilder builder;
@@ -79,9 +105,9 @@ namespace Helios
 			// Go trough segments in vertical direction and skip the top and bottom vertices.
 			for (uint32_t j = 1; j < segments - 1; j++)
 			{
-				float x = cosf((float)i / (float)segments * 2.0f * (float)M_PI) * sinf((float)j / (float)segments * (float)M_PI);
-				float y = cosf((float)j / (float)segments * (float)M_PI);
-				float z = sinf((float)i / (float)segments * 2.0f * (float)M_PI) * sinf((float)j / (float)segments * (float)M_PI);
+				float x = cosf((float)i / (float)segments * 2.0f * (float)H_PI) * sinf((float)j / (float)segments * (float)H_PI);
+				float y = cosf((float)j / (float)segments * (float)H_PI);
+				float z = sinf((float)i / (float)segments * 2.0f * (float)H_PI) * sinf((float)j / (float)segments * (float)H_PI);
 
 				//auto v = builder.AddVertex({ x, y, z }, { (float)i / (float)segments, (float)j / (float)segments }, );
 				auto v = builder.AddVertex({ x, y, z }, { (float)i / (float)segments, (float)j / (float)segments }, { x, y, z });

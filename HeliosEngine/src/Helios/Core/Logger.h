@@ -6,7 +6,7 @@
 
 #define LOG_WARNING(str) printf("WARNING : %s\n", str);
 
-#define HL_MESSAGE(message) MessageBoxA(NULL, message, "Critical Error!", MB_ICONERROR);
+#define HL_MESSAGE(message) ::MessageBoxA(NULL, message, "Critical Error!", MB_ICONERROR);
 
 inline std::string GetLastErrorAsString(HRESULT hr)
 {

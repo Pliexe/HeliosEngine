@@ -3,7 +3,6 @@
  * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
  */
 #pragma once
-
 #include "pch.h"
 #include "Helios/Core/Base.h"
 
@@ -83,9 +82,6 @@ namespace Helios {
 		
 		Vector2& operator*=(float n);
 		Vector2& operator/=(float n);
-
-		Vector2& operator=(Vector2 other);
-		Vector2& operator=(Vector2& other);
 	};
 
 	struct HELIOS_API Vector3Copy {

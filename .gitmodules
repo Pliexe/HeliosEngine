@@ -15,3 +15,6 @@
 [submodule "vendor/premake-vscode"]
 	path = vendor/premake-vscode
 	url = https://github.com/Enhex/premake-vscode.git
+[submodule "vendor/premake-cmake"]
+	path = vendor/premake-cmake
+	url = https://github.com/Jarod42/premake-cmake.git
