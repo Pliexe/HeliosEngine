@@ -29,6 +29,9 @@ namespace Helios::Editor {
 		std::filesystem::path m_CurrentRenamePath;
 		char m_CurrentName[260];
 		bool m_open_rename_popup = false;
+		bool m_is_renaming = false;
+		bool m_focus_on_input = false;
+		bool m_open_already_exists_popup = false;
 
 		void Refresh()
 		{
@@ -56,7 +59,9 @@ namespace Helios::Editor {
 
 		void HandleDisplayInteractions(std::filesystem::path path, bool is_directory);
 		void DisplayDirectoryOrFile(std::filesystem::path path);
+		void RenameInputField();
 		void DisplayFile(std::filesystem::path file);
+
 
 	public:
 		ExplorerPanel()

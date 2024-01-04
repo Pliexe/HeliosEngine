@@ -79,11 +79,67 @@ namespace Helios::Editor {
 		}
 	}
 
+	void ExplorerPanel::RenameInputField()
+	{
+		if (m_focus_on_input) {
+			ImGui::SetKeyboardFocusHere();
+			m_focus_on_input = false;
+		}
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+
+
+		if (ImGui::InputText("##new_name", m_CurrentName, 256 - m_CurrentRenamePath.filename().string().length() - 1,
+			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCharFilter,
+			[](ImGuiInputTextCallbackData* data) -> int
+			{
+				if (data->EventChar == '/' || data->EventChar == '\\' || data->EventChar == ':' ||
+					data->EventChar == '*' || data->EventChar == '?' || data->EventChar == '"' ||
+					data->EventChar == '<' || data->EventChar == '>' || data->EventChar == '|')
+				{
+					return 1;
+				}
+				return 0;
+			}
+		))
+		{
+			if (m_CurrentName[0] != '\0')
+			{
+				std::string newName = m_CurrentName;
+				if (!std::filesystem::is_directory(m_CurrentRenamePath)) newName += m_CurrentRenamePath.extension().string();
+
+				std::replace_if(newName.begin(), newName.end(), [](char c) {
+					return c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|';
+					}, std::filesystem::path::preferred_separator);
+
+				std::filesystem::path newPath = m_CurrentRenamePath.parent_path() / newName;
+
+				if (std::filesystem::exists(newPath))
+				{
+					m_open_already_exists_popup = true;
+				}
+				else {
+					m_SelectedFiles.clear();
+					std::filesystem::rename(m_CurrentRenamePath, newPath);
+
+					Refresh();
+
+					m_SelectedFiles.insert(newPath);
+				}
+			}
+		}
+
+		if (ImGui::IsItemDeactivated())
+		{
+			m_is_renaming = false;
+		}
+	}
+
 	void ExplorerPanel::DisplayDirectoryOrFile(std::filesystem::path path)
 	{
 		static std::filesystem::path hoveredPath;
 
 		bool hovered = !ImGui::IsWindowHovered() && ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && hoveredPath == path;
+		bool is_editing = m_is_renaming && m_CurrentRenamePath == path;
 
 		//ImGui::PushID(path.generic_string().c_str());
 
@@ -99,7 +155,7 @@ namespace Helios::Editor {
 		//ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
 		//ImGui::SetNextWindowSize(ImVec2(16, 16), ImGuiCond_FirstUseEver);
 
-		ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+		ImGuiWindowFlags wflags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 
 		switch (m_CurrentGroupingStyle)
 		{
@@ -108,18 +164,18 @@ namespace Helios::Editor {
 		case Helios::Editor::ExplorerPanel::GroupStyle::Grid:
 		{
 			ImVec2 size = ImGui::CalcTextSize(path.filename().string().c_str(), NULL, false, 64.f);
-			ImGui::BeginChild(path.generic_string().c_str(), ImVec2(64, 64 + size.y + 15), flags);
+			ImGui::BeginChild(path.generic_string().c_str(), ImVec2(64, 64 + size.y + 15), NULL, wflags);
 			break;
 		}
 		case Helios::Editor::ExplorerPanel::GroupStyle::Tiles:
 		{
 			//ImVec2 size = ImGui::CalcTextSize(path.filename().string().c_str(), NULL, false, size);
-			ImGui::BeginChild(path.generic_string().c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 64), flags);
+			ImGui::BeginChild(path.generic_string().c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 64), NULL, wflags);
 			break;
 		}
 		case Helios::Editor::ExplorerPanel::GroupStyle::List:
 		{
-			ImGui::BeginChild(path.generic_string().c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 16), flags);
+			ImGui::BeginChild(path.generic_string().c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 16), NULL, wflags);
 			break;
 		}
 		default:
@@ -130,7 +186,6 @@ namespace Helios::Editor {
 		auto imgpos = ImGui::GetCursorPos();
 
 		bool is_directory = std::filesystem::is_directory((m_CurrentDirectory / path));
-#define MAX_PATH 256
 
 		switch (m_CurrentGroupingStyle)
 		{
@@ -138,14 +193,16 @@ namespace Helios::Editor {
 			{
 				ImGui::Image(is_directory ? HeliosEditor::ICON_FOLDER->GetTextureID() : GetFileIcon(path), ImVec2(16, 16));
 				ImGui::SameLine();
-				ImGui::Text(path.filename().string().c_str());
+				if (is_editing) RenameInputField();
+				else ImGui::Text(path.filename().string().c_str());
 				break;
 			}
 			case GroupStyle::Grid:
 			{
 				ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + 64.0f);
 				ImGui::Image(is_directory ? HeliosEditor::ICON_FOLDER->GetTextureID() : GetFileIcon(path), ImVec2(64, 64));
-				ImGui::Text(path.filename().string().c_str());
+				if (is_editing) RenameInputField();
+				else ImGui::Text(path.filename().string().c_str());
 				ImGui::PopTextWrapPos();
 				break;
 			}
@@ -154,7 +211,8 @@ namespace Helios::Editor {
 				ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x);
 				ImGui::Image(is_directory ? HeliosEditor::ICON_FOLDER->GetTextureID() : GetFileIcon(path), ImVec2(64, 64));
 				ImGui::SameLine();
-				ImGui::Text(path.filename().string().c_str());
+				if (is_editing) RenameInputField();
+				else ImGui::Text(path.filename().string().c_str());
 				ImGui::PopTextWrapPos();
 				break;
 			}
@@ -167,7 +225,7 @@ namespace Helios::Editor {
 		{
 			if (ImGui::MenuItem("Open In Explorer"))
 			{
-				std::string params = "/select,\"" + (Project::GetProjectPath() / m_CurrentDirectory).string() + "\"";
+				std::string params = "/select,\"" + path.string() + "\"";
 #if defined(HELIOS_PLATFORM_WINDOWS)
 				ShellExecuteA(NULL, "open", "explorer.exe", params.c_str(), NULL, SW_NORMAL);
 #elif defined(HELIOS_PLATFORM_LINUX)
@@ -184,8 +242,10 @@ namespace Helios::Editor {
 			if (ImGui::MenuItem("Rename"))
 			{
 				m_CurrentRenamePath = path;
-				std::strncpy(m_CurrentName, path.filename().string().c_str(), 260);
-				m_open_rename_popup = true;
+				std::strncpy(m_CurrentName, path.stem().string().c_str(), 260);
+				//m_open_rename_popup = true;
+				m_is_renaming = true;
+				m_focus_on_input = true;
 			}
 
 			ImGui::EndPopup();
@@ -406,22 +466,18 @@ namespace Helios::Editor {
 				ImGui::EndPopup();
 			}
 
-			ImGui::SetNextWindowPos(ImGui::GetWindowPos(), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-			if (ImGui::BeginPopupModal("fileRename", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
+			ImGui::SetNextWindowSize(ImVec2(350, 150), ImGuiCond_Always);
+			if (ImGui::BeginPopupModal("Warning!", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
 			{
-				ImGui::Text("Renaming %s", std::filesystem::is_directory(m_CurrentRenamePath) ? "directory" : "file");
-				ImGui::InputTextMultiline("##rename", m_CurrentName, 256, ImVec2(400, ImGui::GetTextLineHeight() * 5), ImGuiInputTextFlags_EnterReturnsTrue);
-
-				ImGui::Button("Rename");
-				ImGui::SameLine();
-				if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
-
+				m_open_already_exists_popup = false;
+				ImGui::TextWrapped("The %s \"%s\" already exists!", std::filesystem::is_directory(m_CurrentRenamePath) ? "directory" : "file", m_CurrentRenamePath.string().c_str());
+				ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x / 2 - 50, ImGui::GetCursorPosY() + 15));
+				if (ImGui::Button("I Understand", ImVec2(100, 30))) ImGui::CloseCurrentPopup();
 				ImGui::EndPopup();
 			}
-			if (m_open_rename_popup) {
-				ImGui::OpenPopup("fileRename");
-				m_open_rename_popup = false;
-			}
+			ImGui::PopStyleVar();
+			if (m_open_already_exists_popup) ImGui::OpenPopup("Warning!");
 
 			ImGui::End();
 		}
