@@ -7,6 +7,7 @@
 #include "Texture.h"
 #include "Mesh.h"
 #include "MeshGenerator.h"
+#include <filesystem>
 
 namespace Helios
 {
@@ -24,37 +25,32 @@ namespace Helios
 
 		}*/
 
+		static Ref<Mesh> ResolveMesh(const Helios::UUID& id);
+		static Ref<Texture2D> ResolveTexture2D(const Helios::UUID& id);
+
 		template <typename T>
-		static std::enable_if_t<std::is_base_of<Mesh, T>::value, Ref<Mesh>>
-			Resolve(const Helios::UUID& id)
+		static Ref<T> Resolve(const Helios::UUID& id)
 		{
-			auto it = s_Meshes.find(id);
-
-			if (it == s_Meshes.end())
-				return nullptr;
-
-			switch (it->second.type)
+			if constexpr (std::is_same_v<Texture2D, T>)
 			{
-			case ResourceInfo::INBUILT:
-				return Mesh::Create("Mesh_" + id.toString(), id, MeshGenerator::GenerateMesh(id));
-			case ResourceInfo::FULL_RESOURCE:
-				break;
-			case ResourceInfo::BUNDLED_FILE:
-				break;
+				return ResolveTexture2D(id);
 			}
-
-			HL_ASSERT(false, "Not implemented");
-
-			return nullptr;
+			else if constexpr (std::is_same_v<Mesh, T>)
+			{
+				return ResolveMesh(id);
+			}
 		}
 
 		static void RegisterResource(const std::filesystem::path& path) { RegisterResource(UUID(), path); }
 		static void RegisterResource(const UUID& uuid, const std::filesystem::path& path)
 		{
-			static_assert("Not implemented");
+			if (!std::filesystem::exists(path))
+			{
+				throw std::runtime_error("File does not exist: " + path.string());
+			}
+			
+			RegisterResource(uuid, ResourceInfo{ ResourceInfo::FULL_RESOURCE, path.string().c_str() });
 		}
-
-		
 
 		static bool UnregisterResource(const UUID& uuid)
 		{
@@ -72,6 +68,7 @@ namespace Helios
 			enum ResourceType {
 				INBUILT,
 				FULL_RESOURCE,
+				METADATA_FILE,
 				BUNDLED_FILE
 			};
 
@@ -81,6 +78,7 @@ namespace Helios
 
 		//inline static std::unordered_map<UUID, ResourceInfo> m_Textures;
 		inline static std::unordered_map<UUID, ResourceInfo> s_Meshes;
+		inline static std::unordered_map<UUID, ResourceInfo> s_Textures;
 
 		friend class MeshGenerator;
 	};
