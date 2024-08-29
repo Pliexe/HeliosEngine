@@ -11,6 +11,6 @@ namespace Helios {
         virtual void Unbind() override;
     private:
         Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
-        uint32_t m_lastBoundSlot;
+        uint32_t m_lastBoundSlot = 0u;
     };
 }

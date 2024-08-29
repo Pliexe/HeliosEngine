@@ -9,28 +9,21 @@
 #include "Helios/Input/InputManager.h"
 #include "Helios/Physics/Physics2D.h"
 #include "Helios/Resources/MeshGenerator.h"
-#include "Platform/Windows/Win32GraphicalWindow.h"
 
 namespace Helios
 {
 	Application::Application(Specifications specs)
 	{
-		HL_ASSERT_EXCEPTION( !m_Instance, "Application already exists!" );
+		HL_ASSERT( !m_Instance, "Application already exists!" );
 		m_Instance = this;
 		Initialize(specs);
 	}
 
-    void Application::MessageBox(const std::string &title, const std::string &message)
-    {
-		GraphicalWindow::MessageBox(title, message);
-    }
-
-    void Application::Initialize(Specifications specs)
+	void Application::Initialize(Specifications specs)
     {
 		Graphics::m_api = specs.graphicsAPI;
-#ifdef HELIOS_PLATFORM_WINDOWS
-		m_Window = CreateScope<Win32GraphicalWindow>();
-#endif
+		
+		m_Window = std::move(GraphicalWindow::CreateScoped());
 		std::function<void(Event&)> callback = std::bind(&Application::OnEvent, this, std::placeholders::_1);
 		m_Window->SetEventCallback(callback);
 		m_Window->Create({ specs.title, specs.width, specs.height, WindowStyles::Decorated | WindowStyles::Resizable });
@@ -42,11 +35,11 @@ namespace Helios
 		if (!GizmosRenderer::Init()) HL_EXCEPTION(true, "Failed to initialize GizmosRenderer")
 #endif
 
-			std::ios::sync_with_stdio(false);
+		std::ios::sync_with_stdio(false);
 
 #pragma region Init Counter
 
-		Time::Init();
+		Time::internal_init();
 
 #pragma endregion
 	}
@@ -72,7 +65,7 @@ namespace Helios
 			float fixedTimestep = 1.f / 60.f;
 
 			static float m_accumulator = 0.0f;
-			m_accumulator += Time::deltaTime();
+			m_accumulator += Time::DeltaTime();
 
 			while (m_accumulator >= fixedTimestep)
 			{
@@ -95,7 +88,7 @@ namespace Helios
 	{
 		std::thread m_PhysicsThread = std::thread(RunPhysics, &m_Running);
 
-		Time::frameUpdate(); // Update time before first frame to avoid huge delta time
+		Time::internal_init(); // Reset time before first frame to avoid huge delta time
 
 		try {
 			while (m_Running)
@@ -103,7 +96,7 @@ namespace Helios
 				HL_PROFILE_FRAME_BEGIN();
 				//std::cout << "Frame" << std::endl;
 
-				Time::frameUpdate();
+				Time::internal_frame_update();
 
 				m_Window->BeginFrame();
 
@@ -136,7 +129,7 @@ namespace Helios
 			}
 		}
 		catch (Helios::HeliosException e) {
-			e.what(false);
+			Helios::ShowMessage("Helios Exception", e.what());
 		}
 		
 		s_PhysicsEnabled = true;

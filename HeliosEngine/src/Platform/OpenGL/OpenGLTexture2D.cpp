@@ -1,19 +1,25 @@
 ﻿#include "OpenGLTexture2D.h"
-#include "Helios/Core/Asserts.h"
 #include "stb_image.h"
+#include "Helios/Core/Asserts.h"
+#include "Helios/Core/Exceptions.h"
+#include "Helios/Utils/Conversions.h"
+
+#include <glad/glad.h>
 
 namespace Helios
 {
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
+	OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
 	{
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(1);
-		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-		
+
+		std::string strPath = conversions::from_u8string(path.u8string());
+
+		stbi_uc* data = stbi_load(strPath.c_str(), &width, &height, &channels, 0);
 
 		HL_EXCEPTION(
 			!data,
-			"Failed to load image at path: " + path
+			"Failed to load image at path: " + strPath
 		)
 
 		m_Width = width;

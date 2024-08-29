@@ -11,6 +11,7 @@
 #include "Components.h"
 #include "Helios/Scene/Scene.h"
 #include "Helios/Scene/SceneRegistry.h"
+#include "EntityContainer.h"
 
 namespace Helios {
 
@@ -25,15 +26,10 @@ namespace Helios {
 		//GameObject() = default;
 		Entity() { }
 		Entity(const Entity& other) = default;
-		Entity(entt::entity entity_id, Ref<Scene> scene)
-		{
-			m_scene = scene.get();
-			m_entityHandle = entity_id;
-		}
-		Entity(entt::entity entity_id, Scene* scene)
+		Entity(entt::entity entity_id, WeakRef<EntityContainer> container)
 		{
 			//HL_ASSERT(entity_id != entt::null, "entity handle is invalid!");
-			m_scene = scene;
+			m_container = container;
 			m_entityHandle = entity_id;
 		}
 
@@ -41,30 +37,30 @@ namespace Helios {
 		bool HasComponent()
 		{
 			HL_ASSERT(m_entityHandle != entt::null, "entity handle is invalid!");
-			//HL_ASSERT(!m_scene.expired(), "Scene does not exist anymore!")
-			return m_scene->m_components.template any_of<T...>(m_entityHandle);
+			HL_ASSERT(!m_container.expired(), "Scene does not exist anymore!");
+			return m_container.lock()->m_components.template any_of<T...>(m_entityHandle);
 		}
 
 		template <typename T, typename... Args>
 		T& AddScopedComponent(Args &&...args)
 		{
 			HL_ASSERT(!HasComponent<T>(), "GameObject arleady has this component!");
-			//HL_ASSERT(!m_scene.expired(), "Scene does not exist anymore!")
-			T& comp = m_scene->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
+			HL_ASSERT(!m_container.expired(), "Scene does not exist anymore!");
+			T& comp = m_container.lock()->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
 			return comp;
 		}
 
 		template <typename T, typename... Args>
 		T& AddComponent(Args &&...args)
 		{
-			T& comp = m_scene->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
+			T& comp = m_container.lock()->m_components.emplace<T>(m_entityHandle, std::forward<Args>(args)...);
 			return comp;
 		}
 
 		template <typename T, typename... Args>
 		T& AddOrReplaceComponent(Args &&...args)
 		{
-			T& comp = m_scene->m_components.emplace_or_replace<T>(m_entityHandle, std::forward<Args>(args)...);
+			T& comp = m_container.lock()->m_components.emplace_or_replace<T>(m_entityHandle, std::forward<Args>(args)...);
 			return comp;
 		}
 
@@ -73,7 +69,7 @@ namespace Helios {
 		{
 			HL_ASSERT(HasComponent<T>(), "GameObject does not have the component!");
 			//HL_ASSERT(!m_scene.expired(), "Scene does not exist anymore!");
-			m_scene->m_components.remove<T>(m_entityHandle);
+			m_container.lock()->m_components.remove<T>(m_entityHandle);
 		}
 
 		template <typename... T>
@@ -81,31 +77,29 @@ namespace Helios {
 		{
 			HL_ASSERT(HasComponent<T...>(), "GameObject does not have the component!");
 			//HL_ASSERT(!m_scene.expired(), "Scene does not exist anymore!");
-			return m_scene->m_components.template get<T...>(m_entityHandle);
+			return m_container.lock()->m_components.template get<T...>(m_entityHandle);
 		}
 
 		operator entt::entity() const { return m_entityHandle; }
-		bool operator==(const Entity& other) const { return m_entityHandle == other.m_entityHandle && m_scene == other.m_scene; }
+		bool operator==(const Entity& other) const { return m_entityHandle == other.m_entityHandle && m_container.lock() == other.m_container.lock(); }
 		bool operator==(const entt::entity& other) const { return m_entityHandle == other; }
-		bool operator==(const Scene* other) const { return m_scene == other; }
-		bool operator==(const Ref<Scene> other) const { return m_scene == other.get(); }
-		bool operator==(const WeakRef<Scene> other) const { return m_scene == other.lock().get(); }
-
+		bool operator==(const WeakRef<EntityContainer> other) const { return m_container.lock() == other.lock(); }
+	
 		inline bool isGlobal() { return HasComponent<GlobalObjectComponent>(); }
 		void MakeGlobal();
 		void Destroy();
-		inline bool IsValid() { return m_entityHandle != entt::null && m_scene->m_components.valid(m_entityHandle); }
+		inline bool IsValid() { return m_entityHandle != entt::null && m_container.lock()->m_components.valid(m_entityHandle); }
 		inline bool IsNotNull() { return m_entityHandle != entt::null; }
 		inline bool IsNull() { return m_entityHandle == entt::null; }
 
-		Scene* GetScene() { return m_scene; }
+		WeakRef<EntityContainer>& GetContainer() { return m_container; }
 		entt::entity GetHandle() { return m_entityHandle; }
 		entt::entity GetHandle() const { return m_entityHandle; }
 		UUID GetUUID() { return GetComponent<UUIDComponent>().uuid; }
 		
 	private:
 
-		Scene* m_scene;
+		WeakRef<EntityContainer> m_container;
 		entt::entity m_entityHandle{ entt::null };
 		
 	public:
@@ -143,6 +137,9 @@ namespace Helios {
 		friend class Scene;
 		friend void SerializeObject(YAML::Emitter& out, Entity& o);
 		friend class Transform;
+
+
+		friend class EntityContainer;
 	};
 
 	class Transform
@@ -151,22 +148,22 @@ namespace Helios {
 		Transform() = default;
 		Transform(const Transform& other) = default;
 		Transform(Entity& gameObject) : m_GameObject(gameObject), m_transform(gameObject.GetComponent<TransformComponent>()), m_relationship(gameObject.GetComponent<RelationshipComponent>()) { }
-		Transform(entt::entity entity, Scene* m_scene) : m_GameObject(Entity(entity, m_scene)), m_transform(m_GameObject.GetComponent<TransformComponent>()), m_relationship(m_GameObject.GetComponent<RelationshipComponent>()) { }
-		Transform(entt::entity entity, TransformComponent transform_component, RelationshipComponent relationship_component, Scene* m_scene) : m_GameObject(Entity(entity, m_scene)), m_transform(transform_component), m_relationship(relationship_component) { }
+		Transform(entt::entity entity, WeakRef<EntityContainer> container) : m_GameObject(Entity(entity, container)), m_transform(m_GameObject.GetComponent<TransformComponent>()), m_relationship(m_GameObject.GetComponent<RelationshipComponent>()) { }
+		Transform(entt::entity entity, TransformComponent transform_component, RelationshipComponent relationship_component, WeakRef<EntityContainer> container) : m_GameObject(Entity(entity, container)), m_transform(transform_component), m_relationship(relationship_component) { }
 
-		inline TransformComponent GetWorldTransform() { return m_transform.GetWorldTransform(m_relationship, m_GameObject.m_scene->m_components); }
+		inline TransformComponent GetWorldTransform() { return m_transform.GetWorldTransform(m_relationship, m_GameObject.m_container.lock()->m_components); }
 
 		inline TransformComponent GetWorldTransformCache()
 		{
 			if(m_relationship.HasParent())
 			{
-				if (m_GameObject.m_scene->m_worldTransformCache.contains(m_GameObject.m_entityHandle)) return m_GameObject.m_scene->m_worldTransformCache[m_GameObject.m_entityHandle];
+				if (m_worldTransformCache.contains(m_GameObject.m_entityHandle)) return m_worldTransformCache[m_GameObject.m_entityHandle];
 
 				TransformComponent worldTransform = m_transform;
 				TransformComponent parentTransform = (
-					m_GameObject.m_scene->m_worldTransformCache.contains(m_relationship.parent_handle) ?
-					m_GameObject.m_scene->m_worldTransformCache[m_relationship.parent_handle] :
-					Transform(m_relationship.parent_handle, m_GameObject.m_scene).GetWorldTransformCache()
+					m_worldTransformCache.contains(m_relationship.parent_handle) ?
+					m_worldTransformCache[m_relationship.parent_handle] :
+					Transform(m_relationship.parent_handle, m_GameObject.m_container).GetWorldTransformCache()
 				);
 
 				worldTransform.Position = parentTransform.Rotation * worldTransform.Position + parentTransform.Position;
@@ -174,11 +171,11 @@ namespace Helios {
 				worldTransform.Scale = parentTransform.Scale * worldTransform.Scale;
 
 
-				m_GameObject.m_scene->m_worldTransformCache[m_GameObject.m_entityHandle] = worldTransform;
+				m_worldTransformCache[m_GameObject.m_entityHandle] = worldTransform;
 				return worldTransform;
 			}
 			
-			if(m_relationship.HasChild()) m_GameObject.m_scene->m_worldTransformCache[m_GameObject.m_entityHandle] = m_transform;
+			if(m_relationship.HasChild()) m_worldTransformCache[m_GameObject.m_entityHandle] = m_transform;
 			return m_transform;
 		}
 
@@ -217,9 +214,9 @@ namespace Helios {
 			return GetWorldTransformCache().GetRowModelMatrix();
 		}
 
-		inline Vector3 GetWorldPosition() { return m_transform.GetWorldPosition(m_relationship, m_GameObject.m_scene->m_components); }
-		inline Quaternion GetWorldRotation() { return m_transform.GetWorldRotation(m_relationship, m_GameObject.m_scene->m_components); }
-		inline Vector3 GetWorldScale() { return m_transform.GetWorldScale(m_relationship, m_GameObject.m_scene->m_components); }
+		inline Vector3 GetWorldPosition() { return m_transform.GetWorldPosition(m_relationship, m_GameObject.m_container.lock()->m_components); }
+		inline Quaternion GetWorldRotation() { return m_transform.GetWorldRotation(m_relationship, m_GameObject.m_container.lock()->m_components); }
+		inline Vector3 GetWorldScale() { return m_transform.GetWorldScale(m_relationship, m_GameObject.m_container.lock()->m_components); }
 
 		inline Vector3 GetLocalPosition() {	return m_transform.Position; }
 		inline Quaternion GetLocalRotation() { return m_transform.Rotation; }
@@ -228,10 +225,10 @@ namespace Helios {
 		inline Entity GetGameObject() { return m_GameObject; }
 		inline TransformComponent& GetTransformComponent() { return m_transform; }
 
-		inline void SetWorldPosition(Vector3 position) { m_transform.SetWorldPosition(position, m_relationship, m_GameObject.m_scene->m_components); }
-		inline void SetWorldRotation(Quaternion rotation) { m_transform.SetWorldRotation(rotation, m_relationship, m_GameObject.m_scene->m_components); }
-		inline void SetWorldScale(Vector3 scale) { m_transform.SetWorldScale(scale, m_relationship, m_GameObject.m_scene->m_components); }
-		inline void SetWorldTransform(Vector3 position, Quaternion rotation, Vector3 scale) { m_transform.SetWorldTransform({ position, rotation, scale }, m_relationship, m_GameObject.m_scene->m_components); }
+		inline void SetWorldPosition(Vector3 position) { m_transform.SetWorldPosition(position, m_relationship, m_GameObject.m_container.lock()->m_components); }
+		inline void SetWorldRotation(Quaternion rotation) { m_transform.SetWorldRotation(rotation, m_relationship, m_GameObject.m_container.lock()->m_components); }
+		inline void SetWorldScale(Vector3 scale) { m_transform.SetWorldScale(scale, m_relationship, m_GameObject.m_container.lock()->m_components); }
+		inline void SetWorldTransform(Vector3 position, Quaternion rotation, Vector3 scale) { m_transform.SetWorldTransform({ position, rotation, scale }, m_relationship, m_GameObject.m_container.lock()->m_components); }
 
 		inline void SetLocalPosition(Vector3 position) { m_transform.SetLocalPosition(position); }
 		inline void SetLocalRotation(Quaternion rotation) { m_transform.SetLocalRotation(rotation); }
@@ -252,6 +249,9 @@ namespace Helios {
 		Entity m_GameObject;
 		TransformComponent& m_transform;
 		RelationshipComponent& m_relationship;
+
+		inline static std::unordered_map<entt::entity, TransformComponent> m_worldTransformCache;
+		friend class Scene;
 	};
 }
 

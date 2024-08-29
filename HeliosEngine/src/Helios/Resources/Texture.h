@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "Helios/Core/Base.h"
+#include "Helios/Core/UUID.h"
 
 namespace Helios
 {
@@ -18,9 +19,15 @@ namespace Helios
         virtual uint32_t GetWidth() const = 0;
         virtual uint32_t GetHeight() const = 0;
         virtual void* GetTextureID() const = 0;
+
+		const UUID& GetID() const { return m_ID; }
         
         virtual bool operator==(const Texture& other) const = 0;
         virtual bool operator!=(const Texture& other) const = 0;
+    private:
+		UUID m_ID;
+
+		friend class Texture2D;
     };
 
     class HELIOS_API Texture2D : public Texture

@@ -31,14 +31,14 @@ namespace Helios
 
 	void Camera::SetViewportSize(uint32_t viewport_width, uint32_t viewport_height)
 	{
-        HL_ASSERT_EXCEPTION(viewport_width > 0 && viewport_height > 0, "Viewport Size cannot be zero!");
+        HL_ASSERT(viewport_width > 0 && viewport_height > 0, "Viewport Size cannot be zero!");
 		m_ViewportSize = Size(viewport_width, viewport_height);
 		InvalidateProjection();
 	}
 
 	void Camera::SetViewportSize(Size viewport_size)
 	{
-        HL_ASSERT_EXCEPTION(viewport_size.width > 0 && viewport_size.height > 0, "Viewport Size cannot be zero!");
+        HL_ASSERT(viewport_size.width > 0 && viewport_size.height > 0, "Viewport Size cannot be zero!");
 		m_ViewportSize = viewport_size;
 		InvalidateProjection();
 	}

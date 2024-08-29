@@ -1,176 +1,15 @@
 #include "SceneSerializer.h"
+#include "Helios/Core/Application.h"
 #include "Helios/Core/Asserts.h"
+#include "Helios/Core/Exceptions.h"
 #include "Helios/Resources/ResourceRegistry.h"
+#include "Helios/Utils/YamlExtensions.h"
 
 #include "Entity.h"
 
-namespace YAML
-{
-	template<>
-	struct convert<Helios::Vector2>
-	{
-		static Node encode(const Helios::Vector2& rhs)
-		{
-			Node node;
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.SetStyle(YAML::EmitterStyle::Flow);
-			return node;
-		}
-
-		static bool decode(const Node& node, Helios::Vector2& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 2)
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<Helios::Vector3>
-	{
-		static Node encode(const Helios::Vector3& rhs)
-		{
-			Node node;
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.push_back(rhs.z);
-			node.SetStyle(YAML::EmitterStyle::Flow);
-			return node;
-		}
-
-		static bool decode(const Node& node, Helios::Vector3& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 3)
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<Helios::Quaternion>
-	{
-		static Node encode(const Helios::Quaternion& rhs)
-		{
-			Node node;
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.push_back(rhs.z);
-			node.push_back(rhs.w);
-			node.SetStyle(YAML::EmitterStyle::Flow);
-			return node;
-		}
-
-		static bool decode(const Node& node, Helios::Quaternion& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 4)
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			rhs.w = node[3].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<Helios::Color>
-	{
-		static Node encode(const Helios::Color& rhs)
-		{
-			Node node;
-			node.push_back(rhs.r);
-			node.push_back(rhs.g);
-			node.push_back(rhs.b);
-			node.push_back(rhs.a);
-			node.SetStyle(YAML::EmitterStyle::Flow);
-			return node;
-		}
-
-		static bool decode(const Node& node, Helios::Color& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 4)
-				return false;
-
-			rhs.r = node[0].as<float>();
-			rhs.g = node[1].as<float>();
-			rhs.b = node[2].as<float>();
-			rhs.a = node[3].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<Helios::UUID>
-	{
-		static Node encode(const Helios::UUID& rhs)
-		{
-			Node node;
-			node = rhs.toString();
-			return node;
-		}
-
-		static bool decode(const Node& node, Helios::UUID& rhs)
-		{
-			if (!node.IsScalar())
-				return false;
-
-			rhs = Helios::UUID::fromString(node.as<std::string>());
-			return true;
-		}
-	};
-}
 
 namespace Helios
 {
-	YAML::Emitter& operator<<(YAML::Emitter& out, const Vector2& x)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << x.x << x.y << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const Vector3& x)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << x.x << x.y << x.z << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const Quaternion& x)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << x.x << x.y << x.z << x.w << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const Color& x)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << x.r << x.g << x.b << x.a << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const UUID& x)
-	{
-		out << x.toString();
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, Entity entity)
-	{
-		// Either return the UUID or 0 if the entity is invalid
-		out << (entity.IsValid() ? entity.GetUUID().toString() : "0");
-		return out;
-	}
 
 	SceneSerializer::SceneSerializer(const Ref<Scene>& scene)
 	{
@@ -181,6 +20,10 @@ namespace Helios
 	{
 		HL_ASSERT(entity.HasComponent<UUIDComponent>(), "Entity has no uuid component!");
 		HL_ASSERT(entity.HasComponent<InfoComponent>(), "Entity has no tag component!");
+
+		auto container = entity.GetContainer().lock();
+
+		if (!container) HL_ASSERT(false, "Entity has no container!");
 
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID().toString();
@@ -228,14 +71,14 @@ namespace Helios
 			auto& relationship = entity.GetComponent<RelationshipComponent>();
 			out << YAML::Key << "Relationship" << YAML::Value << YAML::BeginMap;
 
-			out << YAML::Key << "Parent" << YAML::Value << entity.GetScene()->GetEntity(relationship.parent_handle);
-			out << YAML::Key << "Top" << YAML::Value << entity.GetScene()->GetEntity(relationship.top_handle);
+			out << YAML::Key << "Parent" << YAML::Value << container->GetEntity(relationship.parent_handle);
+			out << YAML::Key << "Top" << YAML::Value << container->GetEntity(relationship.top_handle);
 
 			out << YAML::Key << "Siblings" << YAML::Value << YAML::BeginMap;
 			
-			out << YAML::Key << "First" << YAML::Value << entity.GetScene()->GetEntity(relationship.first_child);
-			out << YAML::Key << "Next" << YAML::Value << entity.GetScene()->GetEntity(relationship.next_sibling);
-			out << YAML::Key << "Previous" << YAML::Value << entity.GetScene()->GetEntity(relationship.prev_sibling);
+			out << YAML::Key << "First" << YAML::Value << container->GetEntity(relationship.first_child);
+			out << YAML::Key << "Next" << YAML::Value << container->GetEntity(relationship.next_sibling);
+			out << YAML::Key << "Previous" << YAML::Value << container->GetEntity(relationship.prev_sibling);
 
 			out << YAML::EndMap;
 
@@ -271,6 +114,7 @@ namespace Helios
 			out << YAML::Key << "MeshRenderer" << YAML::Value << YAML::BeginMap;
 			out << YAML::Key << "Color" << YAML::Value << mesh.material->Color;
 			out << YAML::Key << "Mesh" << YAML::Value << mesh.mesh->GetID();
+			//if (mesh.material->texture != nullptr) out << YAML::Key << "Material" << YAML::Value << mesh.material->texture->
 			//out << YAML::Key << "Material" << YAML::Value << mesh.material;
 			out << YAML::EndMap;
 		}
@@ -332,7 +176,7 @@ namespace Helios
 
 		m_scene->m_components.each([&](auto entityID)
 		{
-			Entity entity = { entityID, m_scene.get() };
+			Entity entity = { entityID, m_scene };
 			SerializeEntity(out, entity);
 		});
 
@@ -346,7 +190,7 @@ namespace Helios
 
 	void DeserializeEntity(YAML::Node entityNode, Scene* scene)
 	{
-		Entity entity = scene->InstantiateObject();
+		Entity entity = scene->CreateEntity();
 
 		UUID uuid = entityNode["Entity"].as<UUID>();
 
@@ -396,9 +240,10 @@ namespace Helios
 		{
 			auto& meshComponent = entity.AddScopedComponent<MeshRendererComponent>();
 			auto meshNode = entityNode["MeshRenderer"];
-			meshComponent.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Clamp);
+			meshComponent.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Clamp);
 			//meshComponent.material = meshNode["Material"].as<Material>();
 			meshComponent.material->Color = meshNode["Color"].as<Color>();
+			if (meshNode["Texture"]) meshComponent.material->texture = ResourceRegistry::GetResource<Texture2D>(meshNode["Texture"].as<UUID>());
 			//meshComponent.mesh = meshNode["Mesh"].as<Mesh>();
 			meshComponent.mesh = ResourceRegistry::GetResource<Mesh>(meshNode["Mesh"].as<Helios::UUID>());
 		}
@@ -482,11 +327,13 @@ namespace Helios
 
 		try
 		{
-			data = YAML::LoadFile(filepath);
+			std::ifstream file(conversions::from_utf8_to_utf16(filepath));
+			std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+			data = YAML::Load(str);
 		}
 		catch (const std::exception& e)
 		{
-			HL_EXCEPTION_RETRY(false, "Failed to load scene file: " + filepath)
+			HL_EXCEPTION_RETRY(false, "Failed to load scene file: " + filepath);
 			return false;
 		}
 

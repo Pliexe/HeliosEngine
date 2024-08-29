@@ -10,8 +10,11 @@ namespace Helios {
         ZeroMemory(&samplerDesc, sizeof(samplerDesc));
 
         switch (filter) {
-        case Filter::MinMagPoint:
+        case Filter::MinMagMipPoint:
             samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+            break;
+        case Filter::ComparisonMinMagMipLinear:
+			samplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
             break;
         default:
             HL_ASSERT(false, "Unknown Filter!");
@@ -49,6 +52,16 @@ namespace Helios {
             break;
         }
 
+        samplerDesc.MipLODBias = 0.0f;
+        samplerDesc.MaxAnisotropy = 1;
+        samplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+        samplerDesc.MinLOD = 0;
+        samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+        samplerDesc.BorderColor[0] = 1.0f;
+        samplerDesc.BorderColor[1] = 1.0f;
+        samplerDesc.BorderColor[2] = 1.0f;
+        samplerDesc.BorderColor[3] = 1.0f;
+
         HL_EXCEPTION(
             Direct3D11Context::GetCurrentContext()->GetDevice()->CreateSamplerState(&samplerDesc, m_samplerState.GetAddressOf()),
             "Failed to create sampler state!"
@@ -65,6 +78,7 @@ namespace Helios {
     void D3D11Material::Unbind() {
         if(texture)
             texture->Unbind();
-        Direct3D11Context::GetCurrentContext()->GetContext()->PSSetSamplers(m_lastBoundSlot, 1, nullptr);
+        ID3D11SamplerState* nullss[] = {nullptr};
+        Direct3D11Context::GetCurrentContext()->GetContext()->PSSetSamplers(m_lastBoundSlot, 1, nullss);
     }
 }

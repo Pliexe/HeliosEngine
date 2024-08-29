@@ -30,7 +30,7 @@ public:
 	Selection() {
 		arr = (int*)malloc(sizeof(int) * alloced);
 		if (arr == NULL) {
-			//Helios::DepricatedApplication::ShowMessage("Critical!", "Out of memory!", MB_ICONERROR, true);
+			//Helios::DepricatedHelios::ShowMessage("Critical!", "Out of memory!", MB_ICONERROR, true);
 			exit(-3);
 		}
 	}
@@ -156,7 +156,8 @@ ImTextureID GetFileIcon(std::filesystem::path file) {
 	else if (ext == ".hpp") return Helios::HeliosEditor::ICON_FILE_HPP->GetTextureID();
 	else if (ext == ".c") return Helios::HeliosEditor::ICON_FILE_C->GetTextureID();
 	else if (ext == ".h") return Helios::HeliosEditor::ICON_FILE_H->GetTextureID();
-	else if (ext == ".png" || ext == ",jpg") {
+	else if (ext == ".rs") return Helios::HeliosEditor::ICON_FILE_RUST->GetTextureID();
+	else if (ext == ".png" || ext == ".jpg") {
 		if (Helios::AssetRegistry::GetTextures().find(file.string()) != Helios::AssetRegistry::GetTextures().end())
 			return (ImTextureID)Helios::AssetRegistry::GetTextures()[file.string()]->GetTextureID();
 		else
@@ -175,6 +176,7 @@ ImTextureID GetFileIcon(FileType type) {
 	case FileType::Hpp: return Helios::HeliosEditor::ICON_FILE_HPP->GetTextureID();
 	case FileType::C: return Helios::HeliosEditor::ICON_FILE_C->GetTextureID();
 	case FileType::H: return Helios::HeliosEditor::ICON_FILE_H->GetTextureID();
+	case FileType::Rust: return Helios::HeliosEditor::ICON_FILE_RUST->GetTextureID();
 	case FileType::Folder: return Helios::HeliosEditor::ICON_FOLDER_EMPTY->GetTextureID();
 		//case FileType::; return *ICON_FILE_IMAGE;
 		//case FileType::; return *ICON_FILE_TXT;
@@ -196,6 +198,8 @@ std::string GetFileExtension(FileType type)
 		return ".c";
 	case FileType::H:
 		return ".h";
+	case FileType::Rust:
+		return ".rs";
 	default:
 		return "";
 	}
@@ -203,7 +207,7 @@ std::string GetFileExtension(FileType type)
 
 void EditItemName(std::filesystem::path entry, std::string new_name) {
 	/*if (!MoveFile(entry.wstring().c_str(), (entry.parent_path() / (new_name + entry.extension().string())).wstring().c_str()))
-		Helios::DepricatedApplication::ShowMessage("Error", "Unable to rename item", MB_ICONERROR);*/
+		Helios::DepricatedHelios::ShowMessage("Error", "Unable to rename item", MB_ICONERROR);*/
 }
 
 void FileNameOrEdit(std::filesystem::path entry, int i) {
@@ -328,7 +332,7 @@ void CreateFileFromType(std::filesystem::path path, FileType type, std::string n
 
 	if (type == FileType::Folder) {
 		if(!std::filesystem::create_directory(path))
-			MessageBoxA(NULL, (path.string()).c_str(), "Unable to create directory!", MB_ICONERROR);
+			MessageBoxA(NULL, (const char*)(path.u8string()).c_str(), "Unable to create directory!", MB_ICONERROR);
 	}
 	else {
 		std::ofstream out(path);
@@ -344,7 +348,7 @@ void CreateFileFromType(std::filesystem::path path, FileType type, std::string n
 
 			out.close();
 		}
-		else MessageBoxA(NULL, (path.string()).c_str(), "Unable to create file!", MB_ICONERROR);
+		else MessageBoxA(NULL, (const char*)(path.u8string()).c_str(), "Unable to create file!", MB_ICONERROR);
 	}
 }
 
@@ -375,7 +379,7 @@ void ProjectExplorer_RightClickMenu(std::filesystem::path path, int count, bool 
 		ImGui::Separator();
 
 		if (ImGui::MenuItem("Show in Explorer")) {
-			std::string params = "/select,\"" + path.string() + "\"";
+			std::string params = "/select,\"" + Helios::conversions::from_u8string(path.u8string()) + "\"";
 			ShellExecuteA(NULL, "open", "explorer.exe", params.c_str(), NULL, SW_NORMAL);
 		}
 
@@ -386,10 +390,10 @@ void ProjectExplorer_RightClickMenu(std::filesystem::path path, int count, bool 
 			/*if (std::filesystem::is_directory(path))
 			{
 				if (!RemoveDirectory(path.wstring().c_str())) {
-					Helios::DepricatedApplication::ShowMessage("Error", "Unable to delete directory!", MB_ICONERROR, true);
+					Helios::DepricatedHelios::ShowMessage("Error", "Unable to delete directory!", MB_ICONERROR, true);
 				}
 			} else if (!DeleteFile(path.wstring().c_str())) {
-				Helios::DepricatedApplication::ShowMessage("Error", "Unable to delete file!", MB_ICONERROR, true);
+				Helios::DepricatedHelios::ShowMessage("Error", "Unable to delete file!", MB_ICONERROR, true);
 			}*/
 		}
 
@@ -414,7 +418,7 @@ void ProjectExplorerWindow(std::filesystem::path assetsPath)
 
 		}*/
 
-		if (ImGui::Button(assetsPath.filename().string().c_str())) currentPath = assetsPath;
+		if (ImGui::Button((const char*)assetsPath.filename().u8string().c_str())) currentPath = assetsPath;
 		std::filesystem::path tmp = assetsPath;
 		for (auto& x : currentPath.lexically_relative(assetsPath))
 		{

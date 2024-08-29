@@ -6,6 +6,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <Helios/Utils/Conversions.h>
 // #include <Windows.h>
 // #include <atlstr.h>
 
@@ -218,14 +219,14 @@ namespace Helios {
 			//			//Scene::Serialize(str, SceneRegistry::GetCurrentScene());
 			//		}
 			//		else
-			//			DepricatedApplication::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
+			//			DepricatedHelios::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
 			//	}
 			//}
 		}
 		void TryLoad(std::filesystem::path last) {
 			if (last != "" || std::filesystem::exists(last)) 
 			{
-				auto name = s_currentScenePath.filename().string();
+				auto name = Helios::conversions::from_u8string(s_currentScenePath.filename().u8string());
 				name = name.substr(0, name.length() - 6);
 				
 				LoadSampleScene();
@@ -269,7 +270,7 @@ namespace Helios {
 						SceneRegistry::LoadScene(s_currentScenePath);
 					}
 					else
-						DepricatedApplication::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
+						DepricatedHelios::ShowMessage("Failed to save scene!", "File must end with .scene extention!", MB_ICONERROR, true);
 				}
 			}*/	
 		}

@@ -12,7 +12,6 @@
 #include "Panels/HierarchyPanel.h"
 #include "Panels/InspectorPanel.h"
 #include "Helios/Graphics/GizmosRenderer.h"
-#include <Platform/Windows/Win32GraphicalWindow.h>
 
 #include "Icons.h"
 #include "Panels/GameViewPanel.h"
@@ -32,6 +31,7 @@ namespace Helios
 	{
 		bool isGameSceneActive = true;
 		bool m_barebones = false;
+		bool m_perFrameDebug = false;
 
 		bool show_profiler_window = false;
 
@@ -74,6 +74,8 @@ namespace Helios
 		inline static Ref<Texture2D> ICON_FILE_FONT = nullptr;
 		inline static Ref<Texture2D> ICON_FILE_SCENE = nullptr;
 		inline static Ref<Texture2D> ICON_FILE_IMAGE = nullptr;
+		inline static Ref<Texture2D> ICON_FILE_OBJECT = nullptr;
+		inline static Ref<Texture2D> ICON_FILE_RUST = nullptr;
 
 		inline static Ref<Texture2D> ICON_PLAY_WHITE = nullptr;
 		inline static Ref<Texture2D> ICON_PAUSE_WHITE = nullptr;

@@ -1,0 +1,17 @@
+[package]
+name = "Rust"
+version = "0.1.0"
+edition = "2021"
+include = ["C:/Users/dz/Documents/Helios Projects/Sandbox/Assets/**/*.rs"]
+
+[lib]
+crate-type = ["cdylib"]
+name = "helios_rust"
+# path = "../../Assets/lib.rs"
+
+
+[dependencies]
+# helios_rust = { path = "../helios_rust" }
+helios = { path = "D:/Dev/HeliosEngine/HeliosScript/Rust/helios" }
+helios_macros = { path = "D:/Dev/HeliosEngine/HeliosScript/Rust/helios_macros" }
+# helios_engine = { path = "a" }

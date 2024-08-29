@@ -7,17 +7,19 @@
 
 namespace Helios
 {
-    Direct3D11Texture2D::Direct3D11Texture2D(const std::string& path)
+    Direct3D11Texture2D::Direct3D11Texture2D(const std::filesystem::path& path)
     {
         int width, height;
         //stbi_set_flip_vertically_on_load(1);
+		std::u8string pathU8 = path.u8string();
+		std::string pathString = std::string(pathU8.begin(), pathU8.end());
         stbi_uc* data = nullptr;
         {
-            data = stbi_load(path.c_str(), &width, &height, nullptr, 4);
+            data = stbi_load(pathString.c_str(), &width, &height, nullptr, 4);
         }
         HL_EXCEPTION(
 			!data,
-			"Failed to load image at path: " + path
+			"Failed to load image at path: " + pathString + "\n" + stbi_failure_reason()
         )
         //HL_ASSERT(data, "Failed to load image!");
         m_Width = width;
@@ -122,6 +124,7 @@ namespace Helios
 
     void Direct3D11Texture2D::Unbind()
     {
-        Direct3D11Context::GetCurrentContext()->GetContext()->PSSetShaderResources(m_lastBoundSlot, 1, nullptr);
+        ID3D11ShaderResourceView* nullsrv[] = { nullptr };
+        Direct3D11Context::GetCurrentContext()->GetContext()->PSSetShaderResources(m_lastBoundSlot, 1, nullsrv);
     }
 }

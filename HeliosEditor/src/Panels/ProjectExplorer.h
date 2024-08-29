@@ -13,6 +13,7 @@ enum class FileType {
 	Hpp,
 	C,
 	H,
+	Rust,
 	Folder
 };
 

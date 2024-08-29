@@ -8,6 +8,12 @@
 #include "Helios/Scene/SceneSerializer.h"
 //#include "Panels/InspectorPanel.h"
 
+#include "Helios/Utils/Conversions.h"
+
+#include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
 namespace Helios
 {
 	void DrawToolbar(EditorMode mode, std::vector<Editor::IPanel*>& panels)
@@ -43,7 +49,7 @@ namespace Helios
 
 					if (GetSaveFileName(&props)) {
 						std::wstring wstr(file);
-						std::string str(wstr.begin(), wstr.end());
+						std::string str = conversions::from_utf16_to_utf8(wstr);
 						if (str.ends_with(".scene"))
 						{
 							SceneRegistry::LoadEmptyScene("Empty");

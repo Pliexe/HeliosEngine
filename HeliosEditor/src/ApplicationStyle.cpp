@@ -20,6 +20,8 @@ namespace Helios
 		static const ImWchar icons_ranges[] = { ICONS_FONT_MIN, ICONS_FONT_MAX, 0 };
 
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("fonts/NotoSans/NotoSans-Regular.ttf", 17.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("fonts/NotoSans JP/static/NotoSansJP-Regular.ttf", 17.0f, &icons_config, io.Fonts->GetGlyphRangesJapanese());
+		io.Fonts->AddFontFromFileTTF("fonts/NotoSans SC/static/NotoSansSC-Regular.ttf", 17.0f, &icons_config, io.Fonts->GetGlyphRangesChineseFull());
 		io.Fonts->AddFontFromFileTTF("fonts/icons.ttf", 17.0f, &icons_config, icons_ranges);
 
 

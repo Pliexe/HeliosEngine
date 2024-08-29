@@ -92,6 +92,13 @@ namespace Helios {
 			{
 				if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen)) {
 					auto& cam = entity.GetComponent<CameraComponent>();
+					
+					int cmSelected = static_cast<int>(cam.background_mode);
+					static const char* cmItems[] = { "None", "Solid Color", "Skybox" };
+					if (ImGui::Combo("Clear Mode: ", &cmSelected, cmItems, IM_ARRAYSIZE(cmItems))) {
+						cam.background_mode = (CameraComponent::BackgroundMode)cmSelected;
+					}
+
 					ImGui::ColorEdit4("Clear Color", cam.clear_color);
 
 					/*if (!SceneRegistry::get_current_scene()->IsPrimaryCamera(entity) && ImGui::Button("Make Primary")) {
@@ -145,12 +152,19 @@ namespace Helios {
 				if (ImGui::CollapsingHeader("Mesh Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
 					auto& sRenderer = entity.GetComponent<MeshRendererComponent>();
 
+					ImGui::Checkbox("Cast Shadows", &sRenderer.castShadow);
+
 					ImGui::ColorEdit4("Color", sRenderer.material->Color);
 
 					if (sRenderer.material->texture == nullptr)
+					{
 						ImGui::Text("Texture: None");
+					}
 					else
+					{
 						ImGui::Text("Texture: Unknown Name!");
+						ImGui::Image(sRenderer.material->texture->GetTextureID(), ImVec2(64, 64));
+					}
 
 					ImGui::Text("Mesh UUID: %s", sRenderer.mesh == nullptr ? "None" : sRenderer.mesh->GetID().toString().c_str());
 
@@ -158,7 +172,7 @@ namespace Helios {
 						Entity selectedGm = entity;
 						AssetRegistry::OpenTextureSelect([selectedGm](Ref<Texture2D> nTexture) mutable {
 							auto& renderer = selectedGm.GetComponent<MeshRendererComponent>().material->texture = nTexture;
-							});
+						});
 					}
 				}
 			}

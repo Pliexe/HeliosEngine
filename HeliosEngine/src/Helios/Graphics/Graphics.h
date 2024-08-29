@@ -9,6 +9,7 @@ namespace Helios
 		{
 			None,
 			Direct3D11,
+			Direct3D12,
 			OpenGL,
 			Vulkan,
 		};

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pch.h"
+#include "Helios/Core/Asserts.h"
 #include "Helios/Core/Base.h"
 #include "Helios/Core/UUID.h"
 
@@ -11,6 +12,18 @@
 
 namespace Helios
 {
+	enum LoadOptions {
+		LoadFullResource = 1 << 0,
+		LoadMetadataFile = 1 << 1,
+		LoadBundledFile = 1 << 2,
+		LoadAsOneMesh = 1 << 3
+	};
+
+	inline LoadOptions operator|(LoadOptions a, LoadOptions b)
+	{
+		return static_cast<LoadOptions>(static_cast<int>(a) | static_cast<int>(b));
+	}
+
 	// Manager for resolving resources from the filesystem or any other source
 	class HELIOS_API ResourceResolver
 	{
@@ -41,27 +54,42 @@ namespace Helios
 			}
 		}
 
-		static void RegisterResource(const std::filesystem::path& path) { RegisterResource(UUID(), path); }
-		static void RegisterResource(const UUID& uuid, const std::filesystem::path& path)
-		{
-			if (!std::filesystem::exists(path))
-			{
-				throw std::runtime_error("File does not exist: " + path.string());
-			}
-			
-			RegisterResource(uuid, ResourceInfo{ ResourceInfo::FULL_RESOURCE, path.string().c_str() });
-		}
+		static const UUID RegisterResource(const std::filesystem::path& path, LoadOptions loadOptions = LoadFullResource);
+
+		static void RegisterResource(const UUID& uuid, const std::filesystem::path& path, LoadOptions loadOptions = LoadFullResource);
 
 		static bool UnregisterResource(const UUID& uuid)
 		{
-			return s_Meshes.erase(uuid) > 0;
+			return false;
 		}
+
+		template <typename T>
+		static bool IsUUIDRegistered(const Helios::UUID& uuid)
+		{
+			if constexpr (std::is_same_v<Texture2D, T>)
+			{
+				return s_Textures.contains(uuid);
+			}
+			else if constexpr (std::is_same_v<Mesh, T>)
+			{
+				return s_Meshes.contains(uuid);
+			}
+			else return false;
+		}
+
+		static bool IsPathRegistered(const std::filesystem::path& path)
+		{
+			return s_RegisteredPaths.contains(path);
+		}
+
+		static const UUID& GetUUID(const std::filesystem::path& path);
 
 	private:
 
-		static void RegisterResource(const UUID& uuid, const ResourceInfo& info)
+		static void RegisterResource(std::unordered_map<UUID, ResourceInfo>& store, const UUID& uuid, const ResourceInfo& info)
 		{
-			s_Meshes[uuid] = info;
+			store[uuid] = info;
+			if (info.path) s_RegisteredPaths.insert(std::filesystem::path(info.path));
 		}
 
 		struct ResourceInfo {
@@ -73,12 +101,14 @@ namespace Helios
 			};
 
 			ResourceType type;
-			const char* path = nullptr;
+			const char8_t* path = nullptr;
 		};
 
 		//inline static std::unordered_map<UUID, ResourceInfo> m_Textures;
 		inline static std::unordered_map<UUID, ResourceInfo> s_Meshes;
 		inline static std::unordered_map<UUID, ResourceInfo> s_Textures;
+
+		inline static std::unordered_set<std::filesystem::path> s_RegisteredPaths;
 
 		friend class MeshGenerator;
 	};

@@ -197,7 +197,7 @@ namespace Helios
 				HL_PROFILE_BEGIN("GUI - Profiler");
 				bool isProfilingThisFrame = Profiler::isProfiling();
 
-				ImGui::Text("FPS: %f", Time::getFPS());
+				ImGui::Text("FPS: %f", Time::FramesPerSecond());
 
 				for (auto scene : SceneRegistry::GetActiveScenes())
 				{
@@ -220,7 +220,7 @@ namespace Helios
 					if (slow_mode)
 					{
 						static float tmr = update_interval;
-						tmr += Time::deltaTime();
+						tmr += Time::DeltaTime();
 
 						if (tmr >= update_interval)
 						{

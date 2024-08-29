@@ -2,6 +2,8 @@
 
 #include "Helios/Resources/Buffer.h"
 
+#include <glad/glad.h>
+
 #ifdef HELIOS_PLATFORM_WINDOWS
 namespace Helios
 {

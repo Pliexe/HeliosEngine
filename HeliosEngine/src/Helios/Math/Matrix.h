@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Quaternion.h"
 #include "Vector.h"
@@ -288,6 +288,22 @@ namespace Helios
 			return { _13, _23, _33 };
 		}
 
+		static inline Matrix4x4 LookAt(const Vector3& position, const Vector3& target, const Vector3& up) { return LookAtLH(position, target, up); }
+		static Matrix4x4 LookAtLH(const Vector3& position, const Vector3& target, const Vector3& up)
+		{
+			Vector3 f = (target - position).normalize();
+			Vector3 r = (Vector3::Cross(f, up)).normalize();
+			Vector3 u = Vector3::Cross(r, f);
+
+			Matrix4x4 lookAtMatrix;
+			lookAtMatrix._11 = -r.x; lookAtMatrix._12 = -r.y; lookAtMatrix._13 = -r.z; lookAtMatrix._14 = 0;
+			lookAtMatrix._21 = u.x; lookAtMatrix._22 = u.y; lookAtMatrix._23 = u.z; lookAtMatrix._24 = 0;
+			lookAtMatrix._31 = f.x; lookAtMatrix._32 = f.y; lookAtMatrix._33 = f.z; lookAtMatrix._34 = 0;
+			lookAtMatrix._41 = -Vector3::Dot(r, position); lookAtMatrix._42 = -Vector3::Dot(u, position); lookAtMatrix._43 = -Vector3::Dot(f, position); lookAtMatrix._44 = 1;
+
+			return lookAtMatrix;
+		}
+
 		static Matrix4x4 Identity()
 		{
 			static Matrix4x4 identity = {
@@ -447,6 +463,21 @@ namespace Helios
 		{
 			float a = 2.0f / size;
 			float b = 2.0f / (size / aspect_ratio);
+			float c = 1.0f / (far_c - near_c);
+			float d = near_c / (near_c - far_c);
+
+			return {
+				a, 0.0f, 0.0f, 0.0f,
+				0.0f, b, 0.0f, 0.0f,
+				0.0f, 0.0f, c, d,
+				0.0f, 0.0f, 0.0f, 1.0f
+			};
+		}
+
+		static Matrix4x4 OrthographicLH(float left, float right, float bottom, float top, float near_c, float far_c)
+		{
+			float a = 2.0f / (right - left);
+			float b = 2.0f / (top - bottom);
 			float c = 1.0f / (far_c - near_c);
 			float d = near_c / (near_c - far_c);
 

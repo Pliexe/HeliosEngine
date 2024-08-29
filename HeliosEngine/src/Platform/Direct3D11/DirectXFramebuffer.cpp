@@ -19,7 +19,7 @@ namespace Helios
 		case Framebuffer::Format::D24S8: return DXGI_FORMAT_D24_UNORM_S8_UINT;
 		case Framebuffer::Format::D32F: return DXGI_FORMAT_D32_FLOAT;
 		default:
-			HL_ASSERT_EXCEPTION(false, "Unknown format!");
+			HL_ASSERT(false, "Unknown format!");
 			return DXGI_FORMAT_UNKNOWN;
 		}
 	}
@@ -58,7 +58,7 @@ namespace Helios
 
 	void DirectXFramebuffer::ClearBuffer(unsigned int bufferIndex, Color color)
 	{
-		//HL_ASSERT_EXCEPTION(bufferIndex < m_colorBuffers.Size(), "Invalid buffer index!");
+		//HL_ASSERT(bufferIndex < m_colorBuffers.Size(), "Invalid buffer index!");
 		auto& test = m_colorBuffers[bufferIndex];
 		auto test2 = m_colorBuffers.size();
 		Direct3D11Context::GetCurrentContext()->GetContext()->ClearRenderTargetView(m_renderTargetViews[bufferIndex], color.c);
@@ -66,31 +66,30 @@ namespace Helios
 
 	void DirectXFramebuffer::ClearDepthStencil()
 	{
-		HL_ASSERT_EXCEPTION(m_depthStencilBuffer.depthStencilView, "Depth stencil buffer not set!");
+		HL_ASSERT(m_depthStencilBuffer.depthStencilView, "Depth stencil buffer not set!");
 		Direct3D11Context::GetCurrentContext()->GetContext()->ClearDepthStencilView(m_depthStencilBuffer.depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 
     void* DirectXFramebuffer::GetTextureID(unsigned int bufferIndex)
     {
-		//HL_ASSERT_EXCEPTION(bufferIndex < m_colorBuffers.Size(), std::string("Invalid buffer index!") + " " + std::to_string(bufferIndex) + " < " + std::to_string(m_colorBuffers.Size()));
-		auto test = m_colorBuffers[bufferIndex];
+		//HL_ASSERT(bufferIndex < m_colorBuffers.Size(), std::string("Invalid buffer index!") + " " + std::to_string(bufferIndex) + " < " + std::to_string(m_colorBuffers.Size()));
 		return m_colorBuffers[bufferIndex].shaderResourceView.Get();
     }
 
 	void* DirectXFramebuffer::GetDepthTextureID()
 	{
-		return m_depthStencilBuffer.depthStencilView.Get();
+		return m_depthStencilBuffer.shaderResourceView.Get();
 	}
 
 	Color DirectXFramebuffer::GetPixelColor(uint32_t attachment, uint32_t x, uint32_t y)
 	{
-		HL_ASSERT_EXCEPTION((attachment < m_colorBuffers.size()), "Error while reading Pixel data! (Attachment index out of bounds!)");
+		HL_ASSERT((attachment < m_colorBuffers.size()), "Error while reading Pixel data! (Attachment index out of bounds!)");
 		// Assert if out of bounds
-		HL_ASSERT_EXCEPTION((x < m_Width), "Error while reading Pixel data! (X coordinate out of bounds!)");
-		HL_ASSERT_EXCEPTION((y < m_Height), "Error while reading Pixel data! (Y coordinate out of bounds!)");
+		HL_ASSERT((x < m_Width), "Error while reading Pixel data! (X coordinate out of bounds!)");
+		HL_ASSERT((y < m_Height), "Error while reading Pixel data! (Y coordinate out of bounds!)");
 		
-		HL_ASSERT_EXCEPTION((x >= 0), "Error while reading Pixel data! (X coordinate out of bounds!)");
-		HL_ASSERT_EXCEPTION((y >= 0), "Error while reading Pixel data! (Y coordinate out of bounds!)");
+		HL_ASSERT((x >= 0), "Error while reading Pixel data! (X coordinate out of bounds!)");
+		HL_ASSERT((y >= 0), "Error while reading Pixel data! (Y coordinate out of bounds!)");
 
 
 
@@ -170,7 +169,7 @@ namespace Helios
 			break;
 		}*/
 		default:
-			HL_ASSERT_EXCEPTION(false, "Unknown format!");
+			HL_ASSERT(false, "Unknown format!");
 			break;
 		}
 		
@@ -182,8 +181,8 @@ namespace Helios
 	Vector4Int DirectXFramebuffer::GetPixelInt4(uint32_t attachment, uint32_t x, uint32_t y)
 	{
 		// Assert if out of bounds
-		HL_ASSERT_EXCEPTION((x < m_Width), "Error while reading Pixel data! (X coordinate out of bounds!)");
-		HL_ASSERT_EXCEPTION((y < m_Height), "Error while reading Pixel data! (Y coordinate out of bounds!)");
+		HL_ASSERT((x < m_Width), "Error while reading Pixel data! (X coordinate out of bounds!)");
+		HL_ASSERT((y < m_Height), "Error while reading Pixel data! (Y coordinate out of bounds!)");
 
 		// Copy the	render target to a staging texture so we can read it back from the CPU
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> stagingTexture;
@@ -222,7 +221,7 @@ namespace Helios
 			buffer = *(Vector4Int*)(((uint8_t*)mappedResource.pData) + (y * mappedResource.RowPitch) + (x * sizeof(Vector4Int)));
 			break;
 		default:
-			HL_ASSERT_EXCEPTION(false, "Unknown format for Vector4Int!");
+			HL_ASSERT(false, "Unknown format for Vector4Int!");
 			break;
 		}
 
@@ -307,22 +306,30 @@ namespace Helios
 			descTexture.Height = (UINT)m_Height;
 			descTexture.MipLevels = 1u;
 			descTexture.ArraySize = 1u;
-			descTexture.Format = DXGI_FORMAT_D32_FLOAT;
+			descTexture.Format = DXGI_FORMAT_R32_TYPELESS;
 			descTexture.SampleDesc.Count = 1u;
 			descTexture.SampleDesc.Quality = 0u;
 			descTexture.Usage = D3D11_USAGE_DEFAULT;
-			descTexture.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+			descTexture.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 
 			HL_EXCEPTION(FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateTexture2D(&descTexture, nullptr, &m_depthStencilBuffer.texture)),
 				"Failed to create depth stencil buffer");
 
 			D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
-			descDSV.Format = descTexture.Format;
+			descDSV.Format = DXGI_FORMAT_D32_FLOAT;
 			descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 			descDSV.Texture2D.MipSlice = 0u;
 
 			HL_EXCEPTION(FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateDepthStencilView(m_depthStencilBuffer.texture.Get(), &descDSV, &m_depthStencilBuffer.depthStencilView)),
 				"Failed to create depth stencil view");
+
+			D3D11_SHADER_RESOURCE_VIEW_DESC descSRV = {};
+			descSRV.Format = DXGI_FORMAT_R32_FLOAT;
+			descSRV.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			descSRV.Texture2D.MipLevels = 1u;
+
+			HL_EXCEPTION(FAILED(Direct3D11Context::GetCurrentContext()->GetDevice()->CreateShaderResourceView(m_depthStencilBuffer.texture.Get(), &descSRV, &m_depthStencilBuffer.shaderResourceView)),
+				"Failed to create depth stencil shader resource view");
 		}
 
 		D3D11_VIEWPORT viewport;
@@ -360,9 +367,31 @@ namespace Helios
 		Direct3D11Context::GetCurrentContext()->GetContext()->OMSetDepthStencilState(nullptr, 1);
     }
 
+	void DirectXFramebuffer::Bind(uint32_t attachment, uint32_t slot)
+	{
+		Direct3D11Context::GetCurrentContext()->GetContext()->PSSetShaderResources(slot, 1, m_colorBuffers[attachment].shaderResourceView.GetAddressOf());
+	}
+
+	void DirectXFramebuffer::Unbind(uint32_t attachment, uint32_t slot)
+	{
+		ID3D11ShaderResourceView* nullsrv[] = { nullptr };
+		Direct3D11Context::GetCurrentContext()->GetContext()->PSSetShaderResources(slot, 1, nullsrv);
+	}
+
+	void DirectXFramebuffer::BindDepth(uint32_t slot)
+	{
+		Direct3D11Context::GetCurrentContext()->GetContext()->PSSetShaderResources(slot, 1, m_depthStencilBuffer.shaderResourceView.GetAddressOf());
+	}
+
+	void DirectXFramebuffer::UnbindDepth(uint32_t slot)
+	{
+		ID3D11ShaderResourceView* nullsrv[] = { nullptr };
+		Direct3D11Context::GetCurrentContext()->GetContext()->PSSetShaderResources(slot, 1, nullsrv);
+	}
+
     void DirectXFramebuffer::Resize(uint32_t width, uint32_t height)
     {
-		HL_ASSERT_EXCEPTION( width > 0 && height > 0 && width <= D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION && height <= D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION, "Invalid framebuffer size" );
+		HL_ASSERT( width > 0 && height > 0 && width <= D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION && height <= D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION, "Invalid framebuffer size" );
         m_Width = width;
         m_Height = height;
         Invalidate();

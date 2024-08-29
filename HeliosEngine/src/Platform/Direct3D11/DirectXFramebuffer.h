@@ -21,6 +21,12 @@ namespace Helios
 
         void Bind() override;
         void Unbind() override;
+
+        void Bind(uint32_t attachment, uint32_t slot) override;
+        void Unbind(uint32_t attachment, uint32_t slot) override;
+
+        void BindDepth(uint32_t slot) override;
+        void UnbindDepth(uint32_t slot) override;
 		
         void Resize(uint32_t width, uint32_t height) override;
 
@@ -78,6 +84,7 @@ namespace Helios
             Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
             Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
             Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
+            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
         } m_depthStencilBuffer;
     };
 }

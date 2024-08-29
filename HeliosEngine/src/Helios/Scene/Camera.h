@@ -56,8 +56,8 @@ namespace Helios
         static Matrix4x4 GetViewProjection(const TransformComponent& transform, const CameraComponent& camera, const Size& viewport)
         {
             Matrix4x4 projectionMatrix = camera.ortographic ?
-				Matrix4x4::OrthographicLH(camera.fov, (float)viewport.width / (float)viewport.height, camera.near_z, camera.far_z) :
-				Matrix4x4::PerspectiveLH(camera.size, (float)viewport.width / (float)viewport.height, camera.near_z, camera.far_z);
+				Matrix4x4::OrthographicLH(camera.size, (float)viewport.width / (float)viewport.height, camera.near_z, camera.far_z) :
+				Matrix4x4::PerspectiveLH(camera.fov, (float)viewport.width / (float)viewport.height, camera.near_z, camera.far_z);
 
 			return GetViewProjection(transform.GetModelMatrix(), projectionMatrix);
         }

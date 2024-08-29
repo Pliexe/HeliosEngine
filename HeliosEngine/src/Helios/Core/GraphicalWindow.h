@@ -4,34 +4,10 @@
 #include "Asserts.h"
 #include "Helios/Events/Event.h"
 #include "Helios/Graphics/GraphicsContext.h"
+#include "Helios/Utils/Message.h"
 
 namespace Helios
 {
-	namespace WindowStyles
-	{
-		enum Value : bitmask_t
-		{
-			None		= 0,
-			Decorated	= BIT(0),
-			Resizable	= BIT(1),
-			//Minimized	= BIT(2),
-			Maximized	= BIT(3),
-			Show		= BIT(4),
-			AlwaysOnTop	= BIT(5),
-		};
-
-		inline Value operator | (Value lhs, Value rhs)
-		{
-			using T = std::underlying_type_t <Value>;
-			return static_cast<Value>(static_cast<T>(lhs) | static_cast<T>(rhs));
-		}
-
-		inline Value& operator |= (Value& lhs, Value rhs)
-		{
-			lhs = lhs | rhs;
-			return lhs;
-		}
-	}
 
 	class HELIOS_API GraphicalWindow
 	{
@@ -47,6 +23,9 @@ namespace Helios
 		};
 	public: // Constructors & Destructor
 	 	static Ref<GraphicalWindow> Create();
+	 	static Scope<GraphicalWindow> CreateScoped();
+
+		GraphicalWindow() { if (s_MainWindow == nullptr) s_MainWindow = this; }
 	
 		virtual ~GraphicalWindow() = default;
 
@@ -64,6 +43,8 @@ namespace Helios
 
 #pragma region Getters
 
+		static const GraphicalWindow* GetMainWindow() { return s_MainWindow; }
+
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 
@@ -71,6 +52,10 @@ namespace Helios
 		virtual void* GetNativeWindow() const = 0;
 
 		virtual ImGuiContext* GetImGuiContext() const = 0;
+
+		virtual std::string GetTitle() const = 0;
+
+		virtual bool VSyncEnabled() const  = 0;
 
 #pragma endregion 
 
@@ -92,22 +77,21 @@ namespace Helios
 		virtual void Show() = 0;
 		virtual bool IsFocused() = 0;
 
+		virtual Message::Result ShowMessage(const std::string& title, const std::string& message, Message::Flags type = Message::Flags::Ok | Message::Flags::IconInformation) const = 0;
+
 #pragma endregion
 
 #pragma region Static Methods
 
-		static void MessageBox(const std::string& title, const std::string& message);
+		static void Message(const std::string& title, const std::string& message);
 
-
-		static void PollEvents()
-		{
-#if defined(HELIOS_PLATFORM_WINDOWS) || defined(HELIOS_PLATFORM_LINUX) || defined(HELIOS_PLATFORM_MACOS)
-			glfwPollEvents();
-#else
-#endif
-		}
+		static void PollEvents();
 #pragma endregion
 	protected:
 		EventCallbackFun m_EventCallback;
+
+		inline static GraphicalWindow* s_MainWindow = nullptr;
+
+		std::string m_Title;
 	};
 }

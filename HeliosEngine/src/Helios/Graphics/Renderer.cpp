@@ -4,6 +4,8 @@
 #include "Helios/Math/Matrix.h"
 #include "Helios/Resources/Shader.h"
 #include "Helios/Resources/ShaderBuilder.h"
+#include "Framebuffer.h"
+#include "GizmosRenderer.h"
 
 namespace Helios
 {
@@ -26,6 +28,7 @@ namespace Helios
 
 		static struct DirectionalLightData
 		{
+			Matrix4x4 lightViewProj;
 			// first pack
 			Vector3 direction; // 12 bytes
 			float intensity; // 4 bytes
@@ -43,8 +46,14 @@ namespace Helios
 		Ref<UniformBuffer<CBD>> transformBuffer;
 		Ref<UniformBuffer<LightData>> lightBuffer;
 
+		RendererData::LightData lightData;
+		Ref<Framebuffer> directinalLightShadowFramebuffers[4];
+
 		Ref<Texture2D> whiteTexture;
 		Ref<Material> default_material;
+
+		Ref<Framebuffer> currentFramebuffer;
+		Vector3 cam_pos = Vector3::Zero();
 
 		struct Renderable
 		{
@@ -74,6 +83,7 @@ namespace Helios
 		};
 
 		std::vector<Renderable> renderables;
+		std::vector<bool> castShadowMesh;
 	};
 
 	void merge(std::vector<RendererData::Renderable>& lA, std::vector<RendererData::Renderable>& rA, std::vector<RendererData::Renderable>& x);
@@ -223,6 +233,22 @@ namespace Helios
 	{
 		if (meshRenderer.mesh == nullptr || meshRenderer.material == nullptr) return;
 		rendererData.renderables.emplace_back(meshRenderer.mesh, meshRenderer.material, worldMatrix, (uint32_t)entityId, sceneIndex, meshRenderer.material->Color);
+		rendererData.castShadowMesh.emplace_back(meshRenderer.castShadow);
+	}
+
+	static Ref<Shader> CreateShadowShader()
+	{
+		ShaderBuilder shaderBuilder;
+		shaderBuilder.SetName("ShadowShader");
+		shaderBuilder.SetVertexShader("CompiledShaders/ShadowInstancedVertexShader");
+		shaderBuilder.SetPixelShader("CompiledShaders/ShadowInstancedPixelShader");
+		shaderBuilder.SetDepthFunc(DepthFunc::LessEqual);
+
+		const SafeInputLayouts<2> inputLayouts = Mesh::GetInputLayout();
+
+		shaderBuilder.SetInputLayouts(inputLayouts);
+
+		return shaderBuilder.Create();
 	}
 
 	void Renderer::Flush()
@@ -232,8 +258,8 @@ namespace Helios
 		
 		ShaderBuilder shaderBuilder;
 		shaderBuilder.SetName("StandardInstancedShader");
-		shaderBuilder.SetVertexShader("Shaders/StandardInstancedVertexShader");
-		shaderBuilder.SetPixelShader("Shaders/StandardInstancedPixelShader");
+		shaderBuilder.SetVertexShader("CompiledShaders/StandardInstancedVertexShader");
+		shaderBuilder.SetPixelShader("CompiledShaders/StandardInstancedPixelShader");
 
 		const SafeInputLayouts<2> inputLayouts = Mesh::GetInputLayout();
 
@@ -241,7 +267,7 @@ namespace Helios
 
 		static Ref<Shader> shader = shaderBuilder.Create();
 
-		shader->Bind();
+		static Ref<Shader> shadowShader = CreateShadowShader();
 
 		/*HL_PROFILE_BEGIN("Renderer::Flush::Sort");
 		mergeSortRenderables(rendererData.renderables);
@@ -250,7 +276,8 @@ namespace Helios
 		HL_PROFILE_BEGIN("Renderer::Flush::Sort");
 		// sort renderables by material, shader and mesh
 
-		std::sort (rendererData.renderables.begin(), rendererData.renderables.end(), [](const RendererData::Renderable& a, const RendererData::Renderable& b) -> bool
+
+		/*std::sort (rendererData.renderables.begin(), rendererData.renderables.end(), [](const RendererData::Renderable& a, const RendererData::Renderable& b) -> bool
 		{
 			if (a.material < b.material)
 				return true;
@@ -260,39 +287,117 @@ namespace Helios
 					return true;
 			}
 			return false;
-		});
+		});*/
 
 		HL_PROFILE_END();
 
+
+
+
 		static RendererData::InstancedRenderable* instancedRenderables = new RendererData::InstancedRenderable[Mesh::GetMaxInstanceCount()];
 		
+
 		RendererData::InstancedRenderable* instancedRenderablesPtr = instancedRenderables;
 
 		Ref<Material> currentMaterial = nullptr;
 		Ref<Mesh> currentMesh = nullptr;
 
-		auto draw = [&]
+		auto draw = [&]()
 		{
 			uint32_t size = (instancedRenderablesPtr - instancedRenderables);
 
 			Mesh::GetInstanceVertexBuffer()->SetData(instancedRenderables, size * sizeof(RendererData::InstancedRenderable));
 
-			RendererData::InstancedRenderable test = *instancedRenderables;
-
-			HL_PROFILE_BEGIN("Draw Call");
 			Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexedInstanced(currentMesh->getIndexCount(), size, 0u, 0u, 0u);
-			HL_PROFILE_END();
-
+			
 			instancedRenderablesPtr = instancedRenderables;
 		};
 
-		auto test = sizeof(RendererData::InstancedRenderable);
+		// Shadow map pass
+
+		shader->Unbind();
+		shadowShader->Bind();
+		
+		
+		for (uint32_t i = 0, n = rendererData.lightData.directional_light_count; i < n; i++)
+		{
+			rendererData.directinalLightShadowFramebuffers[i]->ClearDepthStencil();
+			rendererData.directinalLightShadowFramebuffers[i]->Bind();
+
+			uint32_t j = 0;
+			for (auto& renderable : rendererData.renderables)
+			{
+				if (!rendererData.castShadowMesh[j])
+				{
+					j++;
+					continue;
+				}
+
+				if (currentMesh != renderable.mesh)
+				{
+					if ((instancedRenderablesPtr - instancedRenderables) > 0) {
+						draw();
+					}
+
+					if (currentMesh == nullptr)
+					{
+						currentMesh = renderable.mesh;
+						currentMesh->Bind();
+					}
+
+					currentMesh = renderable.mesh;
+					currentMesh->Bind();
+				}
+
+				RendererData::InstancedRenderable irptrtest = RendererData::InstancedRenderable{ rendererData.lightData.directionalLights[i].lightViewProj * renderable.transform, renderable.transform, renderable.color, renderable.entityId, renderable.sceneIndex };
+
+				*instancedRenderablesPtr++ = irptrtest;
+
+				if ((instancedRenderablesPtr - instancedRenderables) >= Mesh::GetMaxInstanceCount())
+				{
+					draw();
+				}
+				j++;
+			}
+
+			if (instancedRenderablesPtr != instancedRenderables)
+			{
+				draw();
+			}
+
+			rendererData.directinalLightShadowFramebuffers[i]->Unbind();
+		}
+
+		shadowShader->Unbind();
+
+		// Render objects pass
+		static Ref<Material> shadowMaterial = Material::Create(Material::Filter::ComparisonMinMagMipLinear, Material::Type::Border);
+		shadowMaterial->Bind(1u);
+
+		rendererData.currentFramebuffer->Bind();
+		shader->Bind();
+
+		for (uint32_t i = 0, n = rendererData.lightData.directional_light_count; i < n; i++)
+		{
+			auto shadowMap = rendererData.directinalLightShadowFramebuffers[i];
+			shadowMap->BindDepth(5u + i);
+		}
+
+		instancedRenderablesPtr = instancedRenderables;
+
+		currentMaterial = nullptr;
+		currentMesh = nullptr;
 
 		for (auto& renderable : rendererData.renderables)
 		{
 			if (currentMaterial != renderable.material)
 			{
+				if ((instancedRenderablesPtr - instancedRenderables) > 0) {
+					draw();
+				}
+
 				currentMaterial = renderable.material;
+				currentMaterial->Unbind();
 				currentMaterial->Bind(0u);
 
 				if (currentMaterial->texture == nullptr)
@@ -303,13 +408,15 @@ namespace Helios
 
 			if (currentMesh != renderable.mesh)
 			{
+				if ((instancedRenderablesPtr - instancedRenderables) > 0) {
+					draw();
+				}
+
 				if (currentMesh == nullptr)
 				{
 					currentMesh = renderable.mesh;
 					currentMesh->Bind();
 				}
-
-				if ((instancedRenderablesPtr - instancedRenderables) > 0) draw();
 
 				currentMesh = renderable.mesh;
 				currentMesh->Bind();
@@ -331,7 +438,18 @@ namespace Helios
 			draw();
 		}
 
+		for (uint32_t i = 0, n = rendererData.lightData.directional_light_count; i < n; i++)
+		{
+			auto shadowMap = rendererData.directinalLightShadowFramebuffers[i];
+			shadowMap->UnbindDepth(5u + i);
+		}
+
+		shadowMaterial->Unbind();
+		shader->Unbind();
+		rendererData.currentFramebuffer->Unbind();
+
 		rendererData.renderables.clear();
+		rendererData.castShadowMesh.clear();
 		HL_PROFILE_END();
 	}
 
@@ -342,7 +460,7 @@ namespace Helios
 		rendererData.whiteTexture = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
 		rendererData.whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-		rendererData.default_material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+		rendererData.default_material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
 		rendererData.default_material->texture = rendererData.whiteTexture;
 
 		return true;
@@ -352,16 +470,17 @@ namespace Helios
 	{
 	}
 
-	void Renderer::BeginScene(Matrix4x4 projection, Color ambient_light, entt::basic_view<entt::entity, entt::get_t<TransformComponent, DirectionalLightComponent>, entt::exclude_t<DisabledObjectComponent>> directional_light_view)
+	void Renderer::BeginScene(Ref<Framebuffer>& colorBuffer, Matrix4x4 projection, Vector3 cam_pos, Color ambient_light, entt::basic_view<entt::entity, entt::get_t<TransformComponent, DirectionalLightComponent>, entt::exclude_t<DisabledObjectComponent>> directional_light_view)
 	{
-		RendererData::LightData light_data;
-		ZeroMemory(&light_data, sizeof(RendererData::LightData));
+		rendererData.currentFramebuffer = colorBuffer;
+		rendererData.cam_pos = cam_pos;
+		ZeroMemory(&rendererData.lightData, sizeof(RendererData::LightData));
 		//lightData.directional_light_count = 0;
-		light_data.ambient_light = ambient_light;
+		rendererData.lightData.ambient_light = ambient_light;
 
 		for (auto entity : directional_light_view)
 		{
-			if (light_data.directional_light_count > 3)
+			if (rendererData.lightData.directional_light_count > 3)
 			{
 				//HL_CORE_WARN("Only 4 directional lights are supported!");
 				break;
@@ -369,16 +488,43 @@ namespace Helios
 
 			auto [transform, light] = directional_light_view.get<TransformComponent, DirectionalLightComponent>(entity);
 
-			light_data.directionalLights[light_data.directional_light_count] = {
-				transform.Up(),
+			if (light.framebuffer == nullptr)
+			{
+				light.framebuffer = 
+					Framebuffer::Create(1024, 1024, 
+						{ Framebuffer::Format::D32F }
+				);
+			}
+
+			rendererData.directinalLightShadowFramebuffers[rendererData.lightData.directional_light_count] = light.framebuffer;
+
+
+			float light_offset = 10.0f;
+			Vector3 camPos = transform.Position + (light_offset * (-transform.Forward()));
+
+			GizmosRenderer::DrawLine(transform.Position, camPos, 2.0f, Color::Blue, -1, GizmosRenderer::LineMode::Dash_Dot_Dot);
+
+			float near_plane = 1.0f, far_plane = 7.5f;
+			static float size = 40.0f;
+			/*static Matrix4x4 ort = Matrix4x4::OrthographicLH(-size / 2.f, size / 2.f, -size / 2.f, size / 2.f, near_plane, far_plane);*/
+			static Matrix4x4 ort = Matrix4x4::OrthographicLH(size, 1.0f, near_plane, far_plane);
+
+			rendererData.lightData.directionalLights[rendererData.lightData.directional_light_count] = {
+				ort *
+				//Matrix4x4::LookAtLH(Vector3::Zero(), transform.Forward(), Vector3::Up()),
+				Matrix4x4::Inverse(
+					Matrix4x4::Translation(transform.Position) *
+					Matrix4x4::Rotation(transform.Rotation)
+				),
+				(-transform.Forward()),
 				light.intensity,
 				light.color,
 			};
 
-			light_data.directional_light_count++;
+			rendererData.lightData.directional_light_count++;
 		}
 
-		rendererData.lightBuffer->SetData(light_data);
+		rendererData.lightBuffer->SetData(rendererData.lightData);
 		rendererData.lightBuffer->Bind();
 		rendererData.projectionMatrix = projection;
 	}

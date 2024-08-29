@@ -128,32 +128,46 @@ namespace Helios {
 		auto camt = cam.GetComponent<CameraComponent>();
 
 		frameBuffers[0]->Bind();
-		frameBuffers[0]->ClearBuffer(0u, camt.clear_color);
+		switch (camt.background_mode)
+		{
+		case CameraComponent::BackgroundMode::None: break;
+		case CameraComponent::BackgroundMode::SolidColor:
+		{
+			frameBuffers[0]->ClearBuffer(0u, camt.clear_color);
+			break;
+		}
+		case CameraComponent::BackgroundMode::Skybox:
+		{
+			frameBuffers[0]->ClearBuffer(0u, Color::Black);
+			break;
+		}
+		}
 		frameBuffers[0]->ClearDepthStencil();
 
-		TransformComponent worldTransform = Transform(cam, cam.GetScene()).GetWorldTransformCache();
+		TransformComponent worldTransform = Transform(cam, cam.GetContainer()).GetWorldTransformCache();
 
 		Matrix4x4 projection = Camera::GetViewProjection(worldTransform, camt, frameBuffers[0]->GetSize());
 
+		frameBuffers[0]->Unbind();
+
 		for (auto& scene : m_activeScenes)
 		{
-			scene->RenderScene(worldTransform, projection);
+			scene->RenderScene(frameBuffers[0], worldTransform, projection);
 
 			scene->PerformCleanupAndSync();
 		}
 
-		frameBuffers[0]->Unbind();
 
 		HL_PROFILE_END();
 	}
 
-	void SceneRegistry::OnEditorRender(EditorCamera camera)
+	void SceneRegistry::OnEditorRender(Ref<Framebuffer>& framebuffer, EditorCamera camera)
 	{
 		HL_PROFILE_BEGIN("Editor Scene Render");
 
 		for (auto& scene : m_activeScenes)
 		{
-			scene->RenderScene(camera); 
+			scene->RenderScene(framebuffer, camera); 
 
 			scene->PerformCleanupAndSync();
 		}

@@ -21,11 +21,13 @@ project "ImGui"
         "imgui/backends/imgui_impl_glfw.cpp",
         "imgui/backends/imgui_impl_glfw.h",
         "imgui/backends/imgui_impl_opengl3_loader.h",
+        "imgui/backends/imgui_impl_vulkan.cpp",
+        "imgui/backends/imgui_impl_vulkan.h",
     }
 
     includedirs { 
         "imgui", "imgui/misc/cpp", "imgui/backends",
-        "glfw/include",
+        "glfw/include", "%{IncludeDir.VulkanSDK}",
     }
 
     filter "system:windows"

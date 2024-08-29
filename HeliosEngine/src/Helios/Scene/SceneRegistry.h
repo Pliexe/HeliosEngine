@@ -38,8 +38,7 @@ namespace Helios {
 		static void OnEditorUpdate();
 
 		static void OnRuntimeRender(std::vector<Ref<Framebuffer>> frameBuffers);
-		static void OnEditorRender(SceneCamera camera);
-		static void OnEditorRender(EditorCamera camera);
+		static void OnEditorRender(Ref<Framebuffer>& framebuffer, EditorCamera camera);
 
 		inline static std::vector<Ref<Scene>>& GetActiveScenes() { return m_activeScenes; }
 		static WeakRef<Scene> GetSceneByIndex(uint32_t scene_index);

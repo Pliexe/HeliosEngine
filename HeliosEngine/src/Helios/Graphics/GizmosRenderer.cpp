@@ -193,7 +193,7 @@ namespace Helios
 
 #pragma endregion
 
-		s_Data.defaultMaterial = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+		s_Data.defaultMaterial = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
 		s_Data.m_lines.m_Lines = new LineGizmos[GizmosData::MaxLineGizmos];
 		s_Data.m_lines.m_index = s_Data.m_lines.m_Lines;
 		s_Data.m_lines.m_vertexBuffer = UnsafeVertexBuffer::Create(sizeof(LineGizmos) * GizmosData::MaxLineGizmos, BufferUsage::Dynamic);
@@ -219,13 +219,13 @@ namespace Helios
 
 #pragma region Initilization Shaders
 
-		s_Data.standard_gizmos_shader = Shader::Create("StandardGizmos", "Shaders/StandardGizmosVertexShader", "Shaders/StandardGizmosPixelShader", s_Data.standard_gizmos_input_layouts, DepthFunc::Always, Topology::TriangleList);
+		s_Data.standard_gizmos_shader = Shader::Create("StandardGizmos", "CompiledShaders/StandardGizmosVertexShader", "CompiledShaders/StandardGizmosPixelShader", s_Data.standard_gizmos_input_layouts, DepthFunc::Always, Topology::TriangleList);
 
-		s_Data.quad_gizmos_shader = Shader::Create("QuadGizmo", "Shaders/QuadGizmoVertexShader", "Shaders/QuadGizmoPixelShader", s_Data.quad_gizmos_input_layouts, DepthFunc::Always, Topology::TriangleList);
+		s_Data.quad_gizmos_shader = Shader::Create("QuadGizmo", "CompiledShaders/QuadGizmoVertexShader", "CompiledShaders/QuadGizmoPixelShader", s_Data.quad_gizmos_input_layouts, DepthFunc::Always, Topology::TriangleList);
 
-		s_Data.line_gizmos_shader = Shader::Create("Line", "Shaders/LineVertexShader", "Shaders/LinePixelShader", s_Data.line_gizmos_input_layouts, DepthFunc::Always, Topology::LineList);
+		s_Data.line_gizmos_shader = Shader::Create("Line", "CompiledShaders/LineVertexShader", "CompiledShaders/LinePixelShader", "CompiledShaders/LineGeometryShader", s_Data.line_gizmos_input_layouts, DepthFunc::Always, Topology::LineList);
 
-		s_Data.dynamic_gizmos_shader = Shader::Create("DynamicGizmos", "Shaders/DynamicGizmosVertexShader", "Shaders/DynamicGizmosPixelShader", s_Data.dynamic_gizmos_input_layouts, DepthFunc::Always, Topology::TriangleList);
+		s_Data.dynamic_gizmos_shader = Shader::Create("DynamicGizmos", "CompiledShaders/DynamicGizmosVertexShader", "CompiledShaders/DynamicGizmosPixelShader", s_Data.dynamic_gizmos_input_layouts, DepthFunc::Always, Topology::TriangleList);
 
 #pragma endregion
 
@@ -346,6 +346,8 @@ namespace Helios
 
 			Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexedInstanced(6u, s_Data.quads.quadInstanceIndex, 0u, 0u, 0u);
 			s_Data.quads.quadInstanceIndex = 0u;
+
+			s_Data.quad_gizmos_shader->Unbind();
 		}
 		HL_PROFILE_END();
 
@@ -365,6 +367,7 @@ namespace Helios
 				
 				Direct3D11Context::GetCurrentContext()->GetContext()->DrawIndexedInstanced(s_Data.m_GizmosInstanceData.m_GizmosObjects[i].m_IndexBuffer->GetCount(), instances, 0u, 0u, 0u);
 				instances = 0u;
+				s_Data.standard_gizmos_shader->Unbind();
 			}
 			i++;
 		}

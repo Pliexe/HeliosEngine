@@ -5,12 +5,13 @@
 #include "Helios/Core/UUID.h"
 
 #include "MeshGenerator.h"
-#include "Texture.h"
-#include "Mesh.h"
 
 namespace Helios
 {
 	// Manages all loaded resources
+	class Texture2D;
+	class Mesh;
+	class EntityContainer;
 	class HELIOS_API ResourceRegistry
 	{
 	public:
@@ -37,9 +38,23 @@ namespace Helios
 			return GetResource<T>(MeshGenerator::GetMeshUUID(type));
 		}
 
+		template <typename T>
+		static const std::unordered_map<UUID, Ref<T>>& GetResources()
+		{
+			if constexpr (std::is_same_v<Texture2D, T>)
+			{
+				return s_Textures;
+			}
+			else if constexpr (std::is_same_v<Mesh, T>)
+			{
+				return s_Meshes;
+			}
+		}
+
 	private:
 
 		inline static std::unordered_map<UUID, Ref<Texture2D>> s_Textures;
 		inline static std::unordered_map<UUID, Ref<Mesh>> s_Meshes;
+		inline static std::unordered_map<UUID, Ref<EntityContainer>> s_EntityContainers;
 	};
 }

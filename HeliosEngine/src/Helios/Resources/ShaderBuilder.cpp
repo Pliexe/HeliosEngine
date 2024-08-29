@@ -29,7 +29,7 @@ namespace Helios
 		if (m_VertexShader.empty()) assert(true);
 		
 		if(m_PixelShader.empty())
-			return Shader::Create(m_Name, m_VertexShader, m_PixelShader, m_GeometryShader, m_InputLayouts, m_DepthFunc, m_Topology);
+			return Shader::Create(m_Name, m_VertexShader, m_InputLayouts, m_DepthFunc, m_Topology);
 		else if (m_GeometryShader.empty())
 			return Shader::Create(m_Name, m_VertexShader, m_PixelShader, m_InputLayouts, m_DepthFunc, m_Topology);
 		else

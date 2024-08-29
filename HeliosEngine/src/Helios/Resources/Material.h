@@ -27,7 +27,8 @@ namespace Helios
 
 		enum class Filter
 		{
-			MinMagPoint
+			MinMagMipPoint,
+			ComparisonMinMagMipLinear,
 		};
 
 		virtual void Bind(uint32_t slot) = 0;

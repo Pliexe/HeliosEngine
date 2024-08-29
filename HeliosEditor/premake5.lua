@@ -30,7 +30,6 @@ project "HeliosEditor"
         
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.ImGuiMisc}",
-        "%{IncludeDir.ImGuiBackends}",
         "%{IncludeDir.Yaml}",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLAD}",
@@ -44,11 +43,17 @@ project "HeliosEditor"
         "ProjectManager",
         "GLFW",
         "GLAD",
+
+        "Box2D",
+        "opengl32.lib",
+        "%{Library.VulkanUtils}",
+        "%{VULKAN_SDK}/Lib/shaderc_shared.lib",
     }
 
     defines
     {
         "HELIOS_EDITOR",
+        "HELIOS_BUILD_DLL",
         "HELIOS_INCLUDE_IMGUI",
         "YAML_CPP_STATIC_DEFINE",
         "GLFW_INCLUDE_NONE",
@@ -59,9 +64,19 @@ project "HeliosEditor"
 
     flags { "NoPCH" }
 
+    -- filter { "files:**.hlsl" }
+    --     buildcommands 'dxc.exe -spirv -T vs_5_0 -E main .\\%{file.basename}.hlsl -Fo .\\%{file.basename}.spv'
+
+    -- Assuming your shaders are located in ../data/shaders/
+    filter "files:../data/shaders/*.hlsl"
+        buildcommands '"../libs/vulkan/glslangValidator.exe" -V -o "%{file.directory}/bin/%{file.name}.spv" "%{file.relpath}"'
+        buildoutputs "%{file.directory}/bin/%{file.name}.spv"
+
+
     filter { "files:**.hlsl" }
         flags "ExcludeFromBuild"
-        shadermodel "5.0"
+        -- shadermodel "5.0"
+        shadermodel "6.0"
         shaderobjectfileoutput("CompiledShaders/%{file.basename}"..".cso")
         shaderassembleroutput("CompiledShaders/%{file.basename}"..".asm")
         

@@ -24,7 +24,7 @@ namespace Helios
             uuidToMehTypeMap[pair.second] = pair.first;
             static ResourceResolver::ResourceInfo info = {
                 ResourceResolver::ResourceInfo::INBUILT};
-            ResourceResolver::RegisterResource(pair.second, info);
+            ResourceResolver::RegisterResource(ResourceResolver::s_Meshes, pair.second, info);
 		}
 	}
 

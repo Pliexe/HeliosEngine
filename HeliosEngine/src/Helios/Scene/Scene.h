@@ -7,6 +7,7 @@
 #include "pch.h"
 #include "Helios/Core/Base.h"
 #include "Components.h"
+#include "EntityContainer.h"
 
 namespace Helios {
 	class Entity;
@@ -14,21 +15,16 @@ namespace Helios {
 	class Camera;
 	class SceneCamera;
 	class EditorCamera;
-	class HELIOS_API Scene
+	class Framebuffer;
+	class HELIOS_API Scene : public EntityContainer
 	{
 	private:
 		std::string name;
 		std::filesystem::path path;
 
-		std::unordered_map<entt::entity, TransformComponent> m_worldTransformCache;
-		
-		entt::registry m_components;
-
 		std::function<void(Scene&)> initCallback;
 
 		std::unordered_set<entt::entity> m_entitiesToDestroy;
-
-		std::unordered_map<UUID, entt::entity> m_UUIDMap;
 
 	public:
 
@@ -40,58 +36,19 @@ namespace Helios {
 
 		inline std::string GetName() const { return name; }
 
-		/*template<typename... Component>
-		static void CopyComponentIfExists(GameObject dst, GameObject src)
-		{
-			([&]()
-				{
-					if (src.HasComponent<Component>())
-						dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
-				}(), ...);
-		}*/
-
-		inline bool contains(entt::entity entity);
-
-		Entity GetEntity(UUID uuid);
-
-		Entity GetEntity(entt::entity entity);
-
-		Entity DuplicateEntity(Entity entity);
-		Entity CopyEntity(Entity entity);
-
-		uint64_t GetEntityCount() const { return m_components.size(); }
-
 		void PerformCleanupAndSync();
 		void UpdatePhysics();
 
-		inline void RenderScene(SceneCamera camera);
-		void RenderScene(EditorCamera& camera);
-		void RenderScene(TransformComponent world_camera, Matrix4x4 projection);
+		void RenderScene(Ref<Framebuffer>& colorBuffer, EditorCamera& camera);
+		void RenderScene(Ref<Framebuffer>& colorBuffer, TransformComponent world_camera, Matrix4x4 projection);
 #ifdef HELIOS_EDITOR
 		void RenderGizmos(Matrix4x4 projection);
 #endif
-		Entity InstantiateObject();
-		Entity InstantiateObject(Vector3 position);
-		Entity InstantiateObject(entt::entity parent);
-		Entity InstantiateObject(std::string name, Vector3 position = Vector3::Zero());
-		Entity InstantiateObject(std::string name, entt::entity& parent);
 		Entity& CreateMainCamera(Vector3 position);
 		Entity& CreateCamera(Vector3 position);
 
 		void Init() { if(initCallback) initCallback(*this); }
 		void Shutdown();
-		
-		template <typename... T>
-		auto GetComponentsWith()
-		{
-			return m_components.template view<T...>();
-		}
-
-		const entt::registry& GetComponents()
-		{
-			return m_components;
-		}
-
 
 		static void UpdateChildTransforms(Ref<Scene> scene);
 

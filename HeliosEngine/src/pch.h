@@ -6,6 +6,12 @@
 #ifndef PCH_H
 #define PCH_H
 
+#ifndef HELIOS_PLATFORM_WINDOWS
+#if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__CYGWIN64__) || defined(_WIN32) || defined(__WIN32__)
+#define HELIOS_PLATFORM_WINDOWS
+#endif
+#endif 
+
 #if (defined(_M_IX86) || defined(_M_X64) || __i386__ || __x86_64__) && !defined(M_HYBRID_X86_ARM64) && !defined(_M_ARM64EC)
 #define __SSE_ENABLED__
 #include <xmmintrin.h>
@@ -17,10 +23,14 @@
 #define HL_DEBUG
 #endif
 
+//#include <char8_t-remediation.h>s
+
 #define PI 3.14159265358979323846f
 
 // Standard Library
 
+#include <codecvt>
+#include <locale>
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -49,12 +59,13 @@
 
 #ifdef HELIOS_PLATFORM_WINDOWS
 
+#define NOMINMAX
+
 #include <windowsx.h>
 #include <d2d1.h>
 #include <d3d11.h>
 #include <dwrite.h>
 #include <wincodec.h>
-#define NOMINMAX
 
 #endif
 
@@ -64,8 +75,6 @@
 
 #endif
 
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
 
 #include <json.hpp>
 using json = nlohmann::json;
@@ -100,10 +109,6 @@ using json = nlohmann::json;
 #include <imgui.h>
 
 #include <imgui_stdlib.h>
-#include <imgui_impl_dx11.h>
-#include <imgui_impl_win32.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
 
 #endif
 

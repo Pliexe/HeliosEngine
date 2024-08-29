@@ -60,3 +60,4 @@ HeliosEditor/Test.scene
 #etc
 .cache
 compile_commands.json
+HeliosScript/**/target/

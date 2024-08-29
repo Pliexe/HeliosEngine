@@ -6,7 +6,16 @@ namespace Helios
 
 	Ref<Texture2D> ResourceRegistry::GetTextureResource(const Helios::UUID& id)
 	{
-		return Ref<Texture2D>();
+		if (s_Textures.find(id) != s_Textures.end())
+		{
+			return s_Textures[id];
+		}
+		else
+		{
+			Ref<Texture2D> tmp = ResourceResolver::Resolve<Texture2D>(id);
+			if (tmp != nullptr) s_Textures[id] = tmp;
+			return tmp;
+		}
 	}
 	Ref<Mesh> ResourceRegistry::GetMeshResource(const Helios::UUID& id)
 	{
@@ -17,7 +26,7 @@ namespace Helios
 		else
 		{
 			Ref<Mesh> tmp = ResourceResolver::Resolve<Mesh>(id);
-			s_Meshes[id] = tmp;
+			if (tmp != nullptr) s_Meshes[id] = tmp;
 			return tmp;
 		}
 	}

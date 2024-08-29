@@ -6,6 +6,7 @@
 #include "Helios/Input/KeyCodes.h"
 #include "Application.h"
 #include "Helios/Core/Time.h"
+#include "Helios/Core/Application.h"
 
 namespace Helios
 {
@@ -18,7 +19,7 @@ namespace Helios
 		m_Framebuffer->ClearBuffer( 1u, { 0.f, 0.f, -1.0f } );
 		m_Framebuffer->ClearDepthStencil();
 
-		SceneRegistry::OnEditorRender(m_EditorCamera);
+		SceneRegistry::OnEditorRender(m_Framebuffer, m_EditorCamera);
 
 		m_Framebuffer->Unbind();
 	}
@@ -492,15 +493,24 @@ namespace Helios
 				else
 				if (active_tool_type == GizmosRenderer::ToolType::Scale) ImGui::PopStyleColor();
 
-
 				ImGui::Checkbox("Show ID Frame", &showIdFrame);
+				ImGui::Checkbox("Show Depth Buffer", &showDepth);
 				ImGui::Checkbox("Show FPS", &show_fps);
+
+				bool isVsync = Helios::Application::GetInstance().GetWindow()->VSyncEnabled();
+
+				if (ImGui::Checkbox("VSync", &isVsync))
+				{
+					Helios::Application::GetInstance().GetWindow()->SetVSync(isVsync);
+				}
+
 				//static bool wireframe = false;
 				//ImGui::Checkbox("Wireframe", &wireframe);
 				/*if (wireframe)
 						this->currentRSState = RSState::Wireframe;
 					else
 						this->currentRSState = RSState::Normal;*/
+
 
 				ImGui::Checkbox("Show Vertecies", &show_vertecies);
 
@@ -520,7 +530,10 @@ namespace Helios
 				m_Framebuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 				m_EditorCamera.SetViewportSize(viewportSize.x, viewportSize.y);
 			}
-			ImGui::Image(m_Framebuffer->GetTextureID((uint32_t)showIdFrame), ImVec2(viewportSize));
+			if (showDepth)
+				ImGui::Image(m_Framebuffer->GetDepthTextureID(), ImVec2(viewportSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 0,0,1));
+			else
+				ImGui::Image(m_Framebuffer->GetTextureID((uint32_t)showIdFrame), ImVec2(viewportSize));
 
 			if (show_fps)
 			{
@@ -531,7 +544,7 @@ namespace Helios
 
 				static int fps_index = 0;
 
-				fps[fps_index] = Time::getFPS();
+				fps[fps_index] = Time::FramesPerSecond();
 
 				fps_index++;
 
@@ -657,7 +670,7 @@ namespace Helios
 
 								WeakRef<Scene> scene = SceneRegistry::GetSceneByIndex(mode_or_index);
 
-								Entity entity = { (entt::entity)entityId, scene.lock().get() };
+								Entity entity = { (entt::entity)entityId, scene };
 
 								InspectorPanel::GetInstance() << entity;
 								InspectorPanel::FocusMain();
@@ -840,7 +853,7 @@ namespace Helios
 		//			Color entId = m_Framebuffer->GetPixel(1u, x, y);
 		//			int64_t id = std::round(entId.r);
 
-		//			/*DepricatedApplication::ShowMessage("Pixel Clicked:",
+		//			/*DepricatedHelios::ShowMessage("Pixel Clicked:",
 		//					"X: " + std::to_string(x) +
 		//					" Y: " + std::to_string(y) + "\n"
 		//					"ID: " + std::to_string(entId.r) + "\n" +

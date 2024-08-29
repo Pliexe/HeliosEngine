@@ -1,0 +1,39 @@
+{
+    "crates": [
+        {
+            "root_module": "D:/Dev/HeliosEngine/HeliosScript/Rust/helios",
+            "edition": "2021",
+            "deps": [
+                {
+                    "crate": 1,
+                    "name": "helios_macros"
+                }
+            ]
+        },
+        {
+            "root_module": "D:/Dev/HeliosEngine/HeliosScript/Rust/helios_macros",
+            "edition": "2021",
+            "deps": []
+        },
+        {
+            "root_module": "C:/Users/dz/Documents/Helios Projects/Sandbox/Assets/lib.rs",
+            "edition": "2021",
+            "deps": [
+                {
+                    "crate": 0,
+                    "name": "helios"
+                },
+                {
+                    "crate": 1,
+                    "name": "helios_macros"
+                }
+            ]
+        },
+        {
+            "root_module": "src/lib.rs",
+            "edition": "2021",
+            "deps": []
+        }
+    ],
+    "sysroot": "C:/Users/dz/.rustup/toolchains/stable-x86_64-pc-windows-msvc"
+}

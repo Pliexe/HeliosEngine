@@ -6,7 +6,7 @@ namespace Helios
     class HELIOS_API Direct3D11Texture2D : public Texture2D
     {
     public:
-        Direct3D11Texture2D(const std::string& path);
+        Direct3D11Texture2D(const std::filesystem::path& path);
         Direct3D11Texture2D(uint32_t width, uint32_t height);
         Direct3D11Texture2D(const Direct3D11Texture2D& other);
         //~DirectXTexture2D() override;

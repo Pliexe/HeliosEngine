@@ -3,6 +3,9 @@
 #include "Helios/Graphics/GraphicsContext.h"
 #include "Helios/Core/Asserts.h"
 
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
+
 namespace Helios
 {
 	class OpenGLContext : public GraphicsContext
@@ -41,7 +44,12 @@ namespace Helios
 
 		void SetVSync(uint32_t interval) override
 		{
-			glfwSwapInterval(interval);
+			glfwSwapInterval(m_SwapInterval = interval);
+		}
+
+		uint32_t GetVSyncInterval() override
+		{
+			return m_SwapInterval;
 		}
 
 		void UseContext() override
@@ -53,7 +61,14 @@ namespace Helios
 		{
 			glViewport(0, 0, width, height);
 		}
+
+		Ref<Framebuffer> GetFramebuffer() override
+		{
+			assert(false);
+			return nullptr;
+		}
 	private:
 		GLFWwindow* m_WindowHandle;
+		uint32_t m_SwapInterval = 0u;
 	};
 }

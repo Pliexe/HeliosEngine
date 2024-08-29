@@ -19,10 +19,9 @@ namespace Helios
 		};
 
 		Application(Specifications specs);
+		~Application() { m_Instance = nullptr; }
 
 		Scope<GraphicalWindow>& GetWindow() { return m_Window; }
-		
-		void MessageBox(const std::string& title, const std::string& message);
 
 		void Initialize(Specifications specs);
 		void Quit();
@@ -30,12 +29,15 @@ namespace Helios
 		// Getters
 		bool IsRunning() const;
 		static Application& GetInstance() { return *m_Instance; }
+
 	protected:
 		void Run();
 
 
 		virtual void OnUpdate() = 0;
 		virtual void OnRender() = 0;
+
+		std::string m_applicationName = "Game made with Helios";
 
 	private:
 	private:
@@ -45,7 +47,7 @@ namespace Helios
 		bool OnWindowClose(WindowCloseEvent& event);
 		bool OnWindowResize(WindowResizeEvent& event);
 
-		Scope<GraphicalWindow> m_Window;
+		Scope<GraphicalWindow> m_Window = nullptr;
 
 		bool m_Running = true;
 
@@ -53,6 +55,7 @@ namespace Helios
 
 		friend class GraphicalWindow;
 		friend class Win32GraphicalWindow;
+		friend class VkContext;
 
 		friend int ::main(int,char**);
 	};

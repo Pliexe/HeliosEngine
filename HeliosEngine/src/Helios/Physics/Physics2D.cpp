@@ -10,7 +10,7 @@ namespace Helios
 		{
 		case ImplementationType::HeliosPhysics:
 		{
-			HL_ASSERT_EXCEPTION(false, "HeliosPhysics not implemented yet!");
+			HL_ASSERT(false, "HeliosPhysics not implemented yet!");
 			break;
 		}
 		case ImplementationType::Box2D:

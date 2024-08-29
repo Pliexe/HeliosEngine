@@ -5,6 +5,7 @@
 #include "Helios/Math/Vector.h"
 #include "Helios/Scene/Entity.h"
 #include "Helios/Core/Asserts.h"
+#include "Helios/Core/Exceptions.h"
 #include "Helios/Graphics/Renderer.h"
 #include "Helios/Graphics/Renderer2D.h"
 #include "Scene.h"
@@ -23,46 +24,7 @@
 namespace Helios {
 
 	Scene::~Scene() {
-		//DepricatedApplication::ShowMessage("Test","Scene Deleted!");
-	}
-
-	bool Scene::contains(entt::entity entity)
-	{
-		return m_components.valid(entity);
-	}
-
-	Entity Scene::GetEntity(UUID uuid)
-	{
-		if (m_UUIDMap.find(uuid) != m_UUIDMap.end())
-		{
-			return Entity{ m_UUIDMap[uuid], this };
-		}
-		return Entity{ entt::null, this };
-	}
-
-	Entity Scene::GetEntity(entt::entity entity)
-	{
-		return Entity{ entity, this };
-	}
-
-	Entity Scene::DuplicateEntity(Entity entity)
-	{
-		assert(entity.IsValid());
-		Entity newEntity = InstantiateObject(entity.GetName());
-		CopyComponentIfExists(AllComponents{}, newEntity, entity);
-		if (newEntity.HasComponent<BoxCollider2D>()) newEntity.GetComponent<BoxCollider2D>().body = nullptr;
-		if (newEntity.HasComponent<CircleCollider2D>()) newEntity.GetComponent<CircleCollider2D>().body = nullptr;
-		newEntity.AddOrReplaceComponent<UUID>();
-
-		return newEntity;
-	}
-
-	Entity Scene::CopyEntity(Entity entity)
-	{
-		assert(entity.IsValid());
-		Entity newEntity = InstantiateObject(entity.GetName());
-		CopyComponentIfExists(AllComponents{}, newEntity, entity);
-		return newEntity;
+		//DepricatedHelios::ShowMessage("Test","Scene Deleted!");
 	}
 
 	void Scene::UpdateChildTransforms(Ref<Scene> scene)
@@ -109,11 +71,13 @@ namespace Helios {
 		}*/
 	}
 
-	void Scene::RenderScene(EditorCamera& camera)
+	void Scene::RenderScene(Ref<Framebuffer>& colorBuffer, EditorCamera& camera)
 	{
 		Matrix4x4 projection = camera.GetViewProjection();
-		RenderScene(camera.GetTransformComponent(), projection);
+		RenderScene(colorBuffer, camera.GetTransformComponent(), projection);
+		colorBuffer->Bind();
 		RenderGizmos(projection);
+		colorBuffer->Unbind();
 	}
 
 	void Scene::PerformCleanupAndSync()
@@ -139,7 +103,7 @@ namespace Helios {
 			{
 				auto& collider = m_components.get<BoxCollider2D>(entity);
 
-				if (collider.body == nullptr) collider.body = Physics2D::CreateBox(Entity{ entity, this }, collider);
+				if (collider.body == nullptr) collider.body = Physics2D::CreateBox(Entity{ entity, shared_from_this() }, collider);
 				else
 				{
 					if (m_components.any_of<RelationshipComponent>(entity))
@@ -169,7 +133,7 @@ namespace Helios {
 			{
 				auto& collider = m_components.get<CircleCollider2D>(entity);
 
-				if (collider.body == nullptr) collider.body = Physics2D::CreateCircle(Entity{ entity, this }, collider);
+				if (collider.body == nullptr) collider.body = Physics2D::CreateCircle(Entity{ entity, shared_from_this() }, collider);
 				else
 				{
 					if (m_components.any_of<RelationshipComponent>(entity))
@@ -244,9 +208,9 @@ namespace Helios {
 		//HL_PROFILE_END();
 	}
 
-	void Scene::RenderScene(TransformComponent world_camera, Matrix4x4 projection)
+	void Scene::RenderScene(Ref<Framebuffer>& colorBuffer, TransformComponent world_camera, Matrix4x4 projection)
 	{
-		m_worldTransformCache.clear();
+		Transform::m_worldTransformCache.clear();
 		auto directional_light_view = m_components.view<TransformComponent, DirectionalLightComponent>(entt::exclude<DisabledObjectComponent>);
 
 		
@@ -260,13 +224,13 @@ namespace Helios {
 
 			retry:
 				try {
-					Renderer2D::DrawSprite((uint32_t)entity, Transform(entity, this).GetWorldTransformCache().GetModelMatrix(), spriteRenderer);
+					Renderer2D::DrawSprite((uint32_t)entity, Transform(entity, shared_from_this()).GetWorldTransformCache().GetModelMatrix(), spriteRenderer);
 				}
 				catch (HeliosException ex) {
-					switch (ex.what())
+					switch (Helios::ShowMessage("Error", ex.what(), Message::Flags::AbortRetryIgnore))
 					{
-					case IDRETRY: goto retry;
-					case IDABORT: Application::GetInstance().Quit(); break;
+					case Message::Result::Retry: goto retry;
+					case Message::Result::Abort: Application::GetInstance().Quit(); break;
 					}
 				}
 			}
@@ -275,7 +239,7 @@ namespace Helios {
 		HL_PROFILE_END();
 
 		HL_PROFILE_BEGIN("Scene - Renderer3D");
-		Renderer::BeginScene(projection, { 1.0f, 1.0f, 1.0f, 0.2f }, directional_light_view);
+		Renderer::BeginScene(colorBuffer, projection, world_camera.Position, {1.0f, 1.0f, 1.0f, 0.2f}, directional_light_view);
 		HL_PROFILE_BEGIN("Scene - Renderer3D - Submit");
 		{
 			//auto view = m_components.view<TransformComponent, RelationshipComponent, MeshRendererComponent>(entt::exclude<DisabledObjectComponent>);
@@ -300,10 +264,10 @@ namespace Helios {
 
 			m_components.group<TransformComponent, RelationshipComponent, MeshRendererComponent>(entt::exclude<DisabledObjectComponent>).each([&](auto entity, TransformComponent& transform, RelationshipComponent& relationship, MeshRendererComponent& meshRenderer)
 			{
-				TransformComponent transformComponent = Transform(entity, transform, relationship, this).GetWorldTransformCache();
+				TransformComponent transformComponent = Transform(entity, transform, relationship, shared_from_this()).GetWorldTransformCache();
 				float dot = Vector3::Dot(world_camera.Forward(), transformComponent.Position - world_camera.Position);
 				
-				if (dot < 0.0f) return;
+				//if (dot < 0.0f) return;
 
 				//static Matrix4x4 modelMatrix = Matrix4x4::Identity();
 				//Renderer::SubmitMesh((uint64_t)entity, 0, modelMatrix, meshRenderer);
@@ -329,50 +293,15 @@ namespace Helios {
 	}
 #endif
 
-	Entity Scene::InstantiateObject()
-	{
-		return InstantiateObject("Entity (" + std::to_string(m_components.size() + 1) + ")");
-	}
-
-	Entity Scene::InstantiateObject(Vector3 position)
-	{
-		return InstantiateObject("Entity (" + std::to_string(m_components.size() + 1) + ")", position);
-	}
-
-	Entity Scene::InstantiateObject(entt::entity parent)
-	{
-		return InstantiateObject("Entity (" + std::to_string(m_components.size() + 1) + ")", parent);
-	}
-
-	Entity Scene::InstantiateObject(std::string name, Vector3 position)
-	{
-		Entity obj(m_components.create(), this);
-		obj.AddScopedComponent<InfoComponent>(name);
-		obj.AddScopedComponent<TransformComponent>(position);
-		obj.AddScopedComponent<RelationshipComponent>();
-		m_UUIDMap[obj.AddScopedComponent<UUIDComponent>().uuid] = obj;
-		return obj;
-	}
-
-	Entity Scene::InstantiateObject(std::string name, entt::entity& parent)
-	{
-		Entity obj(m_components.create(), this);
-		obj.AddScopedComponent<InfoComponent>(name);
-		obj.AddScopedComponent<TransformComponent>();
-		obj.AddScopedComponent<RelationshipComponent>(m_components, obj, parent);
-		m_UUIDMap[obj.AddScopedComponent<UUIDComponent>().uuid] = obj;
-		return obj;
-	}
-
 	Entity& Scene::CreateMainCamera(Vector3 position) {
-		Entity gameObject = InstantiateObject("MainCamera", position);
+		Entity gameObject = CreateEntity("MainCamera", position);
 		gameObject.AddScopedComponent<CameraComponent>().isPrimary = true;
 		return gameObject;
 	}
 
 	Entity& Scene::CreateCamera(Vector3 position)
 	{
-		Entity gameObject = InstantiateObject("MainCamera", position);
+		Entity gameObject = CreateEntity("MainCamera", position);
 		gameObject.AddScopedComponent<CameraComponent>();
 		return gameObject;
 	}
@@ -395,7 +324,7 @@ namespace Helios {
 	{
 		if (in["Name"])
 		{
-			auto gm = scene.lock()->InstantiateObject(in["Name"].as<std::string>().c_str());
+			auto gm = scene.lock()->CreateEntity(in["Name"].as<std::string>().c_str());
 			if (in["Transform"].IsMap())
 			{
 				auto transform = gm.GetComponent<Transform2DComponent>();

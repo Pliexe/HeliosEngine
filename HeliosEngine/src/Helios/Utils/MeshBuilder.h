@@ -34,8 +34,12 @@ namespace Helios
 		void CreateQuadFace(MeshVertex v0, MeshVertex v1, MeshVertex v2, MeshVertex v3);
 		void CreateTriangleFace(MeshVertex v0, MeshVertex v1, MeshVertex v2);
 
-		std::vector<MeshVertex> GetVertices() const;
-		std::vector<Triangle> GetTriangles() const;
+		std::vector<MeshVertex>& GetVertices();
+		std::vector<Triangle>& GetTriangles();
+
+		static Vector3 CalculateNormal(const MeshVertex& v0, const MeshVertex& v1, const MeshVertex& v2);
+
+		static MeshVertex CalculateVertexNormal(std::vector<MeshVertex> m_Vertices, std::vector<Triangle> m_Triangles, const uint32_t index0);
 
 		friend class Mesh;
 	};

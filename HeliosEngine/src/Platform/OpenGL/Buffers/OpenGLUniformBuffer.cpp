@@ -1,5 +1,7 @@
 #include "OpenGLUniformBuffer.h"
 
+#include <glad/glad.h>
+
 namespace Helios
 {
 	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t binding_slot, uint32_t size) : m_RendererID(0), m_BindingSlot(binding_slot), m_Size(size)

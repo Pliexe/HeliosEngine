@@ -55,7 +55,7 @@ namespace Helios
 		{
 			if (s_ProfileEnabled)
 			{
-				s_tmpFrame = CpuFrameProfile (Time::currentTimeMicroseconds(), 0u, s_CpuProfileTasks.size());
+				s_tmpFrame = CpuFrameProfile (Time::CurrentTimeMicroseconds(), 0u, s_CpuProfileTasks.size());
 			}
 		}
 
@@ -63,7 +63,7 @@ namespace Helios
 		{
 			if (s_ProfileEnabled)
 			{
-				s_tmpFrame.frameTime = Time::currentTimeMicroseconds() - s_tmpFrame.startTime;
+				s_tmpFrame.frameTime = Time::CurrentTimeMicroseconds() - s_tmpFrame.startTime;
 				s_CpuProfileFrames.emplace_back(s_tmpFrame);
 			}
 			if (s_toggleQueue)
@@ -79,7 +79,7 @@ namespace Helios
 				s_profileQueue.emplace_back(s_CpuProfileTasks.size());
 				s_CpuProfileTasks.emplace_back(
 					name, threadName,
-					Time::currentTimeMicroseconds(), 0, s_profileQueue.size()-1
+					Time::CurrentTimeMicroseconds(), 0, s_profileQueue.size()-1
 				);
 			}
 		}
@@ -91,7 +91,7 @@ namespace Helios
 				s_profileQueue.emplace_back(s_CpuProfileTasks.size());
 				s_CpuProfileTasks.emplace_back(
 					name, threadName,
-					Time::currentTimeMicroseconds(), 0, s_profileQueue.size()-1
+					Time::CurrentTimeMicroseconds(), 0, s_profileQueue.size()-1
 				);
 			}
 		}
@@ -100,7 +100,7 @@ namespace Helios
 		{
 			if (s_ProfileEnabled)
 			{
-				s_CpuProfileTasks[s_profileQueue.back()].EndTime = Time::currentTimeMicroseconds();
+				s_CpuProfileTasks[s_profileQueue.back()].EndTime = Time::CurrentTimeMicroseconds();
 				s_profileQueue.pop_back();
 			}
 		}

@@ -28,8 +28,8 @@ namespace Helios
         };
     protected:
 		Format m_Format;
-		uint32_t m_Width;
-		uint32_t m_Height;		
+		uint32_t m_Width = 50u;
+		uint32_t m_Height = 50u;		
     public:
 		
         Framebuffer() = default;
@@ -42,6 +42,12 @@ namespace Helios
 
         virtual void Bind() = 0;
         virtual void Unbind() = 0;
+
+        virtual void Bind(uint32_t attachment, uint32_t slot) = 0;
+        virtual void Unbind(uint32_t attachment, uint32_t slot) = 0;
+
+        virtual void BindDepth(uint32_t slot) = 0;
+        virtual void UnbindDepth(uint32_t slot) = 0;
 
         virtual void Resize(uint32_t width, uint32_t height) = 0;
         virtual Size GetSize() const = 0;

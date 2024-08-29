@@ -9,11 +9,15 @@
 #endif
 
 #ifdef HELIOS_PLATFORM_WINDOWS
-#ifdef HELIOS_BUILD_DLL
-#define HELIOS_API __declspec(dllexport)
-#else
-#define HELIOS_API __declspec(dllimport)
-#endif
+	#ifdef HELIOS_BUILD_DLL
+		#ifdef HELIOS_EXPORT_DLL
+		#define HELIOS_API __declspec(dllexport)
+		#else
+		#define HELIOS_API __declspec(dllimport)
+		#endif
+	#else
+	#define HELIOS_API
+	#endif
 #else
 #define HELIOS_API
 #endif

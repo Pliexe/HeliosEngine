@@ -154,11 +154,11 @@ namespace Helios
 			Rigidbody2D& rbref = entity.GetComponent<Rigidbody2D>();
 
 			if (rbref.useGravity)
-				rbref.velocity.y -= 9.8f * Time::deltaTime();
+				rbref.velocity.y -= 9.8f * Time::DeltaTime();
 
 			Transform transform = entity;
 
-			transform.SetLocalPosition(transform.GetLocalPosition() + rbref.velocity * Time::deltaTime());
+			transform.SetLocalPosition(transform.GetLocalPosition() + rbref.velocity * Time::DeltaTime());
 
 			for (auto& [static_transform, static_collider] : m_StaticCircleColliders)
 			{
@@ -182,7 +182,7 @@ namespace Helios
 
 					//rbref.velocity = Vector2::Zero();
 					transform.SetLocalPosition(transform.GetLocalPosition() - (overlap * normal));
-					transform.SetLocalPosition(transform.GetLocalPosition() -  rbref.velocity * Time::deltaTime());
+					transform.SetLocalPosition(transform.GetLocalPosition() -  rbref.velocity * Time::DeltaTime());
 				}
 			}
 			for (auto& [static_transform, static_collider] : m_StaticBoxColliders)
@@ -190,7 +190,7 @@ namespace Helios
 				if (CheckCollision(transform.GetLocalPosition(), collider, static_transform, static_collider))
 				{
 					rbref.velocity = Vector2::Zero();
-					transform.SetLocalPosition(transform.GetLocalPosition() - rbref.velocity * Time::deltaTime());
+					transform.SetLocalPosition(transform.GetLocalPosition() - rbref.velocity * Time::DeltaTime());
 				}
 			}
 		}
@@ -198,16 +198,16 @@ namespace Helios
 		for (auto& [entity, transform_component, rigidbody, collider] : m_BoxColliders)
 		{
 			if (rigidbody.useGravity)
-			rigidbody.velocity.y -= 9.8f * Time::deltaTime();
+			rigidbody.velocity.y -= 9.8f * Time::DeltaTime();
 
 			Transform transform = entity;
-			transform.SetLocalPosition(transform_component.Position + rigidbody.velocity * Time::deltaTime());
+			transform.SetLocalPosition(transform_component.Position + rigidbody.velocity * Time::DeltaTime());
 			for (auto& [static_transform, static_collider] : m_StaticCircleColliders)
 			{
 				if (CheckCollision(static_transform, static_collider, transform_component, collider))
 				{
 					rigidbody.velocity = Vector2::Zero();
-					transform.SetLocalPosition(transform_component.Position - rigidbody.velocity * Time::deltaTime());
+					transform.SetLocalPosition(transform_component.Position - rigidbody.velocity * Time::DeltaTime());
 				}
 			}
 			for (auto& [static_transform, static_collider] : m_StaticBoxColliders)
@@ -215,7 +215,7 @@ namespace Helios
 				if (CheckCollision(transform_component, collider, static_transform, static_collider))
 				{
 					rigidbody.velocity = Vector2::Zero();
-					transform.SetLocalPosition(transform_component.Position - rigidbody.velocity * Time::deltaTime());
+					transform.SetLocalPosition(transform_component.Position - rigidbody.velocity * Time::DeltaTime());
 				}
 			}
 		}

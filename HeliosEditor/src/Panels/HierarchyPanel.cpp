@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <entt.hpp>
 #include <Helios/Scene/SceneRegistry.h>
+#include <Helios/Scene/Scene.h>
 #include <Helios/Resources/ResourceRegistry.h>
 #include <Helios/Resources/MeshGenerator.h>
 
@@ -13,82 +14,82 @@
 namespace Helios {
 
 	void Popup(Entity entity) {
-		Scene* scene = entity.GetScene();
-		if (scene == nullptr) return;
+		Ref<Scene> container = std::dynamic_pointer_cast<Scene>(entity.GetContainer().lock());
+		if (container == nullptr) return;
 
 		if (ImGui::MenuItem("Create Empty")) {
 			if (entity.IsNotNull())
-				InspectorPanel::GetInstance() << scene->InstantiateObject(entity.GetHandle());
+				InspectorPanel::GetInstance() << container->CreateEntity(entity.GetHandle());
 			else
-				InspectorPanel::GetInstance() << scene->InstantiateObject();
+				InspectorPanel::GetInstance() << container->CreateEntity();
 		}
 
 		if (ImGui::MenuItem("Create PrimaryCamera")) {
 			
-			scene->CreateMainCamera({});
+			container->CreateMainCamera({});
 		}
 
 		if (ImGui::MenuItem("Create Camera")) {
-			scene->CreateCamera({});
+			container->CreateCamera({});
 		}
 
 		if (ImGui::BeginMenu("3D Objects"))
 		{
 			if (ImGui::MenuItem("Cube")) {
-				auto obj = scene->InstantiateObject("Cube");
+				auto obj = container->CreateEntity("Cube");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Cube);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if(ImGui::MenuItem("Arrow"))
 			{
 				MeshBuilder arrowBuilder = Mesh::CreateGizmosArrow();
 
-				auto obj = scene->InstantiateObject("Arrow");
+				auto obj = container->CreateEntity("Arrow");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::Create("Arrow", UUID::fromString("5d2e9c2c-0d5e-4b7e-9b3e-9e4d2e9c2c5d"), std::move(arrowBuilder));
-				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if(ImGui::MenuItem("Plane"))
 			{
-				auto obj = scene->InstantiateObject("Plane");
+				auto obj = container->CreateEntity("Plane");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Plane);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if (ImGui::MenuItem("Cylinder"))
 			{
-				auto obj = scene->InstantiateObject("Cylinder");
+				auto obj = container->CreateEntity("Cylinder");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Cylinder);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if (ImGui::MenuItem("Cone"))
 			{
-				auto obj = scene->InstantiateObject("Cone");
+				auto obj = container->CreateEntity("Cone");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Cone);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if (ImGui::MenuItem("Sphere"))
 			{
-				auto obj = scene->InstantiateObject("Sphere");
+				auto obj = container->CreateEntity("Sphere");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Sphere);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if (ImGui::MenuItem("Torus"))
 			{
-				auto obj = scene->InstantiateObject("Torus");
+				auto obj = container->CreateEntity("Torus");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Torus);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagPoint, Material::Type::Warp);
+				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			ImGui::EndMenu();
@@ -98,7 +99,7 @@ namespace Helios {
 		{
 			if (ImGui::MenuItem("Directional Light"))
 			{
-				auto obj = scene->InstantiateObject("Directional Light");
+				auto obj = container->CreateEntity("Directional Light");
 				obj.AddScopedComponent<DirectionalLightComponent>(Color::White, 1.0f);
 				InspectorPanel::GetInstance() << obj;
 			}
@@ -106,7 +107,7 @@ namespace Helios {
 		}
 
 		if (ImGui::MenuItem("Create Object With Sprite")) {
-			auto obj = scene->InstantiateObject("Sprite");
+			auto obj = container->CreateEntity("Sprite");
 			obj.AddScopedComponent<SpriteRendererComponent>();
 			InspectorPanel::GetInstance() << obj;
 		}
@@ -204,7 +205,7 @@ namespace Helios {
 		if (opened) {
 			while (child != entt::null)
 			{
-				Entity tmp_entity = { child, object.GetScene() };
+				Entity tmp_entity = { child, object.GetContainer() };
 				DrawObject(tmp_entity);
 				child = tmp_entity.GetComponent<RelationshipComponent>().next_sibling;
 			}
@@ -274,7 +275,7 @@ namespace Helios {
 						//entity.GetScene()->DuplicateEntity(entity);
 						for (int i = 0; i < 150000; i++)
 						{
-							entity.GetScene()->DuplicateEntity(entity);
+							entity.GetContainer().lock()->CloneEntity(entity);
 						}
 					}
 				}
@@ -290,7 +291,7 @@ namespace Helios {
 						//entity.GetScene()->DuplicateEntity(entity);
 						for (int i = 0; i < 150; i++)
 						{
-							entity.GetScene()->DuplicateEntity(entity);
+							entity.GetContainer().lock()->CloneEntity(entity);
 						}
 					}
 				}

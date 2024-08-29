@@ -5,23 +5,71 @@
 
 #ifdef HELIOS_PLATFORM_WINDOWS
 
-#include "Win32Window.h"
 #include "Helios/Core/GraphicalWindow.h"
 #include "Helios/Graphics/Graphics.h"
 #include "Helios/Graphics/GraphicsContext.h"
 #include "Platform/Direct3D11/Direct3D11Context.h"
 #include "Platform/OpenGL/OpenGLContext.h"
+#include "Platform/Vulkan/VkContext.h"
+
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_vulkan.h>
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
 #include "Helios/Events/Events.h"
+#include "imgui.h"
+
+#include <imgui_impl_dx11.h>
+#include <imgui_impl_win32.h>
 
 namespace Helios
 {
     class HELIOS_API Win32GraphicalWindow : public GraphicalWindow
     {
     public:
+
+		Message::Result ShowMessage(const std::string& title, const std::string& message, Message::Flags type = Message::Flags::Ok | Message::Flags::IconInformation) const override
+		{
+			UINT uType = NULL;
+
+			if (type & Message::Flags::Ok)
+				uType |= MB_OK;
+			if (type & Message::Flags::OkCancel)
+				uType |= MB_OKCANCEL;
+			if (type & Message::Flags::AbortRetryIgnore)
+				uType |= MB_ABORTRETRYIGNORE;
+			if (type & Message::Flags::YesNoCancel)
+				uType |= MB_YESNOCANCEL;
+			if (type & Message::Flags::YesNo)
+				uType |= MB_YESNO;
+
+			if (type & Message::Flags::IconInformation)
+				uType |= MB_ICONINFORMATION;
+			if (type & Message::Flags::IconWarning)
+				uType |= MB_ICONWARNING;
+			if (type & Message::Flags::IconError)
+				uType |= MB_ICONERROR;
+			if (type & Message::Flags::IconQuestion)
+				uType |= MB_ICONQUESTION;
+
+			HRESULT hr = ::MessageBoxW(glfwGetWin32Window(m_Window), conversions::from_utf8_to_utf16(message).c_str(), conversions::from_utf8_to_utf16(title).c_str(), uType);
+
+			switch(hr)
+			{
+				case IDOK: return Message::Result::Ok;
+				case IDCANCEL: return Message::Result::Cancel;
+				case IDABORT: return Message::Result::Abort;
+				case IDRETRY: return Message::Result::Retry;
+				case IDIGNORE: return Message::Result::Ignore;
+				case IDYES: return Message::Result::Yes;
+				case IDNO: return Message::Result::No;
+				default: return Message::Result::None;
+			}
+		}
+
 	    void Show() override
 	    {
 			glfwShowWindow(m_Window);
@@ -32,6 +80,11 @@ namespace Helios
 		    return glfwGetWindowAttrib(m_Window, GLFW_FOCUSED);
 	    }
 
+		std::string GetTitle() const override
+		{
+			return m_Title;
+		}
+
 		void Update() override
 		{
 			m_Context->SwapBuffers();
@@ -40,6 +93,7 @@ namespace Helios
 
 	    bool Create(Specifications specs) override
 	    {
+			m_Title = specs.title;
 			// Init GLFW if this is the first window
 		    if (s_WindowCount == 0)
 		    {
@@ -83,8 +137,8 @@ namespace Helios
 
 			m_Width = specs.width;
 			m_Height = specs.height;
-			m_Window = glfwCreateWindow(specs.width, specs.height, specs.title.c_str(), nullptr, nullptr);
-
+			m_Window = glfwCreateWindow(specs.width, specs.height, specs.title.c_str(), nullptr, s_MainWindow != this ? static_cast<Win32GraphicalWindow*>(s_MainWindow)->m_Window : nullptr);
+			
 			if (!m_Window)
 			{
 				if (s_WindowCount == 0)
@@ -109,6 +163,9 @@ namespace Helios
 					break;
 				case Graphics::API::Direct3D11:
 					m_Context = CreateScope<Direct3D11Context>(glfwGetWin32Window(m_Window));
+					break;
+					case Graphics::API::Vulkan:
+				m_Context = CreateScope<VkContext>();
 					break;
 				default:
 					HL_ASSERT(false, "Unsupported Graphics API!");
@@ -176,6 +233,9 @@ namespace Helios
 				case Graphics::API::OpenGL:
 					ImGui_ImplOpenGL3_NewFrame();
 					break;
+				case Graphics::API::Vulkan:
+					ImGui_ImplVulkan_NewFrame();
+					break;
 				}
 				ImGui_ImplGlfw_NewFrame();
 				ImGui::NewFrame();
@@ -195,12 +255,16 @@ namespace Helios
 				case Graphics::API::Direct3D11:
 					{
 					auto ctx = static_cast<Direct3D11Context&>(GetContext());
-					ctx.GetContext()->OMSetRenderTargets(1, ctx.GetRenderTargetView().GetAddressOf(), nullptr);
+					ctx.GetFramebuffer()->Bind();
+					//ctx.GetContext()->OMSetRenderTargets(1, ctx.GetRenderTargetView().GetAddressOf(), nullptr);
 					ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 					break;
 					}
 				case Graphics::API::OpenGL:
 					ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+					break;
+				case Graphics::API::Vulkan:
+					// ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), GetContext()->GetCommandBuffer());
 					break;
 				}
 
@@ -236,7 +300,6 @@ namespace Helios
 			// Setup Dear ImGui style
 			ImGui::StyleColorsDark();
 
-
 			// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 			ImGuiStyle& style = ImGui::GetStyle();
 			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -266,6 +329,11 @@ namespace Helios
 				ImGui_ImplOpenGL3_Init("#version 410");
 				break;
 			}
+			case Graphics::API::Vulkan:
+			{
+				ImGui_ImplGlfw_InitForVulkan(m_Window, true);
+				break;
+			}
 			}
 
 			useimgui = true;
@@ -277,6 +345,7 @@ namespace Helios
 	    }
 
 	    void SetVSync(bool enabled) override;
+		bool VSyncEnabled() const override;
 		void SetTitle(const std::string& title) override;
 	    uint32_t GetWidth() const override { return m_Width; }
 	    uint32_t GetHeight() const override { return m_Height; }

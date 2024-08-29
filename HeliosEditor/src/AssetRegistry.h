@@ -6,10 +6,14 @@
 #include <filesystem>
 
 #include "Helios/Core/Asserts.h"
+#include "Helios/Core/Exceptions.h"
+#include "Helios/Core/Application.h"
 
 #include "ProjectManager.h"
 #include "Helios/Resources/Texture.h"
 #include "imgui.h"
+#include <Helios/Resources/ResourceResolver.h>
+#include <Helios/Resources/ResourceRegistry.h>
 
 namespace Helios
 {
@@ -26,14 +30,31 @@ namespace Helios
 			{
 				if (std::filesystem::exists(file))
 				{
-					if (s_Textures.find(file.string()) == s_Textures.end())
+					if (!ResourceResolver::IsPathRegistered(file))
 					{
 						try {
-							s_Textures[file.string()] = Texture2D::Create(file.string());
+							ResourceRegistry::GetResource<Texture2D>(ResourceResolver::RegisterResource(file, LoadFullResource | LoadMetadataFile));
 						}
 						catch (HeliosException ex)
 						{
-							ex.what(false);
+							Helios::ShowMessage("Error", ex.what(), Message::IconError);
+						}
+					}
+				}
+			}
+			else if (ext == ".obj")
+			{
+				if (std::filesystem::exists(file))
+				{
+					if (!ResourceResolver::IsPathRegistered(file))
+					{
+						try {
+							//ResourceRegistry::GetResource<Mesh>();
+							ResourceResolver::RegisterResource(file, LoadFullResource | LoadMetadataFile | LoadAsOneMesh);
+						}
+						catch (HeliosException ex)
+						{
+							Helios::ShowMessage("Error", ex.what(), Message::IconError);
 						}
 					}
 				}
@@ -69,14 +90,14 @@ namespace Helios
 		static void Init()
 		{
 			s_CheckForChanges = true;
-			/*std::thread([]() {
+			std::thread([]() {
 				while (AssetRegistry::CheckForChangesEnabled())
 				{
 					CheckValidity();
 					Rescan();
 					std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 				}
-			}).detach();*/
+			}).detach();
 		}
 
 		static void OpenTextureSelect(std::function<void(Ref<Texture2D>)> onSelected)
@@ -97,12 +118,13 @@ namespace Helios
 
 				ImGui::BeginChild("items");
 
-				for (auto& [path, tex] : s_Textures)
+				for (auto& [uuid, tex] : ResourceRegistry::GetResources<Texture2D>())
 				{
 					if (ImGui::ImageButton(tex->GetTextureID(), ImVec2(50, 50)))
 					{
 						s_onTextureSelected(tex);
 						ImGui::CloseCurrentPopup();
+						break;
 					}
 				}
 
@@ -160,7 +182,9 @@ namespace Helios
 
 				ImGui::BeginChild("items");
 
-				for (auto& [path, tex] : s_Textures)
+				auto test = ResourceRegistry::GetResources<Texture2D>();
+
+				for (auto& [uuid, tex] : ResourceRegistry::GetResources<Texture2D>())
 				{
 					ImGui::Image(tex->GetTextureID(), ImVec2(50, 50));
 				}

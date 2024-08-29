@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "Helios/Core/UUID.h"
 #include "Helios/Resources/Color.h"
+#include "Helios/Resources/Texture.h"
 
 namespace Helios
 {
@@ -28,14 +29,23 @@ namespace Helios
 
 	struct HELIOS_API CameraComponent
 	{
+		enum class BackgroundMode
+		{
+			None,
+			SolidColor,
+			Skybox,
+		};
+
 		float near_z = 0.5f;
 		float far_z = 1000.0f;
 		float size = 1.0f;
 		float fov = 60.0f;
-		Color clear_color = Color::Black;
 		bool ortographic = false;
 		bool isPrimary = false;
 
+		BackgroundMode background_mode = BackgroundMode::SolidColor;
+		Color clear_color = Color::Black;
+		Ref<Texture2D> skybox_texture;
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;

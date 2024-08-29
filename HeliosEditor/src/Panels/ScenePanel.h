@@ -31,6 +31,7 @@ namespace Helios
 		EditorCamera m_EditorCamera;
 		EditorCamera m_EditorCameraSwap;
 		bool showIdFrame = false;
+		bool showDepth = false;
 		bool show_vertecies = false;
 		bool m_isVisible  = true;
 

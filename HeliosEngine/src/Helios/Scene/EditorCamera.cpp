@@ -100,29 +100,29 @@ namespace Helios
 
 	void EditorCamera::HandleMovement(Vector2 direction)
     {
-		m_TransformComponent.Rotation = Quaternion::FromEuler(m_TransformComponent.Rotation.euler() + direction * Time::deltaTime() * m_Sensitivity);
+		m_TransformComponent.Rotation = Quaternion::FromEuler(m_TransformComponent.Rotation.euler() + direction * Time::DeltaTime() * m_Sensitivity);
 
 		float speed = (InputManager::IsKeyPressed(HL_KEY_SHIFT) ? m_SpeedMultiplier : 1.0f) * m_Speed;
 
 		Vector3 movement;
 
 		if (InputManager::IsKeyDown(HL_KEY_W))
-			movement += m_TransformComponent.Forward() * Time::deltaTime() * speed;
+			movement += m_TransformComponent.Forward() * Time::DeltaTime() * speed;
 
 		if (InputManager::IsKeyDown(HL_KEY_S))
-			movement -= m_TransformComponent.Forward() * Time::deltaTime() * speed;
+			movement -= m_TransformComponent.Forward() * Time::DeltaTime() * speed;
 
 		if (InputManager::IsKeyDown(HL_KEY_D))
-			movement += m_TransformComponent.Right() * Time::deltaTime() * speed;
+			movement += m_TransformComponent.Right() * Time::DeltaTime() * speed;
 
 		if (InputManager::IsKeyDown(HL_KEY_A))
-			movement -= m_TransformComponent.Right() * Time::deltaTime() * speed;
+			movement -= m_TransformComponent.Right() * Time::DeltaTime() * speed;
 
 		if (InputManager::IsKeyDown(HL_KEY_E))
-			movement += m_TransformComponent.Up() * Time::deltaTime() * speed;
+			movement += m_TransformComponent.Up() * Time::DeltaTime() * speed;
 
 		if (InputManager::IsKeyDown(HL_KEY_Q))
-			movement -= m_TransformComponent.Up() * Time::deltaTime() * speed;
+			movement -= m_TransformComponent.Up() * Time::DeltaTime() * speed;
 
 		m_TransformComponent.Translate(movement);
     }

@@ -90,8 +90,8 @@ namespace Helios {
 
 		ShaderBuilder builder;
 		builder.SetName("SpriteShader");
-		builder.SetVertexShader("Shaders/SpriteVertexShader");
-		builder.SetPixelShader("Shaders/SpritePixelShader");
+		builder.SetVertexShader("CompiledShaders/SpriteVertexShader");
+		builder.SetPixelShader("CompiledShaders/SpritePixelShader");
 		builder.SetInputLayouts(quadInputLayout);
 
 		s_Data.quadShader = builder.Create();

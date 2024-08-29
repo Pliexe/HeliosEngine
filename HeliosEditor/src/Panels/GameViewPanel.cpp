@@ -8,10 +8,13 @@ namespace Helios
 	void GameViewPanel::OnUpdate()
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		if (ImGui::Begin("Game", 0, flags))
+		if (ImGui::Begin("Game", 0, flags | ImGuiWindowFlags_MenuBar))
 		{
+			static bool showDepthBuff = false;
 			if (ImGui::BeginMenuBar())
 			{
+				ImGui::Checkbox("Show Depth Buffer", &showDepthBuff);
+
 				ImGui::EndMenuBar();
 			}
 
@@ -22,7 +25,10 @@ namespace Helios
 				{
 					static_cast<HeliosEditor&>(HeliosEditor::GetInstance()).gameFrame->Resize(viewportSize.x, viewportSize.y);
 				}
-				ImGui::Image(static_cast<HeliosEditor&>(HeliosEditor::GetInstance()).gameFrame->GetTextureID(0u), ImVec2(viewportSize));
+				if (showDepthBuff)
+					ImGui::Image(static_cast<HeliosEditor&>(HeliosEditor::GetInstance()).gameFrame->GetDepthTextureID(), ImVec2(viewportSize));
+				else
+					ImGui::Image(static_cast<HeliosEditor&>(HeliosEditor::GetInstance()).gameFrame->GetTextureID(0u), ImVec2(viewportSize));
 			}
 
 			static_cast<HeliosEditor&>(HeliosEditor::GetInstance()).isGameSceneActive = true;

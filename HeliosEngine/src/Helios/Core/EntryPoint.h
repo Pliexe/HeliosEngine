@@ -7,11 +7,10 @@
 #include "Application.h"
 
 extern Helios::Application* Helios::CreateApplication(int argc, char** argv);
-#ifdef HELIOS_EDITOR
-//extern int ValidateInit();
-#endif // HELIOS_EDITOR
 
 #include "Asserts.h"
+
+#include "Helios/Utils/ShowMessage.h"
 
 #include "Helios/Math/Matrix.h"
 #include "Helios/Math/Vector.h"
@@ -60,7 +59,8 @@ int main(int argc, char** argv)
 		app->Run();
 		delete app;
 	} catch(Helios::HeliosException e) {
-		e.what(false);
+		Helios::ShowMessage("An Critical Error Occured!", e.what(), Helios::Message::IconError | Helios::Message::Flags::Ok);
+		//Helios::Helios::ShowMessage("An Critical Error Occured!", e.what(), Helios::Message::IconError | Helios::Message::Flags::Ok);
 		return -1;
 	}
 

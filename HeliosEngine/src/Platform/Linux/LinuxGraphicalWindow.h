@@ -5,6 +5,10 @@
 #include "Platform/OpenGL/OpenGLContext.h"
 #include <Helios/Events/Events.h>
 
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_vulkan.h>
+
 //#ifdef HELIOS_PLATFORM_LINUX
 namespace Helios
 {
@@ -22,8 +26,15 @@ namespace Helios
             glfwPollEvents();
         }
 
+        std::string GetTitle() const override
+        {
+            return m_Title;
+        }
+
         bool Create(Specifications specs) override
         {
+            m_Title = specs.title;
+
             // Init GLFW if this is the first window
             if (s_WindowCount == 0)
             {
@@ -152,9 +163,6 @@ namespace Helios
                 ImGui::SetCurrentContext(m_ImGuiContext);
                 switch (Graphics::GetAPI())
                 {
-                case Graphics::API::Direct3D11:
-                    ImGui_ImplDX11_NewFrame();
-                    break;
                 case Graphics::API::OpenGL:
                     ImGui_ImplOpenGL3_NewFrame();
                     break;

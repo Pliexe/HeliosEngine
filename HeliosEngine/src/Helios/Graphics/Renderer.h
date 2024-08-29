@@ -7,12 +7,14 @@
 
 namespace Helios
 {
+	class Framebuffer;
 	class Renderer
 	{
 	public:
 		static bool Init();
 		static void Shutdown();
-		static void BeginScene(Matrix4x4 projection,
+		static void BeginScene(Ref<Framebuffer>& colorBuffer, 
+							   Matrix4x4 projection, Vector3 cam_pos,
 		                       Color ambient_light, entt::basic_view<entt::entity, entt::get_t<TransformComponent, DirectionalLightComponent>,
 		                       entt::
 		                       exclude_t<DisabledObjectComponent>> directional_light_view);

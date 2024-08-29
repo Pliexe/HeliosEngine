@@ -19,6 +19,8 @@ namespace Helios
 		Ref<Mesh> mesh;
 		Ref<Material> material;
 
+		bool castShadow = true;
+
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const MeshRendererComponent&) = default;
 		MeshRendererComponent(const Ref<Mesh>& mesh) : mesh(mesh) { }

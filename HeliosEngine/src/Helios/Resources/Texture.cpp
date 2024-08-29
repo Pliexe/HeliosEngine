@@ -10,8 +10,8 @@ namespace Helios
     {
         switch (Graphics::GetAPI())
         {
-        case Graphics::API::Direct3D11: return CreateRef<Direct3D11Texture2D>(path.string());
-        case Graphics::API::OpenGL: return CreateRef<OpenGLTexture2D>(path.string());
+        case Graphics::API::Direct3D11: return CreateRef<Direct3D11Texture2D>(path);
+        case Graphics::API::OpenGL: return CreateRef<OpenGLTexture2D>(path);
         }
 
         HL_ASSERT(false, "Unknown DepricatedGraphics API!");
