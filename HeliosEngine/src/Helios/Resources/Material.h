@@ -1,39 +1,37 @@
 #pragma once
 
+#include "Color.h"
 #include "Helios/Core/Base.h"
 #include "Helios/Core/Logger.h"
-#include "Color.h"
+#include "Helios/Graphics/Sampler.h"
 #include "Texture.h"
+
 
 namespace Helios
 {
-	class HELIOS_API Material
-	{
-	public:
+class HELIOS_API MaterialInstance
+{
+  public:
+    Color AlbedoColor;
+    Ref<Texture> texture;
+    SamplerConfiguration sampler;
 
-		Color Color;
-		Ref<Texture> texture;
+  public:
+    enum class Type
+    {
+        Warp,
+        Mirror,
+        Clamp,
+        Border,
+        MirrorOnce
+    };
 
-	public:
+    enum class Filter
+    {
+        MinMagMipPoint,
+        ComparisonMinMagMipLinear,
+    };
 
-		enum class Type
-		{
-			Warp,
-			Mirror,
-			Clamp,
-			Border,
-			MirrorOnce
-		};
-
-		enum class Filter
-		{
-			MinMagMipPoint,
-			ComparisonMinMagMipLinear,
-		};
-
-		virtual void Bind(uint32_t slot) = 0;
-		virtual void Unbind() = 0;
-
-		static Ref<Material> Create(Filter filter, Type type);
-	};
-}
+    static Ref<MaterialInstance> Create(Filter filter, Type type);
+};
+} // namespace Helios

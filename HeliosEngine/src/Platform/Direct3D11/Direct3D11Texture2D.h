@@ -1,3 +1,7 @@
+#pragma once
+
+#ifdef HELIOS_PLATFORM_WINDOWS
+
 #include "Helios/Resources/Texture.h"
 #include "pch.h"
 
@@ -37,3 +41,5 @@ namespace Helios
         uint32_t m_lastBoundSlot = 0u;
     };
 }
+
+#endif

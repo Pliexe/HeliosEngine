@@ -1,14 +1,20 @@
+#include "Helios/Core/Exceptions.h"
+#include "Helios/Graphics/BindingLayout.h"
+#include "Helios/Graphics/CommandAllocator.h"
 #include "Application.h"
 
 #include "AssetManager.h"
+#include "Helios/Graphics/Graphics.h"
+#include "Helios/Resources/Shader.h"
 #include "Profiler.h"
 #include "Time.h"
-#include "Helios/Graphics/Renderer.h"
-#include "Helios/Graphics/Renderer2D.h"
-#include "Helios/Graphics/GizmosRenderer.h"
 #include "Helios/Input/InputManager.h"
 #include "Helios/Physics/Physics2D.h"
-#include "Helios/Resources/MeshGenerator.h"
+#include "Helios/Resources/ResourceRegistry.h"
+#include "Helios/Graphics/Sampler.h"
+#include "Helios/Resources/ShaderModule.h"
+
+#include "Helios/Graphics/GPURenderPass.h"
 
 namespace Helios
 {
@@ -19,20 +25,45 @@ namespace Helios
 		Initialize(specs);
 	}
 
-	void Application::Initialize(Specifications specs)
+    Application::~Application()
     {
-		Graphics::m_api = specs.graphicsAPI;
+		Sampler::Destroy();
+		
+		Scripting::ShutdownScriptManager();
+		SceneRegistry::Shutdown();
+		// Renderer2D::Shutdown();
+		// Renderer::Shutdown();
+		// GizmosRenderer::Shutdown();
+		ResourceRegistry::Shutdown();
+
+		m_Window.reset();
+		Graphics::Shutdown();
+		m_Instance = nullptr;
+
+		std::cout << "Application Shutdown!" << std::endl;
+    }
+
+    void Application::Initialize(Specifications specs)
+    {
+		// Make sure locale is UTF-8 (call once per program, ideally)
+		std::setlocale(LC_ALL, "");
+
+		HL_EXCEPTION(!Graphics::Initialize(specs.graphicsAPI), "Failted to intialize graphics!");
 		
 		m_Window = std::move(GraphicalWindow::CreateScoped());
+
 		std::function<void(Event&)> callback = std::bind(&Application::OnEvent, this, std::placeholders::_1);
 		m_Window->SetEventCallback(callback);
-		m_Window->Create({ specs.title, specs.width, specs.height, WindowStyles::Decorated | WindowStyles::Resizable });
-		//m_Window->SetVSync(true);
-		if (!Renderer2D::Init()) HL_EXCEPTION(true, "Failed to initialize Renderer2D")
-		if (!Renderer::Init()) HL_EXCEPTION (true, "Failed to initialize Renderer")
+		m_Window->Create({ specs.title, specs.width, specs.height, specs.style });
+		m_Window->SetVSync(false);
+		
+// 		if (!Renderer2D::Init()) HL_EXCEPTION(true, "Failed to initialize Renderer2D")
+// 		if (!Renderer::Init()) HL_EXCEPTION (true, "Failed to initialize Renderer")
+
+
 #ifdef HELIOS_EDITOR
-		MeshGenerator::InitalizeMeshTypeMapping();
-		if (!GizmosRenderer::Init()) HL_EXCEPTION(true, "Failed to initialize GizmosRenderer")
+		MeshGenerator::InitializeMeshTypeMapping();
+		// if (!GizmosRenderer::Init()) HL_EXCEPTION(true, "Failed to initialize GizmosRenderer")
 #endif
 
 		std::ios::sync_with_stdio(false);
@@ -85,32 +116,38 @@ namespace Helios
 	}
 
 	void Application::Run()
-	{
+	{		
 		std::thread m_PhysicsThread = std::thread(RunPhysics, &m_Running);
 
 		Time::internal_init(); // Reset time before first frame to avoid huge delta time
 
 		try {
+			uint64 frame = 0;
 			while (m_Running)
 			{
+				std::printf("Frame %lu\n", frame++);
+				GraphicalWindow::PollEvents();
+				
 				HL_PROFILE_FRAME_BEGIN();
-				//std::cout << "Frame" << std::endl;
 
 				Time::internal_frame_update();
 
-				m_Window->BeginFrame();
+				Graphics::Begin();
+
+				auto& commandList = Graphics::GetMainCommandList();
 
 				OnUpdate();
 				s_PhysicsEnabled = true;
 				s_PhysicsCV.notify_one();
-				OnRender();
+				Graphics::GetMainRenderGraph()->Execute();
+				OnRender(commandList);
 
-				m_Window->EndFrame();
+				Graphics::End();
 
 				InputManager::s_MouseWheelDelta = 0.0f;
 
 				HL_PROFILE_BEGIN("Wait for physics thread");
-
+				
 				{
 					std::unique_lock<std::mutex> lock(s_PhysicsMutex);
 					s_PhysicsCV.wait(lock, [] { return s_PhysicsFinished; });
@@ -125,7 +162,18 @@ namespace Helios
 				HL_PROFILE_END();
 
 				HL_PROFILE_FRAME_END();
-				GraphicalWindow::PollEvents();
+
+				// const double targetFrameTime = 1.0 / 60.0; // 16.67 ms
+
+				// double deltaTime = Time::DeltaTime(); // seconds elapsed this frame
+
+				// double timeToSleep = targetFrameTime - deltaTime;
+
+				// if (timeToSleep > 0)
+				// {
+				// 	std::this_thread::sleep_for(std::chrono::duration<double>(timeToSleep));
+				// }
+
 			}
 		}
 		catch (Helios::HeliosException e) {
@@ -136,6 +184,8 @@ namespace Helios
 		s_PhysicsCV.notify_one();
 
 		m_PhysicsThread.join();
+
+		m_Window->GetContext().WaitAllSync();
 	}
 
 	void Application::OnEvent(Event& event)
@@ -153,7 +203,14 @@ namespace Helios
 
 	bool Application::OnWindowResize(WindowResizeEvent& event)
 	{
-		return false;
+#ifdef HELIOS_EDITOR
+		// m_Window->BeginFrame();
+		// OnUpdate();
+		// OnRender();
+		// m_Window->EndFrame();
+#endif
+		m_Window->GetContext().ResizeSwapchain({ event.GetWidth(), event.GetHeight() });
+		return true;
 	}
 
 	void Application::Quit() { m_Running = false; }

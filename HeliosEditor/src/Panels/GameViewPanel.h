@@ -8,8 +8,8 @@ namespace Helios
 	public:
 		GameViewPanel()
 		{
-			title = "Game View";
-			flags = ImGuiWindowFlags_MenuBar;
+			m_title = "Game View";
+			m_flags = ImGuiWindowFlags_MenuBar;
 			m_custom_begin = true;
 		}
 

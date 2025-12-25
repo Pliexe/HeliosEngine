@@ -42,7 +42,7 @@ namespace Helios
 		Vector3 GetWorldPosition(RelationshipComponent relationship, entt::registry& registry)
 		{
 			if (relationship.parent_handle != entt::null)
-				GetWorldTransform(relationship, registry).Position;
+				return GetWorldTransform(relationship, registry).Position;
 			else return Position;
 		}
 
@@ -189,8 +189,7 @@ namespace Helios
 
 
 		inline Vector3 Forward() { return Rotation.forward(); }
-		//Vector3 forward() { return rotation * Vector3::Forward(); }
-		inline Vector3 Right() { return Rotation * Vector3::Right(); }
+		inline Vector3 Right() { return Rotation.right(); }
 		inline Vector3 Up() { return Rotation.up(); }
 		void RotateAround(const Vector3& target, const Vector3& axis, float angle)
 		{

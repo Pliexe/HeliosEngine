@@ -1,14 +1,17 @@
+use std::sync::Mutex;
 
 use proc_macro::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use syn::{parse::Parser, parse_macro_input, Field, ItemStruct};
-// static HELIOS_API_FUNCTIONS: Mutex<Vec<String>> = Mutex::new(Vec::new());
+
+static HELIOS_API_FUNCTIONS: Mutex<Vec<String>> = Mutex::new(Vec::new());
+static HELIOS_API_STRUCTS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 
 // #[macro_use]
 // extern crate lazy_static;
 
 // lazy_static! {
-//     static ref HELIOS_API_FUNCTIONS: Mutex<Vec<String>> = Mutex::new(Vec::new());
+// static mut HELIOS_API_FUNCTIONS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 // }
 
 #[proc_macro_derive(EntityBehaviour)]
@@ -63,6 +66,7 @@ pub fn helios_api(args: TokenStream, item: TokenStream) -> proc_macro::TokenStre
             let name = &item_struct.ident;
             let c_fn_name = format_ident!("helios_struct_create_{}", name);
             let d_fn_name = format_ident!("helios_struct_destroy_{}", name);
+            let i_fn_name = format_ident!("helios_struct_interface_{}", name);
             // Check if base=behaviour is set
             let base = if args.to_string().contains("base=behaviour") {
                 quote! { u32 test; }
@@ -101,16 +105,18 @@ pub fn helios_api(args: TokenStream, item: TokenStream) -> proc_macro::TokenStre
             //     _ => panic!("Only named fields are supported"),
             // }
 
-            println!("mutated_struct: {}", mutated_struct.to_token_stream().to_string());
+            println!(
+                "mutated_struct: {}",
+                mutated_struct.to_token_stream().to_string()
+            );
 
             if args.to_string().contains("base=behaviour") {
                 if let syn::Fields::Named(ref mut fields) = mutated_struct.fields {
                     fields
-                        .named.insert(0, Field::parse_named.parse2(quote! { test: u32 }).unwrap());
+                        .named
+                        .insert(0, Field::parse_named.parse2(quote! { test: u32 }).unwrap());
                 };
             }
-
-
 
             // let struct_fields = item_struct.fields.iter();
 
@@ -129,6 +135,12 @@ pub fn helios_api(args: TokenStream, item: TokenStream) -> proc_macro::TokenStre
             // item_struct.fields = syn::Fields::from(parse_quote! {
             //     #(item_struct#fields)*
             // });
+
+
+            HELIOS_API_STRUCTS
+                .lock()
+                .unwrap()
+                .push(item_struct.ident.to_string());
 
             quote! {
                 #struct_additional_attrs
@@ -149,14 +161,20 @@ pub fn helios_api(args: TokenStream, item: TokenStream) -> proc_macro::TokenStre
                         drop(Box::from_raw(ptr));
                     }
                 }
+
+                // #[no_mangle]
+                // pub extern "C" fn #i_fn_name() -> {
+
+                // }
             }
         }
         syn::Item::Fn(item_fn) => {
             println!("item_fn: {}", item_fn.to_token_stream().to_string());
-            // HELIOS_API_FUNCTIONS
-            //     .lock()
-            //     .unwrap()
-            //     .push(item_fn.sig.ident.to_string());
+            HELIOS_API_FUNCTIONS
+                .lock()
+                .unwrap()
+                .push(item_fn.sig.ident.to_string());
+
             let name = format_ident!("helios_func_{}", item_fn.sig.ident);
 
             // let mut file =
@@ -204,4 +222,35 @@ pub fn helios_api(args: TokenStream, item: TokenStream) -> proc_macro::TokenStre
         _ => unimplemented!("`helios_api` attribute. Only functions are supported"),
     }
     .into()
+}
+
+#[proc_macro]
+pub fn exported_functions(_: TokenStream) -> TokenStream {
+    let x = HELIOS_API_FUNCTIONS.lock().unwrap();
+
+    println!("EXPORTED_FUNCTIONS MACRO ");
+    println!("x: {}", x.to_vec().join(", "));
+
+    let l = x.len();
+
+    let x = quote! {
+        static HELIOS_API_FUNCTIONS: [&'static str; #l] = [#(#x),*];
+        // [#(#x),*];
+    };
+
+    x.into()
+}
+
+#[proc_macro]
+pub fn exported_structs(_: TokenStream) -> TokenStream {
+    let x = HELIOS_API_STRUCTS.lock().unwrap();
+
+    let l = x.len();
+
+    let x = quote! {
+        static HELIOS_API_STRUCTS: [&'static str; #l] = [#(#x),*];
+        // [#(#x),*];
+    };
+
+    x.into()
 }

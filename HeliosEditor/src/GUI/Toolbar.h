@@ -10,5 +10,5 @@ namespace Helios
 		class IPanel;
 	}
 
-	void DrawToolbar(EditorMode mode, std::vector<Editor::IPanel*>& panels);
+	void DrawToolbar(EditorMode& mode, std::vector<Editor::IPanel*>& panels);
 }

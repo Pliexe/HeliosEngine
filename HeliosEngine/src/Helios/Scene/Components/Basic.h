@@ -6,16 +6,19 @@
 
 namespace Helios
 {
-	struct HELIOS_API GlobalObjectComponent { byte a; };
-	struct HELIOS_API DontDestroyOnLoadComponent { byte a; };
-	struct HELIOS_API DisabledObjectComponent { byte a; };
+	struct HELIOS_API GlobalObjectComponent { std::byte a; };
+	struct HELIOS_API DontDestroyOnLoadComponent { std::byte a; };
+	struct HELIOS_API DisabledObjectComponent { std::byte a; };
 
 	struct HELIOS_API UUIDComponent
 	{
 		::Helios::UUID uuid;
 		UUIDComponent() = default;
 		UUIDComponent(const UUIDComponent&) = default;
-		UUIDComponent(const UUID& uuid) : uuid(uuid) { }
+		UUIDComponent(const UUID& uuid)
+		{
+			this->uuid = uuid;
+		}
 	};
 
 	struct HELIOS_API InfoComponent

@@ -106,11 +106,22 @@ namespace Helios
 		switch (m_Type)
 		{
 		case Perspective:
-			m_ProjectionMatrix = Matrix4x4::PerspectiveLH(m_Fov, (float)m_ViewportSize.width / (float)m_ViewportSize.height, m_NearClip, m_FarClip);
+			m_ProjectionMatrix = Matrix4x4::PerspectiveLH(m_Fov * H_PI_180, (float)m_ViewportSize.width / (float)m_ViewportSize.height, m_NearClip, m_FarClip);
 			break;
 		case Orthographic:
-			m_ProjectionMatrix = Matrix4x4::OrthographicLH(m_Size, (float)m_ViewportSize.width / (float)m_ViewportSize.height, m_NearClip, m_FarClip);
+			m_ProjectionMatrix = Matrix4x4::OrthographicLH(m_Size, m_Size, m_NearClip, m_FarClip);
 			break;
+		}
+
+		switch (Graphics::GetAPI())
+		{
+		case Graphics::API::Vulkan:
+		case Graphics::API::OpenGL:
+		case Graphics::API::WebGL:
+		case Graphics::API::WebGPU:
+			m_ProjectionMatrix._22 *= -1.0f;
+			break;
+		default: break;
 		}
 	}
 

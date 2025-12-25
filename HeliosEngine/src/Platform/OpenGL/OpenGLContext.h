@@ -1,5 +1,7 @@
 #pragma once
+#include "Helios/Core/Exceptions.h"
 #include "Helios/Core/GraphicalWindow.h"
+#include "Helios/Graphics/GPURenderPass.h"
 #include "Helios/Graphics/GraphicsContext.h"
 #include "Helios/Core/Asserts.h"
 
@@ -11,9 +13,17 @@ namespace Helios
 	class OpenGLContext : public GraphicsContext
 	{
 	public:
-		OpenGLContext(GLFWwindow* windowHandle) : m_WindowHandle(windowHandle)
-		{
-			HL_ASSERT(m_WindowHandle, "GLFW Window handle is null!");
+		OpenGLContext(const OpenGLContext &) = default;
+		OpenGLContext(OpenGLContext &&) = default;
+		OpenGLContext &operator=(const OpenGLContext &) = default;
+		OpenGLContext &operator=(OpenGLContext &&) = default;
+
+		Ref<Image> GetSwapchainImage() const override { return nullptr; }
+		const RenderPassBeginInfo GetRenderPassBeginInfo() const override { return RenderPassBeginInfo {}; }
+
+		OpenGLContext(GLFWwindow *windowHandle)
+			: m_WindowHandle(windowHandle) {
+		HL_ASSERT(m_WindowHandle, "GLFW Window handle is null!");
 		}
 
 		void BindDefaultFramebuffer() override
@@ -21,10 +31,14 @@ namespace Helios
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
 
+		void WaitAllSync() override {}
+		
+		
+		void ResizeSwapchain(const Size& size) override { }
 
 		bool Init() override
 		{
-			UseContext();
+			glfwMakeContextCurrent(m_WindowHandle);
 
 			int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 			HL_ASSERT(status, "Failed to initialize Glad!");
@@ -34,7 +48,7 @@ namespace Helios
 			return true;
 		}
 
-		void SwapBuffers() override
+		void End() override
 		{
 			glfwSwapBuffers(m_WindowHandle);
 			// Clear render buffer
@@ -52,9 +66,10 @@ namespace Helios
 			return m_SwapInterval;
 		}
 
-		void UseContext() override
+		void Begin() override
 		{
 			glfwMakeContextCurrent(m_WindowHandle);
+			HL_EXCEPTION(true, "Missing CommandList, Not Implemented Yet!");
 		}
 
 		void SetViewport(uint32_t width, uint32_t height) override

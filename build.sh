@@ -1,6 +1,9 @@
-set +v
+#!/usr/bin/env bash
+
+set +o verbose
 
 premake5() {
+    // ./vendor/premake/bin/premake5 $@
     ./vendor/premake/bin/premake5 --cc=clang $@
 }
 
@@ -29,10 +32,25 @@ prt_help()
 }
 
 case $1 in
+    run)
+        echo "Running..."
+        cd ./HeliosEditor
+        ../bin/Debug-linux-x86_64/HeliosEditor/HeliosEditor --console
+        ;;
+    bear)
+        echo "Running bear..."
+        bear -- make -Bkj$(nproc) all
+        echo ''
+        echo "Done"
+        ;;
     compile)
         echo "Compiling..."
-        premake5 gmake
-        make
+        premake5 gmake2
+        // export CC=clang
+        // export CXX=clang++
+        // export CXXFLAGS="-stdlib=libc++ -I/usr/lib/clang/19/include"
+        // export CFLAGS="-stdlib=libc++ -I/usr/lib/clang/19/include"
+        make -j$(nproc)
         ;;
     cmake)
         echo "Generating CMake project files..."

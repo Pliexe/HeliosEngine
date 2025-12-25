@@ -7,6 +7,8 @@
 #include <fstream>
 #include <imgui.h>
 
+// NOT IN USE?
+
 enum class FileType {
 	None,
 	Cpp,
@@ -23,5 +25,5 @@ void ProjectExplorer_RightClickMenu(std::filesystem::path path, int count, bool 
 void SetCurrentPath(std::filesystem::path projectPath);
 void ProjectExplorerWindow(std::filesystem::path projectPath);
 
-ImTextureID GetFileIcon(std::filesystem::path file);
-ImTextureID GetFileIcon(FileType type);
+ImTextureRef GetFileIcon(std::filesystem::path file);
+ImTextureRef GetFileIcon(FileType type);

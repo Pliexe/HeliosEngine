@@ -32,8 +32,9 @@ namespace Helios
 		Transform2DComponent,
 		// Physics2D
 		Rigidbody2D,
-		CircleCollider2D
-		//// Scripting
-		//ScriptComponent
+		CircleCollider2D,
+		BoxCollider2D,
+		// Scripting
+		ScriptComponent
 	>;
 }

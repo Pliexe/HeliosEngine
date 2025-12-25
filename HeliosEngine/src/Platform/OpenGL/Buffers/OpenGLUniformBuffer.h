@@ -14,8 +14,8 @@ namespace Helios
 
 		void SetData(const void* data) override;
 
-		void Bind() const override;
-		void Unbind() const override;
+		// void Bind() const override;
+		// void Unbind() const override;
 
 	private:
 		uint32_t m_RendererID;

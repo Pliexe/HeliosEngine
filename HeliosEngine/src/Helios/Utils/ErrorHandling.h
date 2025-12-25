@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+#ifdef HELIOS_PLATFORM_WINDOWS
+
 std::wstring GetLastMessageAsReadable()
 {
 	DWORD error = GetLastError();
@@ -30,3 +32,5 @@ std::wstring GetErrorAsReadable(HRESULT error)
 	LocalFree(message);
 	return result;
 }
+
+#endif

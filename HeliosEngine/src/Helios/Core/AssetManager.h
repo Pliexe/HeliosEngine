@@ -1,8 +1,7 @@
 #pragma once
-#include "UUID.h"
+#include "../../../../TestApp/src/UnitTests/UUID.h"
 #include "Helios/Resources/Material.h"
 #include "Helios/Resources/Mesh.h"
-#include <Helios/Resources/Shader.h>
 
 namespace Helios
 {
@@ -30,10 +29,10 @@ namespace Helios
 			}
 		};
 
-		inline static std::unordered_map<UUID, Ref<Material>> s_Materials;
+		inline static std::unordered_map<UUID, Ref<MaterialInstance>> s_Materials;
 		inline static std::unordered_map<UUID, Ref<Mesh>> s_Meshes;
 		inline static std::unordered_map<UUID, Ref<Texture2D>> s_Textures;
-		inline static std::unordered_map<UUID, Ref<Shader>> s_Shaders;
+		// inline static std::unordered_map<UUID, Ref<DepricatedShader>> s_Shaders;
 
 		inline static std::unordered_map<UUID, TextureData> s_TextureData;
 

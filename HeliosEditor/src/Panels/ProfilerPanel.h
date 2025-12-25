@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "BasePanel.h"
 #include "Helios/Core/Profiler.h"
+#include "Helios/Scene/SceneRegistry.h"
 
 namespace Helios
 {
@@ -12,7 +13,7 @@ namespace Helios
 
 		ProfilerPanel()
 		{
-			title = "Profiler";
+			m_title = "Profiler";
 			m_custom_begin = true;
 			m_window_open = false;
 		}
@@ -103,7 +104,7 @@ namespace Helios
 
 			auto max_tmp = scroll_x + windowSize.x;
 
-			std::cout << "windowSize: " << windowSize.x << std::endl;
+			// std::cout << "windowSize: " << windowSize.x << std::endl;
 
 			for (float max = scroll_x + windowSize.x; start < max; start += 10.f * ms_size)
 			{
@@ -201,7 +202,7 @@ namespace Helios
 
 				for (auto scene : SceneRegistry::GetActiveScenes())
 				{
-					ImGui::Text("%s: %d", scene->GetName().c_str(), scene->GetEntityCount());
+					ImGui::Text("%s: %zu", scene->GetName().c_str(), scene->GetEntityCount());
 				}
 
 				if (ImGui::Checkbox("Profiler Enabled", &isProfilingThisFrame))
@@ -243,10 +244,10 @@ namespace Helios
 						uint32_t selectedFrame = 0u;
 						unsigned long long frametime = frameResult.frameTime / 1000.0f;
 
-						ImGui::Text((std::to_string(Profiler::getFrameResults().size() - 1) + " Frames!").c_str());
-						ImGui::Text(("Last frame time: " + std::to_string(frameResult.frameTime / 1000.0f) + "ms.").c_str());
+						ImGui::Text("%zu Frames!", Profiler::getFrameResults().size() - 1);
+						ImGui::Text("Last frame time: %fms.", frameResult.frameTime / 1000.0f);
 
-						ImGui::PlotLines("Frametime", [](void* data, int idx) { return (Profiler::getFrameResults()[std::min(std::max<uint64_t>(Profiler::getFrameResults().size() - 300, 0ull) + idx, Profiler::getFrameResults().size() - 1)].frameTime / 1000.0f); }, nullptr, std::min(Profiler::getFrameResults().size() - 1, 299ull), 0, 0, FLT_MAX, FLT_MAX, ImVec2(1800, 150));
+						ImGui::PlotLines("Frametime", [](void* data, int idx) { return (Profiler::getFrameResults()[std::min(std::max<uint64_t>(Profiler::getFrameResults().size() - 300, 0ull) + idx, Profiler::getFrameResults().size() - 1)].frameTime / 1000.0f); }, nullptr, std::min(Profiler::getFrameResults().size() - 1ull, 299ull), 0, 0, FLT_MAX, FLT_MAX, ImVec2(1800, 150));
 
 
 						ImGui::Checkbox("Slow Mode", &slow_mode);

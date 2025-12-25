@@ -1,8 +1,8 @@
-﻿#pragma once
-#include "ApplicationStyle.h"
+﻿#include "ApplicationStyle.h"
 
 #include "Icons.h"
 #include "pch.h"
+#include <imgui.h>
 
 #define COL32A(R,G,B,A) ImVec4((R)/255.0f, (G)/255.0f, (B)/255.0f, (A)/255.0f)
 #define COL32(R,G,B) COL32A(R,G,B,255)
@@ -33,7 +33,9 @@ namespace Helios
 			return ImVec4{ col.x + offset, col.y + offset, col.z + offset, 1.0f };
 		};
 
-		auto& colors = ImGui::GetStyle().Colors;
+		auto& styles = ImGui::GetStyle();
+		
+		auto& colors = styles.Colors;
 		colors[ImGuiCol_WindowBg] = ImVec4(37.0f / 255.0f,36.0f / 255.0f,40.0f / 255.0f, 1.0f);
 		
 		// Headers

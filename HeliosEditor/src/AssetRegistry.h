@@ -12,6 +12,7 @@
 #include "ProjectManager.h"
 #include "Helios/Resources/Texture.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include <Helios/Resources/ResourceResolver.h>
 #include <Helios/Resources/ResourceRegistry.h>
 
@@ -26,7 +27,7 @@ namespace Helios
 		{
 			auto ext = file.extension().string();
 
-			if (ext == ".png" || ext == ".jpg")
+			if (ext == ".png" || ext == ".jpg" || ext == ".webp")
 			{
 				if (std::filesystem::exists(file))
 				{
@@ -109,7 +110,8 @@ namespace Helios
 		static void ShowTextureSelect()
 		{
 			
-			if (ImGui::BeginPopupModal("textureSelection"))
+			static bool modal_open = false;
+			if (ImGui::BeginPopupModal("textureSelection", &modal_open))
 			{
 				static char search[31] = "";
 				ImGui::Text("Search: ");
@@ -118,21 +120,30 @@ namespace Helios
 
 				ImGui::BeginChild("items");
 
+				ImGui::Columns(std::max(1, static_cast<int>(ImGui::GetContentRegionAvail().x / 80.f)), nullptr, false);
+
 				for (auto& [uuid, tex] : ResourceRegistry::GetResources<Texture2D>())
 				{
-					if (ImGui::ImageButton(tex->GetTextureID(), ImVec2(50, 50)))
+					ImGui::PushID(uuid.toString().c_str());
+					if (ImGui::ImageButton("##texture", tex->GetTextureID(), ImVec2(50, 50)))
 					{
 						s_onTextureSelected(tex);
 						ImGui::CloseCurrentPopup();
+						ImGui::PopID();
 						break;
 					}
+					ImGui::PopID();
+					ImGui::NextColumn();
 				}
+
+				ImGui::EndColumns();
 
 				ImGui::EndChild();
 
 				ImGui::EndPopup();
 			}
 			if (s_TextureSelect) {
+				modal_open = true;
 				ImGui::OpenPopup("textureSelection");
 				s_TextureSelect = false;
 			}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Helios/Core/Base.h"
+#include "Helios/Graphics/Graphics.h"
 #include "Helios/Math/Matrix.h"
 #include "Components/Basic.h"
 #include "Components/Transforms.h"
@@ -43,6 +44,8 @@ namespace Helios
         Vector2 WorldToScreenPoint(float x, float y, float z, const Matrix4x4& viewMatrix) const;
         void InvalidateProjection();
 
+        Size GetViewportSize() const { return m_ViewportSize; }
+
         PerspectiveData GetPerspective() const;
         OrthographicData GetOrthographic() const;
 
@@ -56,8 +59,19 @@ namespace Helios
         static Matrix4x4 GetViewProjection(const TransformComponent& transform, const CameraComponent& camera, const Size& viewport)
         {
             Matrix4x4 projectionMatrix = camera.ortographic ?
-				Matrix4x4::OrthographicLH(camera.size, (float)viewport.width / (float)viewport.height, camera.near_z, camera.far_z) :
-				Matrix4x4::PerspectiveLH(camera.fov, (float)viewport.width / (float)viewport.height, camera.near_z, camera.far_z);
+				Matrix4x4::OrthographicLH(camera.size, camera.size, camera.near_z, camera.far_z) :
+				Matrix4x4::PerspectiveLH(camera.fov * H_PI_180, (float)viewport.width / (float)viewport.height, camera.near_z, camera.far_z);
+            
+            switch (Graphics::GetAPI())
+            {
+            case Graphics::API::Vulkan:
+            case Graphics::API::OpenGL:
+            case Graphics::API::WebGL:
+            case Graphics::API::WebGPU:
+                projectionMatrix._22 *= -1.0f;
+                break;
+            default: break;
+            }
 
 			return GetViewProjection(transform.GetModelMatrix(), projectionMatrix);
         }
@@ -65,10 +79,10 @@ namespace Helios
     protected:
         Matrix4x4 m_ProjectionMatrix = Matrix4x4::Identity();
         Size m_ViewportSize;
-        float m_NearClip = 0.1f;
+        float m_NearClip = 0.001f;
         float m_FarClip = 1000.0f;
         float m_Size = 10.0f;
-        float m_Fov = 45.0f;
+        float m_Fov = 60.0f;
         Type m_Type = Perspective;
     };
 }

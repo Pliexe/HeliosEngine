@@ -1,4 +1,7 @@
 #include "D3D11VertexArray.h"
+
+#ifdef HELIOS_PLATFORM_WINDOWS
+
 #include "D3D11VertexBuffer.h"
 
 namespace Helios
@@ -117,3 +120,5 @@ namespace Helios
 		return m_InputLayouts;
 	}
 }
+
+#endif

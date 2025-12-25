@@ -1,4 +1,7 @@
 ﻿#include "Win32InitWindow.h"
+
+#ifdef HELIOS_PLATFORM_WINDOWS
+
 #include <gdiplus.h>
 
 namespace Helios
@@ -272,3 +275,5 @@ namespace Helios
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 }
+
+#endif

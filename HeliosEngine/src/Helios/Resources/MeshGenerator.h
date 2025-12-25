@@ -19,14 +19,11 @@ namespace Helios
 	class HELIOS_API MeshGenerator
 	{
 	private:
-		inline static std::unordered_map<MeshType, UUID> meshTypeToUuuidMap;
-		inline static std::unordered_map<UUID, MeshType> uuidToMehTypeMap;
-
-		static void InitalizeMeshTypeMapping();
+		static void InitializeMeshTypeMapping();
 	public:
 
-		static UUID GetMeshUUID(MeshType meshType) { return meshTypeToUuuidMap[meshType]; }
-		static MeshType GetMeshType(UUID uuid) { return uuidToMehTypeMap[uuid]; }
+		static UUID GetMeshUUID(MeshType meshType);
+		static MeshType GetMeshType(UUID uuid);
 
 		static MeshBuilder GenerateMesh(UUID meshUUID)
 		{

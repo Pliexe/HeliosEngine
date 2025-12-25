@@ -1,16 +1,23 @@
 /* Copyright (c) 2022 Szabadi L�szl� Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
- * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
+ * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/HeliosEngine/blob/master/HeliosEngine/LICENSE.txt
  */
 
 #ifndef PCH_H
 #define PCH_H
+
+
+
+#include <stddef.h>
+#include <cstddef>
+
 
 #ifndef HELIOS_PLATFORM_WINDOWS
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__CYGWIN64__) || defined(_WIN32) || defined(__WIN32__)
 #define HELIOS_PLATFORM_WINDOWS
 #endif
 #endif 
+
 
 #if (defined(_M_IX86) || defined(_M_X64) || __i386__ || __x86_64__) && !defined(M_HYBRID_X86_ARM64) && !defined(_M_ARM64EC)
 #define __SSE_ENABLED__
@@ -23,13 +30,61 @@
 #define HL_DEBUG
 #endif
 
+// Windows
+#ifdef HELIOS_PLATFORM_WINDOWS
+#define D3D_DEBUG_INFO
+
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+
+#include <windowsx.h>
+#include <d2d1.h>
+#include <d3d11.h>
+#include <dwrite.h>
+#include <wincodec.h>
+#include <commdlg.h>
+#include <shellapi.h>
+
+#endif
+
+// POSIX Platform
+
+#if defined(__unix__) || defined(__APPLE__)
+#include <dlfcn.h> // For dlopen, dlsym, dlclose....
+#endif
+
+// Linux Platform
+
+#ifdef HELIOS_PLATFORM_LINUX
+
+// #include <gtk/gtk.h>
+
+#endif
+
+// Windows Platform
+
+#ifdef HELIOS_PLATFORM_WINDOWS
+
+ #include <wrl.h>
+//  #include <corecrt_math_defines.h>
+
+#else
+
+#endif
+
 //#include <char8_t-remediation.h>s
 
-#define PI 3.14159265358979323846f
+#ifdef _CRT_INTERNAL_CPP
+#undef uintptr_t
+#endif
+
+#ifdef uintptr_t
+#undef uintptr_t
+#endif
+
 
 // Standard Library
 
-#include <codecvt>
 #include <locale>
 #include <iostream>
 #include <vector>
@@ -52,55 +107,15 @@
 #include <deque>
 #include <random>
 #include <ranges>
+#include <cstdint>
 #include <chrono>
-
-// Windows
-#define D3D_DEBUG_INFO
-
-#ifdef HELIOS_PLATFORM_WINDOWS
-
-#define NOMINMAX
-
-#include <windowsx.h>
-#include <d2d1.h>
-#include <d3d11.h>
-#include <dwrite.h>
-#include <wincodec.h>
-
-#endif
-
-#ifdef HELIOS_PLATFORM_LINUX
-
-#include <gtk/gtk.h>
-
-#endif
-
+#include <span>
+#include <cstdlib>
+#include <variant>
+#include <iterator>
 
 #include <json.hpp>
 using json = nlohmann::json;
-
-#ifdef HELIOS_PLATFORM_WINDOWS
-
- #include <wrl.h>
-//  #include <corecrt_math_defines.h>
-
-#else
-
-#endif
-
-#define H_E        2.71828182845904523536   // e
-#define H_LOG2E    1.44269504088896340736   // log2(e)
-#define H_LOG10E   0.434294481903251827651  // log10(e)
-#define H_LN2      0.693147180559945309417  // ln(2)
-#define H_LN10     2.30258509299404568402   // ln(10)
-#define H_PI       3.14159265358979323846   // pi
-#define H_PI_2     1.57079632679489661923   // pi/2
-#define H_PI_4     0.785398163397448309616  // pi/4
-#define H_1_PI     0.318309886183790671538  // 1/pi
-#define H_2_PI     0.636619772367581343076  // 2/pi
-#define H_2_SQRTPI 1.12837916709551257390   // 2/sqrt(pi)
-#define H_SQRT2    1.41421356237309504880   // sqrt(2)
-#define H_SQRT1_2  0.707106781186547524401  // 1/sqrt(2)
 
 
 #ifdef HELIOS_INCLUDE_IMGUI
@@ -122,6 +137,10 @@ using json = nlohmann::json;
 #include <entt.hpp>
 // Custom
 
+#include <Helios/Core/Types.h>
+#include <Helios/Core/Constants.h>
+
+#if defined(HELIOS_PLATFORM_WINDOWS) | defined(HELIOS_PLATFORM_LINUX)
 // https://docs.microsoft.com/en-us/windows/win32/medfound/saferelease
 template <class T> void SafeRelease(T** ppT)
 {
@@ -131,22 +150,6 @@ template <class T> void SafeRelease(T** ppT)
         *ppT = NULL;
     }
 }
+#endif // HELIOS_PLATFORM_WINDOWS
 
-
-namespace Helios {
-
-    template <typename T>
-    using Scope = std::unique_ptr<T>;
-    template <typename T, typename ... Args>
-    constexpr Scope<T> CreateScope(Args&& ... args) { return std::make_unique<T>(std::forward<Args>(args)...); }
-
-    template <typename T>
-    using Ref = std::shared_ptr<T>;
-    template <typename T, typename ... Args>
-    constexpr Ref<T> CreateRef(Args&& ... args) { return std::make_shared<T>(std::forward<Args>(args)...); }
-
-    template <typename T>
-    using WeakRef = std::weak_ptr<T>;
-}
-
-#endif
+#endif // PCH_H

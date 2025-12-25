@@ -13,6 +13,7 @@
 namespace Helios
 {
 	enum LoadOptions {
+		None = 0,
 		LoadFullResource = 1 << 0,
 		LoadMetadataFile = 1 << 1,
 		LoadBundledFile = 1 << 2,
@@ -25,10 +26,21 @@ namespace Helios
 	}
 
 	// Manager for resolving resources from the filesystem or any other source
+
+	struct ResourceInfo {
+		enum ResourceType {
+			INBUILT,
+			FULL_RESOURCE,
+			FULL_RESOURCE_AND_METADATA_FILE,
+			BUNDLED_FILE
+		};
+
+		ResourceType type;
+		const char8_t* path = nullptr;
+	};
+
 	class HELIOS_API ResourceResolver
 	{
-	private:
-		struct ResourceInfo;
 	public:
 
 		/*template <typename T>
@@ -82,33 +94,25 @@ namespace Helios
 			return s_RegisteredPaths.contains(path);
 		}
 
-		static const UUID& GetUUID(const std::filesystem::path& path);
+		static const UUID GetUUID(const std::filesystem::path& path);
+
+		static std::unordered_map<UUID, Helios::ResourceInfo>& GetMeshes() { return s_Meshes; }
+		static std::unordered_map<UUID, Helios::ResourceInfo>& GetTextures() { return s_Textures; }
+
 
 	private:
 
-		static void RegisterResource(std::unordered_map<UUID, ResourceInfo>& store, const UUID& uuid, const ResourceInfo& info)
+		static void RegisterResource(std::unordered_map<UUID, ResourceInfo>& store, const UUID& uuid, const Helios::ResourceInfo& info)
 		{
 			store[uuid] = info;
 			if (info.path) s_RegisteredPaths.insert(std::filesystem::path(info.path));
 		}
 
-		struct ResourceInfo {
-			enum ResourceType {
-				INBUILT,
-				FULL_RESOURCE,
-				METADATA_FILE,
-				BUNDLED_FILE
-			};
-
-			ResourceType type;
-			const char8_t* path = nullptr;
-		};
-
 		//inline static std::unordered_map<UUID, ResourceInfo> m_Textures;
-		inline static std::unordered_map<UUID, ResourceInfo> s_Meshes;
-		inline static std::unordered_map<UUID, ResourceInfo> s_Textures;
+		static std::unordered_map<UUID, Helios::ResourceInfo> s_Meshes;
+		static std::unordered_map<UUID, Helios::ResourceInfo> s_Textures;
 
-		inline static std::unordered_set<std::filesystem::path> s_RegisteredPaths;
+		static std::unordered_set<std::filesystem::path> s_RegisteredPaths;
 
 		friend class MeshGenerator;
 	};

@@ -156,7 +156,7 @@ namespace Helios
 	#define HL_PROFILE_START_PROFILING()
 	#define HL_PROFILE_STOP_PROFILING()
 	#define HL_PROFILE_TOGGLE_PROFILING()
-	#define HL_PROFILE_BEGIN()
+	#define HL_PROFILE_BEGIN
 	#define HL_PROFILE_END()
 
 #endif

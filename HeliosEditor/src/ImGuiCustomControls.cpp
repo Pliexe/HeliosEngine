@@ -1,4 +1,5 @@
-﻿#include "pch.h"
+﻿#include "imgui.h"
+#include "pch.h"
 #include "ImGuiCustomControls.h"
 
 #include "imgui_internal.h"
@@ -7,6 +8,34 @@ namespace Helios
 {
 	
 }
+
+
+void ImGui::Image(Helios::Texture2D& texture, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1)
+{
+	ImGui::Image(texture.GetTextureID(), image_size, uv0, uv1);
+}
+void ImGui::ImageWithBg(Helios::Texture2D& texture, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& bg_col, const ImVec4& tint_col)
+{
+	ImGui::ImageWithBg((ImTextureID)texture.GetTextureID(), image_size, uv0, uv1, bg_col, tint_col);
+}
+bool ImGui::ImageButton(const char* str_id, Helios::Texture2D& texture, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& bg_col, const ImVec4& tint_col)
+{
+	return ImGui::ImageButton(str_id, texture.GetTextureID(), image_size, uv0, uv1, bg_col, tint_col);
+}
+
+void ImGui::Image(Helios::Ref<Helios::Texture2D>& texture, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1)
+{
+	ImGui::Image(texture->GetTextureID(), image_size, uv0, uv1);
+}
+void ImGui::ImageWithBg(Helios::Ref<Helios::Texture2D>& texture, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& bg_col, const ImVec4& tint_col)
+{
+	ImGui::ImageWithBg((ImTextureID)texture->GetTextureID(), image_size, uv0, uv1, bg_col, tint_col);
+}
+bool ImGui::ImageButton(const char* str_id, Helios::Ref<Helios::Texture2D>& texture, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& bg_col, const ImVec4& tint_col)
+{
+	return ImGui::ImageButton(str_id, texture->GetTextureID(), image_size, uv0, uv1, bg_col, tint_col);
+}
+
 
 bool ImGui::EditVector2(const char* label, float width, Helios::Vector2& vec, float speed, float min, float max)
 {
@@ -19,7 +48,7 @@ bool ImGui::EditVector2(const char* label, float width, Helios::Vector2& vec, fl
 	ImGui::BeginChild("##vector3", ImVec2(width, 25.0f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus);
 	ImVec2 size = ImGui::GetContentRegionAvail();
 
-	ImGui::Text(label);
+	ImGui::TextUnformatted(label);
 
 	float x = size.x / 3.5f;
 	float w = size.x - x;
@@ -76,7 +105,7 @@ bool ImGui::EditVector3(const char* label, float width, Helios::Vector3& vec, fl
 	ImGui::BeginChild("##vector3", ImVec2(width, 25.0f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus);
 	ImVec2 size = ImGui::GetContentRegionAvail();
 
-	ImGui::Text(label);
+	ImGui::TextUnformatted(label);
 
 	float x = size.x / 3.5f;
 	float w = size.x - x;
@@ -152,7 +181,7 @@ void ImGui::EditQuanterion(const char* label, Helios::Quaternion& quanterion, fl
 	ImVec2 size = ImGui::GetContentRegionAvail();
 
 	ImGui::PushID(label);
-	ImGui::Text(label);
+	ImGui::TextUnformatted(label);
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(size.x / 4.5f - 20.0f);
 	ImGui::Text("X:");

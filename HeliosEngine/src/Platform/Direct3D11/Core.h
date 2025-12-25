@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef HELIOS_PLATFORM_WINDOWS
+
 #include "Platform/Windows/Win32GraphicalWindow.h"
 #include "pch.h"
 
@@ -47,3 +49,5 @@ namespace Helios::D3D11
 		CreateDXGIFactory2(0, IID_PPV_ARGS(&s_factory));
 	}
 }
+
+#endif

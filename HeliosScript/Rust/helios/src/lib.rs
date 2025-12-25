@@ -1,78 +1,72 @@
-use std::fs::{self};
+use std::{
+    ffi::{c_char, CStr, CString},
+    fs::{self},
+    ptr::{null, null_mut},
+    sync::Mutex,
+};
 
+use helios_macros::helios_api;
+use once_cell::sync::Lazy;
 
 extern crate helios_macros;
 
-mod stringarray;
-
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
-
-
-
-// lazy_static! {
-//     static ref BEHAVIOUR
-// }
-
-// static HELIOS_API_STRUCTS: Vec<String> = Vec::new();
-
-extern "C" {
-    pub fn test_rust();
-}
-
-#[no_mangle]
-pub extern "C" fn hello_rust() {
-    println!("Hello, World From Rust!");
-    unsafe { test_rust() };
-}
-
-#[no_mangle]
-pub extern "C" fn get_api_functions(path: *const i8) -> *mut stringarray::StringArray {
-    // let mut x = helios_globals::HELIOS_API_FUNCTIONS.lock().unwrap().clone();
-    let s = unsafe { std::ffi::CStr::from_ptr(path)
-        .to_string_lossy()
-        .into_owned() };
-    println!("Path: {}", s);
-
-    let bytes = fs::read(s).expect("Failed to read file");
-    let mut strings = Vec::new();
-
-    // Step 2 & 3: Process each chunk and convert it to a String
-    let mut current_string = String::new();
-    for byte in bytes {
-        if byte == 0 { // Null terminator indicates the end of a string
-            strings.push(current_string.clone()); // Push the current string to the vector
-            current_string.clear(); // Reset the current string
-        } else {
-            current_string.push(byte as char); // Append the byte to the current string
-        }
-    }
-    // Don't forget to push the last string if it wasn't terminated by a null byte
-    if !current_string.is_empty() {
-        strings.push(current_string);
-    }
-
-    // let mut x = Vec::new();
-    // f.read_to_end(&mut x).expect("Failed to read file");
-    
-    let mut x = strings;
-
-    x.push(String::from("TEST"));
-    // let strarr = stringarray::StringArray::new(HELIOS_API_FUNCTIONS.lock().unwrap().clone());
-    let strarr = stringarray::StringArray::new(x);
-    Box::into_raw(Box::new(strarr))
-}
-
 pub mod scene;
+pub mod stringarray;
+pub mod structinterface;
+
+static HELIOS_SCRIPTS: Lazy<Mutex<Vec<Box<dyn scene::EntityBehaviour>>>> = Lazy::new(|| Mutex::new(Vec::new()));
+
+#[no_mangle]
+pub extern "C" fn helios_update_all() {
+    let mut scripts = HELIOS_SCRIPTS.lock().unwrap();
+    for script in scripts.iter_mut() {
+        script.on_update();
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn helios_awake() {
+    
+}
+
+#[macro_export]
+macro_rules! helios_api_exports {
+    () => {
+        #[no_mangle]
+        pub extern "C" fn get_api_functions() -> *mut *mut std::ffi::c_char {
+            helios_macros::exported_functions!();
+            static mut FUNCTIONS: *mut *mut std::ffi::c_char = std::ptr::null_mut();
+
+            unsafe {
+                if FUNCTIONS.is_null() {
+                    FUNCTIONS = {
+                        let mut x = HELIOS_API_FUNCTIONS
+                            .map(|s| std::ffi::CString::new(s).unwrap().into_raw())
+                            .to_vec();
+                        x.push(std::ptr::null_mut());
+                        x.as_mut_ptr()
+                    };
+                }
+                return FUNCTIONS;
+            }
+        }
+        #[no_mangle]
+        pub extern "C" fn get_api_structs() -> *mut *mut std::ffi::c_char {
+            helios_macros::exported_structs!();
+            static mut FUNCTIONS: *mut *mut std::ffi::c_char = std::ptr::null_mut();
+
+            unsafe {
+                if FUNCTIONS.is_null() {
+                    FUNCTIONS = {
+                        let mut x = HELIOS_API_STRUCTS
+                            .map(|s| std::ffi::CString::new(s).unwrap().into_raw())
+                            .to_vec();
+                        x.push(std::ptr::null_mut());
+                        x.as_mut_ptr()
+                    };
+                }
+                return FUNCTIONS;
+            }
+        }
+    };
+}

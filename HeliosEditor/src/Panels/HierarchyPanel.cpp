@@ -39,7 +39,7 @@ namespace Helios {
 				auto obj = container->CreateEntity("Cube");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Cube);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
+				meshRenderer.material = MaterialInstance::Create(MaterialInstance::Filter::MinMagMipPoint, MaterialInstance::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if(ImGui::MenuItem("Arrow"))
@@ -49,7 +49,7 @@ namespace Helios {
 				auto obj = container->CreateEntity("Arrow");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = Mesh::Create("Arrow", UUID::fromString("5d2e9c2c-0d5e-4b7e-9b3e-9e4d2e9c2c5d"), std::move(arrowBuilder));
-				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
+				meshRenderer.material = MaterialInstance::Create(MaterialInstance::Filter::MinMagMipPoint, MaterialInstance::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if(ImGui::MenuItem("Plane"))
@@ -57,7 +57,7 @@ namespace Helios {
 				auto obj = container->CreateEntity("Plane");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Plane);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
+				meshRenderer.material = MaterialInstance::Create(MaterialInstance::Filter::MinMagMipPoint, MaterialInstance::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if (ImGui::MenuItem("Cylinder"))
@@ -65,7 +65,7 @@ namespace Helios {
 				auto obj = container->CreateEntity("Cylinder");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Cylinder);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
+				meshRenderer.material = MaterialInstance::Create(MaterialInstance::Filter::MinMagMipPoint, MaterialInstance::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if (ImGui::MenuItem("Cone"))
@@ -73,7 +73,7 @@ namespace Helios {
 				auto obj = container->CreateEntity("Cone");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Cone);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
+				meshRenderer.material = MaterialInstance::Create(MaterialInstance::Filter::MinMagMipPoint, MaterialInstance::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if (ImGui::MenuItem("Sphere"))
@@ -81,7 +81,7 @@ namespace Helios {
 				auto obj = container->CreateEntity("Sphere");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Sphere);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
+				meshRenderer.material = MaterialInstance::Create(MaterialInstance::Filter::MinMagMipPoint, MaterialInstance::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			if (ImGui::MenuItem("Torus"))
@@ -89,7 +89,7 @@ namespace Helios {
 				auto obj = container->CreateEntity("Torus");
 				auto& meshRenderer = obj.AddScopedComponent<MeshRendererComponent>();
 				meshRenderer.mesh = ResourceRegistry::GetResource<Mesh>(MeshType::Torus);
-				meshRenderer.material = Material::Create(Material::Filter::MinMagMipPoint, Material::Type::Warp);
+				meshRenderer.material = MaterialInstance::Create(MaterialInstance::Filter::MinMagMipPoint, MaterialInstance::Type::Warp);
 				InspectorPanel::GetInstance() << obj;
 			}
 			ImGui::EndMenu();
@@ -132,7 +132,7 @@ namespace Helios {
 			flags |= ImGuiTreeNodeFlags_Selected;
 
 		if (flags & ImGuiTreeNodeFlags_Selected) ImGui::PushStyleColor(ImGuiCol_Header, IM_COL32(15, 15, 15, 255));
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)object.GetHandle(), flags, info.name.c_str());
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)object.GetHandle(), flags, "%s", info.name.c_str());
 
 		if (ImGui::IsItemClicked())
 		{
@@ -196,7 +196,7 @@ namespace Helios {
 		if (ImGui::BeginDragDropSource(src_flags))
 		{
 			if (!(src_flags & ImGuiDragDropFlags_SourceNoPreviewTooltip))
-				ImGui::Text(object.GetName().c_str());
+				ImGui::Text("%s", object.GetName().c_str());
 			entt::entity payload = object;
 			ImGui::SetDragDropPayload("DND_HIERARCHY_ITEM", &payload, sizeof(entt::entity));
 			ImGui::EndDragDropSource();
@@ -233,7 +233,7 @@ namespace Helios {
 				// bg color of first treenode = redish mixed with bg
 				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen;
 				ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
-				bool opened = ImGui::TreeNodeEx("scene", flags, scene->GetName().c_str());
+				bool opened = ImGui::TreeNodeEx("scene", flags, "%s", scene->GetName().c_str());
 				ImGui::PopStyleColor();
 
 				if (ImGui::BeginPopupContextItem() || ImGui::BeginPopupContextWindow(NULL, ImGuiPopupFlags_MouseButtonRight))
@@ -243,7 +243,7 @@ namespace Helios {
 				}
 
 				if (opened) {
-					scene->GetComponents().each([&](auto entity)
+					scene->GetComponentsWith<entt::entity>().each([&](auto entity)
 					{
 						Entity object{ entity, scene };
 						if (object.HasComponent<RelationshipComponent>())
@@ -297,8 +297,8 @@ namespace Helios {
 				}
 			}
 
-			ImGui::End();
 		}
+		ImGui::End();
 		ImGui::PopStyleVar();
 
 		

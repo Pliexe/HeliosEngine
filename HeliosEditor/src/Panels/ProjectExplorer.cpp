@@ -1,4 +1,7 @@
 #include "ProjectExplorer.h"
+#include <Helios/Utils/ShowMessage.h>
+#include <cstdio>
+#include <cstring>
 #include <queue>
 
 #include "Application.h"
@@ -6,6 +9,11 @@
 #include "ProjectManager.h"
 
 #include "AssetRegistry.h"
+#include "imgui.h"
+
+#ifdef HELIOS_PLATFORM_LINUX
+#include <limits.h>
+#endif
 
 #define ITEM_SIZE 100.0f
 #define ITEM_PADDING 20.0f
@@ -66,15 +74,17 @@ public:
 
 	int GetFirst() {
 		if(size > 0)
-		return *arr;
+			return *arr;
+
+		return -1;
 	}
 
 	bool IsSelected(int x) {
 		for(int i = 0; i < size; i++)
-		if (*(arr + i) == x) {
-			return true;
-			break;
-		}
+			if (*(arr + i) == x) {
+				return true;
+				break;
+			}
 
 		return false;
 	}
@@ -89,8 +99,11 @@ public:
 			alloced += ALLOC_TRY_SIZE;
 			int* tmp = arr;
 			arr = (int*)malloc(sizeof(int) * alloced);
-			for (int i = 0; i < size; i++)
-				*(arr + i) + *(tmp + i);
+			if (!arr) { 
+				std::printf("Out of memory!\n");
+				exit(-3);
+			}
+			memcpy(arr, tmp, size * sizeof(int));
 			if (tmp != nullptr) free(tmp);
 		}
 		*(arr + size) = x;
@@ -148,7 +161,7 @@ public:
 
 Selection selection;
 
-ImTextureID GetFileIcon(std::filesystem::path file) {
+ImTextureRef GetFileIcon(std::filesystem::path file) {
 	if (!file.has_extension()) return Helios::HeliosEditor::ICON_FILE_UNKNOWN->GetTextureID();
 
 	std::string ext = file.extension().generic_string();
@@ -169,7 +182,7 @@ ImTextureID GetFileIcon(std::filesystem::path file) {
 	else return Helios::HeliosEditor::ICON_FILE_UNKNOWN->GetTextureID();
 }
 
-ImTextureID GetFileIcon(FileType type) {
+ImTextureRef GetFileIcon(FileType type) {
 	switch (type)
 	{
 	case FileType::Cpp: return Helios::HeliosEditor::ICON_FILE_CPP->GetTextureID();
@@ -213,17 +226,24 @@ void EditItemName(std::filesystem::path entry, std::string new_name) {
 void FileNameOrEdit(std::filesystem::path entry, int i) {
 	if (editing_item == i) 
 	{
-		static char name[MAX_PATH];
+#ifdef HELIOS_PLATFORM_WINDOWS
+		static const int MAX_PATH_V = MAX_PATH;
+#elif defined(HELIOS_PLATFORM_LINUX) || defined(HELIOS_PLATFORM_MACOS)
+		static const int MAX_PATH_V = PATH_MAX;
+#endif
+		static char name[MAX_PATH_V];
 		name[0] = '\0';
 
 		ImGui::SetNextItemWidth(ITEM_SIZE);
 		ImGui::SetKeyboardFocusHere();
-		if (ImGui::InputText("##new_name", name, MAX_PATH - entry.string().length() - 1, ImGuiInputTextFlags_EnterReturnsTrue) || ImGui::IsItemDeactivatedAfterEdit()) {
+		if (ImGui::InputText("##new_name", name, MAX_PATH_V - entry.string().length() - 1, ImGuiInputTextFlags_EnterReturnsTrue) || ImGui::IsItemDeactivatedAfterEdit()) {
 			if (name[0] != '\0')
+			{
 				if (create_item == FileType::None)
 					EditItemName(entry, name);
 				else
-					CreateFileFromType(entry, create_item, name);
+					CreateFileFromType(entry, create_item, name);	
+			}
 			create_item = FileType::None;
 			editing_item = -1;
 		}
@@ -241,12 +261,13 @@ void ShowFileOrFolder(std::filesystem::path entry, int i, int maxElements) {
 	ImGui::SetNextItemWidth(200);
 
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, selection.IsSelected(i) ? IM_COL32(100, 100, 100, 255) : IM_COL32(0, 0, 0, 0));
-	ImGui::PushAllowKeyboardFocus(true);
+	
+	ImGui::PushTabStop(true);
 	ImVec2 wndsize = ImVec2(ITEM_SIZE, ITEM_SIZE + 20 + 4);
 	ImGui::BeginChild("FolderOrFile", wndsize);
-	ImGui::PopAllowKeyboardFocus();
+	ImGui::PopTabStop();
 	ImGui::PopStyleColor();
-	ImGui::PushAllowKeyboardFocus(false);
+	ImGui::PushTabStop(false);
 
 	if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
 	{
@@ -257,7 +278,16 @@ void ShowFileOrFolder(std::filesystem::path entry, int i, int maxElements) {
 			if(entry.filename().extension() == ".scene")
 				Helios::Project::TryLoad(entry);
 			else
+#ifdef HELIOS_PLATFORM_WINDOWS
 				ShellExecute(0, 0, entry.wstring().c_str(), 0, 0, SW_SHOW);
+#elif defined(HELIOS_PLATFORM_LINUX)
+				system(("xdg-open " + entry.string()).c_str());
+#elif defined(HELIOS_PLATFORM_MACOS)
+				system(("open " + entry.string()).c_str());
+#else
+#error "Platform not supported!"
+#endif
+
 		}
 	} else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
 	{
@@ -282,16 +312,16 @@ void ShowFileOrFolder(std::filesystem::path entry, int i, int maxElements) {
 
 	if(Helios::HeliosEditor::ICON_FOLDER_EMPTY == nullptr)
 	{
-		MessageBoxA(nullptr, "Error loading icons!", "yea", MB_ICONERROR);
+		Helios::ShowMessage("Critical!", "Error loading icons!", Helios::Message::IconError);
 		exit(100);
 	}
 
 	if(create_item != FileType::None && i == editing_item)
-		ImGui::ImageButton(GetFileIcon(create_item), ImVec2(ITEM_SIZE, ITEM_SIZE));
+		ImGui::ImageButton("#create_item", GetFileIcon(create_item), ImVec2(ITEM_SIZE, ITEM_SIZE));
 	else if(is_dir)
-		ImGui::ImageButton(std::filesystem::is_empty(entry) ? Helios::HeliosEditor::ICON_FOLDER_EMPTY->GetTextureID() : Helios::HeliosEditor::ICON_FOLDER->GetTextureID(), ImVec2(ITEM_SIZE, ITEM_SIZE));
+		ImGui::ImageButton("#create_item", std::filesystem::is_empty(entry) ? Helios::HeliosEditor::ICON_FOLDER_EMPTY->GetTextureID() : Helios::HeliosEditor::ICON_FOLDER->GetTextureID(), ImVec2(ITEM_SIZE, ITEM_SIZE));
 	else 
-		ImGui::ImageButton(GetFileIcon(entry), ImVec2(ITEM_SIZE, ITEM_SIZE));
+		ImGui::ImageButton("#create_item", GetFileIcon(entry), ImVec2(ITEM_SIZE, ITEM_SIZE));
 
 	ImGuiDragDropFlags src_flags = 0;
 	src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
@@ -299,7 +329,7 @@ void ShowFileOrFolder(std::filesystem::path entry, int i, int maxElements) {
 	if (ImGui::BeginDragDropSource(src_flags))
 	{
 		if (!(src_flags & ImGuiDragDropFlags_SourceNoPreviewTooltip))
-			ImGui::Text(entry.string().c_str());
+			ImGui::Text("%s", entry.string().c_str());
 		//ImGui::SetDragDropPayload("DND_EXPLORER_TEXTURE2D", &a, sizeof(int*));
 		ImGui::SetDragDropPayload("DND_EXPLORER_TEXTURE2D", entry.string().c_str(), sizeof(const char*) * entry.string().length());
 		ImGui::EndDragDropSource();
@@ -309,7 +339,7 @@ void ShowFileOrFolder(std::filesystem::path entry, int i, int maxElements) {
 
 	ProjectExplorer_RightClickMenu(entry, i, false);
 
-	ImGui::PopAllowKeyboardFocus();
+	ImGui::PopTabStop();
 	ImGui::PopStyleColor();
 
 	ImGui::EndChild();
@@ -332,7 +362,7 @@ void CreateFileFromType(std::filesystem::path path, FileType type, std::string n
 
 	if (type == FileType::Folder) {
 		if(!std::filesystem::create_directory(path))
-			MessageBoxA(NULL, (const char*)(path.u8string()).c_str(), "Unable to create directory!", MB_ICONERROR);
+			Helios::ShowMessage("Error", "Unable to create directory!\n" + Helios::conversions::from_u8string(path.u8string()), Helios::Message::IconError);
 	}
 	else {
 		std::ofstream out(path);
@@ -344,11 +374,12 @@ void CreateFileFromType(std::filesystem::path path, FileType type, std::string n
 				out << "#include <Helios.h>" << std::endl;
 				out << "class " << std::string_view(name.c_str(), GetFileExtension(type).size() - 1).data();
 				break;
+			default: break;
 			}
 
 			out.close();
 		}
-		else MessageBoxA(NULL, (const char*)(path.u8string()).c_str(), "Unable to create file!", MB_ICONERROR);
+		else Helios::ShowMessage("Error", "Unable to create file!\n" + Helios::conversions::from_u8string(path.u8string()), Helios::Message::IconError);
 	}
 }
 
@@ -380,7 +411,11 @@ void ProjectExplorer_RightClickMenu(std::filesystem::path path, int count, bool 
 
 		if (ImGui::MenuItem("Show in Explorer")) {
 			std::string params = "/select,\"" + Helios::conversions::from_u8string(path.u8string()) + "\"";
+#ifdef HELIOS_PLATFORM_WINDOWS
 			ShellExecuteA(NULL, "open", "explorer.exe", params.c_str(), NULL, SW_NORMAL);
+#else
+			system(("open " + params).c_str());
+#endif
 		}
 
 		if (ImGui::MenuItem("Rename", "", false, !is_root))
@@ -397,7 +432,7 @@ void ProjectExplorer_RightClickMenu(std::filesystem::path path, int count, bool 
 			}*/
 		}
 
-		ImGui::Text(std::string("Okey: " + std::to_string(count)).c_str());
+		ImGui::Text("Okey %d", count);
 
 		ImGui::EndPopup();
 	}

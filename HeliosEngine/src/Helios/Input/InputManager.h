@@ -1,6 +1,6 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
- * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
+ * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/HeliosEngine/blob/master/HeliosEngine/LICENSE.txt
  */
 #pragma once
 
@@ -8,6 +8,7 @@
 
 namespace Helios 
 {
+	// TODO: redo input manager
 	class Point;
 	class HELIOS_API InputManager {
 	public:

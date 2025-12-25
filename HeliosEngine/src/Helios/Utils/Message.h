@@ -58,6 +58,9 @@ namespace Helios
 			Maximized = BIT(3),
 			Show = BIT(4),
 			AlwaysOnTop = BIT(5),
+			NoTitlebar = BIT(6),
+
+			Centered = BIT(10),
 		};
 
 		inline Value operator | (Value lhs, Value rhs)

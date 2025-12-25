@@ -23,13 +23,16 @@ project "HeliosEditor"
         "src",
 
         "%{wks.location}/HeliosEngine/src",
-        "%{wks.location}/HeliosEngine/vendor/entt/include",
+        "%{wks.location}/HeliosEngine/vendor/entt/single_include/entt",
         "%{wks.location}/HeliosEngine/vendor/json/single_include/nlohmann",
+
+        "vendor/filewatch",
         
         "%{IncludeDir.ProjectManager}",
         
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.ImGuiMisc}",
+        "%{IncludeDir.ImGuiBackends}",
         "%{IncludeDir.Yaml}",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLAD}",
@@ -43,11 +46,8 @@ project "HeliosEditor"
         "ProjectManager",
         "GLFW",
         "GLAD",
-
         "Box2D",
-        "opengl32.lib",
-        "%{Library.VulkanUtils}",
-        "%{VULKAN_SDK}/Lib/shaderc_shared.lib",
+        (os.target() == "linux" or os.target() == "macos") and "dxcompiler" or nil,
     }
 
     defines
@@ -97,17 +97,48 @@ project "HeliosEditor"
         systemversion "latest"
         entrypoint "mainCRTStartup"
         defines { "HELIOS_PLATFORM_WINDOWS" }
-
         links
         {
-            "Gdiplus.lib"
+            "Gdiplus.lib",
+            "opengl32.lib",
+            "%{Library.VulkanUtils}",
+            "%{VULKAN_SDK}/Lib/shaderc_shared.lib",
+        }
+        postbuildcommands
+        {
+            "{COPY} %{wks.location}/bin/" .. outdir .. "/HeliosEngine/*.dll %{cfg.buildtarget.directory}/",
         }
 
     filter "system:linux"
         pic "on"
         systemversion "latest"
         defines { "HELIOS_PLATFORM_LINUX" }
-        
+
+        -- libdirs { "/usr/lib/qt6" }
+
+        links
+        {
+            -- "dl",
+            "GL",
+            "vulkan",
+            "shaderc_shared",
+            "glslang",
+            -- "pthread",
+            -- "%{Library.VulkanUtils}",
+
+            
+            -- UNICODE
+            "icuuc",
+            "icui18n",
+
+            -- QT
+            -- "Qt6Widgets",[
+            -- "Qt6Gui",
+            -- "Qt6Core",]
+            "X11", "cairo"
+        }
+
+
     filter "configurations:Debug"
         defines "HELIOS_DEBUG"
         runtime "Debug"

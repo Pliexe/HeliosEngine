@@ -3,21 +3,41 @@
 
 namespace Helios
 {
-	Vector3 Quaternion::eulerRads() //YXZ
+	Vector3 Quaternion::ToEulerRads(const Quaternion& quaternion)
 	{
-        Matrix4x4 matrix = Matrix4x4::RotationRow(*this);
+		Matrix4x4 matrix = Matrix4x4::RotationRow(quaternion);
 
-		if (abs(matrix._32) < 0.9999999f) {
+		if (std::abs(matrix._32) < 0.9999999f) {
 			return {
-				asin(-std::clamp(matrix._32, -1.0f, 1.0f)),
-				atan2(matrix._31, matrix._33),
-				atan2(matrix._12, matrix._22)
+				asinf(-std::clamp(matrix._32, -1.0f, 1.0f)),
+				atan2f(matrix._31, matrix._33),
+				atan2f(matrix._12, matrix._22)
 			};
 		}
 		else {
 			return {
-				asin(-std::clamp(matrix._32, -1.0f, 1.0f)),
-				atan2(-matrix._13, matrix._11),
+				asinf(-std::clamp(matrix._32, -1.0f, 1.0f)),
+				atan2f(-matrix._13, matrix._11),
+				0.0f
+			};
+		}
+	}
+
+	Vector3 Quaternion::eulerRads() //YXZ
+	{
+        Matrix4x4 matrix = Matrix4x4::RotationRow(*this);
+
+		if (std::abs(matrix._32) < 0.9999999f) {
+			return {
+				asinf(-std::clamp(matrix._32, -1.0f, 1.0f)),
+				atan2f(matrix._31, matrix._33),
+				atan2f(matrix._12, matrix._22)
+			};
+		}
+		else {
+			return {
+				asinf(-std::clamp(matrix._32, -1.0f, 1.0f)),
+				atan2f(-matrix._13, matrix._11),
 				0.0f
 			};
 		}

@@ -15,6 +15,14 @@ namespace Helios {
 			None,
 			Entity
 		};
+
+		Vector3 GetDebugPos()
+		{
+			if (type != SelectedType::Entity) return Vector3(420, 420, 420);
+
+			return std::any_cast<Entity>(handle).GetComponent<TransformComponent>().Position;
+		}
+
 	private:
 
 		std::any handle;
@@ -23,17 +31,34 @@ namespace Helios {
 
 		static InspectorPanel* instance;
 
+		bool m_addBehaviourPopup = false;
+
 	public:
 
 		static InspectorPanel& GetInstance() { return *instance; }
 		void CheckIfValid()
 		{
-			if (SelectedType::Entity == type) if (SelectedType::Entity == type)
+			if (SelectedType::Entity == type)
 			{
-				if (!std::any_cast<Entity>(handle).IsValid())
+				if (handle.type() != typeid(Entity))
 				{
 					Reset();
 				}
+				/*if (handle.type() == typeid(Entity))
+				{
+					auto test = std::any_cast<Entity>(handle);
+					test.IsValid();
+					if (!std::any_cast<Entity>(handle).IsValid())
+					{
+						Reset();
+					}
+				}*/
+				/*auto test = std::any_cast<Entity>(handle);
+				test.IsValid();
+				if (!std::any_cast<Entity>(handle).IsValid())
+				{
+					Reset();
+				}*/
 			}
 		}
 
@@ -73,7 +98,7 @@ namespace Helios {
 			ImGui::SetWindowFocus("Inspector###inspector_main");
 		}
 
-		InspectorPanel(std::string id = "main") { if (instance == nullptr) instance = this; title = "Inspector###inspector_" + id; }
+		InspectorPanel(std::string id = "main") { if (instance == nullptr) instance = this; m_title = "Inspector###inspector_" + id; }
 		virtual void OnUpdate() override;
 	};
 }

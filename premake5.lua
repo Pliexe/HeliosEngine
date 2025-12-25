@@ -5,10 +5,13 @@
 -- Build files for other editors
 require "vendor/premake-vscode/vscode"
 require "vendor/premake-cmake/cmake"
+require "vendor/export-compile-commands/export-compile-commands"
 
 workspace "HeliosEngine"
     architecture "x64"
     startproject "HeliosEditor"
+
+    libdirs { "HeliosEngine/vendor/dxc/lib" }
 
     configurations
     {
@@ -37,7 +40,9 @@ local function getDotNetSdkPath()
     local sdks = pipe:read('*a')
     pipe:close()
 
-    local sdk = sdks:match('([^\n]+)')
+    local seperator = package.config:sub(1, 1)
+
+    local sdk = sdks:match('%[(.-)%]') .. seperator .. sdks:match('([%d%.]+)%s+%[(.-)%]')
 
     if not sdk then
         error("Failed to find .NET SDK")
@@ -46,12 +51,13 @@ local function getDotNetSdkPath()
     return sdk
 end
 
+
 VULKAN_SDK = os.getenv("VULKAN_SDK")
     
 local DOTNETSDK_DIR = getDotNetSdkPath()
-
+local DOTNETSKD_VER = 69
 if DOTNETSDK_DIR then
-    print("Found .NET SDK at " .. DOTNETSDK_DIR)
+    print("Found .NET SDK " .. DOTNETSKD_VER .. " at \"" .. DOTNETSDK_DIR .. "\"")
 end
 
 outdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -71,15 +77,28 @@ Library = {}
 
 Library["VulkanUtils"] = "%{VULKAN_SDK}/Lib/Vulkan-1.lib"
 
-Library["ShaderC_Debug"] = "%{VULKAN_SDK}/Lib/shaderc_sharedd.lib"
-Library["SPIRV_Cross_Debug"] = "%{VULKAN_SDK}/Lib/spirv-cross-cored.lib"
-Library["SPIRV_Cross_GLSL_Debug"] = "%{VULKAN_SDK}/Lib/spirv-cross-glsld.lib"
-Library["SPIRV_Cross_HLSL_Debug"] = "%{VULKAN_SDK}/Lib/spirv-cross-hlsld.lib"
+if os.host() == "windows" then
+    Library["ShaderC_Debug"] = "%{VULKAN_SDK}/Lib/shaderc_sharedd.lib"
+    Library["SPIRV_Cross_Debug"] = "%{VULKAN_SDK}/Lib/spirv-cross-cored.lib"
+    Library["SPIRV_Cross_GLSL_Debug"] = "%{VULKAN_SDK}/Lib/spirv-cross-glsld.lib"
+    Library["SPIRV_Cross_HLSL_Debug"] = "%{VULKAN_SDK}/Lib/spirv-cross-hlsld.lib"
 
-Library["ShaderC_Release"] = "%{VULKAN_SDK}/Lib/shaderc_shared.lib"
-Library["SPIRV_Cross_Release"] = "%{VULKAN_SDK}/Lib/spirv-cross-core.lib"
-Library["SPIRV_Cross_GLSL_Release"] = "%{VULKAN_SDK}/Lib/spirv-cross-glsl.lib"
-Library["SPIRV_Cross_HLSL_Release"] = "%{VULKAN_SDK}/Lib/spirv-cross-hlsl.lib"
+    Library["ShaderC_Release"] = "%{VULKAN_SDK}/Lib/shaderc_shared.lib"
+    Library["SPIRV_Cross_Release"] = "%{VULKAN_SDK}/Lib/spirv-cross-core.lib"
+    Library["SPIRV_Cross_GLSL_Release"] = "%{VULKAN_SDK}/Lib/spirv-cross-glsl.lib"
+    Library["SPIRV_Cross_HLSL_Release"] = "%{VULKAN_SDK}/Lib/spirv-cross-hlsl.lib"
+else
+    Library["ShaderC_Debug"] = "shaderc_shared"
+    Library["SPIRV_Cross_Debug"] = "spirv-cross-core"
+    Library["SPIRV_Cross_GLSL_Debug"] = "spirv-cross-glsl"
+    Library["SPIRV_Cross_HLSL_Debug"] = "spirv-cross-hlsl"
+
+    Library["ShaderC_Release"] = "shaderc_shared"
+    Library["SPIRV_Cross_Release"] = "spirv-cross-core"
+    Library["SPIRV_Cross_GLSL_Release"] = "spirv-cross-glsl"
+    Library["SPIRV_Cross_HLSL_Release"] = "spirv-cross-hlsl"
+end
+
 
 group "Dependencies"
     include "HeliosEngine/vendor"
@@ -121,7 +140,7 @@ group "Dependencies"
 
         postbuildcommands
         {
-            ("{COPY} %{cfg.buildtarget.relpath} %{wks.location}/bin/" .. outdir .. "/HeliosEditor")
+            ("{COPY} %{cfg.buildtarget.relpath} %{wks.location}/bin/" .. outdir .. "/HeliosEditor/")
         }
 
         filter "system:windows"
@@ -142,6 +161,8 @@ group ""
 
     include "HeliosEngine"
     include "HeliosEditor"
+
+    include "TestApp"
 
 newaction {
     trigger = "clean",

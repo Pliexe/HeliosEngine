@@ -1,0 +1,8 @@
+#pragma once
+
+#ifndef HELIOS_FILE_TYPES_H
+#define HELIOS_FILE_TYPES_H
+
+#define HELIOS_ASSET_BUNDLE_TYPE "HELIOS_ASSET_BUNDLE"
+
+#endif // !HELIOS_FILE_TYPES_H

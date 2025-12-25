@@ -1,4 +1,4 @@
-﻿#include "UUID.h"
+#include "UUID.h"
 
 namespace Helios
 {

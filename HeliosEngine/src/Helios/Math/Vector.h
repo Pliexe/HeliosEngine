@@ -1,6 +1,6 @@
 /* Copyright (c) 2022 Szabadi L�szl� Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
- * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
+ * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/HeliosEngine/blob/master/HeliosEngine/LICENSE.txt
  */
 #pragma once
 #include "pch.h"
@@ -33,7 +33,9 @@ namespace Helios {
 
 		operator float* () { return &x; }
 		Vector2 operator*(const Vector2& vector2) const;
-		static inline Vector2 Clamp (Vector2 value, Vector2 min, Vector2 max);
+		static inline Vector2 Clamp (Vector2 value, Vector2 min, Vector2 max) { 
+			return { std::clamp(value.x, min.x, max.x), std::clamp(value.y, min.y, max.y) };
+		}
 		static inline float Magnitude(const Vector2& dir) { return sqrtf(dir.x * dir.x + dir.y * dir.y); }
 		static inline float Magnitude(Vector2& dir) { return sqrtf(dir.x * dir.x + dir.y * dir.y); }
 		static inline float Magnitude(Vector2 dir) { return sqrtf(dir.x * dir.x + dir.y * dir.y); }
@@ -46,16 +48,17 @@ namespace Helios {
 		static inline Vector2 Zero()	{ return {  0.0f,  0.0f }; }
 		static inline Vector2 One()		{ return {  1.0f,  1.0f }; }
 
-		static inline float Dot(Vector2 lhv, Vector2 rhv);
-		static inline float Length(Vector2 a);
-		static inline float SqrLength(Vector2 a);
-		static inline float Distance(Vector2 a, Vector2 b);
-		static inline Vector2 Project(Vector2 a, Vector2 n);
+		// TODO: Move to header file
+		static /*inline*/ float Dot(Vector2 lhv, Vector2 rhv);
+		static /*inline*/ float Length(Vector2 a);
+		static /*inline*/ float SqrLength(Vector2 a);
+		static /*inline*/ float Distance(Vector2 a, Vector2 b);
+		static /*inline*/ Vector2 Project(Vector2 a, Vector2 n);
 
-		inline float length();
-		inline float sqrLength();
-		inline Vector2 normalize();
-		inline float magnitude() { return sqrtf(x * x + y * y); }
+		/*inline*/ float length();
+		/*inline*/ float sqrLength();
+		/*inline*/ Vector2 normalize();
+		/*inline*/ float magnitude() { return sqrtf(x * x + y * y); }
 
 		bool operator==(const Vector2& other) const;
 		bool operator==(Vector2& other) const;
@@ -123,16 +126,16 @@ namespace Helios {
 		static lVector3Copy Zero { 0.0f,  0.0f,  0.0f }; }*/
 		//static inline const Vector3Copy One { 1.0f,  1.0f,  1.0f }; }
 
-		static inline float Dot(Vector3Copy lhv, Vector3Copy rhv);
-		static inline float Length(Vector3Copy a);
-		static inline float SqrLength(Vector3Copy a);
-		static inline float Distance(Vector3Copy a, Vector3Copy b);
-		static inline Vector3Copy Project(Vector3Copy a, Vector3Copy n);
-		static inline Vector3Copy Cross(Vector3Copy a, Vector3Copy b);
+		static /*inline*/ float Dot(Vector3Copy lhv, Vector3Copy rhv);
+		static /*inline*/ float Length(Vector3Copy a);
+		static /*inline*/ float SqrLength(Vector3Copy a);
+		static /*inline*/ float Distance(Vector3Copy a, Vector3Copy b);
+		static /*inline*/ Vector3Copy Project(Vector3Copy a, Vector3Copy n);
+		static /*inline*/ Vector3Copy Cross(Vector3Copy a, Vector3Copy b);
 
-		inline float length();
-		inline float sqrLength();
-		inline Vector3Copy normalize();
+		/*inline*/ float length();
+		/*inline*/ float sqrLength();
+		/*inline*/ Vector3Copy normalize();
 
 		bool operator==(const Vector3Copy& other) const;
 		bool operator==(Vector3Copy& other) const;
@@ -199,21 +202,21 @@ namespace Helios {
 		static lVector3 Zero { 0.0f,  0.0f,  0.0f }; }*/
 		//static inline const Vector3 One { 1.0f,  1.0f,  1.0f }; }
 
-		static inline float Dot(Vector3 lhv, Vector3 rhv);
-		static inline float Length(Vector3 a);
-		static inline float SqrLength(Vector3 a);
-		static inline float Distance(Vector3 a, Vector3 b);
-		static inline float DistanceSqrt(Vector3 a, Vector3 b);
-		static inline Vector3 Project(Vector3 a, Vector3 n);
-		static inline Vector3 Cross(Vector3 a, Vector3 b);
-		static inline Vector3 Lerp(Vector3 a, Vector3 b, float t);
-		static inline Vector3 MoveTowards(Vector3 a, Vector3 b, float maxDistanceDelta);
+		static /*inline*/ float Dot(Vector3 lhv, Vector3 rhv);
+		static /*inline*/ float Length(Vector3 a);
+		static /*inline*/ float SqrLength(Vector3 a);
+		static /*inline*/ float Distance(Vector3 a, Vector3 b);
+		static /*inline*/ float DistanceSqrt(Vector3 a, Vector3 b);
+		static /*inline*/ Vector3 Project(Vector3 a, Vector3 n);
+		static /*inline*/ Vector3 Cross(Vector3 a, Vector3 b);
+		static /*inline*/ Vector3 Lerp(Vector3 a, Vector3 b, float t);
+		static /*inline*/ Vector3 MoveTowards(Vector3 a, Vector3 b, float maxDistanceDelta);
 		static Vector3 Rotate(const Vector3& normal, const Vector3& axis, float angle);
 
-		inline float length();
-		inline float sqrLength();
-		inline Vector3 normalize();
-		inline float magnitude();
+		/*inline*/ float length();
+		/*inline*/ float sqrLength();
+		/*inline*/ Vector3 normalize();
+		/*inline*/ float magnitude();
 
 		bool operator==(const Vector3& other) const;
 		bool operator==(Vector3& other) const;
@@ -274,15 +277,15 @@ namespace Helios {
 		static inline Vector4 Zero() { return { 0.0f, 0.0f, 0.0f, 0.0f }; }
 		static inline Vector4 One()  { return { 1.0f, 1.0f, 1.0f, 1.0f }; }
 
-		static inline float Dot(Vector4 lhv, Vector4 rhv);
-		static inline float Length(Vector4 a);
-		static inline float SqrLength(Vector4 a);
-		static inline float Distance(Vector4 a, Vector4 b);
-		static inline Vector4 Project(Vector4 a, Vector4 n);
+		static /*inline*/ float Dot(Vector4 lhv, Vector4 rhv);
+		static /*inline*/ float Length(Vector4 a);
+		static /*inline*/ float SqrLength(Vector4 a);
+		static /*inline*/ float Distance(Vector4 a, Vector4 b);
+		static /*inline*/ Vector4 Project(Vector4 a, Vector4 n);
 
-		inline float length();
-		inline float sqrLength();
-		inline Vector4 normalize();
+		/*inline*/ float length();
+		/*inline*/ float sqrLength();
+		/*inline*/ Vector4 normalize();
 
 		bool operator==(const Vector4& other) const;
 		bool operator==(Vector4& other) const;
@@ -322,12 +325,25 @@ namespace Helios {
 		std::string to_string() const;
 	};
 
-	struct HELIOS_API Point : public Vector2 {
+	struct HELIOS_API Point {
 	public:
-		Point(float x, float y) : Vector2(x, y) { }
-		Point() : Vector2() { }
-		Point(const Point& size) : Vector2(size) { }
-		Point(const Vector2& size) : Vector2(size) { }
+		int32_t x, y;
+	
+		Point(int32_t x, int32_t y) : x(x), y(y) { }
+		Point() : x(0), y(0) { }
+		Point(const Point& point) : x(point.x), y(point.y) { }
+		Point(const Vector2& point) : x(point.x), y(point.y) { }
+
+		Point operator+(const Point& other) const;
+		Point operator-(const Point& other) const;
+		Point operator*(const Point& other) const;
+		Point operator/(const Point& other) const;
+		Point operator+=(const Point& other);
+		Point operator-=(const Point& other);
+		Point operator*=(const Point& other);
+		Point operator/=(const Point& other);
+		bool operator==(const Point& other) const;
+		bool operator==(const Vector2& other) const;
 	};
 
 	struct HELIOS_API Size

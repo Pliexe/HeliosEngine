@@ -1,0 +1,14 @@
+#include "Common/MaterialPixelFunctionDefinition.hsl"
+
+cbuffer material
+{
+    float4 color;
+}
+
+Texture2D surfaceTexture;
+SamplerState surfaceSampler;
+
+void MaterialPS(in MaterialPSData input, out MaterialPSData output)
+{
+    output.color = surfaceTexture.Sample(surfaceSampler, input.uv) /* color*/;
+}

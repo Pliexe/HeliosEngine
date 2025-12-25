@@ -14,13 +14,15 @@ namespace Helios
 
 #pragma region Private Functions
 
-    void Time::internal_init() {
+    void Time::internal_init()
+    {
         FIRST_FRAME = std::chrono::high_resolution_clock::now();
         LAST_FRAME = FIRST_FRAME;
         DELTA_TIME = std::chrono::duration<float>(0.0f);
     }
 
-    void Time::internal_frame_update() {
+    void Time::internal_frame_update()
+    {
         auto now = std::chrono::high_resolution_clock::now();
         DELTA_TIME = now - LAST_FRAME;
         LAST_FRAME = now;
@@ -36,3 +38,14 @@ namespace Helios
     unsigned long long Time::CurrentTimeMicroseconds() { return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); }
 #pragma endregion
 }
+
+#pragma region C Interface
+extern "C"
+{
+    HELIOS_EXPORT float helios_time_delta_time() { return Helios::Time::DeltaTime(); }
+    HELIOS_EXPORT float helios_time_frames_per_second() { return Helios::Time::FramesPerSecond(); }
+    // HELIOS_EXPORT std::chrono::high_resolution_clock::time_point Helios_Time_LastFrame() { return Helios::Time::LastFrame(); }
+    HELIOS_EXPORT double helios_time_passed_time() { return Helios::Time::PassedTime(); }
+    HELIOS_EXPORT unsigned long long helios_time_current_time_microseconds() { return Helios::Time::CurrentTimeMicroseconds(); }
+}
+#pragma endregion

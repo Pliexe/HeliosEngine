@@ -1,0 +1,15 @@
+struct VSIn
+{
+    float3 input_position : Position;
+    float2 input_texCoord : TexCoord;
+    float3 input_normal : Normal;
+    
+#ifdef INSTANCED
+
+    matrix input_ViewProjection : ViewProjection;
+    matrix input_ObjectTransform : ObjectTransform;
+    int input_EntityId : EntityId;
+    int input_SceneIndex : SceneIndex;
+
+#endif
+};

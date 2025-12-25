@@ -9,7 +9,7 @@ namespace Helios
 	{
 	public:
 		RustScript() = delete;
-		RustScript(std::string scriptName, DynamicLibrary& rustLibrary);
+		RustScript(const std::string& scriptName, DynamicLibrary& rustLibrary);
 		~RustScript() = default;
 	private:
 		struct RustScriptData {

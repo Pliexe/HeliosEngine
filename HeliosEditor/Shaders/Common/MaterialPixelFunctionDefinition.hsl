@@ -1,0 +1,7 @@
+struct MaterialPSData
+{
+    float4 color;
+    float2 uv;
+};
+
+void MaterialPS(in MaterialPSData input, out MaterialPSData output);

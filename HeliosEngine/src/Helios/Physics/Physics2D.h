@@ -30,12 +30,14 @@ namespace Helios
 	class HELIOS_API ICircleBody2D 
 	{
 	public:
+		virtual ~ICircleBody2D() = default;
 		virtual void SetRadius(float radius) = 0;
 	};
 
 	class HELIOS_API IBoxBody2D
 	{
 	public:
+		virtual ~IBoxBody2D() = default;
 		virtual void SetSize(const Vector2& size) = 0;
 	};
 
@@ -45,6 +47,9 @@ namespace Helios
 	class HELIOS_API IPhysics2D
 	{
 	public:
+		virtual ~IPhysics2D()
+		= default;
+
 		virtual CircleBody2D* CreateCircle(Entity entity, CircleCollider2D& collider) = 0;
 		virtual BoxBody2D* CreateBox(Entity entity, BoxCollider2D& collider) = 0;
 		
@@ -53,6 +58,14 @@ namespace Helios
 
 	class HELIOS_API Physics2D
 	{
+	public:
+		enum class ImplementationType : uint8_t
+		{
+			None,
+			HeliosPhysics,
+			Box2D,
+		};
+
 	private:
 		inline static std::vector<std::tuple<Entity, TransformComponent, Rigidbody2D, CircleCollider2D>> m_CircleColliders;
 		inline static std::vector<std::tuple<Entity, TransformComponent, Rigidbody2D, BoxCollider2D>> m_BoxColliders;
@@ -63,15 +76,16 @@ namespace Helios
 
 		inline static std::vector<Body2DInformation> m_Bodies;
 
-		inline static enum class ImplementationType
-		{
-			HeliosPhysics,
-			Box2D,
-		} s_implementationType = ImplementationType::Box2D;
+		inline static ImplementationType s_implementationType = ImplementationType::None;
 
 	public:
 
 		static IPhysics2D& GetInstance();
+
+		static void Init(ImplementationType type);
+		static void Shutdown();
+
+		static ImplementationType GetImplementationType() { return s_implementationType; }
 
 		static CircleBody2D* CreateCircle(Entity entity, CircleCollider2D& collider) { return GetInstance().CreateCircle(entity, collider); }
 		static BoxBody2D* CreateBox(Entity entity, BoxCollider2D& collider) { return GetInstance().CreateBox(entity, collider); }
@@ -91,7 +105,7 @@ namespace Helios
 			m_Bodies.push_back(body);
 		}*/
 
-		static void Init()
+		/*static void Init()
 		{
 			m_Bodies.reserve(100);
 		}
@@ -99,7 +113,7 @@ namespace Helios
 		static void Shutdown()
 		{
 			m_Bodies.clear();
-		}
+		}*/
 
 		//static void Init();
 		//static void Shutdown();

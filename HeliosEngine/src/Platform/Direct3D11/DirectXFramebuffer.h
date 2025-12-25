@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef HELIOS_PLATFORM_WINDOWS
+
 #include "Helios/Graphics/Framebuffer.h"
 #include "pch.h"
 #include <wrl.h>
@@ -88,3 +90,5 @@ namespace Helios
         } m_depthStencilBuffer;
     };
 }
+
+#endif

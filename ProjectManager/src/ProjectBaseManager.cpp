@@ -3,15 +3,17 @@
 
 #include <filesystem>
 #include <fstream>
+#include <cerrno>
 
 #include "yaml-cpp/yaml.h"
 
 #ifdef __WIN32
-#include <unistd.h>
-#else
 #include <io.h>
-//#include <Windows.h>
+#include <Windows.h>
 #define access _access
+#else
+#include <unistd.h>
+typedef int errno_t;
 #endif
 
 namespace Helios {
@@ -19,17 +21,18 @@ namespace Helios {
 
 		const int GetMaxProjectName() { return MAX_PROJECT_NAME; }
 
-		bool is_file_writable(const std::filesystem::path& file_path)
+		bool is_file_writable(const std::filesystem::path& path)
 		{
-			FILE* file_handle;
-			errno_t file_open_error;
-			if ((file_open_error = fopen_s(&file_handle, (file_path / "test").string().c_str(), "a")) != 0)
-			{
+			std::filesystem::path test_file = path / ".__helios_write_test__";
+
+			std::ofstream out(test_file, std::ios::out | std::ios::trunc);
+			if (!out.is_open()) {
 				return false;
 			}
 
-			fclose(file_handle);
-			
+			out.close();
+			std::error_code ec;
+			std::filesystem::remove(test_file, ec); // optional cleanup
 			return true;
 		}
 
@@ -42,8 +45,6 @@ namespace Helios {
 				
 			return false;
 		}
-
-#include <Windows.h>
 
 		int CreateNewProject(const char* path)
 		{
@@ -125,7 +126,7 @@ namespace Helios {
 			fout.close();
 		}
 
-		StartupConfig& DeserializeStartupConfig(const char* path)
+		StartupConfig DeserializeStartupConfig(const char* path)
 		{
 			try {
 				StartupConfig config;

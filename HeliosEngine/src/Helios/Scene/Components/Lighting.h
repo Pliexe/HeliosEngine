@@ -1,6 +1,5 @@
 #pragma once
 #include "Helios/Resources/Color.h"
-#include "Helios/Graphics/Framebuffer.h"
 
 namespace Helios
 {
@@ -9,7 +8,7 @@ namespace Helios
 		Color color = Color::White;
 		float intensity = 1.0f;
 
-		Ref<Framebuffer> framebuffer;
+		// Ref<Framebuffer> framebuffer;
 
 		BaseLightComponent() = default;
 		BaseLightComponent(const Color& color, float intensity) : color(color), intensity(intensity) {}

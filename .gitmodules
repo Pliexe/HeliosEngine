@@ -18,3 +18,19 @@
 [submodule "vendor/premake-cmake"]
 	path = vendor/premake-cmake
 	url = https://github.com/Jarod42/premake-cmake.git
+[submodule "HeliosEngine/vendor/entt"]
+	path = HeliosEngine/vendor/entt
+	url = https://github.com/skypjack/entt
+[submodule "HeliosEngine/vendor/json"]
+	path = HeliosEngine/vendor/json
+	url = https://github.com/nlohmann/json.git
+	branch = master
+[submodule "HeliosEngine/vendor/xxhash"]
+	path = HeliosEngine/vendor/xxhash
+	url = https://github.com/Cyan4973/xxHash.git
+[submodule "HeliosEngine/vendor/libwebp"]
+	path = HeliosEngine/vendor/libwebp
+	url = https://chromium.googlesource.com/webm/libwebp
+[submodule "HeliosEngine/vendor/spirv-reflect"]
+	path = HeliosEngine/vendor/spirv-reflect
+	url = https://github.com/KhronosGroup/SPIRV-Reflect.git

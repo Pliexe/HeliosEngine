@@ -3,7 +3,6 @@
 #include "pch.h"
 #include "Helios/Resources/Buffer.h"
 
-#ifdef HELIOS_PLATFORM_WINDOWS
 namespace Helios
 {
 	GLenum GetBufferUsage(BufferUsage usage)
@@ -21,4 +20,3 @@ namespace Helios
 		}
 	}
 }
-#endif

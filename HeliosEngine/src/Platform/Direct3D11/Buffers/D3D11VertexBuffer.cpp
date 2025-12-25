@@ -1,9 +1,11 @@
 #include "D3D11VertexBuffer.h"
+#ifdef HELIOS_PLATFORM_WINDOWS
 #include "Platform/Direct3D11/Direct3D11Context.h"
+
 
 namespace Helios
 {
-	D3D11VertexBuffer::D3D11VertexBuffer(const void* data, uint32_t size, BufferUsage usage) : m_Usage(usage)
+	D3D11VertexBuffer::D3D11VertexBuffer(const void* data, uint32_t size, BufferUsage usage) : m_Usage(usage), m_Size(size)
 	{
 		D3D11_BUFFER_DESC bd = {};
 		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -35,7 +37,7 @@ namespace Helios
         );
 	}
 	
-	D3D11VertexBuffer::D3D11VertexBuffer(uint32_t size, BufferUsage usage) : m_Usage(usage)
+	D3D11VertexBuffer::D3D11VertexBuffer(uint32_t size, BufferUsage usage) : m_Usage(usage), m_Size(size)
 	{
 		D3D11_BUFFER_DESC bd = {};
 		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -63,16 +65,7 @@ namespace Helios
         );
 	}
 
-	void D3D11VertexBuffer::Bind(uint32_t slot) const
-	{
-        uint32_t offset = 0;
-		Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(slot, 1, m_Buffer.GetAddressOf(), &m_Stride, &offset);
-	}
 
-	void D3D11VertexBuffer::Unbind(uint32_t slot) const
-	{
-		Direct3D11Context::GetCurrentContext()->GetContext()->IASetVertexBuffers(slot, 0, nullptr, nullptr, nullptr);
-	}
 
 	void D3D11VertexBuffer::SetData(const void* data, uint32_t size)
 	{
@@ -84,15 +77,7 @@ namespace Helios
 		Direct3D11Context::GetCurrentContext()->GetContext()->Unmap(m_Buffer.Get(), 0);
 	}
 
-	void D3D11VertexBuffer::SetInputLayout(const InputLayout& layout)
-	{
-		m_InputLayout = layout;
-		m_Stride = m_InputLayout.GetStride();
 	}
-
-	const InputLayout& D3D11VertexBuffer::GetInputLayout() const
-	{
-		return m_InputLayout;
-	}
-
 }
+
+#endif

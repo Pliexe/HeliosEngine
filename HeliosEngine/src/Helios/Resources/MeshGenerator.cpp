@@ -3,30 +3,39 @@
 
 namespace Helios
 {
-	void MeshGenerator::InitalizeMeshTypeMapping() {
+	inline static std::unordered_map<MeshType, UUID> g_meshTypeToUuidMap;
+	inline static std::unordered_map<UUID, MeshType> g_uuidToMehTypeMap;
+
+	void MeshGenerator::InitializeMeshTypeMapping() {
           // Populate the mapping of mesh to UUID - uuid that begins from
           // 00000000-0000-0000-0000-000000000000
-          meshTypeToUuuidMap[MeshType::Plane] =
+          g_meshTypeToUuidMap[MeshType::Plane] =
               UUID::fromString("00000000-0000-0000-0000-000000000000");
-          meshTypeToUuuidMap[MeshType::Cube] =
+          g_meshTypeToUuidMap[MeshType::Cube] =
               UUID::fromString("00000000-0000-0000-0000-000000000001");
-          meshTypeToUuuidMap[MeshType::Sphere] =
+          g_meshTypeToUuidMap[MeshType::Sphere] =
               UUID::fromString("00000000-0000-0000-0000-000000000002");
-          meshTypeToUuuidMap[MeshType::Cylinder] =
+          g_meshTypeToUuidMap[MeshType::Cylinder] =
               UUID::fromString("00000000-0000-0000-0000-000000000003");
-          meshTypeToUuuidMap[MeshType::Cone] =
+          g_meshTypeToUuidMap[MeshType::Cone] =
               UUID::fromString("00000000-0000-0000-0000-000000000004");
-          meshTypeToUuuidMap[MeshType::Torus] =
+          g_meshTypeToUuidMap[MeshType::Torus] =
               UUID::fromString("00000000-0000-0000-0000-000000000005");
 
           // Populate the mapping of UUID to MeshType
-          for (const auto &pair : meshTypeToUuuidMap) {
-            uuidToMehTypeMap[pair.second] = pair.first;
-            static ResourceResolver::ResourceInfo info = {
-                ResourceResolver::ResourceInfo::INBUILT};
+          for (const auto &pair : g_meshTypeToUuidMap) {
+            g_uuidToMehTypeMap[pair.second] = pair.first;
+            static ResourceInfo info = {
+                ResourceInfo::INBUILT};
             ResourceResolver::RegisterResource(ResourceResolver::s_Meshes, pair.second, info);
 		}
 	}
+
+	UUID MeshGenerator::GetMeshUUID(MeshType meshType)
+	{ return g_meshTypeToUuidMap[meshType]; }
+
+	MeshType MeshGenerator::GetMeshType(UUID uuid)
+	{ return g_uuidToMehTypeMap[uuid]; }
 
 	MeshBuilder MeshGenerator::GeneratePlane()
 	{
@@ -240,25 +249,25 @@ namespace Helios
 
 	// ----------------------------------------------------------------------------
 
-	MeshBuilder MeshGenerator::GenerateGizmosArrow(uint32_t segments)
+	MeshBuilder MeshGenerator::GenerateGizmosArrow(const uint32_t segments)
 	{
 		MeshBuilder arrowBuilder;
 
-		const float arrowHeadHeight = 0.2f;
-		const float arrowHeadRadius = 0.1f;
-		const float arrowBodyHeight = 1.0f - arrowHeadHeight;
-		const float arrowBodyRadius = 0.03f;
+		constexpr float arrowHeadHeight = 0.2f;
+		constexpr float arrowHeadRadius = 0.1f;
+		constexpr float arrowBodyHeight = 1.0f - arrowHeadHeight;
+		constexpr float arrowBodyRadius = 0.03f;
 
 		auto arrowBottom = arrowBuilder.AddVertex({ Vector3(0.0f, 0.0f, 0.0f) });
 		auto arrowHead = arrowBuilder.AddVertex({ Vector3(0.0f,  1.0f, 0.0f) });
 
 		for (int i = 0; i < segments; i++)
 		{
-			float angle = (float)i / (float)segments * 2.0f * PI;
+			float angle = static_cast<float>(i) / static_cast<float>(segments) * 2.0f * PI;
 
-			auto arrowHeadBottom = arrowBuilder.AddVertex({ Vector3(arrowHeadRadius * cos(angle), arrowBodyHeight, arrowHeadRadius * sin(angle)) });
-			auto arrowBodyTop = arrowBuilder.AddVertex({ Vector3(arrowBodyRadius * cos(angle), arrowBodyHeight, arrowBodyRadius * sin(angle)) });
-			auto arrowBodyBottom = arrowBuilder.AddVertex({ Vector3(arrowBodyRadius * cos(angle), 0.0f, arrowBodyRadius * sin(angle)) });
+			const auto arrowHeadBottom = arrowBuilder.AddVertex({ Vector3(arrowHeadRadius * cos(angle), arrowBodyHeight, arrowHeadRadius * sin(angle)) });
+			const auto arrowBodyTop = arrowBuilder.AddVertex({ Vector3(arrowBodyRadius * cos(angle), arrowBodyHeight, arrowBodyRadius * sin(angle)) });
+			const auto arrowBodyBottom = arrowBuilder.AddVertex({ Vector3(arrowBodyRadius * cos(angle), 0.0f, arrowBodyRadius * sin(angle)) });
 
 			if (i == segments - 1)
 			{

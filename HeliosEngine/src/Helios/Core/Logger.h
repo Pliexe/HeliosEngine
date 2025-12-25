@@ -1,13 +1,43 @@
 #pragma once
 
 #include "pch.h"
+#include <string>
 
 #define LOG_ERROR(str) printf("ERROR : %s\n", str);
 
 #define LOG_WARNING(str) printf("WARNING : %s\n", str);
 
-#define HL_MESSAGE(message) ::MessageBoxA(NULL, message, "Critical Error!", MB_ICONERROR);
+#ifdef HELIOS_PLATFORM_WINDOWS
+	#define HL_MESSAGE(message) ::MessageBoxA(NULL, message, "Critical Error!", MB_ICONERROR);
+#elif defined(HELIOS_PLATFORM_LINUX)
 
+	inline void show_error(const char* message) {
+		static int has_kdialog = []() {
+			return system("which kdialog > /dev/null 2>&1") == 0;
+		}();
+
+		static int has_zenity = []() {
+			return system("which zenity > /dev/null 2>&1") == 0;
+		}();
+
+		if (has_kdialog) {
+			std::string str = (std::string("kdialog --error \"") + message + "\"");
+			system(str.c_str());
+		} else if (has_zenity) {
+			std::string str = (std::string("zenity --error --text=\"") + message + "\"");
+			system(str.c_str());
+		} else {
+			std::cerr << "Critical Error: " << message << std::endl;
+		}
+	}
+
+	#define HL_MESSAGE(message) show_error(message)
+
+#else
+	#define HL_MESSAGE(message) std::cout << message << std::endl;
+#endif
+
+#ifdef HELIOS_PLATFORM_WINDOWS
 inline std::string GetLastErrorAsString(HRESULT hr)
 {
 	LPSTR messageBuffer = nullptr;
@@ -45,3 +75,4 @@ inline std::string GetLastErrorAsString()
 
 	return message;
 }
+#endif

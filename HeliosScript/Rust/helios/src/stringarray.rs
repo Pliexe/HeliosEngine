@@ -2,6 +2,18 @@
 use std::ffi::CString;
 use std::os::raw::c_char;
 
+#[no_mangle]
+pub extern "C" fn create_string_array() -> *mut StringArray {
+    Box::into_raw(Box::new(StringArray::new(Vec::new())))
+}
+
+#[no_mangle]
+pub extern "C" fn destroy_string_array(array: *mut StringArray) {
+    unsafe {
+        array.as_mut().unwrap().destroy();
+    }
+}
+
 #[repr(C)]
 pub struct StringArray {
     pub items: *mut *mut c_char,

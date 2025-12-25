@@ -20,6 +20,11 @@ namespace Helios {
 		Quaternion(const Vector4& other) : x(other.x), y(other.y), z(other.z), w(other.w) { };
         Quaternion(const Quaternion& other) : x(other.x), y(other.y), z(other.z), w(other.w) { };
 
+        const std::string to_string() const
+        {
+            return std::format("Quaternion (w: {}, x: {}i, y: {}j, z: {}k)", w, x, y, z); 
+        }
+
         static float Dot(const Quaternion& lhs, const Quaternion& rhs)
         {
             return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
@@ -68,6 +73,26 @@ namespace Helios {
             return { -quat.x, -quat.y, -quat.z, quat.w };
         }
 
+        static Quaternion Normalize(Quaternion quat) // make copy
+        {
+            quat.normalize();
+            return quat;
+        }
+
+        void normalize()
+        {
+            float len = std::sqrt(Dot(*this, *this));
+            if (len > 0.0f)
+            {
+                float invLen = 1.0f / len;
+                *this = { x * invLen, y * invLen, z * invLen, w * invLen };
+            }
+            else
+            {
+                *this = Quaternion::Identity();
+            }
+        }
+
         static Quaternion Multiply(const Quaternion& lhs, const Quaternion& rhs)
         {
             // Quaternion result;
@@ -85,6 +110,9 @@ namespace Helios {
                 lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z  // r
             };
 		}
+
+        static Vector3 ToEulerRads(const Quaternion& quaternion);
+		static Vector3 ToEulerDeg(const Quaternion& quaternion) { return ToEulerDeg(quaternion) * (180.0f / static_cast<float>(H_PI)); }
 
         Vector3 eulerRads();
         Vector3 euler() { return eulerRads() * (180.0f / (float)H_PI); }
@@ -125,29 +153,17 @@ namespace Helios {
 
         Vector3 forward()
         {
-            return {
-                2 * (x * z + w * y),
-                2 * (y * z - w * x),
-                1 - 2 * (x * x + y * y)
-            };
+            return Normalize(*this) * Vector3::Forward();
         }
 
         Vector3 right()
         {
-            return {
-                1 - 2 * (y * y + z * z),
-                2 * (x * y + w * z),
-                2 * (x * z - w * y)
-            };
+            return Normalize(*this) * Vector3::Right();
         }
 
         Vector3 up()
         {
-	        return {
-                2 * (x * y - w * z),
-                1 - 2 * (x * x + z * z),
-                2 * (y * z + w * x)
-            };
+	        return Normalize(*this) * Vector3::Up();
         }
 
         Quaternion operator*(const Quaternion& rotation) const;

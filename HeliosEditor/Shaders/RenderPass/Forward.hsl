@@ -1,0 +1,51 @@
+
+struct VSOut
+{
+    float4 pos : SV_Position;
+    float2 texCoord : TexCoord;
+    float3 viewPos : ViewPos;
+};
+
+#ifdef VERTEX
+
+#include "Common/StandardMeshInputDefinition.hsl"
+
+VSOut MainVS(VSIn pin)
+{
+    VSOut vout;
+    vout.viewPos = (float3)mul(float4(pin.input_position, 1.0f), pin.input_ObjectTransform);
+    vout.pos = mul(mul(pin.input_ViewProjection, pin.input_ObjectTransform), float4(pin.input_position, 1.0f));
+    // vout.pos = mul(float4(pin.input_position, 1.0f), pin.input_worldViewProj);
+    // vout.pos = float4(pin.input_position, 1.0f);
+    vout.texCoord = pin.input_texCoord;
+    return vout;
+}
+#endif
+
+#ifdef PIXEL
+
+#include "Common/MaterialPixelFunctionDefinition.hsl"
+
+@import "Surface/MaterialPixelShader"
+
+
+struct PSOut
+{
+    float4 color : SV_Target0;
+};
+
+PSOut MainPS(VSOut vout)
+{
+    PSOut pout;
+    MaterialPSData mpsdin =  (MaterialPSData)0;;
+    MaterialPSData mpsdout;
+    mpsdin.uv = vout.texCoord;
+
+    MaterialPS(mpsdin, mpsdout);
+    
+    pout.color = mpsdout.color;
+
+    return pout;
+}
+
+#endif

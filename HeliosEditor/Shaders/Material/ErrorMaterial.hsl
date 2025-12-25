@@ -1,0 +1,6 @@
+#include "Common/MaterialPixelFunctionDefinition.hsl"
+
+void MaterialPS(in MaterialPSData input, out MaterialPSData output)
+{
+    output.color = float4(1.0f, 0.0f, 1.0f, 1.0f);
+}

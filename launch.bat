@@ -1,0 +1,1 @@
+"D:\Dev\HeliosEngine\bin\Debug-windows-x86_64\HeliosEditor\HeliosEditor.exe" --project \"C:\\Users\\dz\\Documents\\Helios Projects\\Sandbox\"

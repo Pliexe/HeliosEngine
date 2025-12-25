@@ -11,9 +11,9 @@ namespace Helios
 		const Vector3& GetPosition() const;
 		const Vector3 GetRotation();
 		const Quaternion& GetOrientation() const;
-		const Vector3& GetForward();
-		const Vector3& GetUp();
-		const Vector3& GetRight();
+		const Vector3 GetForward();
+		const Vector3 GetUp();
+		const Vector3 GetRight();
 		void SetPosition(const Vector3& position);
 		void SetRotation(const Vector3& rotation);
 		void SetOrientation(const Quaternion& quaternion);
@@ -39,6 +39,6 @@ namespace Helios
 		TransformComponent m_TransformComponent;
 		float m_Speed = 10.0f;
 		float m_SpeedMultiplier = 2.0f;
-		float m_Sensitivity = 200.0f;
+		float m_Sensitivity = 50.0f;
 	};
 }

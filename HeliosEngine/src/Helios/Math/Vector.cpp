@@ -1,6 +1,6 @@
 /* Copyright (c) 2022 Szabadi L�szl� Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
- * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
+ * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/HeliosEngine/blob/master/HeliosEngine/LICENSE.txt
  */
 #include "Vector.h"
 #include "Matrix.h"
@@ -24,14 +24,9 @@ namespace Helios {
 		return result;
 	}
 
-	Vector2 Vector2::Clamp(Vector2 value, Vector2 min, Vector2 max)
-	{
-		return { std::clamp(value.x, min.x, max.x), std::clamp(value.y, min.y, max.y) };
-	}
-
 	float Vector2::Dot(Vector2 lhv, Vector2 rhv)
 	{
-		return { lhv.x * rhv.x + lhv.y * rhv.y };
+		return lhv.x * rhv.x + lhv.y * rhv.y;
 	}
 
 	float Vector2::Length(Vector2 a) { return sqrt(Dot(a, a)); }
@@ -101,7 +96,7 @@ namespace Helios {
 		else return { x / length, y / length, z / length };
 	}
 
-    inline float Vector3::magnitude()
+    float Vector3::magnitude()
     {
 		return sqrt(x * x + y * y + z * z);
     }
@@ -134,7 +129,7 @@ namespace Helios {
 			a.y * b.z - a.z * b.y,
 			a.z * b.x - a.x * b.z,
 			a.x * b.y - a.y * b.x
-		};
+		}; 
 	}
 
 	Vector3 Vector3::Lerp(Vector3 a, Vector3 b, float t)
@@ -153,7 +148,7 @@ namespace Helios {
 	}
 
 	float Vector3::length() { return Length(*this); }
-	float Vector3::sqrLength() { return Length(*this); }
+	float Vector3::sqrLength() { return SqrLength(*this); }
 
 	Vector3 Vector3::operator+(const Vector3& other) const { return { x + other.x, y + other.y, z + other.z }; }
 	Vector3 Vector3::operator-(const Vector3& other) const { return { x - other.x, y - other.y, z - other.z }; }
@@ -246,7 +241,7 @@ namespace Helios {
 
 	std::string Vector3::to_string() const
 	{
-		return std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z);
+		return std::format("Vector3 (x: {}, y: {}, z: {})", x, y, z);
 	}
 
 	Vector3 Vector3::GetPosition(const Matrix4x4& projection)
@@ -320,7 +315,7 @@ namespace Helios {
 
 	float Vector4::Dot(Vector4 lhv, Vector4 rhv)
 	{
-		return { lhv.x * rhv.x + lhv.y * rhv.y + lhv.z * rhv.z + lhv.w * rhv.w };
+		return lhv.x * rhv.x + lhv.y * rhv.y + lhv.z * rhv.z + lhv.w * rhv.w;
 	}
 
 	Vector4 Vector4::normalize()
@@ -424,6 +419,68 @@ namespace Helios {
 
 #pragma endregion
 
+
+#pragma region Point
+	
+	Point Point::operator+(const Point& other) const
+	{
+		return { x + other.x, y + other.y };
+	}
+
+	Point Point::operator-(const Point& other) const
+	{
+		return { x - other.x, y - other.y };
+	}
+
+	Point Point::operator*(const Point& other) const
+	{
+		return { x * other.x, y * other.y };
+	}
+
+	Point Point::operator/(const Point& other) const
+	{
+		return { x / other.x, y / other.y };
+	}
+
+	Point Point::operator+=(const Point& other)
+	{
+		this->x += other.x;
+		this->y += other.y;
+		return *this;
+	}
+
+	Point Point::operator-=(const Point& other)
+	{
+		this->x -= other.x;
+		this->y -= other.y;
+		return *this;
+	}
+
+	Point Point::operator*=(const Point& other)
+	{
+		this->x *= other.x;
+		this->y *= other.y;
+		return *this;
+	}
+
+	Point Point::operator/=(const Point& other)
+	{
+		this->x /= other.x;
+		this->y /= other.y;
+		return *this;
+	}
+
+	bool Point::operator==(const Point& other) const
+	{
+		return x == other.x && y == other.y;
+	}
+	
+	bool Point::operator==(const Vector2& other) const
+	{
+		return x == other.x && y == other.y;
+	}
+
+#pragma endregion
 
 #pragma region Size
 	

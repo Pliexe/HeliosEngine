@@ -2,15 +2,16 @@
 
 namespace Helios
 {
-	RustScript::RustScript(std::string scriptName, DynamicLibrary& rustLibrary)
+	RustScript::RustScript(const std::string& scriptName, DynamicLibrary& rustLibrary)
 	{
 		m_scriptName = scriptName;
 
-		m_onCreate = reinterpret_cast<void(*)()>(rustLibrary.GetFunction("onCreate"));
-		m_onStart = reinterpret_cast<void(*)()>(rustLibrary.GetFunction("onStart"));
-		m_onUpdate = reinterpret_cast<void(*)()>(rustLibrary.GetFunction("onUpdate"));
-		m_onDestroy = reinterpret_cast<void(*)()>(rustLibrary.GetFunction("onDestroy"));
+		m_onCreate = rustLibrary.GetSymbol<void>("onCreate");
+		m_onStart = rustLibrary.GetSymbol<void>("onStart");
+		m_onUpdate = rustLibrary.GetSymbol<void>("onUpdate");
+		m_onDestroy = rustLibrary.GetSymbol<void>("onDestroy");
 
 		if (m_onCreate) m_onCreate();
 	}
+
 }

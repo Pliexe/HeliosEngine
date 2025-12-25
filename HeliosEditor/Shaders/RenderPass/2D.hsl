@@ -1,0 +1,35 @@
+
+stuct VSOut
+{
+    float3 pos : Position;
+};
+
+#ifdef VERTEX
+struct VSin
+{
+    float3 pos : Position;
+    float4 col : Color;
+};
+
+VSOut VSMain(VSin pin)
+{
+    VSOut vout;
+    return vout;
+}
+#endif
+
+#ifdef PIXEL
+
+struct PSOut
+{
+
+};
+
+PSOut PSMain(VSOut vout)
+{
+    PSOut pout;
+
+    return pout;
+}
+
+#endif

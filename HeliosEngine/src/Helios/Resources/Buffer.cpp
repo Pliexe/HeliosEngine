@@ -1,6 +1,7 @@
 #include "Buffer.h"
 
 #include "Helios/Graphics/Graphics.h"
+#include "Helios/Graphics/GraphicsDevice.h"
 
 #ifdef HELIOS_PLATFORM_WINDOWS
 
@@ -15,22 +16,12 @@
 namespace Helios
 {
 
-	Ref<UnsafeUniformBuffer> UnsafeUniformBuffer::Create(uint32_t binding_slot, uint32_t size)
+	Ref<UnsafeUniformBuffer> UnsafeUniformBuffer::Create(std::uint32_t size)
 	{
-		switch (Graphics::GetAPI())
-		{
-#ifdef HELIOS_PLATFORM_WINDOWS
-		case Graphics::API::Direct3D11:
-			return CreateRef<D3D11UniformBuffer>(binding_slot, size + (16 - size % 16));
-			return nullptr;
-#endif
-		}
-
-		HL_ASSERT(false, "Unknown Graphics API!");
-		return nullptr;
+		return Graphics::GetMainDevice()->CreateUniformBuffer(size);
 	}
 
-	Ref<UnsafeUniformBuffer> UnsafeUniformBuffer::Create(uint32_t binding_slot, const void* data, uint32_t size)
+	Ref<UnsafeUniformBuffer> UnsafeUniformBuffer::Create(const void* data, std::uint32_t size)
 	{
 		switch (Graphics::GetAPI())
 		{
@@ -38,6 +29,7 @@ namespace Helios
 			case Graphics::API::Direct3D11:
 				return CreateRef<D3D11UniformBuffer>(binding_slot, data, size + (16 - size % 16));
 #endif
+			default: break;
 		}
 
 		HL_ASSERT(false, "Unknown Graphics API!");
@@ -51,38 +43,18 @@ namespace Helios
 
 	Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count, BufferUsage usage)
 	{
-		switch (Graphics::GetAPI())
-		{
-		case Graphics::API::Direct3D11: return CreateRef<D3D11IndexBuffer>(indices, count, usage);
-		}
-
-		HL_ASSERT(false, "Unknown Graphics API!");
-		return nullptr;
+		return Graphics::GetMainDevice()->CreateIndexBuffer(indices, count, usage);
 	}
-	
-	
 
 
 	Ref<UnsafeVertexBuffer> UnsafeVertexBuffer::Create(uint32_t size, BufferUsage usage)
 	{
-		switch (Graphics::GetAPI())
-		{
-		case Graphics::API::Direct3D11: return CreateRef<D3D11VertexBuffer>(size, usage);
-		}
-
-		HL_ASSERT(false, "Unknown Graphics API!");
-		return nullptr;
+		return Graphics::GetMainDevice()->CreateVertexBuffer(nullptr, size, usage);
 	}
 
 	Ref<UnsafeVertexBuffer> UnsafeVertexBuffer::Create(const void* data, uint32_t size, BufferUsage usage)
 	{
-		switch (Graphics::GetAPI())
-		{
-		case Graphics::API::Direct3D11: return CreateRef<D3D11VertexBuffer>(data, size, usage);
-		}
-
-		HL_ASSERT(false, "Unknown Graphics API!");
-		return nullptr;
+		return Graphics::GetMainDevice()->CreateVertexBuffer(data, size, usage);
 	}
 	Ref<VertexArray> VertexArray::Create(const InputLayouts& inputLayouts, std::initializer_list<BufferSpecification> bufferSpecifications)
 	{
@@ -90,7 +62,10 @@ namespace Helios
 
 		switch (Graphics::GetAPI())
 		{
+#ifdef HELIOS_PLATFORM_WINDOWS
 		case Graphics::API::Direct3D11: return CreateRef<D3D11VertexArray>(inputLayouts, bufferSpecifications);
+#endif
+		default: break;
 		}
 
 		HL_ASSERT(false, "Unknown Graphics API!");
@@ -103,7 +78,10 @@ namespace Helios
 
 		switch (Graphics::GetAPI())
 		{
+#ifdef HELIOS_PLATFORM_WINDOWS
 		case Graphics::API::Direct3D11: return CreateRef<D3D11VertexArray>(inputLayouts, buffers);
+#endif
+		default: break;
 		}
 
 		HL_ASSERT(false, "Unknown Graphics API!");
@@ -115,7 +93,10 @@ namespace Helios
 
 		switch (Graphics::GetAPI())
 		{
+#ifdef HELIOS_PLATFORM_WINDOWS
 		case Graphics::API::Direct3D11: return CreateRef<D3D11VertexArray>(inputLayouts, bufferSpecifications, instanceBuffer);
+#endif
+		default: break;
 		}
 
 		HL_ASSERT(false, "Unknown Graphics API!");

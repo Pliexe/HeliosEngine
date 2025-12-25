@@ -59,6 +59,7 @@ namespace Helios::Editor {
 
 		void HandleDisplayInteractions(std::filesystem::path path, bool is_directory);
 		void DisplayDirectoryOrFile(std::filesystem::path path);
+		void Rename(const std::filesystem::path& rename_path);
 		void RenameInputField();
 		void DisplayFile(std::filesystem::path file);
 
@@ -66,7 +67,7 @@ namespace Helios::Editor {
 	public:
 		ExplorerPanel()
 		{
-			title = "Explorer";
+			m_title = "Explorer";
 			m_custom_begin = true;
 		}
 

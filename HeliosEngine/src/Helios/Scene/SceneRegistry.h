@@ -1,15 +1,15 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
- * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
+ * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/HeliosEngine/blob/master/HeliosEngine/LICENSE.txt
  */
 #pragma once
 
 #include "EditorCamera.h"
+#include "Helios/Resources/Image.h"
 #include "pch.h"
 #include "Scene.h"
 #include "Entity.h"
 #include "Helios/Core/Base.h"
-#include <Helios/Graphics/Framebuffer.h>
 
 namespace Helios {
 	class Scene;
@@ -18,37 +18,33 @@ namespace Helios {
 	class HELIOS_API SceneRegistry
 	{
 	public:
-		enum class Mode
-		{
-			Single,
-			Additive
-		};
-		
-		static void Register(std::string name, std::filesystem::path path);
+		enum class Mode : uint8_t { Single, Additive };
+		static void Register(const std::string& name, const std::filesystem::path& path);
 		
 		static bool LoadEmptyScene(std::string name, Mode mode = Mode::Single);
-		static bool LoadScene(std::filesystem::path path, Mode mode = Mode::Single);
-		static bool LoadScene(std::string name, std::filesystem::path path, Mode mode = Mode::Single);
-		static bool LoadScene(std::string name, Mode mode = Mode::Single);
-
-		static bool UnloadScene(std::string name);
+		static bool LoadScene(const std::filesystem::path& path, Mode mode = Mode::Single);
+		static bool LoadScene(const std::string& name, const std::filesystem::path& path, Mode mode = Mode::Single);
+		static bool LoadScene(const std::string& name, Mode mode = Mode::Single);
+		
+		static bool UnloadScene(const std::string& name);
 		
 		static Entity GetPrimaryCamera();
 		static void OnRuntimeUpdate();
 		static void OnEditorUpdate();
+		
+		static void OnRuntimeRender(std::vector<Ref<Image>> frameBuffers);
+		static void OnEditorRender(Ref<Image>& framebuffer, EditorCamera camera);
 
-		static void OnRuntimeRender(std::vector<Ref<Framebuffer>> frameBuffers);
-		static void OnEditorRender(Ref<Framebuffer>& framebuffer, EditorCamera camera);
-
-		inline static std::vector<Ref<Scene>>& GetActiveScenes() { return m_activeScenes; }
+		static std::vector<Ref<Scene>>& GetActiveScenes();
 		static WeakRef<Scene> GetSceneByIndex(uint32_t scene_index);
 
-	private:
-		
-		inline static std::vector<Ref<Scene>> m_activeScenes;
-		inline static std::unordered_map<std::string, std::filesystem::path> m_scenePaths;
+		static void Shutdown();
 
-		inline static std::vector<std::future<void>> m_asyncTasks;
+#ifdef HELIOS_EDITOR
+		static void Backup();
+
+		static void Restore();
+#endif
 	};
 }
 

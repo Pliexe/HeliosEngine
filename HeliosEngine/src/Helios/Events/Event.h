@@ -6,7 +6,13 @@ namespace Helios
 {
 	enum class EventType
 	{
-		None = 0, WindowClose, WindowResize
+		None = 0, WindowClose, WindowResize,
+
+		SceneDestroyed = 10,
+
+		SceneEntityCreated = 20, SceneEntityDestroyed,
+
+		BehaviourEnable = 100, BehaviourDisable,
 	};
 
 	class Event
@@ -31,16 +37,28 @@ namespace Helios
 		[[nodiscard]] GraphicalWindow& GetWindow() const { return m_Window; }
 	protected:
 		GraphicalWindow& m_Window;
-	};;
+	};
+
+	namespace Scripting {
+		class Behaviour;
+		class BehaviourEvent : public Event
+		{
+		public:
+			BehaviourEvent(Behaviour& behaviour) : m_Behaviour(behaviour) { }
+			[[nodiscard]] Behaviour& GetBehaviour() const { return m_Behaviour; }
+		protected:
+			Behaviour& m_Behaviour;
+		};
+	}
 
 	class EventDispatcher
 	{
 	public:
-		EventDispatcher(Event& event) : m_Event(event) { }
+		explicit EventDispatcher(Event& event) : m_Event(event) { }
 
 		template<typename T, typename F>
-		std::enable_if_t< std::is_base_of_v<Event, T>, bool>
-		Dispatch(const F& func)
+		bool Dispatch(const F& func)
+		requires (std::is_base_of_v<Event, T>)
 		{
 			if (m_Event.GetType() == T::GetStaticType())
 			{

@@ -23,17 +23,17 @@ namespace Helios
 		return m_TransformComponent.Rotation;
 	}
 
-	const Vector3& EditorCamera::GetForward()
+	const Vector3 EditorCamera::GetForward()
 	{
 		return m_TransformComponent.Forward();
 	}
 
-	const Vector3& EditorCamera::GetUp()
+	const Vector3 EditorCamera::GetUp()
 	{
 		return m_TransformComponent.Up();
 	}
 
-	const Vector3& EditorCamera::GetRight()
+	const Vector3 EditorCamera::GetRight()
 	{
 		return m_TransformComponent.Right();
 	}
@@ -100,9 +100,24 @@ namespace Helios
 
 	void EditorCamera::HandleMovement(Vector2 direction)
     {
-		m_TransformComponent.Rotation = Quaternion::FromEuler(m_TransformComponent.Rotation.euler() + direction * Time::DeltaTime() * m_Sensitivity);
+		auto rotationEuler = m_TransformComponent.Rotation.euler();
+
+		float pitchDelta = direction.y * m_Sensitivity * Time::DeltaTime();
+		float yawDelta   = direction.x * m_Sensitivity * Time::DeltaTime();
+
+		rotationEuler.x = std::clamp(rotationEuler.x + pitchDelta, -89.0f, 89.0f);
+		rotationEuler.y += yawDelta;
+
+		m_TransformComponent.Rotation = Quaternion::FromEuler(rotationEuler);
+		m_TransformComponent.Rotation.normalize();
+
+
 
 		float speed = (InputManager::IsKeyPressed(HL_KEY_SHIFT) ? m_SpeedMultiplier : 1.0f) * m_Speed;
+
+		std::cout << "Forward: " << m_TransformComponent.Forward().to_string() << std::endl;
+		std::cout << "Right:   " << m_TransformComponent.Right().to_string() << std::endl;
+		std::cout << "Up:      " << m_TransformComponent.Up().to_string() << std::endl;
 
 		Vector3 movement;
 

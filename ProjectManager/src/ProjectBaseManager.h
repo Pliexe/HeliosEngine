@@ -5,10 +5,14 @@
 
 #define MAX_PROJECT_NAME 50
 
-#ifdef DLL_BUILD
-#define PROJECT_MANAGER_API extern "C" __declspec(dllexport)
+#ifdef __WIN32
+	#ifdef DLL_BUILD
+	#define PROJECT_MANAGER_API extern "C" __declspec(dllexport)
+	#else
+	#define PROJECT_MANAGER_API extern "C" __declspec(dllimport)
+	#endif
 #else
-#define PROJECT_MANAGER_API extern "C" __declspec(dllimport)
+	#define PROJECT_MANAGER_API
 #endif
 
 #define PROJECT_MANAGER_EXIT_OK								 0
@@ -28,6 +32,6 @@ namespace Helios {
 		PROJECT_MANAGER_API int CreateNewProject(const char* path);
 		PROJECT_MANAGER_API int CreateStartupConfig(std::filesystem::path path);
 		PROJECT_MANAGER_API void SerializeStartupConfig(const char* path, StartupConfig& config);
-		PROJECT_MANAGER_API StartupConfig& DeserializeStartupConfig(const char* path);
+		PROJECT_MANAGER_API StartupConfig DeserializeStartupConfig(const char* path);
 	}
 }

@@ -10,15 +10,21 @@ namespace Helios
 		m_Triangles.reserve(reservedTriangleCount);
 	}
 
-	inline uint32_t MeshBuilder::AddVertex(MeshVertex vertex)
+	//inline uint32_t MeshBuilder::AddVertex(MeshVertex vertex)
+	//{
+	//	m_Vertices.emplace_back(std::forward<MeshVertex>(vertex));
+	//	return m_Vertices.size() - 1;
+	//}
+
+	uint32_t MeshBuilder::AddVertex(MeshVertex&& vertex)
 	{
-		m_Vertices.emplace_back(vertex);
+		m_Vertices.emplace_back(std::forward<MeshVertex>(vertex));
 		return m_Vertices.size() - 1;
 	}
 
 	uint32_t MeshBuilder::AddVertex(Vector3 position, Vector2 texCoord, Vector3 normal)
 	{
-		m_Vertices.emplace_back(MeshVertex{ position, texCoord, normal });
+		m_Vertices.emplace_back(MeshVertex{ std::forward<Vector3>(position), std::forward<Vector2>(texCoord), std::forward<Vector3>(normal) }); //MeshVertex{ position, texCoord, normal });
 		return m_Vertices.size() - 1;
 	}
 
@@ -33,18 +39,32 @@ namespace Helios
 		m_Triangles.emplace_back(Triangle{ index0, index2, index3 });
 	}
 
-	void MeshBuilder::CreateQuadFace(MeshVertex v0, MeshVertex v1, MeshVertex v2, MeshVertex v3)
+	void MeshBuilder::CreateQuadFace(MeshVertex& v0, MeshVertex& v1, MeshVertex& v2, MeshVertex& v3)
 	{
-		auto index0 = AddVertex(v0);
-		auto index2 = AddVertex(v2);
+		auto index0 = AddVertex(std::forward<MeshVertex>(v0));
+		auto index2 = AddVertex(std::forward<MeshVertex>(v2));
 
-		m_Triangles.emplace_back(Triangle{ index0, AddVertex(v1), index2 });
-		m_Triangles.emplace_back(Triangle{ index0, index2, AddVertex(v3) });
+		m_Triangles.emplace_back(Triangle{ std::forward<uint32_t>(index0), std::forward<uint32_t>(AddVertex(std::forward<MeshVertex>(v1))), std::forward<uint32_t>(index2) });
+		m_Triangles.emplace_back(Triangle{ std::forward<uint32_t>(index0), std::forward<uint32_t>(index2), std::forward<uint32_t>(AddVertex(std::forward<MeshVertex>(v3))) });
 	}
 
-	void MeshBuilder::CreateTriangleFace(MeshVertex v0, MeshVertex v1, MeshVertex v2)
+	void MeshBuilder::CreateQuadFace(MeshVertex&& v0, MeshVertex&& v1, MeshVertex&& v2, MeshVertex&& v3)
 	{
-		m_Triangles.emplace_back(Triangle{ AddVertex(v0), AddVertex(v1), AddVertex(v2) });
+		auto index0 = AddVertex(std::forward<MeshVertex>(v0));
+		auto index2 = AddVertex(std::forward<MeshVertex>(v2));
+
+		m_Triangles.emplace_back(Triangle{ std::forward<uint32_t>(index0), std::forward<uint32_t>(AddVertex(std::forward<MeshVertex>(v1))), std::forward<uint32_t>(index2) });
+		m_Triangles.emplace_back(Triangle{ std::forward<uint32_t>(index0), std::forward<uint32_t>(index2), std::forward<uint32_t>(AddVertex(std::forward<MeshVertex>(v3))) });
+	}
+
+	void MeshBuilder::CreateTriangleFace(MeshVertex& v0, MeshVertex& v1, MeshVertex& v2)
+	{
+		m_Triangles.emplace_back(Triangle{ AddVertex(std::forward<MeshVertex>(v0)), AddVertex(std::forward<MeshVertex>(v1)), AddVertex(std::forward<MeshVertex>(v2)) }); //m_Triangles.emplace_back(Triangle{ AddVertex(v0), AddVertex(v1), AddVertex(v2) });
+	}
+
+	void MeshBuilder::CreateTriangleFace(MeshVertex&& v0, MeshVertex&& v1, MeshVertex&& v2)
+	{
+		m_Triangles.emplace_back(Triangle{ AddVertex(std::forward<MeshVertex>(v0)), AddVertex(std::forward<MeshVertex>(v1)), AddVertex(std::forward<MeshVertex>(v2)) }); //m_Triangles.emplace_back(Triangle{ AddVertex(v0), AddVertex(v1), AddVertex(v2) });
 	}
 
 	std::vector<MeshVertex>& MeshBuilder::GetVertices()
@@ -62,20 +82,16 @@ namespace Helios
 		return Vector3::Cross(v1.position - v0.position, v2.position - v0.position).normalize();
 	}
 
-	MeshVertex MeshBuilder::CalculateVertexNormal(std::vector<MeshVertex> m_Vertices, std::vector<Triangle> m_Triangles, const uint32_t index)
+	void MeshBuilder::CalculateVertexNormals(MeshBuilder& meshBuilder)
 	{
-		// Calulcate vertex normal from all connected triangles and return the average
-		Vector3 normal = Vector3::Zero();
-
-		for (const auto& triangle : m_Triangles)
+		for (size_t i = 0; i < meshBuilder.m_Triangles.size(); i++)
 		{
-			if (triangle.i0 == index || triangle.i1 == index || triangle.i2 == index)
-			{
-				normal += CalculateNormal(m_Vertices[triangle.i0], m_Vertices[triangle.i1], m_Vertices[triangle.i2]);
-			}
-		}
+			Vector3 normal = CalculateNormal(meshBuilder.m_Vertices[meshBuilder.m_Triangles[i].i0], meshBuilder.m_Vertices[meshBuilder.m_Triangles[i].i1], meshBuilder.m_Vertices[meshBuilder.m_Triangles[i].i2]);
 
-		return MeshVertex{ Vector3::Zero(), Vector2::Zero(), normal };
+			meshBuilder.m_Vertices[meshBuilder.m_Triangles[i].i0].normal += normal;
+			meshBuilder.m_Vertices[meshBuilder.m_Triangles[i].i1].normal += normal;
+			meshBuilder.m_Vertices[meshBuilder.m_Triangles[i].i2].normal += normal;
+		}
 	}
 
 	void MeshBuilder::Reserve(uint32_t vertexCount, uint32_t triangleCount)
@@ -83,4 +99,5 @@ namespace Helios
 		m_Vertices.reserve(vertexCount);
 		m_Triangles.reserve(triangleCount);
 	}
+
 }

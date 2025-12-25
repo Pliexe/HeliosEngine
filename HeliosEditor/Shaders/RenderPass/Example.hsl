@@ -1,0 +1,55 @@
+
+struct VSOut
+{
+    float4 pos : SV_Position;
+    float2 uv : TEXCOORD0;
+};
+
+#ifdef VERTEX
+
+struct VSin
+{
+    float3 position : Position;
+    float2 texCoord : TexCoord;
+    // float3 normal : Normal;
+};
+
+VSOut MainVS(VSin pin)
+{
+    VSOut vout;
+
+    vout.pos = float4(pin.position, 1.0f);
+    // vout.uv = pin.position.xy * 0.5 + 0.5;
+    vout.uv = pin.texCoord;
+
+    return vout;
+}
+#endif
+
+#ifdef PIXEL
+
+#include "Common/MaterialPixelFunctionDefinition.hsl"
+
+@import "Surface/MaterialPixelShader"
+
+
+struct PSOut
+{
+    float4 color : SV_Target0;
+};
+
+PSOut MainPS(VSOut vout)
+{
+    PSOut pout;
+    MaterialPSData mpsdin =  (MaterialPSData)0;;
+    MaterialPSData mpsdout;
+    mpsdin.uv = vout.uv;
+
+    MaterialPS(mpsdin, mpsdout);
+    
+    pout.color = mpsdout.color;
+
+    return pout;
+}
+
+#endif

@@ -17,7 +17,7 @@ namespace Helios
 	struct HELIOS_API MeshRendererComponent
 	{
 		Ref<Mesh> mesh;
-		Ref<Material> material;
+		Ref<MaterialInstance> material;
 
 		bool castShadow = true;
 

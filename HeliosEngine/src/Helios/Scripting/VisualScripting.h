@@ -66,7 +66,11 @@ namespace Helios
 			
 			FILE* fp;
 
+#ifdef HELIOS_PLATFORM_WINDOWS
 			fopen_s(&fp, file, "rb");
+#else
+			fp = fopen(file, "rb");
+#endif
 
 			if (fp == nullptr) throw NoFileException();
 
@@ -103,7 +107,11 @@ namespace Helios
 							break;
 						case ScriptAllocData::Type::String:
 							allocations[i].location = new char[strlen(tmp.str)];
+#ifdef HELIOS_PLATFORM_WINDOWS
 							strcpy_s((char*)allocations[i].location, strlen(tmp.str), tmp.str);
+#else
+							strcpy((char*)allocations[i].location, tmp.str);
+#endif
 							break;
 						default:
 							{ fclose(fp); throw InvalidFileException(); }
@@ -176,6 +184,7 @@ namespace Helios
 				j["data"] = ui64;
 				break;
 			}
+			return j;
 		}
 
 		void Deserialize(json j)
@@ -240,6 +249,7 @@ namespace Helios
 			j["x"] = position.x;
 			j["y"] = position.y;
 			tmp["position"] = j;
+			return tmp;
 		}
 		void Deserialize(json tmp)
 		{

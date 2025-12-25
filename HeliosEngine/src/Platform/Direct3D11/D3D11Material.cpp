@@ -1,5 +1,7 @@
 #include "D3D11Material.h"
 
+#ifdef HELIOS_PLATFORM_WINDOWS
+
 #include "Direct3D11Context.h"
 #include "Helios/Core/Logger.h"
 #include "Helios/Core/Asserts.h"
@@ -82,3 +84,5 @@ namespace Helios {
         Direct3D11Context::GetCurrentContext()->GetContext()->PSSetSamplers(m_lastBoundSlot, 1, nullss);
     }
 }
+
+#endif

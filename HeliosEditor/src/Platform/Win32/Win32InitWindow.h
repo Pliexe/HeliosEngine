@@ -2,6 +2,8 @@
 #include "pch.h"
 #include "InitWindow.h"
 
+#ifdef HELIOS_PLATFORM_WINDOWS
+
 namespace Helios
 {
 	class Win32InitWindow final : public InitWindow
@@ -35,3 +37,5 @@ namespace Helios
 
 	
 }
+
+#endif

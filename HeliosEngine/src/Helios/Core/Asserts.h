@@ -20,7 +20,7 @@
 
 #endif // HELIOS_DEBUG
 
-#ifdef HL_DEBUG
+#ifdef HELIOS_DEBUG
 #define HL_PANIC(message) { Helios::ShowMessage("Helios Panic!", "\nReason: " + message + "\n\nIn file: " + __FILE__ + "\nAt line: " + std::to_string(__LINE__) + "\nIn function: " + __FUNCTION__, Message::IconError); HL_DEBUGBREAK(); std::abort(); }
 #else
 #define HL_PANIC(message) { Helios::ShowMessage("Helios Panic!", message, Message::IconError); HL_DEBUGBREAK(); std::abort(); }

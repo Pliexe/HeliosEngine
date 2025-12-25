@@ -4,7 +4,6 @@
 
 #include <glad/glad.h>
 
-#ifdef HELIOS_PLATFORM_WINDOWS
 namespace Helios
 {
 	class OpenGLIndexBuffer : public IndexBuffer
@@ -15,8 +14,8 @@ namespace Helios
 		OpenGLIndexBuffer(uint32_t count, BufferUsage usage);
 		~OpenGLIndexBuffer();
 
-		void Bind() const override;
-		void Unbind() const override;
+		void Bind() const;
+		void Unbind() const;
 
 		void SetData(const uint32_t* data, uint32_t count) override;
 		std::string ToString() const override;
@@ -31,4 +30,3 @@ namespace Helios
 		uint32_t* m_Data;
 	};
 }
-#endif

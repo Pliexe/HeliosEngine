@@ -1,11 +1,13 @@
 #pragma once
+
 #include "pch.h"
 
 namespace Helios
 {
 	class IScriptHandler;
-	struct HELIOS_API ScriptComponent
+	struct ScriptComponent
 	{
+		std::byte a;
 		//Scope<IScriptHandler> handler;
 
 		ScriptComponent() = default;

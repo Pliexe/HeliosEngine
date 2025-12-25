@@ -1,0 +1,1 @@
+dotnet publish .\HeliosScript.csproj -r win-x64 -c Release

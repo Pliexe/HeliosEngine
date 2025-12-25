@@ -1,51 +1,90 @@
 #include "Shader.h"
+#include "Helios/Core/Exceptions.h"
 #include "Helios/Graphics/Graphics.h"
-
-#ifdef HELIOS_PLATFORM_WINDOWS
-#include "Platform/Direct3D11/Shader/D3D11Shader.h"
-#endif
-#include "Platform/Vulkan/Shader/VkShader.h"
 
 namespace Helios
 {
 
-	#define DX_SHADER_EXTENSION ".hlsl"
-	#define VK_SHADER_EXTENSION ".spv"
-	
-	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertex_path, InputLayouts inputLayouts, DepthFunc depthFunc, Topology topology)
-	{
-		switch (Graphics::GetAPI())
-		{
-		case Graphics::API::Direct3D11: return CreateRef<D3D11Shader>(name, vertex_path + DX_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
-		case Graphics::API::Vulkan: return CreateRef<VkShader>(name, vertex_path + VK_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
-		}
+    void VertexShader::Validate(const std::vector<Ref<ShaderModule>>& shaderModules)
+    {
+        size_t mains = 0;
+        for (auto& shaderModule : shaderModules)
+        {
+            if (none(shaderModule->GetStage() & ShaderModule::Stage::Vertex))
+            {
+                HL_EXCEPTION(true, "ShaderModule stage given to VertexShader is not of Vertex stage!");
+            }
+            if (shaderModule->GetFamily() == ShaderModule::Family::Main)
+            {
+                HL_EXCEPTION(mains > 0, "Only 1 Main Shader may be present in the list of ShaderModules!");
+                mains++;
+            }
+        }
+    }
+    
+    Ref<VertexShader> VertexShader::Create(const std::vector<Ref<ShaderModule>>& shaderModules)
+    {
+        return Graphics::GetMainDevice()->CreateVertexShader(shaderModules);
+    }
 
-		HL_ASSERT(false, "Unknown Graphics API!");
-		return nullptr;
-	}
+    Ref<VertexShader> VertexShader::Create(const std::filesystem::path &path, InputLayouts inputLayouts)
+    {
+        return Graphics::GetMainDevice()->CreateVertexShader(path, inputLayouts);
+    }
 
-	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertex_path, const std::string& pixel_path, InputLayouts inputLayouts, DepthFunc depthFunc, Topology topology)
-	{
-		switch (Graphics::GetAPI())
-		{
-		case Graphics::API::Direct3D11: return CreateRef<D3D11Shader>(name, vertex_path + DX_SHADER_EXTENSION, pixel_path + DX_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
-		case Graphics::API::Vulkan: return CreateRef<VkShader>(name, vertex_path + VK_SHADER_EXTENSION, pixel_path + VK_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
-		}
+    void PixelShader::Validate(const std::vector<Ref<ShaderModule>>& shaderModules)
+    {
+        size_t mains = 0;
+        for (auto& shaderModule : shaderModules)
+        {
+            if (none(shaderModule->GetStage() & ShaderModule::Stage::Pixel))
+            {
+                HL_EXCEPTION(true, "ShaderModule stage given to PixelShader is not of Pixel stage!");
+            }
+            if (shaderModule->GetFamily() == ShaderModule::Family::Main)
+            {
+                HL_EXCEPTION(mains > 0, "Only 1 Main Shader may be present in the list of ShaderModules!");
+                mains++;
+            }
+        }
+    }
 
-		HL_ASSERT(false, "Unknown Graphics API!");
-		return nullptr;
-	}
+    Ref<PixelShader> PixelShader::Create(const std::vector<Ref<ShaderModule>>& shaderModules)
+    {
+        return Graphics::GetMainDevice()->CreatePixelShader(shaderModules);
+    }
 
-	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertex_path, const std::string& pixel_path, const std::string& geometry_path, InputLayouts inputLayouts, DepthFunc depthFunc, Topology topology)
-	{
-		switch (Graphics::GetAPI())
-		{
-		case Graphics::API::Direct3D11: return CreateRef<D3D11Shader>(name, vertex_path + DX_SHADER_EXTENSION, pixel_path + DX_SHADER_EXTENSION, geometry_path + DX_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
-		case Graphics::API::Vulkan: return CreateRef<VkShader>(name, vertex_path + VK_SHADER_EXTENSION, pixel_path + VK_SHADER_EXTENSION, geometry_path + VK_SHADER_EXTENSION, inputLayouts, depthFunc, topology);
-		}
+    Ref<PixelShader> PixelShader::Create(const std::filesystem::path &path)
+    {        
+        return Graphics::GetMainDevice()->CreatePixelShader(path);
+    }
 
-		HL_ASSERT(false, "Unknown Graphics API!");
-		return nullptr;
-	}
+    void GeometryShader::Validate(const std::vector<Ref<ShaderModule>>& shaderModules)
+    {
+        size_t mains = 0;
+        for (auto& shaderModule : shaderModules)
+        {
+            if (none(shaderModule->GetStage() & ShaderModule::Stage::Geometry))
+            {
+                HL_EXCEPTION(true, "ShaderModule stage given to GeometryShader is not of Geometry stage!");
+            }
+            if (shaderModule->GetFamily() == ShaderModule::Family::Main)
+            {
+                HL_EXCEPTION(mains > 0, "Only 1 Main Shader may be present in the list of ShaderModules!");
+                mains++;
+            }
+        }
+    }
 
-}
+    Ref<GeometryShader> GeometryShader::Create(const std::vector<Ref<ShaderModule>>& shaderModules)
+    {
+        return Graphics::GetMainDevice()->CreateGeometryShader(shaderModules);
+    }
+
+    Ref<GeometryShader> GeometryShader::Create(const std::filesystem::path &path)
+    {        
+        return Graphics::GetMainDevice()->CreateGeometryShader(path);
+    }
+
+    
+} // namespace Helios

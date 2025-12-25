@@ -1,0 +1,8 @@
+[package]
+name = "AeëtesHub"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+directories-next = "2.0.0"
+eframe = "0.32.2"

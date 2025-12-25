@@ -36,14 +36,8 @@ namespace Helios
         static MeshBuilder CreateGizmosArrow(uint32_t segments = 16.0f);
 
         static const uint32_t GetMaxInstanceCount() { return 100000; }
-        static const Ref<UnsafeVertexBuffer>& GetInstanceVertexBuffer()
-        { 
-            if (!s_InstanceVertexBuffer)
-                s_InstanceVertexBuffer = UnsafeVertexBuffer::Create(GetMaxInstanceCount(), BufferUsage::Dynamic);
-            return s_InstanceVertexBuffer;
-        }
 
-        static const SafeInputLayouts<2> GetInputLayout()
+        static const SafeInputLayouts<2> GetInputLayoutInstanced()
         {
             static SafeInputLayouts<2> layouts({
                 InputLayout {
@@ -51,39 +45,48 @@ namespace Helios
                     { "TexCoord", ShaderDataType::Float32_2 },
                     { "Normal", ShaderDataType::Float32_3 }
                 },
-                InputLayout {
+                InputLayout {{
                     { "WorldViewProj", ShaderDataType::MatrixFloat4x4 },
                     { "WorldProj", ShaderDataType::MatrixFloat4x4 },
                     { "Color", ShaderDataType::Float32_4 },
                     { "EntityId", ShaderDataType::Int32 },
-                    { "SceneIndex", ShaderDataType::Int32 }
+                    { "SceneIndex", ShaderDataType::Int32 },
+                    }, InputClassification::PerInstanceData
                 }
             });
             return layouts;
         }
 
-        void Bind();
-        inline uint32_t getVertexCount() const { return /*m_VertexBuffer->getCount<MeshVertex>();*/ -1; }
-        inline uint32_t getIndexCount() const { return m_VertexArray->GetIndexBuffer()->GetCount(); /*m_IndexBuffer->GetCount();*/ }
-		inline Ref<IndexBuffer> getIndexBuffer() const { return m_IndexBuffer; }
-		inline Ref<UnsafeVertexBuffer> getVertexBuffer() const { return (m_VertexArray->GetVertexBuffers()[0]); }
+        static const SafeInputLayouts<1> GetInputLayout()
+        {
+            static SafeInputLayouts<1> layouts({
+                InputLayout {
+                    { "Position", ShaderDataType::Float32_3 },
+                    { "TexCoord", ShaderDataType::Float32_2 },
+                    { "Normal", ShaderDataType::Float32_3 }
+                },
+            });
+            return layouts;
+        }
 
-        inline std::vector<MeshVertex>& GetVertices() { return m_Vertices; }
+        uint32_t GetVertexCount() const { return m_Vertices.size(); }
+        uint32_t GetIndexCount() const { return m_IndexBuffer->GetCount(); }
+		Ref<IndexBuffer> GetIndexBuffer() const { return m_IndexBuffer; }
+		Ref<VertexBuffer<MeshVertex>> GetVertexBuffer() const { return m_VertexBuffer; }
 
-		inline std::string& GetName() { return m_Name; }
-		inline const Helios::UUID& GetID() { return m_ID; }
+        std::vector<MeshVertex>& GetVertices() { return m_Vertices; }
+
+		std::string& GetName() { return m_Name; }
+		const Helios::UUID& GetID() { return m_ID; }
 
     private:
-
-		inline static Ref<UnsafeVertexBuffer> s_InstanceVertexBuffer;
 
 		std::vector<MeshVertex> m_Vertices;
 
         std::string m_Name;
 		const Helios::UUID m_ID;
 
-        //Ref<VertexBuffer<MeshVertex>> m_VertexBuffer;
-		Ref<VertexArray> m_VertexArray;
+        Ref<VertexBuffer<MeshVertex>> m_VertexBuffer;
         Ref<IndexBuffer> m_IndexBuffer;
 
     };

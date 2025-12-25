@@ -20,4 +20,5 @@ namespace Helios
 	private:
 		uint32_t m_Width, m_Height;
 	};
+
 }

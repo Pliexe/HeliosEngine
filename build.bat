@@ -9,6 +9,7 @@ IF "%~1" == "/help" GOTO PrtHelp
 IF "%~1" == "-help" GOTO PrtHelp
 
 IF "%~1" == "compile" GOTO Compile
+IF "%~1" == "release" GOTO Release
 IF "%~1" == "build" GOTO Compile
 
 vendor\premake\bin\premake5.exe --cc=clang %1
@@ -22,6 +23,7 @@ echo.
 echo Commands:
 echo.
 echo   compile       - Compile the project
+echo   release       - Compile the project for release
 echo   gmake         - Generate GNU makefiles for POSIX, MinGW, and Cygwin
 echo   gmake2        - Generate GNU makefiles for POSIX, MinGW, and Cygwin
 echo   xcode4        - Generate Apple Xcode 4 project files
@@ -51,5 +53,22 @@ msbuild %solutionfile% /t:Build /p:Configuration=Debug /p:Platform=x64
 @REM msbuild %solutionfile% /t:Build /p:Configuration=Release /p:Platform=x64
 
 @REM echo "Not supported yet"
+
+GOTO Done
+
+:Release
+
+vendor\premake\bin\premake5.exe --cc=clang vs2022
+
+if not defined DevEnvDir (
+    call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
+)
+
+set solutionfile="HeliosEngine.sln"
+msbuild %solutionfile% /t:Build /p:Configuration=Release /p:Platform=x64
+
+@REM echo "Not supported yet"
+
+GOTO Done
 
 :Done

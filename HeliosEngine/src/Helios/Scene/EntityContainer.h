@@ -11,35 +11,41 @@ namespace Helios
 	{
 	public:
 
-		EntityContainer() : m_components(), m_UUIDMap() {}
-		virtual ~EntityContainer() = default;
+		EntityContainer();
+		virtual ~EntityContainer();
 
-		inline void CloneFrom(EntityContainer& other);
+		void CloneFrom(const Ref<EntityContainer>& other);
 
-		inline bool Contains(entt::entity entity);
-		inline bool Contains(Entity entity);
-		inline bool Contains(UUID uuid);
+		bool Contains(entt::entity entity);
+		bool Contains(Entity entity);
+		bool Contains(UUID uuid);
 
-		inline Entity GetEntity(entt::entity entity);
-		inline Entity GetEntity(UUID uuid);
+		Entity GetEntity(entt::entity entity);
+		Entity GetEntity(UUID uuid);
 
-		uint32_t GetEntityCount() { return m_components.size(); }
+		constexpr size_t GetEntityCount() { return m_components.storage<entt::entity>().size(); }
 
-		static bool DestroyEntity(entt::entity entity);
-		static bool DestroyEntity(UUID uuid);
-		static bool DestroyEntity(Entity entity);
+		bool DestroyEntity(entt::entity entity);
+		bool DestroyEntity(UUID uuid);
+		bool DestroyEntity(Entity entity);
 
 		// Clones the entity and returns the new entity (deep copy)
 		Entity CloneEntity(Entity entity);
 		// Copies the entity and returns the new entity (shallow copy)
 		Entity CopyEntity(Entity entity);
 
-		inline Entity CreateEntity();
-		inline Entity CreateEntity(std::string name);
-		inline Entity CreateEntity(entt::entity parent);
-		inline Entity CreateEntity(Vector3 position);
-		inline Entity CreateEntity(std::string name, entt::entity parent);
+		Entity CreateEntity();
+		Entity CreateEntity(std::string name);
+		Entity CreateEntity(entt::entity parent);
+		Entity CreateEntity(Vector3 position);
+		Entity CreateEntity(std::string name, entt::entity parent);
 		Entity CreateEntity(std::string name, Vector3 position, entt::entity parent = entt::null);
+
+		template <typename T>
+		T& GetComponent(entt::entity entity)
+		{
+			return m_components.get<T>(entity);
+		}
 
 		template <typename... T>
 		auto GetComponentsWith()
@@ -57,6 +63,8 @@ namespace Helios
 		std::unordered_map<UUID, entt::entity> m_UUIDMap;
 
 		friend class Entity;
+		friend class EntityHot;
 		friend class Transform;
+		friend class Scene;
 	};
 }

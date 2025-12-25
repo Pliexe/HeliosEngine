@@ -9,6 +9,13 @@ project "HeliosEngine"
 
     pchheader "pch.h"
     pchsource "src/pch.cpp"
+
+    postbuildcommands
+    {
+        -- ("{COPY} %{cfg.buildtarget.relpath} %{wks.location}/bin/" .. outdir .. "/HeliosEditor/"),
+        
+        -- ("{COPY} %{wks.location}/bin/" .. outdir .. "/HeliosEngine/*" .. " %{cfg.buildtarget.relpath}/"),
+    }
     
     files
     {
@@ -17,6 +24,7 @@ project "HeliosEngine"
         "src/**.hpp",
         "src/**.cpp",
         "src/**.inl",
+        "src/**.ixx",
         "vendor/stb/include/stb_image.h",
     }
 
@@ -24,16 +32,21 @@ project "HeliosEngine"
     {
         "src",
         "vendor/stb/include",
-        "vendor/entt/include",
+        "vendor/hostfxr",
+        "vendor/xxhash",
+        "vendor/entt/single_include/entt",
         "vendor/json/single_include/nlohmann",
+        "vendor/libwebp/src",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.ImGuiMisc}",
         "%{IncludeDir.ImGuiBackends}",
-        "%{IncludeDir.Yaml}",
         "%{IncludeDir.GLFW}",
+        "%{IncludeDir.Yaml}",
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.Box2D}",
         "%{IncludeDir.VulkanSDK}",
+        -- "%{IncludeDir.SPIRV-Reflect}",
+        "vendor/spirv-reflect",
     }
 
     links
@@ -43,11 +56,12 @@ project "HeliosEngine"
         "GLFW",
         "GLAD",
         "Box2D",
-        "opengl32.lib",
-        "%{Library.VulkanUtils}",
-        "%{VULKAN_SDK}/Lib/shaderc_shared.lib",
-        "%{VULKAN_SDK}/Lib/glslang.lib",
+        "xxhash",
+        "dxcompiler",
+        "libwebp",
+        "SPIRV-Reflect",
     }
+
 
     defines
     {
@@ -60,12 +74,19 @@ project "HeliosEngine"
         "GLFW_INCLUDE_VULKAN",
     }
 
+
     flags { "NoPCH" }
 
-    postbuildcommands
-    {
-        ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outdir .. "/HeliosEditor"),
-    }
+    -- postbuildcommands
+    -- {
+    --     ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outdir .. "/HeliosEditor/"),
+    -- }
+
+    filter { "files:**/vendor/**", "toolset:clang" }
+        buildoptions { "-Wno-nontrivial-memcall" }
+
+    filter { "files:**/vendor/**" }
+        warnings "Off"
 
     filter "system:windows"
         systemversion "latest"
@@ -77,6 +98,11 @@ project "HeliosEngine"
             "d2d1.lib",
             "dwrite.lib",
             "Windowscodecs.lib",
+            "Dwmapi.lib",
+            "opengl32.lib",
+            "%{VULKAN_SDK}/Lib/shaderc_shared.lib",
+            "%{VULKAN_SDK}/Lib/glslang.lib",
+            "%{Library.VulkanUtils}",
         }
 
         defines
@@ -85,26 +111,59 @@ project "HeliosEngine"
             "STBI_WINDOWS_UTF8",
         }
 
+    filter "system:not windows"
+        -- Exclude Windows/Direct3D11 files on non-Windows platforms
+        removefiles { "src/Platform/Direct3D11/**", "src/Platform/Windows/**" }
+
     filter "system:linux"
         pic "on"
         systemversion "latest"
-        
-        includedirs
-        {
-            "/usr/include/linux",
-            "/usr/include/gtk-3.0",
-            "/usr/include/glib-2.0",
-            "/usr/lib64/glib-2.0/include",
-            "/usr/include/pango-1.0",
-            "/usr/include/harfbuzz",
-            "/usr/include/cairo",
-            "/usr/include/gdk-pixbuf-2.0",
-            "/usr/include/atk-1.0"
+
+        includedirs { 
+            "vendor/dxc/include",
+            -- "/usr/include/glib-2.0/glib"
+            -- "/usr/include/gtk-4.0"
+
+            -- QT
+            -- "/usr/include/qt6/",
         }
+
+        -- libdirs { "/usr/lib/qt6" }
+
+        links
+        {
+            "GL",
+            "vulkan",
+            "shaderc_shared",
+            "glslang",
+
+            -- QT
+            -- "Qt6Widgets",
+            -- "Qt6Gui",
+            -- "Qt6Core",
+            
+            "wayland-client", "wayland-cursor", "wayland-egl",
+        }
+        
+        -- includedirs
+        -- {
+        --     "/usr/include/linux",
+        --     "/usr/include/gtk-3.0",
+        --     "/usr/include/glib-2.0",
+        --     "/usr/lib64/glib-2.0/include",
+        --     "/usr/include/pango-1.0",
+        --     "/usr/include/harfbuzz",
+        --     "/usr/include/cairo",
+        --     "/usr/include/gdk-pixbuf-2.0",
+        --     "/usr/include/atk-1.0"
+        -- }
 
         defines
         {
             "HELIOS_PLATFORM_LINUX",
+            "USE_ZENITY",
+            "_GLFW_X11",
+            "_GLFW_WAYLAND",
         }
 
     filter "configurations:Debug"

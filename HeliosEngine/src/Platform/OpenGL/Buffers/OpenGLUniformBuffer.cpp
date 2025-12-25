@@ -34,13 +34,13 @@ namespace Helios
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
-	void OpenGLUniformBuffer::Bind() const
-	{
-		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
-	}
+	// void OpenGLUniformBuffer::Bind() const
+	// {
+	// 	glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
+	// }
 
-	void OpenGLUniformBuffer::Unbind() const
-	{
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-	}
+	// void OpenGLUniformBuffer::Unbind() const
+	// {
+	// 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	// }
 }

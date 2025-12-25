@@ -1,4 +1,7 @@
 #pragma once
+
+#ifdef HELIOS_PLATFORM_WINDOWS
+
 #include "Helios/Core/Asserts.h"
 #include "Helios/Core/Exceptions.h"
 #include "Helios/Graphics/GraphicsContext.h"
@@ -223,3 +226,5 @@ namespace Helios
 		friend class D3D11MainRenderTarget;
 	};
 }
+
+#endif

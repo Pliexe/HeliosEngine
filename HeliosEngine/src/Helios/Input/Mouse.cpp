@@ -1,10 +1,12 @@
-/* Copyright (c) 2022 Szabadi László Zsolt
+/* Copyright (c) 2022 Szabadi Lï¿½szlï¿½ Zsolt
  * You should have received a copy of the GNU AGPL v3.0 license with
- * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/VisualDiscordBotCreator/blob/master/LICENSE
+ * this file. If not, please write to: pliexe, or visit : https://github.com/Pliexe/HeliosEngine/blob/master/HeliosEngine/LICENSE.txt
  */
 #include "pch.h"
 #include "Mouse.h"
 #include "Helios/Math/Vector.h"
+#include <GLFW/glfw3.h>
+#include "Helios/Core/Application.h"
 
 using namespace Helios;
 
@@ -13,13 +15,22 @@ void Mouse::SetCursorState(MouseState state)
 	switch (state)
 	{
 	case Mouse::Locked:
+#ifdef HELIOS_PLATFORM_WINDOWS
 		//SetCapture(DepricatedApplication::hWnd);
 		RECT cRect;
 		//GetWindowRect(DepricatedApplication::hWnd, &cRect);
 		ClipCursor(&cRect);
-		break;
-	case Mouse::Show:
-		break;
+#else
+        glfwSetInputMode((GLFWwindow*)Application::GetInstance().GetWindow()->GetNativeWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+#endif
+        break;
+    case Mouse::Show:
+        glfwSetInputMode((GLFWwindow*)Application::GetInstance().GetWindow()->GetNativeWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        break;
+    case Mouse::Hidden:
+        glfwSetInputMode((GLFWwindow*)Application::GetInstance().GetWindow()->GetNativeWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+        break;
+
 	default:
 		break;
 	}
@@ -27,11 +38,7 @@ void Mouse::SetCursorState(MouseState state)
 
 Point Mouse::GetPosition()
 {
-	POINT p;
-	if (GetCursorPos(&p)) {
-		/*if (ScreenToClient(DepricatedApplication::instance->m_hWnd, &p)) {
-			return Point(p.x, p.y);
-		}*/
-	}
-	return Point();
+    double xpos, ypos;
+    glfwGetCursorPos((GLFWwindow*)Application::GetInstance().GetWindow()->GetNativeWindow(), &xpos, &ypos);
+    return Point(static_cast<int>(xpos), static_cast<int>(ypos));
 }

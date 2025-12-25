@@ -5,7 +5,8 @@
 
 namespace Helios
 {
-	__declspec(align(16)) struct Matrix4x4 
+	// __declspec(align(16)) struct Matrix4x4 
+	struct alignas(16) Matrix4x4 
 	{
 		union
 		{
@@ -22,6 +23,8 @@ namespace Helios
 			__m128 rows[4];
 			#endif
 		};
+
+
 
 		static Matrix4x4 TranslationColumn(float x, float y, float z)
 		{
@@ -42,6 +45,10 @@ namespace Helios
 				0.0f, 0.0f, 0.0f, 1.0f
 			};
 		}
+
+
+		inline static Matrix4x4 Translation(const Vector3& translation) { return TranslationColumn(translation); }
+		inline static Matrix4x4 Translation(float x, float y, float z) { return TranslationColumn(x, y, z); }
 
 		static Matrix4x4 TranslationRow(float x, float y, float z)
 		{
@@ -68,8 +75,8 @@ namespace Helios
 		{
 			return {
 				1.0f,  0.0f,   0.0f,   0.0f,
-				0.0f,  cos(x), sin(x), 0.0f,
-				0.0f, -sin(x), cos(x), 0.0f,
+				0.0f,  std::cosf(x), std::sinf(x), 0.0f,
+				0.0f, -std::sinf(x), std::cosf(x), 0.0f,
 				0.0f,  0.0f,   0.0f,   1.0f
 			};
 		}
@@ -77,9 +84,9 @@ namespace Helios
 		static Matrix4x4 RotationYRow(float y)
 		{
 			return {
-				cos(y), 0.0f, -sin(y), 0.0f,
+				std::cosf(y), 0.0f, -std::sinf(y), 0.0f,
 				0.0f,   1.0f,  0.0f,   0.0f,
-				sin(y), 0.0f,  cos(y), 0.0f,
+				std::sinf(y), 0.0f,  std::cosf(y), 0.0f,
 				0.0f,   0.0f,  0.0f,   1.0f
 			};
 		}
@@ -87,8 +94,8 @@ namespace Helios
 		static Matrix4x4 RotationZRow(float z)
 		{
 			return {
-				cos(z), -sin(z), 0.0f, 0.0f,
-				sin(z),  cos(z), 0.0f, 0.0f,
+				std::cosf(z), -std::sinf(z), 0.0f, 0.0f,
+				std::sinf(z),  std::cosf(z), 0.0f, 0.0f,
 				0.0f,    0.0f,   1.0f, 0.0f,
 				0.0f,    0.0f,   0.0f, 1.0f
 			};
@@ -110,7 +117,7 @@ namespace Helios
 			};
 		}
 
-		static Matrix4x4 RotationColumn(Quaternion rotation)
+		static Matrix4x4 RotationColumn(const Quaternion& rotation)
 		{
 			// Create a 4x4 rotation matrix from a quaternion in column major
 
@@ -121,6 +128,8 @@ namespace Helios
 				0.0f, 0.0f, 0.0f, 1.0f
 			};
 		}
+
+		inline static Matrix4x4 Rotation(const Quaternion& rotation) { return RotationColumn(rotation); }
 
 		static float Determinant(Matrix4x4 matrix)
 		{
@@ -156,7 +165,7 @@ namespace Helios
 		}
 
 		static Matrix4x4 Inverse(Matrix4x4 matrix)
-		{
+		{			
 			Matrix4x4 result = matrix;
 
 			// Calculate the determinant of the matrix
@@ -170,7 +179,7 @@ namespace Helios
 
 			// Calculate the inverse of the matrix
 
-			// TODO: This can be optimized, there are repeated calculations here but I can't be bothered to optimize it right now since it's a wall of text
+			// TODO: This can be optimized, there are repeated calculations here, but I can't be bothered to optimize it right now since it's a wall of text
 
 			result._11 = (matrix._22 * matrix._33 * matrix._44 + matrix._23 * matrix._34 * matrix._42 + matrix._24 * matrix._32 * matrix._43 - matrix._22 * matrix._34 * matrix._43 - matrix._23 * matrix._32 * matrix._44 - matrix._24 * matrix._33 * matrix._42) / determinant;
 			result._12 = (matrix._12 * matrix._34 * matrix._43 + matrix._13 * matrix._32 * matrix._44 + matrix._14 * matrix._33 * matrix._42 - matrix._12 * matrix._33 * matrix._44 - matrix._13 * matrix._34 * matrix._42 - matrix._14 * matrix._32 * matrix._43) / determinant;
@@ -263,17 +272,19 @@ namespace Helios
 #endif
 		}
 
-		Matrix4x4 operator* (Matrix4x4 b) { return Matrix4x4::Multiply(*this, b); }
-		const Matrix4x4 operator*(const Matrix4x4& b) const { return Matrix4x4::Multiply(*this, b); }
+		inline Matrix4x4 operator* (Matrix4x4 b) { return Matrix4x4::Multiply(*this, b); }
+		const inline Matrix4x4 operator*(const Matrix4x4& b) const { return Matrix4x4::Multiply(*this, b); }
 		Vector4 operator*(const Vector4& vector4) const;
 		std::string toString() const
 		{
 			std::stringstream ss;
+			ss << "Matrix4x4 (" << "\n";
 			ss << std::fixed << std::setprecision(2);
 			ss << _11 << " " << _12 << " " << _13 << " " << _14 << "\n";
 			ss << _21 << " " << _22 << " " << _23 << " " << _24 << "\n";
 			ss << _31 << " " << _32 << " " << _33 << " " << _34 << "\n";
 			ss << _41 << " " << _42 << " " << _43 << " " << _44 << "\n";
+			ss << ")" << "\n";
 			return ss.str();
 		}
 
@@ -400,7 +411,7 @@ namespace Helios
 			float q = 1.0f / tan(fov * 0.5f);
 			float a = q / aspectRatio;
 			float b = (near_c + far_c) / (near_c - far_c);
-			float c = (2.0f * near_c * far_c) / (near_c - far_c);		
+			float c = (2.0f * near_c * far_c) / (near_c - far_c);
 
 			return {
 				a, 0.0f, 0.0f, 0.0f,
@@ -418,6 +429,7 @@ namespace Helios
 			float a = q / aspectRatio;
 			float b = far_c / (far_c - near_c);
 			float c = (-far_c * near_c) / (far_c - near_c);
+			
 
 			return {
 				a, 0.0f, 0.0f, 0.0f,
@@ -434,12 +446,15 @@ namespace Helios
 			float b = far_c / (far_c - near_c);
 			float c = (-far_c * near_c) / (far_c - near_c);
 
-			return {
-				a, 0.0f, 0.0f, 0.0f,
-				0.0f, q, 0.0f, 0.0f,
-				0.0f, 0.0f, b, 0.0f,
-				0.0f, 0.0f, c, 1.0f
-			};
+			Matrix4x4 m = {};
+
+			m._11 = a;
+			m._22 = q;
+			m._33 = b;
+			m._43 = c;
+			m._34 = 1.0f;
+
+			return m;
 		}
 
 		// Creates a right handed orthographic projection matrix in column major order
@@ -458,15 +473,19 @@ namespace Helios
 			};
 		}
 
-		// Creates a left handed orthographic projection matrix in column major order
-		static Matrix4x4 OrthographicLH(float size, float aspect_ratio, float near_c, float far_c)
+		static Matrix4x4 OrthographicLH(float width, float height, float near_c, float far_c)
 		{
-			float a = 2.0f / size;
-			float b = 2.0f / (size / aspect_ratio);
+			/*float a = 2.0f / width;
+			float b = 2.0f / height;
 			float c = 1.0f / (far_c - near_c);
-			float d = near_c / (near_c - far_c);
+			float d = near_c / (near_c - far_c);*/
 
-			return {
+			float a = 2.0f / width;
+			float b = 2.0f / height;
+			float c = 1.0f / (far_c - near_c);
+			float d = -c * near_c;
+
+			return Matrix4x4 {
 				a, 0.0f, 0.0f, 0.0f,
 				0.0f, b, 0.0f, 0.0f,
 				0.0f, 0.0f, c, d,
@@ -476,10 +495,15 @@ namespace Helios
 
 		static Matrix4x4 OrthographicLH(float left, float right, float bottom, float top, float near_c, float far_c)
 		{
+			/*float a = 2.0f / (right - left);
+			float b = 2.0f / (top - bottom);
+			float c = 1.0f / (far_c - near_c);
+			float d = near_c / (near_c - far_c);*/
+
 			float a = 2.0f / (right - left);
 			float b = 2.0f / (top - bottom);
 			float c = 1.0f / (far_c - near_c);
-			float d = near_c / (near_c - far_c);
+			float d = -c * near_c;
 
 			return {
 				a, 0.0f, 0.0f, 0.0f,
@@ -525,9 +549,7 @@ namespace Helios
 			};
 #endif
 		}
-
-#define Translation TranslationColumn
-#define Rotation RotationColumn
+		
 	};
 
 	inline Vector4 Matrix4x4::operator*(const Vector4& vector4) const
