@@ -238,7 +238,7 @@ namespace Helios
 
 		ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 25);
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg]);
-		if (ImGui::BeginChild("BottomBar", ImVec2(0, 25), true, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_AlwaysUseWindowPadding))
+		if (ImGui::BeginChild("BottomBar", ImVec2(0, 25), ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_Borders, ImGuiWindowFlags_MenuBar))
 		{
 			if (ImGui::BeginMenuBar())
 			{

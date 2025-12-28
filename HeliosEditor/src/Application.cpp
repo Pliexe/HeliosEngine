@@ -819,6 +819,7 @@ void HeliosEditor::OnGUI()
 
     if (ImGui::IsKeyReleased(ImGuiKey_S) &&
         ImGui::IsKeyReleased(ImGuiKey_ModCtrl))
+        ImGui::IsKeyReleased(ImGuiKey_LeftCtrl))
         Project::SaveScene(ImGui::IsKeyReleased(ImGuiKey_LeftShift) ||
                            ImGui::IsKeyReleased(ImGuiKey_RightShift));
 

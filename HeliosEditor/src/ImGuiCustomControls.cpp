@@ -67,7 +67,7 @@ bool ImGui::EditVector2(const char* label, float width, Helios::Vector2& vec, fl
 	ImGui::SameLine();
 
 	ImGui::SetNextItemWidth(input_width);
-	if (ImGui::DragFloat((std::string("##x") + label).c_str(), &vec[0], speed, min, max) )
+	if (ImGui::DragFloat((std::string("##x") + label).c_str(), &vec.x, speed, min, max) )
 		edited = true;
 	ImGui::SameLine();
 
@@ -83,7 +83,7 @@ bool ImGui::EditVector2(const char* label, float width, Helios::Vector2& vec, fl
 	ImGui::SameLine();
 
 	ImGui::SetNextItemWidth(input_width);
-	if (ImGui::DragFloat((std::string("##y") + label).c_str(), &vec[1], speed, min, max))
+	if (ImGui::DragFloat((std::string("##y") + label).c_str(), &vec.y, speed, min, max))
 		edited = true;
 	
 	ImGui::EndChild();
@@ -124,7 +124,7 @@ bool ImGui::EditVector3(const char* label, float width, Helios::Vector3& vec, fl
 	ImGui::SameLine();
 
 	ImGui::SetNextItemWidth(input_width);
-	if (ImGui::DragFloat((std::string("##x") + label).c_str(), &vec[0], speed, min, max) )
+	if (ImGui::DragFloat((std::string("##x") + label).c_str(), &vec.x, speed, min, max) )
 		edited = true;
 	ImGui::SameLine();
 
@@ -140,7 +140,7 @@ bool ImGui::EditVector3(const char* label, float width, Helios::Vector3& vec, fl
 	ImGui::SameLine();
 
 	ImGui::SetNextItemWidth(input_width);
-	if (ImGui::DragFloat((std::string("##y") + label).c_str(), &vec[1], speed, min, max))
+	if (ImGui::DragFloat((std::string("##y") + label).c_str(), &vec.y, speed, min, max))
 		edited = true;
 	ImGui::SameLine();
 
@@ -156,7 +156,7 @@ bool ImGui::EditVector3(const char* label, float width, Helios::Vector3& vec, fl
 	ImGui::SameLine();
 
 	ImGui::SetNextItemWidth(input_width);
-	if (ImGui::DragFloat((std::string("##z") + label).c_str(), &vec[2], speed, min, max))
+	if (ImGui::DragFloat((std::string("##z") + label).c_str(), &vec.z, speed, min, max))
 		edited = true;
 	ImGui::SameLine();
 	

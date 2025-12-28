@@ -485,13 +485,13 @@ namespace Helios::Internal
                     init_info.Queue = device.GetGraphicsQueue();
                     init_info.PipelineCache = VK_NULL_HANDLE;
                     init_info.DescriptorPool = m_ImGuiDescriptorPool;
-                    init_info.Subpass = 0;
                     init_info.MinImageCount = vkContext.GetSwapChain().GetMinImageCount();
                     init_info.ImageCount = vkContext.GetSwapChain().GetSwapchainImageCount();
-                    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+                    init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+                    init_info.PipelineInfoMain.Subpass = 0;
+                    init_info.PipelineInfoMain.RenderPass = vkCtx.GetNativeRenderPass();
                     init_info.Allocator = nullptr;
                     init_info.CheckVkResultFn = nullptr;
-                    init_info.RenderPass = vkCtx.GetNativeRenderPass();
                     
                     ImGui_ImplVulkan_Init(&init_info);
 
