@@ -1,9 +1,12 @@
 #pragma once
 
-#include "Vector.h"
+#include "pch.h"
+
+#include "VectorImpl.h"
 
 namespace Helios {
-	struct HELIOS_API Quaternion
+    struct Matrix4x4;
+	struct Quaternion
 	{
         union {
             float q[4];
@@ -17,7 +20,6 @@ namespace Helios {
 
 		Quaternion() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) { };
 		Quaternion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) { };
-		Quaternion(const Vector4& other) : x(other.x), y(other.y), z(other.z), w(other.w) { };
         Quaternion(const Quaternion& other) : x(other.x), y(other.y), z(other.z), w(other.w) { };
 
         const std::string to_string() const
@@ -35,9 +37,9 @@ namespace Helios {
 
         static const Quaternion Identity() { return { 0.0f, 0.0f, 0.0f, 1.0f }; }
 
-        static Quaternion FromEuler(Vector3 vec) { return FromEulerRads(vec * ((float)H_PI / 180.0f)); }
+        static Quaternion FromEuler(FVector3 vec);
         static Quaternion FromEuler(float x, float y, float z) { return FromEulerRads(x * ((float)H_PI / 180.0f), y * ((float)H_PI / 180.0f), z * ((float)H_PI / 180.0f)); }
-        static Quaternion FromEulerRads(Vector3 vec) { return FromEulerRads(vec.x, vec.y, vec.z); }
+        static Quaternion FromEulerRads(FVector3 vec);
         // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
         static Quaternion FromEulerRads(float x, float y, float z) // YXZ
         {
@@ -111,11 +113,11 @@ namespace Helios {
             };
 		}
 
-        static Vector3 ToEulerRads(const Quaternion& quaternion);
-		static Vector3 ToEulerDeg(const Quaternion& quaternion) { return ToEulerDeg(quaternion) * (180.0f / static_cast<float>(H_PI)); }
+        static FVector3 ToEulerRads(const Quaternion& quaternion);
+		static FVector3 ToEulerDeg(const Quaternion& quaternion);
 
-        Vector3 eulerRads();
-        Vector3 euler() { return eulerRads() * (180.0f / (float)H_PI); }
+        FVector3 eulerRads();
+        FVector3 euler();
 
         Quaternion operator/(float other) const
         {
@@ -143,46 +145,23 @@ namespace Helios {
 			return { x * n, y * n, z * n, w * n };
         }
 
-        Vector3 operator*(Vector3 point)
+        FVector3 forward();
+        FVector3 right();
+        FVector3 up();
+
+        Quaternion operator*(const Quaternion& rotation) const
         {
-            // Multiply by XYZ direction
-
-            Quaternion q = *this * Quaternion(point.x, point.y, point.z, 0.0f) * Quaternion::Conjugate(*this);
-            return { q.x, q.y, q.z };
+            return {
+                w * rotation.x + x * rotation.w + y * rotation.z - z * rotation.y,
+                w * rotation.y + y * rotation.w + z * rotation.x - x * rotation.z,
+                w * rotation.z + z * rotation.w + x * rotation.y - y * rotation.x,
+                w * rotation.w - x * rotation.x - y * rotation.y - z * rotation.z
+            };
         }
-
-        Vector3 forward()
-        {
-            return Normalize(*this) * Vector3::Forward();
-        }
-
-        Vector3 right()
-        {
-            return Normalize(*this) * Vector3::Right();
-        }
-
-        Vector3 up()
-        {
-	        return Normalize(*this) * Vector3::Up();
-        }
-
-        Quaternion operator*(const Quaternion& rotation) const;
 
         static Quaternion FromMatrix(const Matrix4x4& projection);
 
-        static Quaternion FromAxisAngle(const Vector3& axis, float angle)
-        {
-			float halfAngle = angle * 0.5f;
-			float sinHalfAngle = sinf(halfAngle);
-			float cosHalfAngle = cosf(halfAngle);
-
-			return {
-				axis.x * sinHalfAngle,
-				axis.y * sinHalfAngle,
-				axis.z * sinHalfAngle,
-				cosHalfAngle
-			};
-        }
+        static Quaternion FromAxisAngle(const FVector3& axis, float angle);
 
         // void Rotate(const Vector3& vec)
         // {
@@ -190,3 +169,5 @@ namespace Helios {
         // }
 	};
 }
+
+#include "Quaternion.inl"

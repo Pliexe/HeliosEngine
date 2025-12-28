@@ -1,11 +1,13 @@
 ﻿#pragma once
 
-#include "Quaternion.h"
-#include "Vector.h"
+#include "pch.h"
+
+#include "VectorImpl.h"
 
 namespace Helios
 {
-	// __declspec(align(16)) struct Matrix4x4 
+	// __declspec(align(16)) struct Matrix4x4
+	struct Quaternion;
 	struct alignas(16) Matrix4x4 
 	{
 		union
@@ -36,19 +38,11 @@ namespace Helios
 			};
 		}
 
-		static Matrix4x4 TranslationColumn(const Vector3& translation)
-		{
-			return {
-				1.0f, 0.0f, 0.0f, translation.x,
-				0.0f, 1.0f, 0.0f, translation.y,
-				0.0f, 0.0f, 1.0f, translation.z,
-				0.0f, 0.0f, 0.0f, 1.0f
-			};
-		}
+		static Matrix4x4 TranslationColumn(const FVector3& translation);
 
 
-		inline static Matrix4x4 Translation(const Vector3& translation) { return TranslationColumn(translation); }
-		inline static Matrix4x4 Translation(float x, float y, float z) { return TranslationColumn(x, y, z); }
+		static Matrix4x4 Translation(const FVector3& translation);
+		static Matrix4x4 Translation(float x, float y, float z) { return TranslationColumn(x, y, z); }
 
 		static Matrix4x4 TranslationRow(float x, float y, float z)
 		{
@@ -60,15 +54,7 @@ namespace Helios
 			};
 		}
 
-		static Matrix4x4 TranslationRow(const Vector3& translation)
-		{
-			return {
-				1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f,
-				translation.x, translation.y, translation.z, 1.0f
-			};
-		}
+		static Matrix4x4 TranslationRow(const FVector3& translation);
 
 
 		static Matrix4x4 RotationXRow(float x)
@@ -100,34 +86,10 @@ namespace Helios
 				0.0f,    0.0f,   0.0f, 1.0f
 			};
 		}
-		static Matrix4x4 RotationRow(Vector3 vec)
-		{
-			return RotationXRow(vec.x) * RotationZRow(vec.z) * RotationYRow(vec.y);
-		}
-		
-		static Matrix4x4 RotationRow(Quaternion rotation)
-		{
-			// Create a 4x4 rotation matrix from a quaternion in row major 
+		static Matrix4x4 RotationRow(FVector3 vec);		
+		static Matrix4x4 RotationRow(Quaternion rotation);
 
-			return {
-				1.0f - 2.0f * (rotation.y * rotation.y + rotation.z * rotation.z), 2.0f * (rotation.x * rotation.y + rotation.z * rotation.w), 2.0f * (rotation.x * rotation.z - rotation.y * rotation.w), 0.0f,
-				2.0f * (rotation.x * rotation.y - rotation.z * rotation.w), 1.0f - 2.0f * (rotation.x * rotation.x + rotation.z * rotation.z), 2.0f * (rotation.y * rotation.z + rotation.x * rotation.w), 0.0f,
-				2.0f * (rotation.x * rotation.z + rotation.y * rotation.w), 2.0f * (rotation.y * rotation.z - rotation.x * rotation.w), 1.0f - 2.0f * (rotation.x * rotation.x + rotation.y * rotation.y), 0.0f,
-				0.0f, 0.0f, 0.0f, 1.0f
-			};
-		}
-
-		static Matrix4x4 RotationColumn(const Quaternion& rotation)
-		{
-			// Create a 4x4 rotation matrix from a quaternion in column major
-
-			return {
-				1.0f - 2.0f * (rotation.y * rotation.y + rotation.z * rotation.z), 2.0f * (rotation.x * rotation.y - rotation.z * rotation.w), 2.0f * (rotation.x * rotation.z + rotation.y * rotation.w), 0.0f,
-				2.0f * (rotation.x * rotation.y + rotation.z * rotation.w), 1.0f - 2.0f * (rotation.x * rotation.x + rotation.z * rotation.z), 2.0f * (rotation.y * rotation.z - rotation.x * rotation.w), 0.0f,
-				2.0f * (rotation.x * rotation.z - rotation.y * rotation.w), 2.0f * (rotation.y * rotation.z + rotation.x * rotation.w), 1.0f - 2.0f * (rotation.x * rotation.x + rotation.y * rotation.y), 0.0f,
-				0.0f, 0.0f, 0.0f, 1.0f
-			};
-		}
+		static Matrix4x4 RotationColumn(const Quaternion& rotation);
 
 		inline static Matrix4x4 Rotation(const Quaternion& rotation) { return RotationColumn(rotation); }
 
@@ -224,30 +186,7 @@ namespace Helios
 #endif
 		}
 
-		static Matrix4x4 Scale(const Vector3& scaling)
-		{
-#if defined(__SSE_ENABLED__)
-
-			Matrix4x4 result;
-
-			// I genuinely have no idea if this is faster than the non-SSE version
-
-			result.rows[0] = _mm_set_ps(0.0f, 0.0f, 0.0f, scaling.x);
-			result.rows[1] = _mm_set_ps(0.0f, 0.0f, scaling.y, 0.0f);
-			result.rows[2] = _mm_set_ps(0.0f, scaling.z, 0.0f, 0.0f);
-			result.rows[3] = _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f);
-			
-			return result;
-
-#else
-			return {
-				scaling.x,	  0.0f, 0.0f, 0.0f,
-				0.0f, scaling.y,    0.0f, 0.0f,
-				0.0f, 0.0f, scaling.z	, 0.0f,
-				0.0f, 0.0f, 0.0f, 1.0f
-			}; 
-#endif
-		}
+		static Matrix4x4 Scale(const FVector3& scaling);
 
 		static Matrix4x4 Scale(float scaling)
 		{
@@ -274,7 +213,7 @@ namespace Helios
 
 		inline Matrix4x4 operator* (Matrix4x4 b) { return Matrix4x4::Multiply(*this, b); }
 		const inline Matrix4x4 operator*(const Matrix4x4& b) const { return Matrix4x4::Multiply(*this, b); }
-		Vector4 operator*(const Vector4& vector4) const;
+		FVector4 operator*(const FVector4& vector4) const;
 		std::string toString() const
 		{
 			std::stringstream ss;
@@ -289,31 +228,11 @@ namespace Helios
 		}
 
 		// Column major
-		Vector3 GetTranslation() const
-		{
-			return { _14, _24, _34 };
-		}
+		FVector3 GetTranslation() const;
+		FVector3 GetForward() const;
 
-		Vector3 GetForward() const
-		{
-			return { _13, _23, _33 };
-		}
-
-		static inline Matrix4x4 LookAt(const Vector3& position, const Vector3& target, const Vector3& up) { return LookAtLH(position, target, up); }
-		static Matrix4x4 LookAtLH(const Vector3& position, const Vector3& target, const Vector3& up)
-		{
-			Vector3 f = (target - position).normalize();
-			Vector3 r = (Vector3::Cross(f, up)).normalize();
-			Vector3 u = Vector3::Cross(r, f);
-
-			Matrix4x4 lookAtMatrix;
-			lookAtMatrix._11 = -r.x; lookAtMatrix._12 = -r.y; lookAtMatrix._13 = -r.z; lookAtMatrix._14 = 0;
-			lookAtMatrix._21 = u.x; lookAtMatrix._22 = u.y; lookAtMatrix._23 = u.z; lookAtMatrix._24 = 0;
-			lookAtMatrix._31 = f.x; lookAtMatrix._32 = f.y; lookAtMatrix._33 = f.z; lookAtMatrix._34 = 0;
-			lookAtMatrix._41 = -Vector3::Dot(r, position); lookAtMatrix._42 = -Vector3::Dot(u, position); lookAtMatrix._43 = -Vector3::Dot(f, position); lookAtMatrix._44 = 1;
-
-			return lookAtMatrix;
-		}
+		static inline Matrix4x4 LookAt(const FVector3& position, const FVector3& target, const FVector3& up) { return LookAtLH(position, target, up); }
+		static Matrix4x4 LookAtLH(const FVector3& position, const FVector3& target, const FVector3& up);
 
 		static Matrix4x4 Identity()
 		{
@@ -551,59 +470,6 @@ namespace Helios
 		}
 		
 	};
-
-	inline Vector4 Matrix4x4::operator*(const Vector4& vector4) const
-	{
-		Vector4 result;
-
-#if defined(__SSE4_1__)
-
-		__m128 vec4row = _mm_set_ps(vector4.w, vector4.z, vector4.y, vector4.x);
-
-		float temp;
-		temp = _mm_cvtss_f32(_mm_dp_ps(rows[0], vec4row, 0xFF));
-		_mm_store_ss(&result.x, _mm_set_ss(temp));
-		temp = _mm_cvtss_f32(_mm_dp_ps(rows[1], vec4row, 0xFF));
-		_mm_store_ss(&result.y, _mm_set_ss(temp));
-		temp = _mm_cvtss_f32(_mm_dp_ps(rows[2], vec4row, 0xFF));
-		_mm_store_ss(&result.z, _mm_set_ss(temp));
-		temp = _mm_cvtss_f32(_mm_dp_ps(rows[3], vec4row, 0xFF));
-		_mm_store_ss(&result.w, _mm_set_ss(temp));
-
-#elif defined(__SSE_ENABLED__)
-
-		__m128 vec4row = _mm_set_ps(vector4.w, vector4.z, vector4.y, vector4.x);
-
-		__m128 temp1 = _mm_mul_ps(rows[0], vec4row);
-		__m128 temp2 = _mm_mul_ps(rows[1], vec4row);
-		__m128 temp3 = _mm_mul_ps(rows[2], vec4row);
-		__m128 temp4 = _mm_mul_ps(rows[3], vec4row);
-
-		temp1 = _mm_add_ps(temp1, _mm_movehl_ps(temp1, temp1));
-		temp1 = _mm_add_ps(temp1, _mm_shuffle_ps(temp1, temp1, _MM_SHUFFLE(2, 3, 0, 1)));
-		result.x = _mm_cvtss_f32(temp1);
-
-		temp2 = _mm_add_ps(temp2, _mm_movehl_ps(temp2, temp2));
-		temp2 = _mm_add_ps(temp2, _mm_shuffle_ps(temp2, temp2, _MM_SHUFFLE(2, 3, 0, 1)));
-		result.y = _mm_cvtss_f32(temp2);
-
-		temp3 = _mm_add_ps(temp3, _mm_movehl_ps(temp3, temp3));
-		temp3 = _mm_add_ps(temp3, _mm_shuffle_ps(temp3, temp3, _MM_SHUFFLE(2, 3, 0, 1)));
-		result.z = _mm_cvtss_f32(temp3);
-
-		temp4 = _mm_add_ps(temp4, _mm_movehl_ps(temp4, temp4));
-		temp4 = _mm_add_ps(temp4, _mm_shuffle_ps(temp4, temp4, _MM_SHUFFLE(2, 3, 0, 1)));
-		result.w = _mm_cvtss_f32(temp4);
-
-#else
-
-		result.x = _11 * vector4.x + _12 * vector4.y + _13 * vector4.z + _14 * vector4.w;
-		result.y = _21 * vector4.x + _22 * vector4.y + _23 * vector4.z + _24 * vector4.w;
-		result.z = _31 * vector4.x + _32 * vector4.y + _33 * vector4.z + _34 * vector4.w;
-		result.w = _41 * vector4.x + _42 * vector4.y + _43 * vector4.z + _44 * vector4.w;
-
-#endif
-
-		return result;
-	}
 }	
+
+#include "Matrix.inl"
