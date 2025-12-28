@@ -9,8 +9,6 @@ struct VSOut
 struct VSIn
 {
     float3 vertexPos : POSITION;
-    float2 input_texCoord : TEXCOORD;
-    float3 input_normal : NORMAL;
     float3 instancePos : INSTANCEPOS;
     float2 instanceSize : INSTANCESIZE;
 };
@@ -26,10 +24,8 @@ cbuffer Info
 
 VSOut MainVS(VSIn input) {
     VSOut output;
-    float3 worldPos = 
-    // input.instancePos +
-    // (input.vertexPos.x * input.instanceSize.x * camRight) + (input.vertexPos.y * input.instanceSize.y * camUp); 
-    input.vertexPos;
+    float3 worldPos = input.instancePos + input.vertexPos;
+
     output.Position = mul(float4(worldPos, 1.0f), mul(proj, view)); 
     output.Color = color; 
     return output; 

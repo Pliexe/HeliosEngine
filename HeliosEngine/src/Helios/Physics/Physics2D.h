@@ -172,7 +172,7 @@ namespace Helios
 
 			Transform transform = entity;
 
-			transform.SetLocalPosition(transform.GetLocalPosition() + rbref.velocity * Time::DeltaTime());
+			transform.SetLocalPosition(FVector2(transform.GetLocalPosition()) + rbref.velocity * Time::DeltaTime());
 
 			for (auto& [static_transform, static_collider] : m_StaticCircleColliders)
 			{
@@ -182,7 +182,7 @@ namespace Helios
 					Vector2 bpos = static_cast<Vector2>(static_transform.Position) + static_collider.offset;
 
 					float distance = Vector2::Distance(apos,bpos);
-					float distancesqrt = Vector2::SqrLength(apos - bpos);
+					float distancesqrt = Vector2::SqrDistance(apos, bpos);
 
 					float overlap = .5f * (distance - collider.radius - static_collider.radius);
 
@@ -192,11 +192,11 @@ namespace Helios
 					
 					Vector2 dot_tangent = Vector2::Dot(rbref.velocity, tangent) * tangent;
 
-					rbref.velocity = tangent * dot_tangent;
+					rbref.velocity = FVector2::Scale(tangent, dot_tangent);
 
 					//rbref.velocity = Vector2::Zero();
-					transform.SetLocalPosition(transform.GetLocalPosition() - (overlap * normal));
-					transform.SetLocalPosition(transform.GetLocalPosition() -  rbref.velocity * Time::DeltaTime());
+					transform.SetLocalPosition(FVector2(transform.GetLocalPosition()) - (overlap * normal));
+					transform.SetLocalPosition(FVector2(transform.GetLocalPosition()) -  rbref.velocity * Time::DeltaTime());
 				}
 			}
 			for (auto& [static_transform, static_collider] : m_StaticBoxColliders)
@@ -204,24 +204,23 @@ namespace Helios
 				if (CheckCollision(transform.GetLocalPosition(), collider, static_transform, static_collider))
 				{
 					rbref.velocity = Vector2::Zero();
-					transform.SetLocalPosition(transform.GetLocalPosition() - rbref.velocity * Time::DeltaTime());
+					transform.SetLocalPosition(FVector2(transform.GetLocalPosition()) - rbref.velocity * Time::DeltaTime());
 				}
 			}
 		}
 
 		for (auto& [entity, transform_component, rigidbody, collider] : m_BoxColliders)
 		{
-			if (rigidbody.useGravity)
-			rigidbody.velocity.y -= 9.8f * Time::DeltaTime();
+			if (rigidbody.useGravity) rigidbody.velocity.y -= 9.8f * Time::DeltaTime();
 
 			Transform transform = entity;
-			transform.SetLocalPosition(transform_component.Position + rigidbody.velocity * Time::DeltaTime());
+			transform.SetLocalPosition(FVector2(transform_component.Position) + rigidbody.velocity * Time::DeltaTime());
 			for (auto& [static_transform, static_collider] : m_StaticCircleColliders)
 			{
 				if (CheckCollision(static_transform, static_collider, transform_component, collider))
 				{
 					rigidbody.velocity = Vector2::Zero();
-					transform.SetLocalPosition(transform_component.Position - rigidbody.velocity * Time::DeltaTime());
+					transform.SetLocalPosition(FVector2(transform_component.Position) - rigidbody.velocity * Time::DeltaTime());
 				}
 			}
 			for (auto& [static_transform, static_collider] : m_StaticBoxColliders)
@@ -229,7 +228,7 @@ namespace Helios
 				if (CheckCollision(transform_component, collider, static_transform, static_collider))
 				{
 					rigidbody.velocity = Vector2::Zero();
-					transform.SetLocalPosition(transform_component.Position - rigidbody.velocity * Time::DeltaTime());
+					transform.SetLocalPosition(FVector2(transform_component.Position) - rigidbody.velocity * Time::DeltaTime());
 				}
 			}
 		}
@@ -257,10 +256,10 @@ namespace Helios
 		Vector2 box_half_extents = collider_b.size * 0.5f;
 		Vector2 box_center = static_cast<Vector2>(transform_b.Position) + collider_b.offset;
 		Vector2 difference = static_cast<Vector2>(transform_a.Position) + collider_a.offset - box_center;
-		Vector2 clamped = Vector2::Clamp(difference, -box_half_extents, box_half_extents);
+		Vector2 clamped = FVector2::Clamp(difference, -box_half_extents, box_half_extents);
 		Vector2 closest = box_center + clamped;
-		difference = closest - (static_cast<Vector2>(transform_a.Position) + collider_a.offset);
-		if (Vector2::SqrLength(difference) < collider_a.radius * collider_a.radius)
+		difference = closest - (FVector2(transform_a.Position) + collider_a.offset);
+		if (Vector2::Magnitude(difference) < collider_a.radius * collider_a.radius)
 			return true;
 		return false;
 	}
@@ -284,7 +283,7 @@ namespace Helios
 		Vector2 vertices_a[4] = { Vector2(-half_extents_a.x, -half_extents_a.y), Vector2(-half_extents_a.x, half_extents_a.y), Vector2(half_extents_a.x, half_extents_a.y), Vector2(half_extents_a.x, -half_extents_a.y) };
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			vertices_a[i] = rotation_matrix_a * vertices_a[i];
+			vertices_a[i] = FVector2(rotation_matrix_a * vertices_a[i]);
 			vertices_a[i] += static_cast<Vector2>(transform_a.Position) + collider_a.offset;
 		}
 
@@ -293,7 +292,7 @@ namespace Helios
 		Vector2 vertices_b[4] = { Vector2(-half_extents_b.x, -half_extents_b.y), Vector2(-half_extents_b.x, half_extents_b.y), Vector2(half_extents_b.x, half_extents_b.y), Vector2(half_extents_b.x, -half_extents_b.y) };
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			vertices_b[i] = rotation_matrix_b * vertices_b[i];
+			vertices_b[i] = FVector2(rotation_matrix_b * vertices_b[i]);
 			vertices_b[i] += static_cast<Vector2>(transform_b.Position) + collider_b.offset;
 		}
 

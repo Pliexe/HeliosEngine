@@ -4,6 +4,7 @@
  */
 #pragma once
 
+#include "Helios/Math/Vector.h"
 #include "pch.h"
 #include "Helios/Core/Base.h"
 #include "Helios/Core/Asserts.h"
@@ -195,7 +196,7 @@ namespace Helios
 
 				worldTransform.Position = parentTransform.Rotation * worldTransform.Position + parentTransform.Position;
 				worldTransform.Rotation = parentTransform.Rotation * worldTransform.Rotation;
-				worldTransform.Scale = parentTransform.Scale * worldTransform.Scale;
+				worldTransform.Scale = FVector3::Scale(parentTransform.Scale, worldTransform.Scale);
 
 				m_worldTransformCache[m_GameObject.m_entityHandle] = worldTransform;
 				return worldTransform;

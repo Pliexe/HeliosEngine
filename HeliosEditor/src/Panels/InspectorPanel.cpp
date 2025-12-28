@@ -75,13 +75,13 @@ void InspectorPanel::OnUpdate()
                 ImGui::SameLine();
                 Transform2DComponent& transform =
                     entity.GetComponent<Transform2DComponent>();
-                float* vec2Pos = transform.position;
+                float* vec2Pos = &transform.position.x;
                 ImGui::DragFloat2("Position", vec2Pos);
                 transform.position = {vec2Pos[0], vec2Pos[1]};
 
                 ImGui::Text("Y:");
                 ImGui::SameLine();
-                float* vec2Size = transform.size;
+                float* vec2Size = &transform.size.x;
                 ImGui::DragFloat2("Size", vec2Size);
                 transform.size = {vec2Size[0], vec2Size[1]};
             }

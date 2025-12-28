@@ -17,7 +17,7 @@ namespace Helios
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const Vector3& position) : Position(position) { }
-		TransformComponent(const Vector3& position, const Vector3& rotation) : Position(position), Rotation(rotation) { }
+		TransformComponent(const Vector3& position, const Vector3& rotation) : Position(position), Rotation(Quaternion::FromEuler(rotation)) { }
 		TransformComponent(const Vector3& position, const Quaternion& rotation, const Vector3& scale) : Position(position), Rotation(rotation), Scale(scale) { }
 
 		TransformComponent GetWorldTransform(RelationshipComponent relationship, entt::registry& registry)
@@ -32,7 +32,7 @@ namespace Helios
 
 				position = parentTransform.Rotation * position + parentTransform.Position;
 				rotation = parentTransform.Rotation * rotation;
-				scale = parentTransform.Scale * scale;
+				scale = FVector3::Scale(parentTransform.Scale, scale);
 
 				return TransformComponent(position, rotation, scale);
 			}
@@ -61,7 +61,7 @@ namespace Helios
 			if (relationship.parent_handle != entt::null)
 			{
 				auto parentTransform = registry.get<TransformComponent>(relationship.parent_handle);
-				return GetWorldScale(relationship, registry) * parentTransform.Scale;
+				return FVector3::Scale(GetWorldScale(relationship, registry), parentTransform.Scale);
 			}
 			else return Scale;
 		}
@@ -103,7 +103,7 @@ namespace Helios
 			if (relationship.parent_handle != entt::null)
 			{
 				auto parentTransform = registry.get<TransformComponent>(relationship.parent_handle);
-				Scale = parentTransform.Scale / scale;
+				Scale = FVector3::Divide(parentTransform.Scale, scale);
 			}
 			else Scale = scale;
 		}
@@ -119,7 +119,7 @@ namespace Helios
 				auto parentTransform = registry.get<TransformComponent>(relationship.parent_handle);
 				Position = Quaternion::Inverse(parentTransform.Rotation) * (transform.Position - parentTransform.Position);
 				Rotation = Quaternion::Inverse(parentTransform.Rotation) * transform.Rotation;
-				Scale = parentTransform.Scale / transform.Scale;
+				Scale = FVector3::Divide(parentTransform.Scale, transform.Scale);
 			}
 			else {
 				Position = transform.Position;

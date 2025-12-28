@@ -79,7 +79,7 @@ namespace Helios
 
 	Vector3 MeshBuilder::CalculateNormal(const MeshVertex& v0, const MeshVertex& v1, const MeshVertex& v2)
 	{
-		return Vector3::Cross(v1.position - v0.position, v2.position - v0.position).normalize();
+		return Vector3::Cross(v1.position - v0.position, v2.position - v0.position).normalized();
 	}
 
 	void MeshBuilder::CalculateVertexNormals(MeshBuilder& meshBuilder)
