@@ -34,7 +34,7 @@ namespace Helios
 
 namespace Helios
 {
-	static constexpr bool IsVector = true;
+	inline constexpr bool IsVector = true;
 
 	template <typename T>
 	struct TVector<T, 2, IsVector> : TVectorOps<TVector<T, 2, IsVector>, 2, IsVector>
@@ -105,7 +105,7 @@ namespace Helios
 		static TVector Right() 		{ return {  1,  0,  0 }; }
 		static TVector Left() 		{ return { -1,  0,  0 }; }
 
-		static inline TVector Cross(const TVector& lhs, const TVector& rhs)
+		static inline TVector Cross(const TVector<T, 3, IsVector>& lhs, const TVector<T, 3, IsVector>& rhs) requires IsVector
 		{
 			return { 
 				lhs.y * rhs.z - lhs.z * rhs.y,
@@ -114,9 +114,9 @@ namespace Helios
 			};
 		}
 
-		static inline float Angle(const TVector& lhs, const TVector& rhs) 
+		static inline float Angle(const TVector<T, 3, IsVector>& lhs, const TVector<T, 3, IsVector>& rhs) requires IsVector
 		{
-			return std::atan2(Cross(lhs, rhs).magnitude(), Dot(lhs, rhs));
+			return std::atan2(Cross(lhs, rhs).magnitude(), TVector<T, 3, IsVector>::Dot(lhs, rhs));
 		}
 	};
 
@@ -143,9 +143,9 @@ namespace Helios
 	template <typename T>
 	using TVector4 = TVector<T, 4, IsVector>;
 
-	using IVector2 = TVector2<int32_t>;
-	using IVector3 = TVector3<int32_t>;
-	using IVector4 = TVector4<int32_t>;
+	using IVector2 = TVector2<int32>;
+	using IVector3 = TVector3<int32>;
+	using IVector4 = TVector4<int32>;
 
 	using FVector2 = TVector2<float>;
 	using FVector3 = TVector3<float>;

@@ -258,22 +258,32 @@ namespace Helios
 			__m128 b3 = _mm_load_ps(&b._41);
 
 			// Perform the multiplication using SSE intrinsics
-			__m128 r0 = _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_set1_ps(a._11), b0),
+			__m128 r0 = _mm_add_ps(
+				_mm_add_ps(_mm_mul_ps(_mm_set1_ps(a._11), b0),
 				_mm_mul_ps(_mm_set1_ps(a._12), b1)),
 				_mm_add_ps(_mm_mul_ps(_mm_set1_ps(a._13), b2),
-					_mm_mul_ps(_mm_set1_ps(a._14), b3)));
+				_mm_mul_ps(_mm_set1_ps(a._14), b3))
+			);
+			
 			__m128 r1 = _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_set1_ps(a._21), b0),
 				_mm_mul_ps(_mm_set1_ps(a._22), b1)),
 				_mm_add_ps(_mm_mul_ps(_mm_set1_ps(a._23), b2),
-					_mm_mul_ps(_mm_set1_ps(a._24), b3)));
-			__m128 r2 = _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_set1_ps(a._31), b0),
+				_mm_mul_ps(_mm_set1_ps(a._24), b3))
+			);
+			
+			__m128 r2 = _mm_add_ps(
+				_mm_add_ps(_mm_mul_ps(_mm_set1_ps(a._31), b0),
 				_mm_mul_ps(_mm_set1_ps(a._32), b1)),
 				_mm_add_ps(_mm_mul_ps(_mm_set1_ps(a._33), b2),
-					_mm_mul_ps(_mm_set1_ps(a._34), b3)));
-			__m128 r3 = _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_set1_ps(a._41), b0),
+				(_mm_set1_ps(a._34), b3))
+			);
+			
+			__m128 r3 = _mm_add_ps(
+				_mm_add_ps(_mm_mul_ps(_mm_set1_ps(a._41), b0),
 				_mm_mul_ps(_mm_set1_ps(a._42), b1)),
 				_mm_add_ps(_mm_mul_ps(_mm_set1_ps(a._43), b2),
-					_mm_mul_ps(_mm_set1_ps(a._44), b3)));
+				(_mm_set1_ps(a._44), b3))
+			);
 
 			// Store the results back into the result matrix
 			_mm_store_ps(&result._11, r0);
