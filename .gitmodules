@@ -34,3 +34,6 @@
 [submodule "HeliosEngine/vendor/spirv-reflect"]
 	path = HeliosEngine/vendor/spirv-reflect
 	url = https://github.com/KhronosGroup/SPIRV-Reflect.git
+[submodule "HeliosEngine/vendor/gtl"]
+	path = HeliosEngine/vendor/gtl
+	url = https://github.com/greg7mdp/gtl.git
