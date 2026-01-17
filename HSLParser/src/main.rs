@@ -244,6 +244,18 @@ impl<'a> TokenIter<'a> {
         TokenIter { iter: iter.peekable(), current: None, original: original.split_terminator('\n').collect() }
     }
 
+    pub fn get_line(&self, line: usize) -> Option<&'a str> {
+        if line > self.original.len() {
+            return None;
+        }
+
+        Some(self.original[line - 1])
+    }
+
+    pub fn get_current_line(&self) -> Option<&'a str> {
+        self.get_line(self.current.unwrap().line)
+    }
+
     pub fn next(&mut self) -> Option<&'a Token> {
         self.iter.next().and_then(|token| {
             self.current = Some(token);
@@ -252,11 +264,33 @@ impl<'a> TokenIter<'a> {
     }
 
     pub fn skip_while(&mut self, kind: TokenKind) -> Option<&'a Token> {
+        let mut token = None;
+        
         while self.iter.peek().is_some() && self.iter.peek().unwrap().kind == kind {
-            return self.next();
+            token = self.next();
         }
 
-        None
+        token
+    }
+
+    pub fn collect_while(&mut self, condition: impl Fn(&Token) -> bool) -> Vec<&'a Token> {
+        let mut tokens = Vec::new();
+        
+        while self.iter.peek().is_some() && condition(self.iter.peek().unwrap()) {
+            tokens.push(self.next().unwrap());
+        }
+
+        tokens
+    }
+
+    pub fn collect_string_while(&mut self, condition: impl Fn(&Token) -> bool) -> String {
+        let mut string = String::new();
+
+        while self.iter.peek().is_some() && condition(self.iter.peek().unwrap()) {
+            string.push_str(&self.next().unwrap().to_string());
+        }
+
+        string
     }
 
     #[allow(unused)]
@@ -403,6 +437,17 @@ impl<'a> TokenIter<'a> {
                 }
             },
             _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or(expected.and_then(|c| Some(format!("'{}'", c))).unwrap_or("\"\"".to_string()).as_str()), format!("'{}'", token.kind)).as_str())),
+        }
+    }
+
+    pub fn expect_pontosveso(&mut self) -> Result<&'a Token, String> {
+        let token = self.iter.peek().ok_or("Expected ';' but found end of file".to_string())?;
+
+        match &token.kind {
+            TokenKind::Terminator(';') => {
+                Ok(self.skip_while(TokenKind::Terminator(';')).unwrap())
+            },
+            _ => Err(format_error(self.original[token.global_line - 1], token, "Expected ';', found {}")),
         }
     }
 
@@ -632,24 +677,29 @@ fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
                 ));
             },
             ' ' | '\t' | '\r' => {
+                let orig_line = char_iter.line;
+                let orig_column = char_iter.column;
                 let whitespace = c.to_string() + char_iter.collect_while(|c| c == ' ' || c == '\t' || c == '\r').as_str();
 
                 tokens.push(Token::new(
                     TokenKind::Whitespace(whitespace),
-                    char_iter.line,
-                    char_iter.line,
-                    char_iter.column,
+                    orig_line,
+                    orig_line,
+                    orig_column,
                     empty_string.clone(),
                 ));
             },
             _ if c.is_ascii_alphabetic() || c == '_' => {
+                let orig_line = char_iter.line;
+                let orig_column = char_iter.column;
+
                 let identifier = c.to_string() + char_iter.collect_while(|c| c.is_ascii_alphanumeric() || c == '_').as_str();
 
                 tokens.push(Token::new(
                     TokenKind::Identifier(identifier),
-                    char_iter.line,
-                    char_iter.line,
-                    char_iter.column,
+                    orig_line,
+                    orig_line,
+                    orig_column,
                     empty_string.clone(),
                 ));
             },
@@ -668,12 +718,23 @@ fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
     Ok(tokens)
 }
 
-
-fn preprocess(original_path: &PathBuf, include_paths: &Vec<&PathBuf>) -> Result<String, String> {
-    preprocess_i(original_path, include_paths, &mut Vec::new(), &mut HashMap::new())
+struct MacroDef {
+    params: Option<Vec<String>>,
+    body: Vec<Token>,
 }
 
-fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<&PathBuf>, included_files: &mut Vec<PathBuf>, defines: &mut HashMap<String, String>) -> Result<String, String> {
+fn preprocess(original_path: &PathBuf, include_paths: &Vec<PathBuf>, defines: &HashSet<String>) -> Result<String, String> {
+    let mut conv_defines = HashMap::new();
+    
+    for define in defines {
+        conv_defines.insert(define.clone(), MacroDef { params: None, body: vec![] });
+    }
+
+    preprocess_i(original_path, include_paths, &mut Vec::new(), &mut conv_defines, true)
+}
+
+
+fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_files: &mut Vec<PathBuf>, defines: &mut HashMap<String, MacroDef>, is_module: bool) -> Result<String, String> {
     let mut out = String::new();
     
     let src = std::fs::read_to_string(original_path);
@@ -682,50 +743,438 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<&PathBuf>, included
         return Err(format!("Unable to read file: {}", src.unwrap_err()));
     }
     let src = src.unwrap();
+    let lines = src.lines().collect::<Vec<&str>>();
+    let mut if_depth = 0;
+    let mut if_token = None;
+    let mut endif_token = None;
 
     let tokens = preprocessor_tokenizer(src.as_str())?;
 
     let mut iter = TokenIter::new(tokens.iter(), src.as_str());
 
-    let mut new_line = false;
+    if is_module { out.push_str(format!("@space \"{}\"\n", original_path.display()).as_str()); }
+
+    let mut new_line = true;
     while let Some(token) = iter.next() {
         match &token.kind {
             TokenKind::Terminator('\n') => {
                 out.push('\n');
                 new_line = true;
             },
-            TokenKind::Terminator('#') => {
+            TokenKind::Symbol('@') => {
+                if !new_line {
+                    out.push('@');
+                    continue;
+                }
+
+                let _ = iter.expect_whitespace(None);
+
+                let directive_name_token = iter.expect_identifier(None, Some("directive name"))?;
+                let directive_name = directive_name_token.to_string();
+
+                let _ = iter.expect_whitespace(None);
+
+                match directive_name.as_str() {
+                    "import" | "implements" => {
+                        let current_line = token.line;
+
+                        let _ = iter.expect_whitespace(None);
+                        let path_token = iter.expect_literal(None, Some("Expected path"))?;
+                        let path_str = path_token.to_string().trim_matches('"').to_string();
+                        let _ = iter.expect_whitespace(None);
+                        iter.expect_terminator(Some('\n'), Some("'\\n'"))?;
+
+                        let mut path = None;
+
+                        for include_path in include_paths {
+                            path = Some(include_path.join(path_str.clone()));
+                            if path.as_ref().unwrap().exists() {
+                                break;
+                            }
+                        }
+
+                        if path.is_none() {
+                            return Err(format_error(lines[current_line - 1], path_token, "Path does not exist"));
+                        }
+
+                        let path = path.unwrap();
+
+                        if included_files.contains(&path) {
+                            out.push('\n');
+                            continue;
+                        }
+
+                        let result = preprocess_i(&path, &include_paths, included_files, defines, true)?;
+
+                        let is_interface_file = path.extension().is_some() && path.extension().unwrap().to_str().unwrap().ends_with("hsi");
+                        let no_req_define = is_interface_file && directive_name == "import";
+                        
+                        if is_interface_file { out.push_str(format!("@{} \"{}\"\n", directive_name, path.display()).as_str()); }
+                        if no_req_define { out.push_str("@no_required_define_start\n"); }
+                        out.push_str(format!("#line {} \"{}\"\n", current_line, path.display()).as_str());
+                        out.push_str(&result);
+                        out.push('\n');
+                        if no_req_define { out.push_str("@no_required_define_end\n"); }
+                        out.push_str(format!("@space \"{}\"\n", original_path.display()).as_str());
+                        out.push_str(format!("#line {} \"{}\"\n", current_line, original_path.display()).as_str());
+
+                        included_files.push(path);
+                    },
+                    _ => {
+                        return Err(format_error(lines[directive_name_token.line - 1], directive_name_token, &format!("Unknown preprocessor directive: {}", directive_name)));
+                    }
+                }
+            },
+            TokenKind::Symbol('#') => {
                 if !new_line {
                     out.push('#');
                     continue;
                 }
                 
-                let _ = iter.expect_whitespace(None).and_then(|ws| {
-                    out.push_str(&ws.to_string());
-                    Ok(())
-                });
+                let _ = iter.expect_whitespace(None);
 
-                let macro_name = iter.expect_identifier(None, Some("macro name"))?.to_string();
+                let macro_name_token = iter.expect_identifier(None, Some("macro name"))?;
+                let macro_name = macro_name_token.to_string();
 
-                let _ = iter.expect_whitespace(None).and_then(|ws| {
-                    out.push_str(&ws.to_string());
-                    Ok(())
-                });
+                let _ = iter.expect_whitespace(None);
                 
                 match macro_name.as_str() {
                     "define" => {
                         // collect body present
+
+                        let name = iter.expect_identifier(None, Some("define name"))?.to_string();
+
+                        let mut macrodef = MacroDef {
+                            params: None,
+                            body: Vec::new(),
+                        };
+
+                        if iter.expect_symbol(Some('('), None).is_ok() {
+                            let mut params = Vec::new();
+
+                            loop {
+                                let _ = iter.expect_whitespace(None);
+
+                                if iter.expect_symbol(Some(')'), None).is_ok() {
+                                    break;
+                                }
+
+                                params.push(iter.expect_identifier(None, Some("macro parameter"))?.to_string());
+
+                                let _ = iter.expect_whitespace(None);
+
+                                if iter.expect_symbol(Some(','), None).is_err() {
+                                    iter.expect_symbol(Some(')'), Some("')' or ','"))?;
+                                    break;
+                                }
+                            }
+
+                            macrodef.params = Some(params);
+                        }
+
+                        let mut nl_count = 0;
+                        let mut exit = false;
+
+                        while !exit {
+                            while let Some(token) = iter.next() {
+
+                                match &token.kind {
+                                    TokenKind::Symbol('\\') => {
+                                        // consumes \n if present otherwise adds \ to the body
+                                        if iter.expect_terminator(Some('\n'), None).is_ok() {
+                                            nl_count += 1;
+                                            macrodef.body.push(Token::new(
+                                                TokenKind::Terminator('\n'),
+                                                token.line,
+                                                token.line,
+                                                token.column,
+                                                token.path.clone(),
+                                            ));
+                                            break;
+                                        } else {
+                                            macrodef.body.push(Token::new(
+                                                TokenKind::Symbol('\\'),
+                                                token.line,
+                                                token.line,
+                                                token.column,
+                                                token.path.clone(),
+                                            ));
+                                        }
+                                    },
+                                    TokenKind::Terminator('\n') => {
+                                        nl_count += 1;
+                                        exit = true;
+                                        break;
+                                    },
+                                    _ => { macrodef.body.push(token.clone()); }
+                                }
+                            }
+                        }
+
+                        defines.insert(name, macrodef);
+                        for _ in 0..nl_count {
+                            out.push('\n');
+                        }
+                    },
+                    "ifdef" => {
+                        let _ = iter.expect_whitespace(None);
+                        let name = iter.expect_identifier(None, Some("Expected identifier"))?;
+                        let _ = iter.expect_whitespace(None);
+                        let line = token.line;
+                        iter.expect_terminator(Some('\n'), Some("'\\n'"))?;
+
+                        out.push_str(&format!("#if {}\n", defines.get(&name.to_string()).is_some()));
+                        if_depth += 1;
+                        if_token = Some(Token::new(
+                            TokenKind::Identifier(name.to_string()),
+                            line,
+                            line,
+                            0,
+                            token.path.clone(),
+                        ));
+                    },
+                    "ifndef" => {
+                        let _ = iter.expect_whitespace(None);
+                        let name = iter.expect_identifier(None, Some("Expected identifier"))?;
+                        let _ = iter.expect_whitespace(None);
+                        let line = token.line;
+                        iter.expect_terminator(Some('\n'), Some("'\\n'"))?;
+
+                        out.push_str(&format!("#if {}\n", defines.get(&name.to_string()).is_none()));
+                        if_depth += 1;
+                        if_token = Some(Token::new(
+                            TokenKind::Identifier(name.to_string()),
+                            line,
+                            line,
+                            0,
+                            token.path.clone(),
+                        ));
+                    },
+                    "else" => {
+                        let _ = iter.expect_whitespace(None);
+                        iter.expect_terminator(Some('\n'), Some("'\\n'"))?;
+
+                        out.push_str("#else\n");
+                    },
+                    "endif" => {
+                        let _ = iter.expect_whitespace(None);
+                        let line = token.line;
+
+                        out.push_str("#endif"); // ! In this order
+                        
+                        if iter.peek().is_some() {
+                            iter.expect_terminator(Some('\n'), Some("'\\n'"))?;
+                            out.push('\n');
+                        }
+
+                        if if_depth == 0 {
+                            return Err(format_error(lines[token.line - 1], &token, "Unmatched #endif"));   
+                        }
+
+                        if_depth -= 1;
+                        endif_token = Some(Token::new(
+                            TokenKind::Identifier("#endif".to_string()),
+                            line,
+                            line,
+                            0,
+                            token.path.clone(),
+                        ));
+                    },
+                    "include" => {
+                        let current_line = token.line;
+
+                        let _ = iter.expect_whitespace(None);
+                        let path_token = iter.expect_literal(None, Some("Expected path"))?;
+                        let path_str = path_token.to_string().trim_matches('"').to_string();
+                        let _ = iter.expect_whitespace(None);
+                        iter.expect_terminator(Some('\n'), Some("'\\n'"))?;
+
+                        let mut path = None;
+
+                        println!("INCLUDE PATHS: {:?}", include_paths);
+                        for include_path in include_paths {
+                            path = Some(include_path.join(path_str.clone()));
+                            println!("{}", path.as_ref().unwrap().display());
+                            if path.as_ref().unwrap().exists() {
+                                break;
+                            }
+                        }
+
+                        if path.is_none() {
+                            return Err(format_error(lines[current_line - 1], path_token, "Path does not exist"));
+                        }
+
+                        let path = path.unwrap();
+
+                        if included_files.contains(&path) {
+                            out.push('\n');
+                            continue;
+                        }
+
+                        let result = preprocess_i(&path, &include_paths, included_files, defines, false)?;
+
+                        
+                        out.push_str(format!("#line {} \"{}\"\n", current_line, path.display()).as_str());
+                        out.push_str(&result);
+                        out.push('\n');
+                        out.push_str(format!("#line {} \"{}\"\n", current_line, original_path.display()).as_str());
+
+                        included_files.push(path);
                     },
                     _ => {
-                        return Err(format!("Unknown preprocessor directive: {}", macro_name));
+                        // out.push_str(&token.to_string());
+                        return Err(format_error(lines[macro_name_token.line - 1], macro_name_token, &format!("Unknown preprocessor directive: {}", macro_name)));
                     }
                 }
             }
             _ => {
-                out.push_str(&token.to_string());
+                
+                match &token.kind {
+                    TokenKind::Identifier(name) => {
+                        if let Some(define_func) = defines.get(name) {
+                            let whitespace = iter.expect_whitespace(None);
+                            let open_parenthesis = iter.expect_symbol(Some('('), None);
+                            println!("open_parenthesis: {:?}", open_parenthesis);
+                            match &define_func.params {
+                                // collect whitespaces then check for ( if present
+                                Some(params) if open_parenthesis.is_ok() => {
+                                    let mut params_values = Vec::new();
+                                    let mut param_newlines = 0;
+                                    
+                                    if params.len() == 0 {
+                                        let _ = iter.expect_whitespace(None);
+                                        iter.expect_symbol(Some(')'), None)?;
+                                    }
+                                    
+                                    for _ in params {
+                                        let mut brace_depth = 0;
+                                        let mut curly_brace_depth = 0;
+                                        let mut square_bracket_depth = 0;
+                                        let mut param = "".to_string();
+
+                                        loop {
+                                            let prev = iter.current;
+                                            let token = iter.next();
+                                            if token.is_none() {
+                                                return Err(
+                                                    format_error(lines[open_parenthesis.clone().unwrap().line - 1], &open_parenthesis.unwrap(), "expected parameter") + "\n" +
+                                                    &format_error(lines[prev.unwrap().line - 1], &prev.unwrap(), "expected parameter")
+                                                );
+                                            }
+                                            let token = token.unwrap();
+
+                                            match &token.kind {
+                                                TokenKind::Symbol(',') => {
+                                                    if params_values.len() >= params.len() {
+                                                        return Err(format_error(lines[token.line - 1], &token, "expected ')'"));
+                                                    }
+                                                    if brace_depth <= 0 && curly_brace_depth <= 0 && square_bracket_depth <= 0 {
+                                                        break;
+                                                    } else {
+                                                        param.push(',');
+                                                    }
+                                                },
+                                                TokenKind::Symbol(')') => {
+                                                    if brace_depth <= 0 && curly_brace_depth <= 0 && square_bracket_depth <= 0 {
+                                                        if params_values.len() < params.len() - 1 {
+                                                            return Err(format_error(lines[token.line - 1], &token, "expected ','"));
+                                                        } else {
+                                                            println!("EXIT NOW");
+
+                                                            break;
+                                                        }
+                                                    } else { brace_depth -= 1; param.push(')'); }
+                                                },
+                                                TokenKind::Symbol(s) => {
+                                                    match s {
+                                                        '(' => { brace_depth += 1; param.push('('); },
+                                                        '[' => { square_bracket_depth += 1; param.push('['); },
+                                                        '{' => { curly_brace_depth += 1; param.push('{'); },
+                                                        ')' => { brace_depth -= 1; param.push(')'); },
+                                                        ']' => { square_bracket_depth -= 1; param.push(']'); },
+                                                        '}' => { curly_brace_depth -= 1; param.push('}'); },
+                                                        _ => { param.push(*s); }
+                                                    }
+                                                },
+                                                TokenKind::Whitespace(_) => {
+                                                    // normalized
+                                                    param.push(' ');
+                                                },
+                                                TokenKind::Terminator('\n') => {
+                                                    param_newlines += 1;
+                                                    param.push(' ');
+                                                },
+                                                _ => { param.push_str(&token.to_string()); }
+                                            }
+
+                                        }
+                                        
+                                        param = param.trim().to_string();
+                                        params_values.push(param);
+                                    }
+
+                                    println!("params_values: {:?}", params_values);
+
+                                    for x in &define_func.body {
+                                        match &x.kind {
+                                            TokenKind::Identifier(name) => {
+                                                if let Some(param_value) = params.iter().position(|p| p == name).and_then(|p| params_values.get(p)) {
+                                                    out.push_str(param_value);
+                                                } else {
+                                                    out.push_str(name);
+                                                }
+                                            },
+                                            TokenKind::Terminator('\n') => {
+                                                out.push(' ');
+                                            },
+                                            _ => {
+                                                out.push_str(&x.to_string());
+                                            }
+                                        }
+                                    }
+
+                                    for _ in 0..param_newlines {
+                                        out.push('\n');
+                                    }
+                                },
+                                // collect whitespaces then check if ( is not present
+                                _ if open_parenthesis.is_err() => {
+                                    out.push_str(&define_func.body.iter().map(|t| t.to_string()).collect::<String>().trim());
+                                },
+                                _ => {
+                                    out.push_str(&token.to_string());
+                                    let _ = whitespace.and_then(|t| {
+                                        out.push_str(&t.to_string());
+                                        Ok(())
+                                    });
+                                    let _ = open_parenthesis.and_then(|_| {
+                                        out.push('(');
+                                        Ok(())
+                                    });
+                                }
+                            }
+                        } else {
+                            out.push_str(&token.to_string());
+                        }
+                    },
+                    _ => {
+                        out.push_str(&token.to_string());
+                    }
+                }
+
                 new_line = false;
             }
         }
+    }
+    
+    if if_depth > 0 {
+        let token = if_token.unwrap();
+        return Err(format_error(lines[token.line - 1], &token, "Missing #endif directive"));
+    }
+
+    if if_depth < 0 {
+        let token = endif_token.unwrap();
+        return Err(format_error(lines[token.line - 1], &token, "Missing #if directive"));
     }
 
     Ok(out)
@@ -1084,14 +1533,6 @@ fn format_multi_error(prev_line: &str, line: &str, prev: &Token, token: &Token, 
     error
 }
 
-fn is_resource_type(str: &str) -> bool {
-    match str {
-        "cbuffer" | "SamplerState" | "Sampler" |
-        "ConstantBuffer" | "Texture2D" | "TextureCube" | "Texture2DArray" | "Texture3D" => true,
-        _ => false,
-    }
-}
-
 // const BASE_SCALAR_TYPES: &'static [&'static str] = &["int", "uint", "dword", "half", "float", "double"];
 // const EXTENDED_SCALAR_TYPES: &'static [&'static str] = &["f16", "f32", "f64"];
 
@@ -1102,13 +1543,18 @@ macro_rules! join_with_pipe {
 }
 
 macro_rules! join_with_pipe_vec {
-    ($($item:expr),*) => {
-        $(concat!("\"", $item, "1\"") |
-          concat!("\"", $item, "2\"") |
-          concat!("\"", $item, "3\"") |
-          concat!("\"", $item, "4\"")) | *
+    ($($item:expr),* $(,)?) => {
+        &[
+            $(
+                concat!($item, "1"),
+                concat!($item, "2"),
+                concat!($item, "3"),
+                concat!($item, "4"),
+            )*
+        ]
     };
 }
+
 
 fn is_scalar_type(str: &str) -> bool {
     match str {
@@ -1119,10 +1565,7 @@ fn is_scalar_type(str: &str) -> bool {
 }
 
 fn is_vector_type(str: &str) -> bool {
-    match str {
-        join_with_pipe_vec!("int", "uint", "dword", "half", "float", "double") => true,
-        _ => false,
-    }
+    join_with_pipe_vec!("int", "uint", "dword", "half", "float", "double").contains(&str)
 }
 
 fn is_texture_compatible_type(str: &str) -> bool {
@@ -1139,6 +1582,7 @@ fn is_resource_texture(str: &str) -> bool {
     }
 }
 
+
 fn is_resource_overloadable(str: &str) -> bool {
     match str {
         "ConstantBuffer" => true,
@@ -1149,8 +1593,9 @@ fn is_resource_overloadable(str: &str) -> bool {
 
 fn is_type(str: &str, custom_types: &HashSet<String>) -> bool {
     match str {
-        _ if is_resource_type(str) => true,
-        "void" | "int" | "float" | "bool" | "vec2" | "vec3" | "vec4" | "mat4" => true,
+        _ if BindingType::is_binding_type(str) => true,
+        _ if is_scalar_type(str) => true,
+        _ if is_vector_type(str) => true,
         _ => custom_types.contains(&str.to_string()),
     }
 }
@@ -1213,6 +1658,20 @@ impl BindingType {
             "StructuredBuffer" => Some(Self::StructuredBuffer),
             _ => None,
         }
+    }
+
+    fn is_binding_type(str: &str) -> bool {
+        match Self::from_str(str) {
+            Some(_) => true,
+            None => false,
+        }
+        // match str {
+        //     "ConstantBuffer" | "cbuffer" | "Texture2D" | "SamplerState" | "Sampler" |
+        //     "Texture1D" | "Texture1DArray" | "Texture2DArray" | "Texture3D" |
+        //     "TextureCube" | "TextureCubeArray" | "TextureBuffer" | "TextureBufferArray" |
+        //     "StructuredBuffer" => true,
+        //     _ => false,
+        // }
     }
 
     fn to_str(&self) -> &str {
@@ -1361,14 +1820,107 @@ fn parse_binding(binding_type: &BindingType, current: &Token, iter: &mut TokenIt
 
     if *binding_type == BindingType::CBuffer {
         let body_token = iter.expect_body(None)?;
-        iter.expect_terminator(Some(';'), None)?;
+        iter.expect_pontosveso()?;
 
         info.body = Some(body_token.to_string());
     } else {
-        iter.expect_terminator(Some(';'), None)?;
+        iter.expect_pontosveso()?;
     }
     
     Ok(info)
+}
+
+struct StructInfo {
+    name: String,
+    body: Option<String>,
+}
+
+fn parse_struct(iter: &mut TokenIter, current: &Token, defined_structs: &HashSet<String>, lines: &[&str]) -> Result<StructInfo, String> {
+    let name_token = iter.expect_identifier(None, Some("name"))?;
+    let name = name_token.to_string();
+    
+    if defined_structs.contains(&name) {
+        return Err(format_error(lines[current.global_line - 1], current, &format!("struct '{}' is already declared", name)));
+    }
+    
+    let body_token = iter.expect_body(None);
+    iter.expect_pontosveso()?;
+
+    Ok(StructInfo {
+        name,
+        body: Some(body_token?.to_string()),
+    })
+}
+
+struct FunctionParameter {
+    name: String,
+    type_name: String,
+    modifier: Option<String>,
+}
+
+struct FunctionInfo {
+    name: String,
+    parameters: Vec<FunctionParameter>,
+    body: Option<String>,
+}
+
+fn parse_function(iter: &mut TokenIter, current: &Token, custom_types: &HashSet<String>, defined_functions: &HashSet<String>) -> Result<FunctionInfo, String> {
+    let name_token = iter.expect_identifier(None, Some("name"))?;
+    let name = name_token.to_string();
+
+    iter.expect_symbol(Some('('), None)?;
+
+    let mut parameters = vec![];
+
+    loop {
+
+        if iter.expect_symbol(Some(')'), None).is_ok() {
+            break;
+        }
+
+        let modifier = iter.expect_keyword(None, None).ok().map(|token| token.to_string());
+
+        if let Some(ref modifier) = modifier && !["in", "out", "inout"].contains(&modifier.as_str()) {
+            return Err(format_error(iter.get_line(current.global_line - 1).unwrap_or(""), current, "Expected 'in', 'out' or 'inout' or parameter name"));
+        }
+
+        let type_name = iter.expect_identifier(None, Some("parameter type"))?.to_string();
+
+        if !is_type(&type_name, &custom_types) {
+            return Err(format_error(iter.get_line(current.global_line - 1).unwrap_or(""), current, &format!("Unknown type '{}'", type_name)));
+        }
+
+        let name = iter.expect_identifier(None, Some("parameter name"))?.to_string();
+
+        parameters.push(FunctionParameter {
+            name,
+            type_name,
+            modifier,
+        });
+
+        if iter.expect_symbol(Some(','), None).is_err() {
+            iter.expect_symbol(Some(')'), Some("')' or ','"))?;
+            break;
+        }
+    }
+
+    let body_token = iter.expect_body(None);
+
+    if body_token.is_err() {
+        iter.expect_pontosveso()?;
+    }
+
+    if body_token.is_ok() {
+        if defined_functions.contains(&name) {
+            return Err(format_error(iter.get_line(current.global_line - 1).unwrap_or(""), current, &format!("function '{}' is already defined", name)));
+        }
+    }
+
+    Ok(FunctionInfo {
+        name,
+        parameters,
+        body: body_token.ok().map(|token| token.to_string()),
+    })
 }
 
 #[derive(Debug)]
@@ -1414,212 +1966,98 @@ fn parse_stage1(tokens: Vec<Token>, original_src: &str) -> Result<ParseResult, S
 
     let mut macro_depth = 0;
 
+    let empty_set = HashSet::<String>::new();
+
     while let Some(token) = iter.next() {
         match &token.kind {
-            TokenKind::Keyword(keyword) => {
-                match keyword.as_str() {
-                    "struct" => {
+            TokenKind::Keyword(keyword) if keyword == "struct" => {
+                let result = parse_struct(&mut iter, &token, if verify_defines { &defined_structs } else { &empty_set }, &src_split)?;
 
-                        let name_token = iter.expect_identifier(None, Some("name"))?;
-                        let name = name_token.to_string();
+                let define = verify_defines && result.body.is_some();
 
-                        let first_char = name.chars().next().unwrap();
+                parse_result.src.push_str(&format!("struct {}", result.name));
 
-                        if !first_char.is_ascii_alphabetic()
-                        {
-                            let err_msg = format!("Expected struct name to start with an alphabet character but got '{}'", first_char);
-                            return Err(format_error(src_split[name_token.global_line - 1],  name_token, err_msg.as_str()));
-                        }
+                if define {
+                    if defined_structs.contains(&result.name) {
+                        return Err(format_error(src_split[token.global_line - 1], token, &format!("struct '{}' is already defined", result.name)));
+                    }       
 
-                        parse_result.src.push_str(&format!("struct {}", name));
-                        let body_token = iter.expect_body(None).and_then(|body| {
-                            if defined_structs.contains(&name) {
-                                return Err(format_error(src_split[name_token.global_line - 1],  name_token, "Struct already defined"));
-                            }
-                            if verify_defines {
-                                verify_struct_declarations_token.remove(&name);
-                            }
-                            parse_result.src.push_str(format!("\n{}", body.to_string()).as_str());
-                            Ok(())
-                        }).or_else(|err| {
-                            if verify_defines {
-                                let _ = verify_struct_declarations_token.insert(name.clone(), name_token.clone());
-                            }
-                            Err(err)
-                        });
-
-                        iter.expect_terminator(Some(';'), Some("';' or '{'"))?;
-                        parse_result.src.push_str(";\n");
-
-                        custom_types.insert(name.clone());
-                        defined_structs.insert(name);
-
-                        
-                        
-                        // let body_or_terminator = iter.expect_next_token(Some("body or ';'"))?;
-
-                        // match &body_or_terminator.kind {
-                        //     TokenKind::CodeBlock(body) => {
-                        //         parse_result.src.push_str(&format!("struct {} \n{}\n", name, body));
-                        //     },
-                        //     TokenKind::Terminator(';') => {
-                        //         parse_result.src.push_str(&format!("struct {};\n", name));
-                        //     },
-                        //     _ => {
-
-                        //         let err_msg = format!("Expected struct body or ';' but got {}", body_or_terminator.kind.to_string());
-                        //         return Err(format_error(src_split[body_or_terminator.global_line - 1], body_or_terminator, &err_msg));
-                        //     },
-                        // }
-                    },
-                    _ => {},
-                }
-            },
-            TokenKind::Identifier(identifier) => {
-                if identifier.chars().next().unwrap().is_ascii_alphabetic() && is_type(identifier, &custom_types) {
-
-                    // IS RESOURCE
-                    if let Some(binding_type) = BindingType::from_str(identifier) {
-                        println!("Resource type: {}", identifier);
-
-
-                        let binding_info = parse_binding(&binding_type, &token, &mut iter, &defined_structs, &src_split)?;
-
-
-                        parse_result.src.push_str(format!("\n#line {} {}", token.line, token.path).as_str());
-                        parse_result.src.push_str(format!("\n@binding({},{},{},\"{}\")", 
-                            binding_info.binding_type.to_str(),
-                            binding_info.name,
-                            binding_info.binding_count.unwrap_or(1),
-                            current_binding_space
-                        ).as_str());
-
-                        parse_result.src.push('\n');
-
-                        parse_result.src.push_str(&format!("{}", binding_type.to_str()));
-                        
-                        if let Some(overload) = binding_info.overload {
-                            parse_result.src.push_str(&format!("<{}>", overload));
-                        }
-
-                        parse_result.src.push(' ');
-
-                        parse_result.src.push_str(&binding_info.name);
-
-                        if let Some(count) = binding_info.binding_count {
-                            parse_result.src.push_str(&format!("[{}]", count));
-                        }
-
-                        if binding_type.has_body() && let Some(body) = binding_info.body {
-                            parse_result.src.push_str(&format!("\n{}", body));
-                        }
-                        parse_result.src.push(';');
-                        parse_result.src.push('\n');
-
-
-                    } else {
-
-                        let name_token = iter.expect_identifier(None, None)?;
-                        
-                        // IS FUNCTION
-                        if iter.expect_symbol(Some('('), None).is_ok() {
-
-                            let mut name = name_token.to_string();
-
-                            // match name_token.to_string().as_str() {
-                            //     "MainVS" | "MainPS" | "MainCS" | "MainGS" => {},
-                            //     _ => {
-                            //         let path_hash = xxhash_rust::xxh3::xxh3_64_with_seed(token.path.as_bytes(), 0);
-                                    
-                            //         name.push_str(&format!("_{:016x}", path_hash));
-                            //     }
-                            // }
-
-                            parse_result.src.push_str(&format!("{} {}", identifier, name));
-
-                            parse_result.src.push('(');
-                            if iter.expect_symbol(Some(')'), None).is_ok()
-                            {
-                                iter.expect_terminator(Some(';'), None)?;
-                                parse_result.src.push_str(")\n");
-                            }
-
-                            let exit = false;
-                            while !exit {
-
-                                {
-                                    let kw = iter.expect_keyword(None, None);
-                                    if kw.is_ok()
-                                    {
-                                        match kw.clone().unwrap().to_string().as_str()
-                                        {
-                                            "in" => { parse_result.src.push_str("in "); },
-                                            "out" => { parse_result.src.push_str("out "); },
-                                            "inout" => { parse_result.src.push_str("inout "); },
-                                            _ => {
-                                                return Err(format_error(src_split[kw.clone().unwrap().global_line - 1], &kw.clone().unwrap(), "'in', 'out' or 'inout'"));
-                                            },
-                                        }
-                                    }
-                                }
-
-                                let type_token = iter.expect_identifier(None, Some("param type"))?;
-                                let name_token = iter.expect_identifier(None, Some("param name"))?;
-
-                                if is_type(&type_token.to_string(), &custom_types) {                                
-                                    parse_result.src.push_str(&format!("{} {}", type_token.to_string(), name_token.to_string()));
-
-                                    if iter.expect_symbol(Some(','), None).is_err() {
-                                        iter.expect_symbol(Some(')'), None)?;
-                                        parse_result.src.push(')');
-                                        break;
-                                    }
-
-                                    parse_result.src.push_str(", ");
-                                } else {
-                                    return Err(format_error(src_split[token.global_line - 1], token, &format!("Expected param type but got '{}'", identifier)));
-                                }
-                            }
-
-                            if iter.expect_terminator(Some(';'), None).is_ok()
-                            {
-                                parse_result.src.push(';');
-                                parse_result.src.push('\n');
-                                
-                                if verify_defines {
-                                    verify_function_declarations_token.insert(name_token.to_string(), name_token.clone());
-                                }
-                            } else {
-                                if defined_functions.contains(&name_token.to_string()) {
-                                    return Err(format_error(src_split[token.global_line - 1], token, &format!("Function '{}' is already defined", name_token.to_string())));
-                                }
-
-                                if verify_defines {
-                                    verify_function_declarations_token.remove(&name_token.to_string());
-                                }
-
-                                defined_functions.insert(name_token.to_string());
-                                let body_token = iter.expect_body(None)?;
-                                parse_result.src.push_str(&format!("\n{}\n", body_token.to_string()));
-                            }
-
-                            functions.insert(name_token.to_string());
-
-                            
-                            match name_token.to_string().as_str() {
-                                "MainVS" => parse_result.main_functions.push(name_token.to_string()),
-                                "MainPS" => parse_result.main_functions.push(name_token.to_string()),
-                                "MainCS" => parse_result.main_functions.push(name_token.to_string()),
-                                "MainGS" => parse_result.main_functions.push(name_token.to_string()),
-                                _ => {}
-                            }
-                        } else {
-                            return Err(format_error(src_split[token.global_line - 1], token, &format!("Unknown syntax '{}'", identifier).as_str()));
-                        }
-                    }
-
+                    defined_structs.insert(result.name.clone());
+                    parse_result.src.push_str(&format!("\n{};\n", result.body.unwrap()));
                 } else {
-                    return Err(format_error(src_split[token.global_line - 1], token, &format!("Unknown type '{}'", identifier).as_str()));
+                    parse_result.src.push_str(&format!(";\n"));
+                }
+
+                custom_types.insert(result.name);
+            },
+            TokenKind::Identifier(type_name) if matches!(BindingType::from_str(type_name), Some(_)) => {
+                let binding_type = BindingType::from_str(type_name).unwrap();
+                let binding_info = parse_binding(&binding_type, &token, &mut iter, &defined_structs, &src_split)?;
+
+                parse_result.src.push_str(format!("\n#line {} {}", token.line, token.path).as_str());
+                parse_result.src.push_str(format!("\n@binding({},{},{},\"{}\")", 
+                    binding_info.binding_type.to_str(),
+                    binding_info.name,
+                    binding_info.binding_count.unwrap_or(1),
+                    current_binding_space
+                ).as_str());
+
+                parse_result.src.push('\n');
+
+                parse_result.src.push_str(&format!("{}", binding_type.to_str()));
+                
+                if let Some(overload) = binding_info.overload {
+                    parse_result.src.push_str(&format!("<{}>", overload));
+                }
+
+                parse_result.src.push(' ');
+
+                parse_result.src.push_str(&binding_info.name);
+
+                if let Some(count) = binding_info.binding_count {
+                    parse_result.src.push_str(&format!("[{}]", count));
+                }
+
+                if binding_type.has_body() && let Some(body) = binding_info.body {
+                    parse_result.src.push_str(&format!("\n{}", body));
+                }
+                parse_result.src.push(';');
+                parse_result.src.push('\n');
+            },
+            TokenKind::Identifier(func_type) if func_type == "void" || (!BindingType::is_binding_type(func_type) && is_type(func_type, &custom_types)) => {
+
+                let result = parse_function(&mut iter, &token, &custom_types, &defined_structs)?;
+
+                parse_result.src.push_str(
+                    &format!(
+                        "{} {}({})",
+                        func_type,
+                        result.name,
+                        result.parameters.iter().map(|param| 
+                            if let Some(modifier) = &param.modifier {
+                                format!("{} {} {}", modifier, param.type_name, param.name)
+                            } else {
+                                format!("{} {}", param.type_name, param.name)
+                            }
+                        ).collect::<Vec<String>>().join(", ")
+                    )
+                );
+
+                if verify_defines && let Some(body) = result.body {
+                    parse_result.src.push_str(&format!("\n{}", body));
+                } else {
+                    parse_result.src.push(';');
+                }
+                parse_result.src.push('\n');
+
+                functions.insert(result.name.clone());
+
+                match result.name.as_str() {
+                    "MainVS" => parse_result.main_functions.push(result.name),
+                    "MainPS" => parse_result.main_functions.push(result.name),
+                    "MainCS" => parse_result.main_functions.push(result.name),
+                    "MainGS" => parse_result.main_functions.push(result.name),
+                    _ => {}
                 }
             },
             TokenKind::Import => {
@@ -2429,21 +2867,26 @@ fn parse_stage2_late(src: &str, api: GraphicsAPI) -> Result<String, String> {
         }
     }
 
-    let lines = out.split('\n').collect::<Vec<&str>>();
     let mut last_out = String::new();
 
-    let mut depth = 0;
+    let mut stack = Vec::new();
     
-    for line in lines {
-        
-        if line.starts_with("#ifdef 1") || line.starts_with("#if 1") || line.starts_with("#ifndef 0") {
-            depth += 1;
+    for line in out.lines() {
+        if line.starts_with("#if true") {
+            stack.push(*stack.last().unwrap_or(&true));
+            continue;
         } else if line.starts_with("#endif") {
-            depth -= 1;
+            stack.pop();
+            continue;
+        } else if line.starts_with("#if false") {
+            stack.push(false);
+            continue;
         }
 
-        if depth > 0 {
-            continue;
+        if stack.len() > 0 {
+            if stack.last().unwrap() == &false {
+                continue;
+            }
         }
 
         last_out.push_str(line);
@@ -2591,8 +3034,9 @@ fn get_type(tokens: &Vec<Token>, lines: &str) -> Result<String, String> {
     Ok(iter.next().unwrap().to_string())
 }
 
-fn stage_1_compile(path: &std::path::PathBuf, include_paths: &Vec<&str>, defines: HashSet<String>) -> Result<ParseResult, String> {
-    let src = preprocess_old(path, include_paths);
+fn stage_1_compile(path: &PathBuf, include_paths: &Vec<PathBuf>, defines: &HashSet<String>) -> Result<ParseResult, String> {
+    let tmp = include_paths.clone();
+    let src = preprocess(path, &tmp, defines);
     if src.is_err() {
         return Err(src.unwrap_err());
     }
@@ -2622,12 +3066,16 @@ fn main() {
     let path_material = "/home/dz/Documents/Dev/HeliosEngine/HeliosEditor/Shaders/Material/StandardSurface.hsl";
     let include_paths = vec!["/home/dz/Documents/Dev/HeliosEngine/HeliosEditor/Shaders"]; 
 
+    
+    
+    
     let mut defines = HashSet::new();
-
+    let inc_paths = include_paths.iter().map(|p| std::path::PathBuf::from(p)).collect::<Vec<std::path::PathBuf>>();
+    
     defines.insert("PIXEL".to_string());
 
-    let result = stage_1_compile(&std::path::PathBuf::from(path), &include_paths, defines);
-    let result_material = stage_1_compile(&std::path::PathBuf::from(path_material), &include_paths, HashSet::new());
+    let result = stage_1_compile(&std::path::PathBuf::from(path), &inc_paths, &defines);
+    let result_material = stage_1_compile(&std::path::PathBuf::from(path_material), &inc_paths, &HashSet::new());
 
     if result.is_err() {
         let err = result.unwrap_err();
@@ -2645,7 +3093,7 @@ fn main() {
     let src = result.unwrap().src;
     let src_material = result_material.unwrap().src;
     
-    // println!("Src: \n{}", src);
+    // println!("Src: \n{}", src_material);
 
     let link = link_stage(vec![src, src_material]);
 
