@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, fmt, path::PathBuf};
+use std::{collections::{HashMap, HashSet}, fmt, ops::{BitAnd, BitOr, Index, Not}, path::PathBuf, sync::OnceLock};
 
 #[derive(Debug, Clone)]
 pub enum PreprocessorKind {
@@ -64,11 +64,114 @@ impl PartialEq for PreprocessorKind {
     }
 }
 
+#[derive(Debug,Clone)]
+pub enum OperatorKind {
+    Sub,
+    Add,
+    Mul,
+    Div,
+    Mod,
+    
+    Eq,
+    NotEq,
+    
+    And,
+    Or,
+    Not,
+
+    Unknown(String),
+}
+
+impl OperatorKind {
+    pub fn to_string(&self) -> String {
+        match self {
+            OperatorKind::Sub   => "-".to_string(),
+            OperatorKind::Add   => "+".to_string(),
+            OperatorKind::Mul   => "*".to_string(),
+            OperatorKind::Div   => "/".to_string(),
+            OperatorKind::Mod   => "%".to_string(),
+            OperatorKind::Eq    => "==".to_string(),
+            OperatorKind::NotEq => "!=".to_string(),
+            OperatorKind::And   => "&&".to_string(),
+            OperatorKind::Or    => "||".to_string(),
+            OperatorKind::Not   => "!".to_string(),
+            OperatorKind::Unknown(s) => s.clone(),
+        }
+    }
+
+    pub fn all() -> Vec<OperatorKind> {
+        vec![
+            OperatorKind::Sub,
+            OperatorKind::Add,
+            OperatorKind::Mul,
+            OperatorKind::Div,
+            OperatorKind::Mod,
+            OperatorKind::Eq,
+            OperatorKind::NotEq,
+            OperatorKind::And,
+            OperatorKind::Or,
+            OperatorKind::Not,
+        ]
+    }
+
+    pub fn from(s: &str) -> OperatorKind {
+        match s {
+            "-"  => OperatorKind::Sub,
+            "+"  => OperatorKind::Add,
+            "*"  => OperatorKind::Mul,
+            "/"  => OperatorKind::Div,
+            "%"  => OperatorKind::Mod,
+            "==" => OperatorKind::Eq,
+            "!=" => OperatorKind::NotEq,
+            "&&" => OperatorKind::And,
+            "||" => OperatorKind::Or,
+            "!"  => OperatorKind::Not,
+            _    => OperatorKind::Unknown(s.to_string()),
+        }
+    }
+
+    pub fn length(&self) -> usize {
+        match self {
+            OperatorKind::Sub   => 1,
+            OperatorKind::Add   => 1,
+            OperatorKind::Mul   => 1,
+            OperatorKind::Div   => 1,
+            OperatorKind::Mod   => 1,
+            OperatorKind::Eq    => 2,
+            OperatorKind::NotEq => 2,
+            OperatorKind::And   => 2,
+            OperatorKind::Or    => 2,
+            OperatorKind::Not   => 1,
+            OperatorKind::Unknown(s) => s.len(),
+        }
+    }
+}
+
+impl PartialEq for OperatorKind {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (OperatorKind::Sub, OperatorKind::Sub) => true,
+            (OperatorKind::Add, OperatorKind::Add) => true,
+            (OperatorKind::Mul, OperatorKind::Mul) => true,
+            (OperatorKind::Div, OperatorKind::Div) => true,
+            (OperatorKind::Mod, OperatorKind::Mod) => true,
+            (OperatorKind::Eq, OperatorKind::Eq) => true,
+            (OperatorKind::NotEq, OperatorKind::NotEq) => true,
+            (OperatorKind::And, OperatorKind::And) => true,
+            (OperatorKind::Or, OperatorKind::Or) => true,
+            (OperatorKind::Not, OperatorKind::Not) => true,
+            (OperatorKind::Unknown(s1), OperatorKind::Unknown(s2)) => s1 == s2,
+            _ => false,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum TokenKind {
     Keyword(String),
     Identifier(String),
-    CodeBlock(String),
+    OldCodeBlock(String),
+    CodeBlock(Vec<Token>),
     Literal(String),
     Integer(String),
 
@@ -89,8 +192,10 @@ pub enum TokenKind {
     NoRequiredDefineEnd,
 
     Symbol(char),
-    Operator(char),
+    Operator(OperatorKind),
     Terminator(char),
+
+    Unknown(String),
 }
 
 impl TokenKind {
@@ -98,7 +203,17 @@ impl TokenKind {
         match self {
             TokenKind::Keyword(s) => s.clone(),
             TokenKind::Identifier(s) => s.clone(),
-            TokenKind::CodeBlock(s) => s.clone(),
+            TokenKind::CodeBlock(tokens) => {
+                let mut s = String::new();
+                for token in tokens {
+                    match token.kind {
+                        TokenKind::Terminator(';') => s.push_str(";\n"),
+                        _ => s.push_str(&(token.to_string() + " ")),
+                    }
+                }
+                s
+            },
+            TokenKind::OldCodeBlock(s) => s.clone(),
             TokenKind::Literal(s) => s.clone(),
             TokenKind::Integer(s) => s.clone(),
             TokenKind::Preprocessor(s) => s.to_string().clone(),
@@ -113,18 +228,31 @@ impl TokenKind {
             TokenKind::BlockComment(s) => s.clone(),
             TokenKind::NoRequiredDefineStart => "@no_required_define_start".to_string(),
             TokenKind::NoRequiredDefineEnd => "@no_required_define_end".to_string(),
-            TokenKind::Symbol(c) | TokenKind::Operator(c) | TokenKind::Terminator(c) =>
+            TokenKind::Operator(s) => s.to_string(),
+            TokenKind::Symbol(c) | TokenKind::Terminator(c) =>
             {
                 c.to_string()
-            }
+            },
+            TokenKind::Unknown(s) => s.clone(),
         }
     }
 
-    pub fn length(&self) -> usize {
+    pub fn len(&self) -> usize {
         match self {
             TokenKind::Keyword(s) => s.len(),
             TokenKind::Identifier(s) => s.len(),
-            TokenKind::CodeBlock(s) => s.len(),
+            TokenKind::OldCodeBlock(s) => s.len(),
+            TokenKind::CodeBlock(tokens) => {
+                let mut len = 0;
+                for token in tokens {
+                    if token.kind == TokenKind::Terminator(';') {
+                        len += 2;
+                    } else {
+                        len += token.len() + 1;
+                    }
+                }
+                len
+            },
             TokenKind::Literal(s) => s.len(),
             TokenKind::Integer(s) => s.len(),
             TokenKind::Preprocessor(s) => s.length(),
@@ -140,6 +268,7 @@ impl TokenKind {
             TokenKind::NoRequiredDefineStart => "@no_required_define_start".len(),
             TokenKind::NoRequiredDefineEnd => "@no_required_define_end".len(),
             TokenKind::Symbol(_) | TokenKind::Operator(_) | TokenKind::Terminator(_) => 1,
+            TokenKind::Unknown(s) => s.len(),
         }
     }
 
@@ -147,6 +276,7 @@ impl TokenKind {
         match self {
             TokenKind::Keyword(_) => "Keyword",
             TokenKind::Identifier(_) => "Identifier",
+            TokenKind::OldCodeBlock(_) => "CodeBlock",
             TokenKind::CodeBlock(_) => "CodeBlock",
             TokenKind::Literal(_) => "Literal",
             TokenKind::Integer(_) => "Integer",
@@ -165,6 +295,7 @@ impl TokenKind {
             TokenKind::Symbol(_) => "Symbol",
             TokenKind::Operator(_) => "Operator",
             TokenKind::Terminator(_) => "Terminator",
+            TokenKind::Unknown(_) => "Unknown",
         }
     }
 }
@@ -175,7 +306,7 @@ impl PartialEq for TokenKind
         match (self, other) {
             (TokenKind::Keyword(s1), TokenKind::Keyword(s2)) => s1 == s2,
             (TokenKind::Identifier(s1), TokenKind::Identifier(s2)) => s1 == s2,
-            (TokenKind::CodeBlock(s1), TokenKind::CodeBlock(s2)) => s1 == s2,
+            (TokenKind::OldCodeBlock(s1), TokenKind::OldCodeBlock(s2)) => s1 == s2,
             (TokenKind::Literal(s1), TokenKind::Literal(s2)) => s1 == s2,
             (TokenKind::Integer(s1), TokenKind::Integer(s2)) => s1 == s2,
             (TokenKind::Preprocessor(s1), TokenKind::Preprocessor(s2)) => s1 == s2,
@@ -229,7 +360,7 @@ impl Token {
     }
 
     pub fn len(&self) -> usize {
-        self.kind.length()
+        self.kind.len()
     }
 }
 
@@ -326,11 +457,20 @@ impl<'a> TokenIter<'a> {
         }
     }
 
-    pub fn expect_body(&mut self, error_expected: Option<&str>) -> Result<&'a Token, String> {
+    pub fn expect_oldbody(&mut self, error_expected: Option<&str>) -> Result<&'a Token, String> {
         let token = self.iter.peek().ok_or("Expected body but found end of file".to_string())?;
         
         match &token.kind {
-            TokenKind::CodeBlock(_) => { Ok(self.next().unwrap()) },
+            TokenKind::OldCodeBlock(_) => { Ok(self.next().unwrap()) },
+            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or("body"), token.kind).as_str())),
+        }
+    }
+
+    pub fn expect_body(&mut self, error_expected: Option<&str>) -> Result<(&'a Token, &'a Vec<Token>), String> {
+        let token = self.iter.peek().ok_or("Expected body but found end of file".to_string())?;
+        
+        match &token.kind {
+            TokenKind::CodeBlock(body) => { Ok((self.next().unwrap(), body)) },
             _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or("body"), token.kind).as_str())),
         }
     }
@@ -527,16 +667,61 @@ impl<'a> CharIter<'a> {
         self.iter.peek()
     }
 
-    fn collect_while(&mut self, condition: fn(char) -> bool) -> String {
+    fn collect_while<F>(&mut self, condition: F) -> String where F: Fn(char) -> bool {
         let mut s = String::new();
         while let Some(c) = self.peek() {
             if condition(*c) {
-                s.push(*c);
+                s.push(self.next().unwrap());
+            } else {
+                break;
+            }
+        }
+        s
+    }
+
+    fn skip_while(&mut self, condition: fn(char) -> bool) -> &mut CharIter<'a> {
+        while let Some(c) = self.peek() {
+            if condition(*c) {
                 self.next();
             } else {
                 break;
             }
         }
+        self
+    }
+
+    fn collect_while_current_and_previous(&mut self, prev_condition: fn(char) -> bool, condition: fn(char) -> bool) -> String {
+        let mut s = String::new();
+        let mut prev = '\0';
+        while let Some(c) = self.peek() {
+            if condition(*c) && prev_condition(prev) {
+                s.push(*c);
+                prev = *c;
+                self.next();
+            } else {
+                break;
+            }
+        }
+        s
+    }
+
+    fn collect_while_not_escaped(&mut self, condition: fn(char) -> bool) -> String {
+        let mut s = String::new();
+        let mut escaped = false;
+
+        print!("COLLECT: ");
+
+        while let Some(c) = self.peek() {
+            if condition(*c) || escaped {
+                escaped = !escaped && *c == '\\'; // if the previous character was not escape character then attempt to escape
+                // print!("{} {} | ", c, if escaped { 1 } else { 0 });
+                if !escaped { s.push(*c); } // if not esacped, push the character
+                self.next();
+            } else {
+                break;
+            }
+        }
+        println!("\n");
         s
     }
 
@@ -552,12 +737,8 @@ impl<'a> CharIter<'a> {
             None => None,
         }
     }
-}
 
-impl<'a> Iterator for CharIter<'a> {
-    type Item = char;
-
-    fn next(&mut self) -> Option<Self::Item> {
+    fn next(&mut self) -> Option<char> {
         if self.iter.peek().is_none() {
             return None;
         }
@@ -573,8 +754,59 @@ impl<'a> Iterator for CharIter<'a> {
     }
 }
 
+struct TrieNode {
+    children: HashMap<char, TrieNode>,
+}
+
+impl TrieNode {
+    fn new() -> TrieNode {
+        TrieNode { children: HashMap::new() }
+    }
+
+    fn insert(&mut self, key: char) {
+        let node = self.children.entry(key).or_insert(TrieNode::new());
+    }
+
+    fn insert_str(&mut self, s: &str) {
+        let mut node = self;
+        for c in s.chars() {
+            node = node.children.entry(c).or_insert(TrieNode::new());
+        }
+    }
+
+    fn search(&self, key: char) -> Option<&TrieNode> {
+        self.children.get(&key)
+    }
+
+    fn has(&self, key: char) -> bool {
+        self.children.contains_key(&key)
+    }
+
+    fn collect(&self, iter: &mut CharIter) -> String {
+        let mut v = String::new();
+
+        let mut node = self;
+
+        loop {
+            let char = iter.peek();
+            if char.is_none() {
+                break;
+            }
+
+            if let Some(new_node) = node.search(*char.unwrap()) {
+                node = new_node;
+                v.push(iter.next().unwrap());
+            } else {
+                break;
+            }
+        }
+
+        v
+    }
+}
+
 // inclusive
-fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
+fn preprocessor_tokenizer(input: &str, path: &str) -> Result<Vec<Token>, String> {
     let mut tokens: Vec<Token> = Vec::new();
 
     let mut char_iter = CharIter::new(input);
@@ -587,21 +819,21 @@ fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
                 match char_iter.peek() {
                     Some('/') => {
                         let orig_line = char_iter.line;
-                        let orig_column = char_iter.column;
+                        let orig_column = char_iter.column - 1;
 
                         tokens.push(Token::new(
                             TokenKind::LineComment("/".to_string() + char_iter.collect_while(|c| c != '\n').as_str()),
                             orig_line,
                             orig_line,
                             orig_column,
-                            empty_string.clone(),
+                            path.to_string(),
                         ));
                     },
                     Some('*') => {
                         let mut depth = 1;
                         let mut comment = "/".to_string();
                         let starting_line = char_iter.line;
-                        let starting_column = char_iter.column;
+                        let starting_column = char_iter.column - 1;
                         
                         while let Some(c) = char_iter.next() {
 
@@ -627,7 +859,7 @@ fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
                             starting_line,
                             starting_line,
                             starting_column,
-                            empty_string.clone(),
+                            path.to_string(),
                         ));     
                     },
                     _ => {
@@ -636,7 +868,7 @@ fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
                             char_iter.line,
                             char_iter.line,
                             char_iter.column,
-                            empty_string.clone(),
+                            path.to_string(),
                         ));
                     }
                 }
@@ -644,7 +876,7 @@ fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
             '"' => {
                 let mut string = '"'.to_string();
                 let starting_line = char_iter.line;
-                let starting_column = char_iter.column;
+                let starting_column = char_iter.column - 1;
                 
                 let mut terminated = false;
                 while let Some(c) = char_iter.next() {
@@ -664,7 +896,7 @@ fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
                     starting_line,
                     starting_line,
                     starting_column,
-                    empty_string.clone(),
+                    path.to_string(),
                 ));
             },
             '\n' | ';' => {
@@ -672,13 +904,13 @@ fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
                     TokenKind::Terminator(c),
                     char_iter.line,
                     char_iter.line,
-                    char_iter.column,
-                    empty_string.clone(),
+                    char_iter.column - if c == '\n' { 0 } else { 1 },
+                    path.to_string(),
                 ));
             },
             ' ' | '\t' | '\r' => {
                 let orig_line = char_iter.line;
-                let orig_column = char_iter.column;
+                let orig_column = char_iter.column - 1;
                 let whitespace = c.to_string() + char_iter.collect_while(|c| c == ' ' || c == '\t' || c == '\r').as_str();
 
                 tokens.push(Token::new(
@@ -686,12 +918,12 @@ fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
                     orig_line,
                     orig_line,
                     orig_column,
-                    empty_string.clone(),
+                    path.to_string(),
                 ));
             },
             _ if c.is_ascii_alphabetic() || c == '_' => {
                 let orig_line = char_iter.line;
-                let orig_column = char_iter.column;
+                let orig_column = char_iter.column - 1;
 
                 let identifier = c.to_string() + char_iter.collect_while(|c| c.is_ascii_alphanumeric() || c == '_').as_str();
 
@@ -700,7 +932,7 @@ fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
                     orig_line,
                     orig_line,
                     orig_column,
-                    empty_string.clone(),
+                    path.to_string(),
                 ));
             },
             _ => {
@@ -708,8 +940,8 @@ fn preprocessor_tokenizer(input: &str) -> Result<Vec<Token>, String> {
                     TokenKind::Symbol(c),
                     char_iter.line,
                     char_iter.line,
-                    char_iter.column,
-                    empty_string.clone(),
+                    char_iter.column - 1,
+                    path.to_string(),
                 ));
             },
         }
@@ -730,11 +962,11 @@ fn preprocess(original_path: &PathBuf, include_paths: &Vec<PathBuf>, defines: &H
         conv_defines.insert(define.clone(), MacroDef { params: None, body: vec![] });
     }
 
-    preprocess_i(original_path, include_paths, &mut Vec::new(), &mut conv_defines, true)
+    preprocess_i(original_path, include_paths, &mut Vec::new(), &mut conv_defines, &mut Vec::new(), true)
 }
 
 
-fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_files: &mut Vec<PathBuf>, defines: &mut HashMap<String, MacroDef>, is_module: bool) -> Result<String, String> {
+fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_files: &mut Vec<PathBuf>, defines: &mut HashMap<String, MacroDef>, if_stack: &mut Vec<bool>, is_module: bool) -> Result<String, String> {
     let mut out = String::new();
     
     let src = std::fs::read_to_string(original_path);
@@ -748,14 +980,18 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_
     let mut if_token = None;
     let mut endif_token = None;
 
-    let tokens = preprocessor_tokenizer(src.as_str())?;
+    let tokens = preprocessor_tokenizer(src.as_str(), original_path.to_str().as_ref().unwrap())?;
 
     let mut iter = TokenIter::new(tokens.iter(), src.as_str());
 
     if is_module { out.push_str(format!("@space \"{}\"\n", original_path.display()).as_str()); }
+    out.push_str(format!("#line {} \"{}\"\n", 0, original_path.display()).as_str());
 
     let mut new_line = true;
     while let Some(token) = iter.next() {
+
+        let ignore = !if_stack.last().unwrap_or(&true);
+
         match &token.kind {
             TokenKind::Terminator('\n') => {
                 out.push('\n');
@@ -804,14 +1040,13 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_
                             continue;
                         }
 
-                        let result = preprocess_i(&path, &include_paths, included_files, defines, true)?;
+                        let result = preprocess_i(&path, &include_paths, included_files, defines, if_stack, true)?;
 
                         let is_interface_file = path.extension().is_some() && path.extension().unwrap().to_str().unwrap().ends_with("hsi");
                         let no_req_define = is_interface_file && directive_name == "import";
                         
                         if is_interface_file { out.push_str(format!("@{} \"{}\"\n", directive_name, path.display()).as_str()); }
                         if no_req_define { out.push_str("@no_required_define_start\n"); }
-                        out.push_str(format!("#line {} \"{}\"\n", current_line, path.display()).as_str());
                         out.push_str(&result);
                         out.push('\n');
                         if no_req_define { out.push_str("@no_required_define_end\n"); }
@@ -839,7 +1074,13 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_
                 let _ = iter.expect_whitespace(None);
                 
                 match macro_name.as_str() {
+                    "undef" => {
+                        if ignore { continue; }
+                        let name = iter.expect_identifier(None, Some("macro name"))?.to_string();
+                        defines.remove(&name);
+                    },
                     "define" => {
+                        if ignore { continue; }
                         // collect body present
 
                         let name = iter.expect_identifier(None, Some("define name"))?.to_string();
@@ -923,7 +1164,9 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_
                         let line = token.line;
                         iter.expect_terminator(Some('\n'), Some("'\\n'"))?;
 
-                        out.push_str(&format!("#if {}\n", defines.get(&name.to_string()).is_some()));
+                        // out.push_str(&format!("#if {}\n", defines.get(&name.to_string()).is_some()));
+                        let is_true = defines.get(&name.to_string()).is_some();
+                        if_stack.push(*if_stack.last().unwrap_or(&true) && is_true);
                         if_depth += 1;
                         if_token = Some(Token::new(
                             TokenKind::Identifier(name.to_string()),
@@ -932,6 +1175,7 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_
                             0,
                             token.path.clone(),
                         ));
+                        out.push_str("\n");
                     },
                     "ifndef" => {
                         let _ = iter.expect_whitespace(None);
@@ -940,7 +1184,9 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_
                         let line = token.line;
                         iter.expect_terminator(Some('\n'), Some("'\\n'"))?;
 
-                        out.push_str(&format!("#if {}\n", defines.get(&name.to_string()).is_none()));
+                        // out.push_str(&format!("#if {}\n", defines.get(&name.to_string()).is_none()));
+                        let is_true = !defines.get(&name.to_string()).is_some();
+                        if_stack.push(*if_stack.last().unwrap_or(&true) && is_true);
                         if_depth += 1;
                         if_token = Some(Token::new(
                             TokenKind::Identifier(name.to_string()),
@@ -949,22 +1195,34 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_
                             0,
                             token.path.clone(),
                         ));
+                        out.push_str("\n");
                     },
                     "else" => {
                         let _ = iter.expect_whitespace(None);
                         iter.expect_terminator(Some('\n'), Some("'\\n'"))?;
 
-                        out.push_str("#else\n");
+                        if if_stack.is_empty() {
+                            return Err(format_error(lines[token.line - 1], &token, "Unmatched #else"));
+                        }
+
+                        let is_true = !if_stack.last().unwrap();
+
+                        if_stack.pop();
+                        if_stack.push(*if_stack.last().unwrap_or(&true) && !is_true);
+
+                        // out.push_str("#else\n");
+                        out.push_str("\n");
                     },
                     "endif" => {
                         let _ = iter.expect_whitespace(None);
                         let line = token.line;
 
-                        out.push_str("#endif"); // ! In this order
+                        // out.push_str("#endif"); // ! In this order
+                        if_stack.pop();
                         
                         if iter.peek().is_some() {
                             iter.expect_terminator(Some('\n'), Some("'\\n'"))?;
-                            out.push('\n');
+                            // out.push('\n');
                         }
 
                         if if_depth == 0 {
@@ -979,6 +1237,7 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_
                             0,
                             token.path.clone(),
                         ));
+                        out.push_str("\n");
                     },
                     "include" => {
                         let current_line = token.line;
@@ -1011,10 +1270,8 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_
                             continue;
                         }
 
-                        let result = preprocess_i(&path, &include_paths, included_files, defines, false)?;
+                        let result = preprocess_i(&path, &include_paths, included_files, defines, if_stack, false)?;
 
-                        
-                        out.push_str(format!("#line {} \"{}\"\n", current_line, path.display()).as_str());
                         out.push_str(&result);
                         out.push('\n');
                         out.push_str(format!("#line {} \"{}\"\n", current_line, original_path.display()).as_str());
@@ -1028,6 +1285,17 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_
                 }
             }
             _ => {
+
+                if !if_stack.is_empty() && new_line {
+                    if let TokenKind::Identifier(name) = &token.kind && BindingType::is_binding_type(name.as_str()) {
+                        return Err(format_error(lines[token.line - 1], &token, "Binding type not allowed here inside conditional macros!"));
+                    }
+                }
+
+                if ignore {
+                    new_line = false;
+                    continue;
+                }
                 
                 match &token.kind {
                     TokenKind::Identifier(name) => {
@@ -1180,7 +1448,335 @@ fn preprocess_i(original_path: &PathBuf, include_paths: &Vec<PathBuf>, included_
     Ok(out)
 }
 
+fn codeblock_tokenizer(input: &str, line_start: usize, line_offset: usize, current_path: &str) -> Result<Vec<Token>, String> {
+    let mut tokens: Vec<Token> = Vec::new();
+
+    static S_OPERATORS: OnceLock<TrieNode> = OnceLock::new();
+    let operators = S_OPERATORS.get_or_init(|| {
+        let mut t = TrieNode::new();
+
+        OperatorKind::all().into_iter().for_each(|op| {
+            t.insert_str(&op.to_string());
+        });
+
+        t
+    });
+
+    let mut iter = CharIter::new(input);
+    iter.line = line_start;
+
+    while let Some(c) = iter.next() {
+        let global_line = iter.line;
+        println!("CB TOKENIZER B: {} {}", global_line, line_offset);
+        let line = global_line - line_offset;
+        let column = usize::max(iter.column, 1) - 1;
+
+        match c {
+            '\n' => { },
+            '/' if iter.peek().map_or(false, |c| *c == '/') => {
+                iter.skip_while(|c| c != '\n');
+            },
+            '/' if iter.peek().map_or(false, |c| *c == '*') => {
+                let mut depth = 1;
+                let starting_line = iter.line;
+                let starting_column = iter.column - 1;
+                
+                while let Some(c) = iter.next() {
+
+                    if c == '*' && iter.next_if(|c| c == '/').is_some() {
+                        depth -= 1;
+                    } else if c == '/' && iter.next_if(|c| c == '*').is_some() {
+                        depth += 1;
+                    }
+                    if depth == 0 {
+                        break;
+                    }
+                }
+
+                if depth != 0 {
+                    return Err(format!("Unterminated block comment from line {} column {}", starting_line, starting_column));
+                }
+            },
+            ' ' | '\t' | '\r' => { },        
+            '0'..='9' => {
+                let start_column = iter.column - 1;
+                let number = c.to_string() + &iter.collect_while(|c| c.is_ascii_digit());
+                tokens.push(Token::new(
+                    TokenKind::Integer(number),
+                    global_line,
+                    line,
+                    start_column,
+                    current_path.to_string()
+                ));
+            },
+            ';' => {
+                tokens.push(Token::new(
+                    TokenKind::Terminator(';'),
+                    global_line,
+                    line,
+                    column,
+                    current_path.to_string()
+                ));
+            },
+            _ if operators.has(c) => {
+                let start_column = iter.column - 1;
+                let operator = c.to_string() + &operators.collect(&mut iter);
+                tokens.push(Token::new(
+                    TokenKind::Operator(OperatorKind::from(&operator)),
+                    global_line,
+                    line,
+                    start_column,
+                    current_path.to_string()
+                ));
+            },
+            _ if c.is_ascii_alphabetic() || c == '_' => {
+                let start_column = iter.column - 1;
+                let identifier = c.to_string() + &iter.collect_while(|c| c.is_ascii_alphanumeric() || c == '_');
+
+                match identifier.as_str() {
+                    // "struct" | "in" | "out" | "inout" => {
+                    //     tokens.push(Token::new(
+                    //         TokenKind::Keyword(identifier),
+                    //         global_line,
+                    //         line,
+                    //         start_column,
+                    //         current_path.to_string()
+                    //     ));
+                    // },
+                    _ => {
+                        tokens.push(Token::new(
+                            TokenKind::Identifier(identifier),
+                            global_line,
+                            line,
+                            start_column,
+                            current_path.to_string()
+                        ));
+                    }
+                }
+            },
+            _ => {
+                tokens.push(Token::new(
+                    TokenKind::Symbol(c),
+                    global_line,
+                    line,
+                    column,
+                    current_path.to_string()
+                ));
+            }
+        }
+    }
+
+    Ok(tokens)
+}
+
 fn tokenize(input: &str) -> Result<Vec<Token>, String> {
+    let mut tokens: Vec<Token> = Vec::new();
+    
+    let mut line_offset = 0usize;
+
+    let mut iter = CharIter::new(input);
+    let mut required_nl_terminator = false;
+
+    let mut current_path = "".to_string();
+    
+    while let Some(c) = iter.next() {
+        match c {
+            '\n' => { 
+                if required_nl_terminator {
+                    tokens.push(Token::new(
+                        TokenKind::Terminator('\n'),
+                        iter.line,
+                        iter.line - line_offset,
+                        iter.column, // ! \n makes it column 0
+                        current_path.clone()
+                    ));
+                    required_nl_terminator = false;
+                }
+            },
+            '/' if iter.peek().map_or(false, |c| *c == '/') => {
+                iter.skip_while(|c| c != '\n');
+            },
+            '/' if iter.peek().map_or(false, |c| *c == '*') => {
+                let mut depth = 1;
+                let starting_line = iter.line;
+                let starting_column = iter.column - 1;
+                
+                while let Some(c) = iter.next() {
+
+                    if c == '*' && iter.next_if(|c| c == '/').is_some() {
+                        depth -= 1;
+                    } else if c == '/' && iter.next_if(|c| c == '*').is_some() {
+                        depth += 1;
+                    }
+                    if depth == 0 {
+                        break;
+                    }
+                }
+
+                if depth != 0 {
+                    return Err(format!("Unterminated block comment from line {} column {}", starting_line, starting_column));
+                }
+            },
+            ';' => {
+                tokens.push(Token::new(
+                    TokenKind::Terminator(';'),
+                    iter.line,
+                    iter.line - line_offset,
+                    iter.column - 1,
+                    current_path.clone()
+                ));
+            },
+            '"' => {
+                let start_column = iter.column - 1;
+                let start_line = iter.line;
+                let string = iter.collect_while(|c| c != '"');
+                iter.next();
+
+                // println!("LITERAL: {}", string);
+
+                tokens.push(Token::new(
+                    TokenKind::Literal(string),
+                    start_line,
+                    start_line - line_offset,
+                    start_column,
+                    current_path.clone()
+                ));
+            },
+            '{' => {
+                let mut depth = 1;
+                let line_start = iter.line;
+                let mut block = String::new();
+                while let Some(c) = iter.next() {
+                    if c == '{' {
+                        depth += 1;
+                    } else if c == '}' {
+                        depth -= 1;
+                    }
+                    if depth == 0 {
+                        break;
+                    } else {
+                        block.push(c);
+                    }
+                }
+
+                let codeblock_tokens = codeblock_tokenizer(&block, line_start, line_offset, &current_path)?;
+
+                tokens.push(Token::new(
+                    TokenKind::CodeBlock(codeblock_tokens),
+                    iter.line,
+                    iter.line - line_offset,
+                    iter.column - 1,
+                    current_path.clone()
+                ));
+            },
+            '@' if iter.column == 1 && iter.skip_while(|c| c.is_ascii_whitespace()).peek().map_or(false, |c| c.is_ascii_alphabetic() || *c == '_') => {
+                let start_column = iter.column - 1;
+                
+                let directive = iter.collect_while(|c| c.is_ascii_alphanumeric() || c == '_');
+                
+                required_nl_terminator = true;
+                
+                match directive.as_str() {
+                    "import" => { tokens.push(Token::new(TokenKind::Import, iter.line, iter.line - line_offset, start_column, current_path.clone())); },
+                    "export" => { tokens.push(Token::new(TokenKind::Export, iter.line, iter.line - line_offset, start_column, current_path.clone())) },
+                    "type" => { tokens.push(Token::new(TokenKind::Type, iter.line, iter.line - line_offset, start_column, current_path.clone())) },
+                    "binding" => { tokens.push(Token::new(TokenKind::Binding, iter.line, iter.line - line_offset, start_column, current_path.clone())) },
+                    "space" => { tokens.push(Token::new(TokenKind::Space, iter.line, iter.line - line_offset, start_column, current_path.clone())) },
+                    "implements" => { tokens.push(Token::new(TokenKind::Implements, iter.line, iter.line - line_offset, start_column, current_path.clone())) },
+                    "no_required_define_start" => { tokens.push(Token::new(TokenKind::NoRequiredDefineStart, iter.line, iter.line - line_offset, start_column, current_path.clone())) },
+                    "no_required_define_end" => { tokens.push(Token::new(TokenKind::NoRequiredDefineEnd, iter.line, iter.line - line_offset, start_column, current_path.clone())) },
+                    _ => {
+                        return Err(format_error(input.lines().nth(iter.line - 1).unwrap(), &Token::new(TokenKind::Identifier(directive), iter.line, iter.line - line_offset, start_column, current_path.clone()), "Unknown directive"));
+                    }
+                }
+            },
+            '#' if iter.column == 1 && iter.skip_while(|c| c.is_ascii_whitespace()).peek().map_or(false, |c| c.is_ascii_alphabetic() || *c == '_') => {
+                let start_column = iter.column - 1;
+                let directive = iter.collect_while(|c| c.is_ascii_alphanumeric() || c == '_');
+                
+                iter.skip_while(|c| c.is_ascii_whitespace());
+
+                if iter.peek().is_none() { continue; }
+
+                match directive.as_str() {
+                    "line" => { 
+
+                        let line_number = iter.collect_while(|c| c.is_ascii_digit());
+                        if iter.peek().is_none() { continue; }
+                        iter.skip_while(|c| c.is_ascii_whitespace());
+                        if iter.peek().is_none() { continue; }
+
+                        if *iter.peek().unwrap() != '"' {
+                            continue;
+                        }
+                        iter.next();
+                        let string = iter.collect_while_not_escaped(|c| c != '"');
+                        
+                        iter.skip_while(|c| c != '\n');
+                        if iter.peek().is_none() { continue; }
+
+                        if !string.is_empty() {
+                            current_path = string;
+                        }
+
+                        let line = line_number.parse::<u32>();
+                        if line.is_err() { continue; }
+                        let line = line.unwrap();
+
+                        line_offset = iter.line - (line as usize);
+                        println!("SET LINE: {} | {}", iter.line, line_offset);
+                    },
+                    _ => {
+                        println!("Unknown directive AT {}:{} | {}", iter.line, iter.line, line_offset);
+                        return Err(format_error(input.lines().nth(iter.line - 1).unwrap(), &Token::new(TokenKind::Identifier(directive), iter.line, iter.line - line_offset, start_column, current_path.clone()), "Unknown directive"));
+                    }
+                }
+            },
+            ' ' | '\t' | '\r' => { },
+            _ if c.is_ascii_alphabetic() || c == '_' => {
+                let start_column = iter.column - 1;
+                let identifier = c.to_string() + &iter.collect_while(|c| c.is_ascii_alphanumeric() || c == '_');
+
+                match identifier.as_str() {
+                    "struct" | "in" | "out" | "inout" => {
+                        tokens.push(Token::new(
+                            TokenKind::Keyword(identifier),
+                            iter.line,
+                            iter.line - line_offset,
+                            start_column,
+                            current_path.clone()
+                        ));
+                    },
+                    _ => {
+                        tokens.push(Token::new(
+                            TokenKind::Identifier(identifier),
+                            iter.line,
+                            iter.line - line_offset,
+                            start_column,
+                            current_path.clone()
+                        ));
+                    }
+                }
+
+            },
+            _ => {
+                tokens.push(Token::new(
+                    TokenKind::Symbol(c),
+                    iter.line,
+                    iter.line - line_offset,
+                    iter.column - 1,
+                    current_path.clone()
+                ));
+            }
+        }   
+    }
+
+    println!("Tokens: {:?}", tokens);
+
+    Ok(tokens)
+}
+
+fn tokenize_old(input: &str) -> Result<Vec<Token>, String> {
     let mut tokens: Vec<Token> = Vec::new();
     let mut line = 1;
     let mut line_offset = 0usize;
@@ -1255,7 +1851,7 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
                     i += 1;
                 }
                 i -= 1;
-                tokens.push(Token::new(TokenKind::CodeBlock(block), line, line - line_offset, column, path.clone()));
+                tokens.push(Token::new(TokenKind::OldCodeBlock(block), line, line - line_offset, column, path.clone()));
             },
             b'+' | b'-' | b'*' | b'/' | b'%' | b'=' => {
                 if i + 1 < bytes.len() && bytes[i + 1] == b'/' {
@@ -1267,7 +1863,7 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
                     line += 1;
                 } else {
                     column += 1;
-                    tokens.push(Token::new(TokenKind::Operator(c as char), line, line - line_offset, column, path.clone()));
+                    tokens.push(Token::new(TokenKind::Operator(OperatorKind::from(&c.to_string())), line, line - line_offset, column, path.clone()));
                 }
             },
             b'"' => {
@@ -1510,25 +2106,26 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
 
 fn format_error(line: &str, token: &Token, message: &str) -> String {
     let mut error = String::new();
-    error.push_str(&format!("In: {}:{}\n", token.path, token.line));
-    error.push_str(&format!("Error: {} at line {} column {} | {}\n", message, token.line, token.column, token.global_line));
+    error.push_str(&format!("In: {}:{}:{}\n", token.path, token.line, token.column + 1)); // cuz column starts at 1 by convetion in editors
+    error.push_str(&format!("Error: {} at line {} column {} | {}\n", message, token.line, token.column + 1, token.global_line));
     let line_mark = format!("{}: ", token.line);
     error.push_str(&format!("{}\n", line_mark.clone() + line));
-    error.push_str(&format!("{}\n", " ".repeat(line_mark.len() + usize::max(1, token.column) - 1) + "^".repeat(token.kind.length()).as_str()));
+    error.push_str(&format!("{}\n", " ".repeat(line_mark.len() + token.column) + "^".repeat(token.kind.len()).as_str()));
     error
 }
 
 fn format_multi_error(prev_line: &str, line: &str, prev: &Token, token: &Token, message: &str) -> String {
     let mut error = String::new();
-    error.push_str(&format!("Error: {} at line {} column {} | {}\n", message, token.line, token.column, token.global_line));
+    error.push_str(&format!("In: {}:{}:{}\n", token.path, token.line, token.column + 1));
+    error.push_str(&format!("Error: {} at line {} column {} | {}\n", message, token.line, token.column + 1, token.global_line));
 
     let line_mark = format!("{}: ", prev.line);
     error.push_str(&format!("{}\n", line_mark.clone() + prev_line));
-    error.push_str(&format!("{}\n", " ".repeat(line_mark.len() + usize::max(1, prev.column) - 1) + "^".repeat(prev.kind.length()).as_str()));
+    error.push_str(&format!("{}\n", " ".repeat(line_mark.len() + prev.column) + "^".repeat(prev.kind.len()).as_str()));
 
     let line_mark = format!("{}: ", token.line);
     error.push_str(&format!("{}\n", line_mark.clone() + line));
-    error.push_str(&format!("{}\n", " ".repeat(line_mark.len() + usize::max(1, token.column) - 1) + "^".repeat(token.kind.length()).as_str()));
+    error.push_str(&format!("{}\n", " ".repeat(line_mark.len() + token.column) + "^".repeat(token.kind.len()).as_str()));
 
     error
 }
@@ -1735,15 +2332,15 @@ impl BindingType {
 }
 
 #[derive(Debug)]
-struct BindingInfo {
+struct BindingInfo<'a> {
     binding_type: BindingType,
     name: String,
     overload: Option<String>,
     binding_count: Option<u32>,
-    body: Option<String>,
+    body: Option<&'a Vec<Token>>,
 }
 
-impl BindingInfo {
+impl<'a> BindingInfo<'a> {
     fn new(binding_type: BindingType, name: String) -> Self {
         Self {
             binding_type,
@@ -1755,7 +2352,7 @@ impl BindingInfo {
     }
 }
 
-fn parse_binding(binding_type: &BindingType, current: &Token, iter: &mut TokenIter, declared_structs: &HashSet<String>, lines:  &[&str]) -> Result<BindingInfo, String> {
+fn parse_binding<'a>(binding_type: &BindingType, current: &Token, iter: &mut TokenIter<'a>, declared_structs: &HashSet<String>, lines:  &[&str]) -> Result<BindingInfo<'a>, String> {
     // assume binding_type was validated
 
     let mut _overload = None;
@@ -1789,7 +2386,7 @@ fn parse_binding(binding_type: &BindingType, current: &Token, iter: &mut TokenIt
     let name_token = iter.expect_identifier(None, Some("name"))?;
     let name = name_token.to_string();
     
-    let mut info: BindingInfo = BindingInfo::new(binding_type.clone(), name.to_string());
+    let mut info: BindingInfo<'a> = BindingInfo::new(binding_type.clone(), name.to_string());
     info.overload = _overload;
 
     if iter.expect_symbol(Some('['), None).is_ok()
@@ -1822,7 +2419,7 @@ fn parse_binding(binding_type: &BindingType, current: &Token, iter: &mut TokenIt
         let body_token = iter.expect_body(None)?;
         iter.expect_pontosveso()?;
 
-        info.body = Some(body_token.to_string());
+        info.body = Some(body_token.1);
     } else {
         iter.expect_pontosveso()?;
     }
@@ -1830,12 +2427,344 @@ fn parse_binding(binding_type: &BindingType, current: &Token, iter: &mut TokenIt
     Ok(info)
 }
 
-struct StructInfo {
-    name: String,
-    body: Option<String>,
+#[repr(u16)]
+#[derive(Debug, Clone, Copy)]
+enum ShaderStageFlag
+{
+    None = 0,
+    VertexIn = 1 << 0,
+    VertexOut = 1 << 1,
+    PixelIn = 1 << 2,
+    PixelOut = 1 << 3,
+    GeometryIn = 1 << 4,
+    GeometryOut = 1 << 5,
+    Compute = 1 << 6,
+    HullIn = 1 << 7,
+    HullOut = 1 << 8,
+    DomainIn = 1 << 9,
+    DomainOut = 1 << 10,
 }
 
-fn parse_struct(iter: &mut TokenIter, current: &Token, defined_structs: &HashSet<String>, lines: &[&str]) -> Result<StructInfo, String> {
+#[derive(Debug, Clone, Copy)]
+struct ShaderStageFlags(u16);
+
+impl From<ShaderStageFlag> for ShaderStageFlags {
+    fn from(value: ShaderStageFlag) -> Self {
+        Self(value as u16)
+    }
+}
+
+impl BitOr for ShaderStageFlags {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self {
+        Self(self.0 | rhs.0)
+    }
+}
+
+impl BitAnd for ShaderStageFlags {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self {
+        Self(self.0 & rhs.0)
+    }
+}
+
+impl Not for ShaderStageFlags {
+    type Output = Self;
+
+    fn not(self) -> Self {
+        Self(!self.0)
+    }
+}
+
+impl PartialEq for ShaderStageFlags {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl ShaderStageFlags {
+    fn contains(&self, flag: ShaderStageFlags) -> bool {
+        *self & flag == flag
+    }
+
+    fn set(&mut self, flag: ShaderStageFlags) {
+        *self = *self | flag;
+    }
+
+    fn clear(&mut self, flag: ShaderStageFlags) {
+        *self = *self & !flag;
+    }
+}
+
+#[derive(Debug, Clone)]
+enum SemanticKind {
+    Generic(String),
+    System { semantic: String, index: Option<u32> },
+}
+
+impl SemanticKind {
+    fn to_string(&self) -> String
+    {
+        match self {
+            SemanticKind::Generic(semantic) => semantic.clone(),
+            SemanticKind::System { semantic, index } => {
+                if let Some(index) = index {
+                    format!("SV_{}{}", semantic, index)
+                } else {
+                    format!("SV_{}", semantic)
+                }
+            }
+        }
+    }
+}
+
+fn parse_semantic(semantic: &str) -> Result<SemanticKind, String> {
+    
+    if !semantic.starts_with("SV_") {
+        return Ok(SemanticKind::Generic(semantic.to_string()));
+    }
+
+    let mut semantic = semantic[3..].to_string();
+
+    let index = semantic.find(|c: char| c.is_ascii_digit());
+
+    if let Some(num_index) = index {
+        println!("TEST INDEX: {:?}", semantic[num_index..].to_string());
+        let index = semantic[num_index..].parse::<u32>();
+        
+        if index.is_err() {
+            return Err("Invalid semantic index".to_string());
+        }
+        
+        semantic = semantic[..num_index].to_string();
+    }
+    
+    Ok(SemanticKind::System { semantic, index: None })
+}
+
+fn semantic_allows_slot(semantic: &SemanticKind) -> bool {
+    match semantic {
+        SemanticKind::Generic(_) => true,
+        SemanticKind::System { semantic, .. } => {
+            match semantic.to_ascii_uppercase().as_str() {
+                "SV_CLIPDISTANCE" => true,
+                "SV_CULLDISTANCE" => true,
+                "SV_TARGET" => true,
+                _ => false,
+            }
+        }
+    }
+}
+
+static SYSTEM_SEMANTIC_ALLOWED_STAGES: OnceLock<HashMap<&'static str, (&'static str, ShaderStageFlags)>> = OnceLock::new();
+
+fn init_system_semantic_allowed_stages() -> HashMap<&'static str, (&'static str, ShaderStageFlags)> {
+    use ShaderStageFlag::*;
+
+    let mut m = HashMap::new();
+    
+    m.insert("CLIPDISTANCE", ("float", 
+        ShaderStageFlags::from(VertexOut) | 
+        ShaderStageFlags::from(GeometryIn) | ShaderStageFlags::from(GeometryOut) |
+        ShaderStageFlags::from(PixelIn)
+    ));
+    
+    m.insert("CULLDISTANCE", ("float", 
+        ShaderStageFlags::from(VertexOut) | 
+        ShaderStageFlags::from(GeometryIn) | ShaderStageFlags::from(GeometryOut) |
+        ShaderStageFlags::from(PixelIn)
+    ));
+    
+    m.insert("COVERAGE", ("uint", ShaderStageFlags::from(PixelIn) | ShaderStageFlags::from(PixelOut)));
+    
+    m.insert("DEPTH", ("float", ShaderStageFlags::from(PixelOut)));
+    
+    m.insert("DEPTHGREATEREQUAL", ("float", ShaderStageFlags::from(PixelOut)));
+    
+    m.insert("DEPTHLESSEQUAL", ("float", ShaderStageFlags::from(PixelOut)));
+    
+    m.insert("DISPATCHTHREADID", ("uint3", ShaderStageFlags::from(Compute)));
+    
+    m.insert("DOMAINLOCATION", ("float3", ShaderStageFlags::from(DomainIn)));
+    
+    m.insert("GROUPID", ("uint3", ShaderStageFlags::from(Compute)));
+    
+    m.insert("GROUPINDEX", ("uint", ShaderStageFlags::from(Compute)));
+    
+    m.insert("GROUPTHREADID", ("uint3", ShaderStageFlags::from(Compute)));
+    
+    m.insert("GSINSTANCEID", ("uint", ShaderStageFlags::from(GeometryIn)));
+    
+    m.insert("INNERCOVERAGE", ("uint", ShaderStageFlags::from(PixelIn) | ShaderStageFlags::from(PixelOut)));
+    
+    m.insert("INSIDETESSFACTOR", ("float", ShaderStageFlags::from(HullOut) | ShaderStageFlags::from(DomainIn)));
+    
+    m.insert("INSTANCEID", ("uint", 
+        ShaderStageFlags::from(VertexIn) | ShaderStageFlags::from(VertexOut) |
+        ShaderStageFlags::from(GeometryIn) | ShaderStageFlags::from(GeometryOut) |
+        ShaderStageFlags::from(PixelIn)
+    ));
+    
+    m.insert("ISFRONTFACE", ("bool", ShaderStageFlags::from(GeometryOut) | ShaderStageFlags::from(PixelIn)));
+    
+    m.insert("OUTPUTCONTROLPOINTID", ("uint", ShaderStageFlags::from(HullIn)));
+    
+    m.insert("POSITION", ("float4", 
+        ShaderStageFlags::from(VertexOut) | 
+        ShaderStageFlags::from(GeometryIn) | ShaderStageFlags::from(GeometryOut) |
+        ShaderStageFlags::from(PixelIn)
+    ));
+    
+    m.insert("PRIMITIVEID", ("uint", 
+        ShaderStageFlags::from(GeometryIn) | ShaderStageFlags::from(GeometryOut) |
+        ShaderStageFlags::from(PixelIn) | ShaderStageFlags::from(PixelOut)
+    ));
+    
+    m.insert("RENDERTARGETARRAYINDEX", ("uint", ShaderStageFlags::from(GeometryOut) | ShaderStageFlags::from(PixelIn)));
+    
+    m.insert("SAMPLEINDEX", ("uint", ShaderStageFlags::from(PixelIn) | ShaderStageFlags::from(PixelOut)));
+    
+    m.insert("STENCILREF", ("uint", ShaderStageFlags::from(PixelOut)));
+    
+    m.insert("TARGET", ("float4", ShaderStageFlags::from(PixelOut)));
+    
+    m.insert("TESSFACTOR", ("float4", ShaderStageFlags::from(HullOut) | ShaderStageFlags::from(DomainIn)));
+    
+    m.insert("VERTEXID", ("uint", ShaderStageFlags::from(VertexIn)));
+    
+    m.insert("VIEWPORTARRAYINDEX", ("uint", ShaderStageFlags::from(VertexOut) | ShaderStageFlags::from(GeometryOut) | ShaderStageFlags::from(PixelIn)));
+    
+    m.insert("SHADINGRATE", ("uint", ShaderStageFlags::from(VertexOut) | ShaderStageFlags::from(GeometryOut) | ShaderStageFlags::from(PixelIn)));
+
+    m
+}
+
+struct StructItem {
+    name: String,
+    type_name: String,
+    semantic: Option<SemanticKind>,
+}
+
+struct StructBodyResult {
+    items: Vec<StructItem>,
+    denied_stages: ShaderStageFlags,
+
+    // TODO: Add support for functions (methods)
+}
+
+impl StructBodyResult {
+    fn parse(items: &Vec<StructItem>) -> String {
+        items.iter().map(|item| 
+            if let Some(semantic) = &item.semantic {
+                format!("   {} {} : {};", item.type_name, item.name, semantic.to_string())
+            } else {
+                format!("   {} {};", item.type_name, item.name)
+            }
+        ).collect::<Vec<String>>().join("\n")
+    }
+}
+
+fn parse_struct_body(tokens: &Vec<Token>, defined_structs: &HashSet<String>, src: &str) -> Result<StructBodyResult, String> {
+    let mut result = StructBodyResult { items: Vec::new(), denied_stages: ShaderStageFlags::from(ShaderStageFlag::None) };
+    let mut iter = TokenIter::new(tokens.iter(), src);
+
+    let semantic_allowed_stages = SYSTEM_SEMANTIC_ALLOWED_STAGES.get_or_init(init_system_semantic_allowed_stages);
+
+    while let Some(token) = iter.next() {
+        match &token.kind {
+            TokenKind::Identifier(type_name) => {
+                
+                if !is_type(type_name, defined_structs) {
+                    return Err(format_error(src.lines().nth(token.global_line - 1).unwrap(), token, "Expected type name"));
+                }
+
+                let name_token = iter.expect_identifier(None, Some("name"))?;
+                let name = name_token.to_string();
+
+                result.items.push(StructItem { name, type_name: type_name.to_string(), semantic: None });
+
+                if iter.expect_symbol(Some(':'), None).is_ok() {
+                    let semantic_token = iter.expect_identifier(None, Some("semantic"))?;
+                    let semantic = semantic_token.to_string();
+
+                    let semantic = parse_semantic(semantic.as_str());
+                    if semantic.is_err() {
+                        return Err(format_error(src.lines().nth(semantic_token.global_line - 1).unwrap(), semantic_token, &format!("{}", semantic.unwrap_err().to_string())));
+                    }
+                    let semantic = semantic.unwrap();
+
+                    match semantic {
+                        SemanticKind::System { semantic: ref semantic_str, index } => {
+                            if index.is_some() && !semantic_allows_slot(&semantic) {
+                                return Err(format_error(src.lines().nth(semantic_token.global_line - 1).unwrap(), semantic_token, &format!("Semantic index is not allowed for 'SV_{}'", &semantic_str)));
+                            }
+
+                            let us = semantic_str.to_ascii_uppercase();
+                            let semantic_def = semantic_allowed_stages.get(&us.as_str());
+                            if semantic_def.is_none() {
+                                return Err(format_error(src.lines().nth(semantic_token.global_line - 1).unwrap(), semantic_token, &format!("System Semantic 'SV_{}' is not allowed", semantic_str)));
+                            }
+
+                            let semantic_def = semantic_def.unwrap();
+
+                            result.denied_stages = result.denied_stages | !semantic_def.1;
+                        }
+                        _ => {}
+                    }
+
+                    result.items.last_mut().unwrap().semantic = Some(semantic);
+                }
+
+                iter.expect_pontosveso()?;
+            },
+            _ => return Err(format_error(src.lines().nth(token.global_line - 1).unwrap(), token, "Expected type name")),
+        }
+    }
+
+    Ok(result)
+}
+
+fn parse_cbuffer_body(tokens: &Vec<Token>, defined_structs: &HashSet<String>, src: &str) -> Result<Vec<StructItem>, String> {
+    let mut result = Vec::new();
+    let mut iter = TokenIter::new(tokens.iter(), src);
+
+    while let Some(token) = iter.next() {
+        match &token.kind {
+            TokenKind::Identifier(type_name) => {
+                
+                if !is_type(type_name, defined_structs) {
+                    return Err(format_error(src.lines().nth(token.global_line - 1).unwrap(), token, "Expected type name"));
+                }
+
+                let name_token = iter.expect_identifier(None, Some("name"))?;
+                let name = name_token.to_string();
+
+                result.push(StructItem { name, type_name: type_name.to_string(), semantic: None });
+
+                let colon = iter.expect_symbol(Some(':'), None);
+
+                if colon.is_ok() {
+                    let colon = colon.unwrap();
+                    return Err(format_error(src.lines().nth(colon.global_line - 1).unwrap(), colon, "Semantic are not allowed for cbuffer"));
+                }
+
+                iter.expect_pontosveso()?;
+            },
+            _ => return Err(format_error(src.lines().nth(token.global_line - 1).unwrap(), token, "Expected type name")),
+        }
+    }
+
+    Ok(result)
+}
+
+struct StructInfo<'a> {
+    name: String,
+    body: Option<&'a Vec<Token>>,
+}
+
+fn parse_struct<'a>(iter: &mut TokenIter<'a>, current: &Token, defined_structs: &HashSet<String>, lines: &[&str]) -> Result<StructInfo<'a>, String> {
     let name_token = iter.expect_identifier(None, Some("name"))?;
     let name = name_token.to_string();
     
@@ -1848,7 +2777,7 @@ fn parse_struct(iter: &mut TokenIter, current: &Token, defined_structs: &HashSet
 
     Ok(StructInfo {
         name,
-        body: Some(body_token?.to_string()),
+        body: Some(body_token?.1),
     })
 }
 
@@ -1863,6 +2792,40 @@ struct FunctionInfo {
     parameters: Vec<FunctionParameter>,
     body: Option<String>,
 }
+
+fn get_shader_stage_from_function_name(name: &str) -> Option<(ShaderStageFlag, ShaderStageFlag)> {
+    use ShaderStageFlag::*;
+    match name {
+        "MainVS" => Some((VertexIn, VertexOut)),
+        "MainPS" => Some((PixelIn, PixelOut)),
+        "MainGS" => Some((GeometryIn, GeometryOut)),
+        "MainHS" => Some((HullIn, HullOut)),
+        "MainDS" => Some((DomainIn, DomainOut)),
+        "MainCS" => Some((Compute, Compute)),
+        _ => Option::None,
+    }
+}
+
+fn validate_struct_for_stage(
+    struct_name: &str,
+    struct_body_results: &HashMap<String, StructBodyResult>,
+    stage: ShaderStageFlag,
+    lines: &[&str],
+    token: &Token,
+) -> Result<(), String> {
+    let body_result = struct_body_results.get(struct_name)
+        .ok_or_else(|| format_error(lines[token.global_line - 1], token, 
+            &format!("Type '{}' declared but not defined", struct_name)))?;
+    
+    let stage_flags = ShaderStageFlags::from(stage);
+    if body_result.denied_stages.contains(stage_flags) {
+        return Err(format_error(lines[token.global_line - 1], token, 
+            &format!("Type '{}' has semantics that are not allowed in this shader stage", struct_name)));
+    }
+    
+    Ok(())
+}
+
 
 fn parse_function(iter: &mut TokenIter, current: &Token, custom_types: &HashSet<String>, defined_functions: &HashSet<String>) -> Result<FunctionInfo, String> {
     let name_token = iter.expect_identifier(None, Some("name"))?;
@@ -1919,7 +2882,7 @@ fn parse_function(iter: &mut TokenIter, current: &Token, custom_types: &HashSet<
     Ok(FunctionInfo {
         name,
         parameters,
-        body: body_token.ok().map(|token| token.to_string()),
+        body: body_token.ok().map(|token| token.0.to_string()),
     })
 }
 
@@ -1952,9 +2915,11 @@ fn parse_stage1(tokens: Vec<Token>, original_src: &str) -> Result<ParseResult, S
     let mut defined_structs = HashSet::<String>::new();
     let mut defined_functions = HashSet::<String>::new();
 
+    let mut struct_body_results = HashMap::<String, StructBodyResult>::new();
+
     let mut verify_defines = true;
-    let mut verify_struct_declarations_token: HashMap<String, Token> = HashMap::new();
-    let mut verify_function_declarations_token: HashMap<String, Token> = HashMap::new();
+    let verify_struct_declarations_token: HashMap<String, Token> = HashMap::new();
+    let verify_function_declarations_token: HashMap<String, Token> = HashMap::new();
 
     let mut type_token: Option<Token> = None;
 
@@ -1980,10 +2945,16 @@ fn parse_stage1(tokens: Vec<Token>, original_src: &str) -> Result<ParseResult, S
                 if define {
                     if defined_structs.contains(&result.name) {
                         return Err(format_error(src_split[token.global_line - 1], token, &format!("struct '{}' is already defined", result.name)));
-                    }       
+                    }
 
                     defined_structs.insert(result.name.clone());
-                    parse_result.src.push_str(&format!("\n{};\n", result.body.unwrap()));
+
+                    let body_result = parse_struct_body(result.body.unwrap(), &defined_structs, original_src)?;
+                    let src = StructBodyResult::parse(&body_result.items);
+
+                    parse_result.src.push_str(&format!("\n{{\n{}\n}};\n", src));
+
+                    struct_body_results.insert(result.name.clone(), body_result);
                 } else {
                     parse_result.src.push_str(&format!(";\n"));
                 }
@@ -2019,7 +2990,8 @@ fn parse_stage1(tokens: Vec<Token>, original_src: &str) -> Result<ParseResult, S
                 }
 
                 if binding_type.has_body() && let Some(body) = binding_info.body {
-                    parse_result.src.push_str(&format!("\n{}", body));
+                    let body = parse_cbuffer_body(body, &defined_structs, &original_src)?;
+                    parse_result.src.push_str(&format!("\n{{\n{}\n}}", StructBodyResult::parse(&body)));
                 }
                 parse_result.src.push(';');
                 parse_result.src.push('\n');
@@ -2027,6 +2999,18 @@ fn parse_stage1(tokens: Vec<Token>, original_src: &str) -> Result<ParseResult, S
             TokenKind::Identifier(func_type) if func_type == "void" || (!BindingType::is_binding_type(func_type) && is_type(func_type, &custom_types)) => {
 
                 let result = parse_function(&mut iter, &token, &custom_types, &defined_structs)?;
+
+                if let Some((input_stage, output_stage)) = get_shader_stage_from_function_name(&result.name) {
+                    if custom_types.contains(func_type) {
+                        validate_struct_for_stage(func_type, &struct_body_results, output_stage, &src_split, &token)?;
+                    }
+                    
+                    for param in &result.parameters {
+                        if custom_types.contains(&param.type_name) {
+                            validate_struct_for_stage(&param.type_name, &struct_body_results, input_stage, &src_split, &token)?;
+                        }
+                    }
+                }
 
                 parse_result.src.push_str(
                     &format!(
@@ -2044,7 +3028,7 @@ fn parse_stage1(tokens: Vec<Token>, original_src: &str) -> Result<ParseResult, S
                 );
 
                 if verify_defines && let Some(body) = result.body {
-                    parse_result.src.push_str(&format!("\n{}", body));
+                    parse_result.src.push_str(&format!("\n{{{}}}", body));
                 } else {
                     parse_result.src.push(';');
                 }
@@ -2179,7 +3163,7 @@ fn parse_stage1(tokens: Vec<Token>, original_src: &str) -> Result<ParseResult, S
             },
             TokenKind::Terminator(terminator) => parse_result.src.push(*terminator),
             _ => {
-                return Err(format_error(src_split[token.global_line - 1], token, "Error: Invalid token"));
+                return Err(format_error(src_split[token.global_line - 1], token, &format!("Error: Invalid token '{}'", token.to_string())));
             },
         }
     }
@@ -2285,7 +3269,7 @@ fn preprocess_old(original_path: &std::path::PathBuf, include_paths: &Vec<&str>)
                 },
                 "define" => {
                     let trimmed2 = trimmed2["define".len()..].trim();
-                    let tokenize = tokenize(trimmed2)?;
+                    let tokenize = tokenize_old(trimmed2)?;
 
                     let mut token_iter = TokenIter::new(tokenize.iter(), src.as_str());
 
@@ -2408,7 +3392,7 @@ fn preprocess_old(original_path: &std::path::PathBuf, include_paths: &Vec<&str>)
             if trimmed2.starts_with("space") || trimmed2.starts_with("no_required_define_start") || trimmed2.starts_with("no_required_define_end") {
                 return Err(format!("Illegal space definition"));                
             } else if trimmed2.starts_with("import") {
-                let tokens = tokenize(&line)?;
+                let tokens = tokenize_old(&line)?;
                 
                 let mut iter = TokenIter::new(tokens.iter(), src.as_str());
 
@@ -2514,7 +3498,7 @@ fn preprocess_old(original_path: &std::path::PathBuf, include_paths: &Vec<&str>)
 
 
             } else if trimmed2.starts_with("implements") {
-                let tokens = tokenize(line)?;
+                let tokens = tokenize_old(line)?;
                 
                 let mut iter = TokenIter::new(tokens.iter(), src.as_str());
                 
@@ -2579,7 +3563,7 @@ fn preprocess_old(original_path: &std::path::PathBuf, include_paths: &Vec<&str>)
 fn stage1_tokens(path: &std::path::PathBuf, include_paths: &Vec<&str>) -> Result<Vec<Token>, String> {
     let src = preprocess_old(path, include_paths)?;
 
-    let tokens = tokenize(src.as_str())?;
+    let tokens = tokenize_old(src.as_str())?;
 
     Ok(tokens)
 }
@@ -2741,7 +3725,7 @@ fn parse_stage2_late(src: &str, api: GraphicsAPI) -> Result<String, String> {
         let start_char = start_char.unwrap();
 
         if start_char == '@' {
-            let tokens = tokenize(line_trim)?;
+            let tokens = tokenize_old(line_trim)?;
 
             println!("Line: {}", line_trim);
             println!("Tokens: {:?}", tokens);
@@ -2778,7 +3762,7 @@ fn parse_stage2_late(src: &str, api: GraphicsAPI) -> Result<String, String> {
 
             if let Some(line) = line_iter.next() {
                 let line = line.replace('{', "");
-                let tokens = tokenize(&line)?;
+                let tokens = tokenize_old(&line)?;
                 
                 let rev_tokens = tokens.iter().rev().collect::<Vec<&Token>>();
                 
@@ -2817,7 +3801,7 @@ fn parse_stage2_late(src: &str, api: GraphicsAPI) -> Result<String, String> {
 
             // dd
         } else if start_char == '#' {
-            let tokens = tokenize(line_trim)?;
+            let tokens = tokenize_old(line_trim)?;
             
             let mut iter = TokenIter::new(tokens.iter(), line_trim);
 
@@ -2913,7 +3897,7 @@ fn link_stage(modules: Vec<String>) -> Result<String, String> {
 
     let mut index = 0;
     for module in modules {
-        let tokens = tokenize(&module)?;
+        let tokens = tokenize_old(&module)?;
         let mut mod_info = ModuleInfo {
             index: index,
             is_main: false,
@@ -3037,9 +4021,11 @@ fn get_type(tokens: &Vec<Token>, lines: &str) -> Result<String, String> {
 fn stage_1_compile(path: &PathBuf, include_paths: &Vec<PathBuf>, defines: &HashSet<String>) -> Result<ParseResult, String> {
     let tmp = include_paths.clone();
     let src = preprocess(path, &tmp, defines);
+
     if src.is_err() {
         return Err(src.unwrap_err());
     }
+   
     let src = src.unwrap();
     let tokens = tokenize(src.as_str());
     if tokens.is_err() {
@@ -3066,16 +4052,14 @@ fn main() {
     let path_material = "/home/dz/Documents/Dev/HeliosEngine/HeliosEditor/Shaders/Material/StandardSurface.hsl";
     let include_paths = vec!["/home/dz/Documents/Dev/HeliosEngine/HeliosEditor/Shaders"]; 
 
-    
-    
-    
     let mut defines = HashSet::new();
     let inc_paths = include_paths.iter().map(|p| std::path::PathBuf::from(p)).collect::<Vec<std::path::PathBuf>>();
     
     defines.insert("PIXEL".to_string());
 
-    let result = stage_1_compile(&std::path::PathBuf::from(path), &inc_paths, &defines);
     let result_material = stage_1_compile(&std::path::PathBuf::from(path_material), &inc_paths, &HashSet::new());
+    let result = stage_1_compile(&std::path::PathBuf::from(path), &inc_paths, &defines);
+
 
     if result.is_err() {
         let err = result.unwrap_err();
@@ -3088,7 +4072,6 @@ fn main() {
         println!("{}", err.as_str());
         return;
     }
-
     
     let src = result.unwrap().src;
     let src_material = result_material.unwrap().src;
