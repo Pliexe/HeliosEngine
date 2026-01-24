@@ -64,105 +64,181 @@ impl PartialEq for PreprocessorKind {
     }
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum OperatorKind {
-    Sub,
-    Add,
-    Mul,
-    Div,
-    Mod,
-    
-    Eq,
-    NotEq,
-    
-    And,
-    Or,
-    Not,
+    // arithmnentic
+    Plus, // +
+    Minus, // -
+    Mul, // *
+    Div, // /
+    Mod, // %
 
+    // comparison
+    Eq, // ==
+    NotEq, // !=
+    Less, // <
+    LessEq, // <=
+    Greater, // >
+    GreaterEq, // >=
+
+    // logical
+    And, // &&
+    Or, // ||
+    Not, // !
+
+    // assignment
+    Assign, // =
+    AddAssign, // +=
+    SubAssign, // -=
+    MulAssign, // *=
+    DivAssign, // /=
+    ModAssign, // %=
+
+    // bitwise
+    BitAnd, // &
+    BitOr, // |
+    BitXor, // ^
+    ShiftL, // <<
+    ShiftR, // >>
+    
+    // incremnet / decrement
+    Inc, // ++
+    Dec, // --
+    
     Unknown(String),
 }
 
 impl OperatorKind {
-    pub fn to_string(&self) -> String {
+    pub fn to_string(&self) -> String { self.to_str().to_string() }
+    pub fn to_str(&self) -> &str {
         match self {
-            OperatorKind::Sub   => "-".to_string(),
-            OperatorKind::Add   => "+".to_string(),
-            OperatorKind::Mul   => "*".to_string(),
-            OperatorKind::Div   => "/".to_string(),
-            OperatorKind::Mod   => "%".to_string(),
-            OperatorKind::Eq    => "==".to_string(),
-            OperatorKind::NotEq => "!=".to_string(),
-            OperatorKind::And   => "&&".to_string(),
-            OperatorKind::Or    => "||".to_string(),
-            OperatorKind::Not   => "!".to_string(),
-            OperatorKind::Unknown(s) => s.clone(),
+
+            // arithmnentic
+            OperatorKind::Plus => "+",
+            OperatorKind::Minus => "-",
+            OperatorKind::Mul => "*",
+            OperatorKind::Div => "/",
+            OperatorKind::Mod => "%",
+
+            // comparison
+            OperatorKind::Eq => "==",
+            OperatorKind::NotEq => "!=",
+            OperatorKind::Less => "<",
+            OperatorKind::LessEq => "<=",
+            OperatorKind::Greater => ">",
+            OperatorKind::GreaterEq => ">=",
+
+            // logical
+            OperatorKind::And => "&&",
+            OperatorKind::Or => "||",
+            OperatorKind::Not => "!",
+
+            // assignment
+            OperatorKind::Assign => "=",
+            OperatorKind::AddAssign => "+=",
+            OperatorKind::SubAssign => "-=",
+            OperatorKind::MulAssign => "*=",
+            OperatorKind::DivAssign => "/=",
+            OperatorKind::ModAssign => "%=",
+
+            // bitwise
+            OperatorKind::BitAnd => "&",
+            OperatorKind::BitOr => "|",
+            OperatorKind::BitXor => "^",
+            OperatorKind::ShiftL => "<<",
+            OperatorKind::ShiftR => ">>",
+
+            // incremnet / decrement
+            OperatorKind::Inc => "++",
+            OperatorKind::Dec => "--",
+
+            OperatorKind::Unknown(s) => s.as_str(),
         }
     }
 
-    pub fn all() -> Vec<OperatorKind> {
-        vec![
-            OperatorKind::Sub,
-            OperatorKind::Add,
+    pub fn all() -> &'static [OperatorKind] {
+        &[
+            OperatorKind::Plus,
+            OperatorKind::Minus,
             OperatorKind::Mul,
             OperatorKind::Div,
             OperatorKind::Mod,
+
             OperatorKind::Eq,
             OperatorKind::NotEq,
+            OperatorKind::Less,
+            OperatorKind::LessEq,
+            OperatorKind::Greater,
+            OperatorKind::GreaterEq,
+
             OperatorKind::And,
             OperatorKind::Or,
             OperatorKind::Not,
+
+            OperatorKind::Assign,
+            OperatorKind::AddAssign,
+            OperatorKind::SubAssign,
+            OperatorKind::MulAssign,
+            OperatorKind::DivAssign,
+            OperatorKind::ModAssign,
+
+            OperatorKind::BitAnd,
+            OperatorKind::BitOr,
+            OperatorKind::BitXor,
+            OperatorKind::ShiftL,
+            OperatorKind::ShiftR,
+            
+            OperatorKind::Inc,
+            OperatorKind::Dec,
         ]
     }
 
     pub fn from(s: &str) -> OperatorKind {
         match s {
-            "-"  => OperatorKind::Sub,
-            "+"  => OperatorKind::Add,
-            "*"  => OperatorKind::Mul,
-            "/"  => OperatorKind::Div,
-            "%"  => OperatorKind::Mod,
+            // arithmnentic
+            "+" => OperatorKind::Plus,
+            "-" => OperatorKind::Minus,
+            "*" => OperatorKind::Mul,
+            "/" => OperatorKind::Div,
+            "%" => OperatorKind::Mod,
+
+            // comparison
             "==" => OperatorKind::Eq,
             "!=" => OperatorKind::NotEq,
+            "<" => OperatorKind::Less,
+            "<=" => OperatorKind::LessEq,
+            ">" => OperatorKind::Greater,
+            ">=" => OperatorKind::GreaterEq,
+
+            // logical
             "&&" => OperatorKind::And,
             "||" => OperatorKind::Or,
-            "!"  => OperatorKind::Not,
+            "!" => OperatorKind::Not,
+
+            // assignment
+            "=" => OperatorKind::Assign,
+            "+=" => OperatorKind::AddAssign,
+            "-=" => OperatorKind::SubAssign,
+            "*=" => OperatorKind::MulAssign,
+            "/=" => OperatorKind::DivAssign,
+            "%=" => OperatorKind::ModAssign,
+
+            // bitwise
+            "&" => OperatorKind::BitAnd,
+            "|" => OperatorKind::BitOr,
+            "^" => OperatorKind::BitXor,
+            "<<" => OperatorKind::ShiftL,
+            ">>" => OperatorKind::ShiftR,
+    
+            // incremnet / decrement
+            "++" => OperatorKind::Inc,
+            "--" => OperatorKind::Dec,
             _    => OperatorKind::Unknown(s.to_string()),
         }
     }
 
     pub fn length(&self) -> usize {
-        match self {
-            OperatorKind::Sub   => 1,
-            OperatorKind::Add   => 1,
-            OperatorKind::Mul   => 1,
-            OperatorKind::Div   => 1,
-            OperatorKind::Mod   => 1,
-            OperatorKind::Eq    => 2,
-            OperatorKind::NotEq => 2,
-            OperatorKind::And   => 2,
-            OperatorKind::Or    => 2,
-            OperatorKind::Not   => 1,
-            OperatorKind::Unknown(s) => s.len(),
-        }
-    }
-}
-
-impl PartialEq for OperatorKind {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (OperatorKind::Sub, OperatorKind::Sub) => true,
-            (OperatorKind::Add, OperatorKind::Add) => true,
-            (OperatorKind::Mul, OperatorKind::Mul) => true,
-            (OperatorKind::Div, OperatorKind::Div) => true,
-            (OperatorKind::Mod, OperatorKind::Mod) => true,
-            (OperatorKind::Eq, OperatorKind::Eq) => true,
-            (OperatorKind::NotEq, OperatorKind::NotEq) => true,
-            (OperatorKind::And, OperatorKind::And) => true,
-            (OperatorKind::Or, OperatorKind::Or) => true,
-            (OperatorKind::Not, OperatorKind::Not) => true,
-            (OperatorKind::Unknown(s1), OperatorKind::Unknown(s2)) => s1 == s2,
-            _ => false,
-        }
+        self.to_str().len()
     }
 }
 
@@ -560,6 +636,26 @@ impl<'a> TokenIter<'a> {
         }
     }
 
+    pub fn expect_operator(&mut self, expected: Option<OperatorKind>, error_expected: Option<&str>) -> Result<&'a Token, String> {
+        let token = self.iter.peek().ok_or("Expected operator but found end of file".to_string())?;
+        
+        match &token.kind {
+            TokenKind::Operator(_) => {
+                if expected.is_some() {
+                    let unwrap = expected.unwrap();
+                    if token.kind == TokenKind::Operator(unwrap.clone()) {
+                        Ok(self.next().unwrap())
+                    } else {
+                        Err(format_error(self.original[token.global_line - 1], token, format!("Expected {} but found {}", error_expected.unwrap_or(format!("'{}'", unwrap.to_string()).as_str()), token.kind).as_str()))
+                    }
+                } else {
+                    Ok(self.next().unwrap())
+                }
+            },
+            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or(expected.and_then(|c| Some(format!("'{}'", c.clone().to_str()))).unwrap_or("\"\"".to_string()).as_str()), format!("'{}'", token.kind)).as_str())),
+        }
+    }
+
     pub fn expect_integer(&mut self, expected: Option<&str>, error_expected: Option<&str>) -> Result<&'a Token, String> {
         let token = self.iter.peek().ok_or("Expected \"\" but found end of file".to_string())?;
         
@@ -567,7 +663,7 @@ impl<'a> TokenIter<'a> {
             TokenKind::Integer(_) => {
                 if expected.is_some() {
                     let unwrap = expected.unwrap();
-                    if token.kind == TokenKind::Import {
+                    if token.kind == TokenKind::Integer(unwrap.parse().unwrap()) {
                         Ok(self.next().unwrap())
                     } else {
                         Err(format_error(self.original[token.global_line - 1], token, format!("Expected {} but found {}", error_expected.unwrap_or(format!("'{}'", unwrap).as_str()), token.kind).as_str()))
@@ -2107,7 +2203,7 @@ fn tokenize_old(input: &str) -> Result<Vec<Token>, String> {
 fn format_error(line: &str, token: &Token, message: &str) -> String {
     let mut error = String::new();
     error.push_str(&format!("In: {}:{}:{}\n", token.path, token.line, token.column + 1)); // cuz column starts at 1 by convetion in editors
-    error.push_str(&format!("Error: {} at line {} column {} | {}\n", message, token.line, token.column + 1, token.global_line));
+    error.push_str(&format!("Error: {} at line {} column {}\n", message, token.line, token.column + 1));
     let line_mark = format!("{}: ", token.line);
     error.push_str(&format!("{}\n", line_mark.clone() + line));
     error.push_str(&format!("{}\n", " ".repeat(line_mark.len() + token.column) + "^".repeat(token.kind.len()).as_str()));
@@ -2117,7 +2213,7 @@ fn format_error(line: &str, token: &Token, message: &str) -> String {
 fn format_multi_error(prev_line: &str, line: &str, prev: &Token, token: &Token, message: &str) -> String {
     let mut error = String::new();
     error.push_str(&format!("In: {}:{}:{}\n", token.path, token.line, token.column + 1));
-    error.push_str(&format!("Error: {} at line {} column {} | {}\n", message, token.line, token.column + 1, token.global_line));
+    error.push_str(&format!("Error: {} at line {} column {}\n", message, token.line, token.column + 1));
 
     let line_mark = format!("{}: ", prev.line);
     error.push_str(&format!("{}\n", line_mark.clone() + prev_line));
@@ -2155,8 +2251,8 @@ macro_rules! join_with_pipe_vec {
 
 fn is_scalar_type(str: &str) -> bool {
     match str {
-        join_with_pipe!("int", "uint", "dword", "half", "float", "double") => true,
-        join_with_pipe!("f16", "f32", "f64") => true,
+        "int" | "uint" | "dword" | "half" | "float" | "double" => true,
+        // "f16" | "f32" | "f64" => true,
         _ => false,
     }
 }
@@ -2759,6 +2855,475 @@ fn parse_cbuffer_body(tokens: &Vec<Token>, defined_structs: &HashSet<String>, sr
     Ok(result)
 }
 
+#[derive(Debug)]
+enum UnaryOp {
+    PreIncrement,
+    PreDecrement,
+    PostIncrement,
+    PostDecrement,
+    
+    Plus,
+    Minus,
+    
+    Not,
+}
+
+#[derive(Debug)]
+enum BinaryOp {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,   
+}
+
+
+impl BinaryOp {
+    fn to_string(&self) -> &str {
+        match self {
+            BinaryOp::Add => "+",
+            BinaryOp::Sub => "-",
+            BinaryOp::Mul => "*",
+            BinaryOp::Div => "/",
+            BinaryOp::Mod => "%",
+        }
+    }
+}
+
+#[derive(Debug)]
+enum ConstantKind {
+    Int { value: String },
+    Float { value: String },
+    Double { value: String },
+}
+
+impl ConstantKind {
+    fn to_string(&self) -> String {
+        match self {
+            ConstantKind::Int { value } => value.clone(),
+            ConstantKind::Float { value } => value.clone(),
+            ConstantKind::Double { value } => value.clone(),
+        }
+    }
+}
+
+#[derive(Debug)]
+enum ExprKind { 
+    Constant { value: ConstantKind },
+    Variable { name: String, access: Option<Box<Expr>> },
+    Unary {
+        op: UnaryOp,
+        expr: Box<Expr>,
+    },
+    Binary {
+        op: BinaryOp,
+        left: Box<Expr>,
+        right: Box<Expr>,
+    },
+    Call {
+        name: String,
+        args: Vec<Expr>,
+    },
+    Aggregate {
+        type_name: Option<String>,
+        args: Vec<Expr>,
+    },
+    Assignment {
+        target: Box<Expr>,
+        value: Box<Expr>,
+    },
+    // TODO: add for []
+    Group {
+        expr: Box<Expr>
+    },
+    Cast {
+        expr: Box<Expr>,
+        variable: String,
+    },
+}
+
+impl ExprKind {
+    fn to_string(&self) -> String {
+        match self {
+            ExprKind::Constant { value: constant } => constant.to_string(),
+            ExprKind::Variable { name, access } => format!("{}{}", name, access.as_ref().map(|access| format!(".{}", access.to_string())).unwrap_or_default()),
+            ExprKind::Unary { op, expr } => {
+                match op {
+                    UnaryOp::PreIncrement => format!("++{}", expr.to_string()),
+                    UnaryOp::PreDecrement => format!("--{}", expr.to_string()),
+                    UnaryOp::PostIncrement => format!("{}++", expr.to_string()),
+                    UnaryOp::PostDecrement => format!("{}--", expr.to_string()),
+                    UnaryOp::Plus => format!("+{}", expr.to_string()),
+                    UnaryOp::Minus => format!("-{}", expr.to_string()),
+                    UnaryOp::Not => format!("!{}", expr.to_string()),
+                }
+            },
+            ExprKind::Binary { op, left, right } => format!("{} {} {}", left.to_string(), op.to_string(), right.to_string()),
+            ExprKind::Call { name, args } => format!("{}({})", name, args.iter().map(|arg| arg.to_string()).collect::<Vec<String>>().join(", ")),
+            ExprKind::Aggregate { type_name, args } => {
+                if type_name.is_some() {
+                    format!("{}{{{}}}", type_name.as_ref().unwrap(), args.iter().map(|arg| arg.to_string()).collect::<Vec<String>>().join(", "))
+                } else {
+                    format!("{{{}}}", args.iter().map(|arg| arg.to_string()).collect::<Vec<String>>().join(", "))
+                }
+            },
+            ExprKind::Assignment { target, value } => format!("{} = {}", target.to_string(), value.to_string()),
+            ExprKind::Group { expr } => format!("({})", expr.to_string()),
+            ExprKind::Cast { expr, variable: type_name } => format!("({}){}", expr.to_string(), type_name),
+        }
+    }
+}
+
+impl Expr {
+    fn to_string(&self) -> String {
+        self.kind.to_string()
+    }
+}
+
+#[derive(Debug)]
+struct ExprSpan {
+    path: String,
+    global_line: usize,
+    line: usize,
+    column: usize,
+    
+    // TODO:
+    
+}
+
+impl ExprSpan {
+    fn new(token: &Token) -> Self {
+        Self {
+            path: token.path.clone(),
+            global_line: token.global_line,
+            line: token.line,
+            column: token.column,
+        }
+    }
+}
+
+#[derive(Debug)]
+struct Expr {
+    span: ExprSpan,
+    kind: ExprKind,
+}
+
+fn parse_primary_expression(iter: &mut TokenIter) -> Result<Expr, String> {
+
+    let mut prefix = None;
+
+    if let Ok(token) = iter.expect_operator(None, None) {
+        match &token.kind {
+            TokenKind::Operator(OperatorKind::Inc) => {
+                prefix = Some((UnaryOp::PreIncrement, token));
+            }
+            TokenKind::Operator(OperatorKind::Dec) => {
+                prefix = Some((UnaryOp::PreDecrement, token));
+            }
+            TokenKind::Operator(OperatorKind::Minus) => {
+                prefix = Some((UnaryOp::Minus, token));
+            }
+            TokenKind::Operator(OperatorKind::Not) => {
+                prefix = Some((UnaryOp::Not, token));
+            }
+            _ => {
+                return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, &format!("Bad prefix operator '{}'", token.to_string())));
+            }
+        }
+    }
+
+    fn parse_aggregate_expression(iter: &mut TokenIter, aggregate_token: &Token, type_name: Option<String>) -> Result<Expr, String> {
+        let mut res = Vec::new();
+
+        loop {
+            let expr = parse_expression(iter, &['}', ','], false)?;
+
+            res.push(expr);
+
+            if iter.expect_symbol(Some(','), None).is_err() {
+                iter.next(); // skip }
+                break;
+            } // if its not , its }
+        }
+
+        Ok(Expr { span: ExprSpan::new(aggregate_token), kind: ExprKind::Aggregate { type_name, args: res } })
+    }
+
+    fn parse_fn_call_expression(iter: &mut TokenIter, aggregate_token: &Token, type_name: String) -> Result<Expr, String> {
+
+        if iter.expect_symbol(Some(')'), None).is_ok() {
+            return Ok(Expr { span: ExprSpan::new(aggregate_token), kind: ExprKind::Call { name: type_name, args: Vec::new() } })
+        }
+
+        let mut res = Vec::new();
+
+        loop {
+            let expr = parse_expression(iter, &[')', ','], false)?;
+
+            res.push(expr);
+
+            if iter.expect_symbol(Some(','), None).is_err() {
+                iter.next(); // skip )
+                break;
+            } // if its not , its )
+        }
+
+        Ok(Expr { span: ExprSpan::new(aggregate_token), kind: ExprKind::Call { name: type_name, args: res } })
+    }
+
+    let main_expr = if let Ok(token) = iter.expect_integer(None, None) {
+
+        if iter.expect_symbol(Some('.'), None).is_ok() {
+            
+            let decimal = iter.expect_integer(None, None)?;
+
+            if iter.expect_symbol(Some('f'), None).is_ok() {
+                Expr { span: ExprSpan::new(&token), kind: ExprKind::Constant { value: ConstantKind::Float { value: format!("{}.{}f", token.to_string(), decimal.to_string()) } } }
+            } else if iter.expect_symbol(Some('d'), None).is_ok() {
+                Expr { span: ExprSpan::new(&token), kind: ExprKind::Constant { value: ConstantKind::Double { value: format!("{}.{}d", token.to_string(), decimal.to_string()) } } }
+            } else {
+                Expr { span: ExprSpan::new(&token), kind: ExprKind::Constant { value: ConstantKind::Float { value: format!("{}.{}", token.to_string(), decimal.to_string()) } } }
+            }
+        } else {
+            Expr { span: ExprSpan::new(&token), kind: ExprKind::Constant { value: ConstantKind::Int { value: token.to_string() } } }
+        }
+
+    } else if let Ok(token) = iter.expect_symbol(Some('{'), None) {
+        parse_aggregate_expression(iter, &token, None)?
+    } else {
+
+        let identifier = iter.expect_identifier(None, Some("'variable'"))?;
+
+        fn build_access_chain<'a>(iter: &mut TokenIter<'a>) -> Result<Expr, String> {
+            let member = iter.expect_identifier(None, None)?;
+            
+            if iter.expect_symbol(Some('.'), None).is_ok() {
+                Ok(Expr { span: ExprSpan::new(&member), kind: ExprKind::Variable { name: member.to_string(), access: Some(Box::new(build_access_chain(iter)?)) } })    
+            } else if iter.expect_symbol(Some('('), None).is_ok() {
+                Ok(parse_fn_call_expression(iter, &member, member.to_string())?)    
+            } else {
+                Ok(Expr { span: ExprSpan::new(&member), kind: ExprKind::Variable { name: member.to_string(), access: None } })
+            }
+        }
+
+        let access = if iter.expect_symbol(Some('.'), None).is_ok() {
+            Some(build_access_chain(iter)?)
+        } else {
+            // Otherwise account if identifier has { after meant for struct initialization
+            
+            if let Ok(token) = iter.expect_symbol(Some('{'), None) {
+
+                Some(parse_aggregate_expression(iter, &token, Some(identifier.to_string()))?)
+            } else {
+                None
+            }
+        };
+
+        let mut expr = None;
+
+        match access {
+            Some(Expr { span: _, kind: ExprKind::Aggregate { .. } }) => { },
+            _ if access.is_none() && iter.expect_symbol(Some('('), None).is_ok() => {
+                expr = Some(parse_fn_call_expression(iter, &identifier, identifier.to_string())?);
+            }
+            _ => {}
+        }
+
+        if expr.is_none() {
+            expr = Some(Expr { span: ExprSpan::new(&identifier), kind: ExprKind::Variable { name: identifier.to_string(), access: access.map(|e| Box::new(e)) } });
+        }
+
+        expr.unwrap()
+    };
+
+    let mut postfix = None;
+
+    if let Some(&token) = iter.peek() {
+        match token.kind {
+            TokenKind::Operator(OperatorKind::Inc) => {
+                postfix = Some((UnaryOp::PostIncrement, token));
+                iter.next();
+            }
+            TokenKind::Operator(OperatorKind::Dec) => {
+                postfix = Some((UnaryOp::PostDecrement, token));
+                iter.next();
+            }
+            _ => {},
+        }
+    }
+
+    let mut expr = main_expr;
+
+    if let Some((op, token)) = prefix {
+        expr = Expr { span: ExprSpan::new(&token), kind: ExprKind::Unary { op, expr: Box::new(expr) } };
+    }
+
+    if let Some((op, token)) = postfix {
+        expr = Expr { span: ExprSpan::new(&token), kind: ExprKind::Unary { op, expr: Box::new(expr) } };
+    }
+
+    Ok(expr)
+}
+
+// end_char if ; it will auto consume it otherwise it will only peek
+fn parse_expression(iter: &mut TokenIter, end_char: &'static [char], consume_end_char: bool) -> Result<Expr, String> {
+
+    let lh = if let Ok(tokne) = iter.expect_symbol(Some('('), None)
+    {
+        let expr = parse_expression(iter, &[')'], true)?;
+
+        match iter.peek() {
+            Some(&Token { kind: TokenKind::Identifier(name), .. }) => {
+                iter.next();
+                Expr { span: ExprSpan::new(&tokne), kind: ExprKind::Cast { expr: Box::new(expr), variable: name.to_string() } }
+            }
+            Some(&Token { kind: TokenKind::Integer(value), .. }) => {
+                iter.next();
+                Expr { span: ExprSpan::new(&tokne), kind: ExprKind::Cast { expr: Box::new(expr), variable: value.to_string() } }
+            }
+            _ => {
+                Expr { span: ExprSpan::new(&tokne), kind: ExprKind::Group { expr: Box::new(expr) } }
+            }
+        }
+    } else { parse_primary_expression(iter)? };
+
+    let op = iter.expect_operator(None, Some(&format!("expression operator ('+'. '-' etc) or terminator ({})", end_char.iter().collect::<String>())));
+
+    if op.is_err() {
+        if iter.peek().is_none() { return Err(op.unwrap_err()); }
+
+        for end_char in end_char {
+
+            let pk = iter.peek().unwrap();
+
+            if *end_char == ';' {
+                match &pk.kind {
+                    TokenKind::Terminator(';') => {
+                        if consume_end_char {
+                            iter.expect_pontosveso()?;
+                        }
+                        return Ok(lh);
+                    }
+                    _ => {}
+                }
+            } else {
+                match &pk.kind {
+                    TokenKind::Symbol(c) if *c == *end_char => {
+                        if consume_end_char {
+                            iter.next();
+                        }
+                        return Ok(lh);
+                    }
+                    _ => {}
+                }
+            }
+        }
+        let fk_str = lh.to_string();
+        let fk_tk = Token::new(TokenKind::Identifier(fk_str.chars().last().unwrap().to_string()), lh.span.global_line, lh.span.line, lh.span.column + fk_str.len() - 1, lh.span.path);
+        return Err(
+            op.unwrap_err() +
+            "\nBecause of: " +
+            &format_error(iter.get_line(fk_tk.global_line).unwrap_or(""), &fk_tk, &format!("Expected valid operator, but found '{}'", fk_tk.to_string()))
+        );
+    }
+
+    let rh = parse_expression(iter, end_char, consume_end_char)?;
+    let op = op.unwrap();
+
+    match op.kind {
+        TokenKind::Operator(OperatorKind::Plus) => {
+            Ok(Expr { span: ExprSpan::new(&op), kind: ExprKind::Binary { op: BinaryOp::Add, left: Box::new(lh), right: Box::new(rh) } })
+        }
+        TokenKind::Operator(OperatorKind::Minus) => {
+            Ok(Expr { span: ExprSpan::new(&op), kind: ExprKind::Binary { op: BinaryOp::Sub, left: Box::new(lh), right: Box::new(rh) } })
+        }
+        TokenKind::Operator(OperatorKind::Mul) => {
+            Ok(Expr { span: ExprSpan::new(&op), kind: ExprKind::Binary { op: BinaryOp::Mul, left: Box::new(lh), right: Box::new(rh) } })
+        }
+        TokenKind::Operator(OperatorKind::Div) => {
+            Ok(Expr { span: ExprSpan::new(&op), kind: ExprKind::Binary { op: BinaryOp::Div, left: Box::new(lh), right: Box::new(rh) } })
+        }
+        TokenKind::Operator(OperatorKind::Assign) => {
+            Ok(Expr { span: ExprSpan::new(&op), kind: ExprKind::Assignment { target: Box::new(lh), value: Box::new(rh) } })
+        }
+        // TODO: implement other operators
+        _ => return Err(format_error(iter.get_line(op.global_line).unwrap_or(""), op, &format!("Expected valid operator, but found '{}'", op.to_string()))),
+    }
+
+}
+
+#[derive(Debug)]
+enum Statement {
+    VariableDeclaration { name: String, type_name: String, value: Option<Expr> },
+    Expression(Expr),
+    Return { expr: Option<Expr> },
+}
+
+impl Statement {
+    fn to_string(&self) -> String {
+        match self {
+            Statement::VariableDeclaration { name, type_name, value } => {
+                if value.is_some() {
+                    format!("{} {} = {};", type_name, name, value.as_ref().unwrap().to_string())
+                } else {
+                    format!("{} {};", type_name, name)
+                }
+            },
+            Statement::Expression(expr) => expr.to_string() + ";",
+            Statement::Return { expr } => {
+                if expr.is_some() {
+                    format!("return {};", expr.as_ref().unwrap().to_string())
+                } else {
+                    "return;".to_string()
+                }
+            },
+        }
+    }
+}
+
+#[derive(Debug)]
+struct FunctionBody {
+    statements: Vec<Statement>,
+}
+
+fn parse_function_body(tokens: &Vec<Token>, defined_structs: &HashSet<String>, src: &str) -> Result<FunctionBody, String> {
+    let mut result = FunctionBody { statements: Vec::new() };
+    let mut iter = TokenIter::new(tokens.iter(), src);
+
+    while let Some(&token) = iter.peek() { // must not consume it right away in thuis case
+        match &token.kind {
+            TokenKind::Identifier(identifier) => {
+                match identifier.as_str() {
+                    "return" => {
+                        iter.next();
+                        let expr = parse_expression(&mut iter, &[';'], true)?;
+                        result.statements.push(Statement::Return { expr: Some(expr) });
+                    },
+                    _ if is_type(identifier, &defined_structs) => {
+                        iter.next();
+                        let name = iter.expect_identifier(None, Some("name"))?;
+                        if iter.expect_pontosveso().is_ok() {
+                            
+                            result.statements.push(Statement::VariableDeclaration { name: name.to_string(), type_name: identifier.to_string(), value: None });
+                        } else {
+                            iter.expect_operator(Some(OperatorKind::Assign), None)?;
+                            let value = parse_expression(&mut iter, &[';'], true)?;
+                            result.statements.push(Statement::VariableDeclaration { name: name.to_string(), type_name: identifier.to_string(), value: Some(value) });
+                        }
+                    },
+                    _ => {
+                        let expr = parse_expression(&mut iter, &[';'], true)?;
+                        result.statements.push(Statement::Expression(expr));
+                    }
+                }
+            },
+            _ => return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Expected type name")),
+        }
+    }
+
+    Ok(result)
+}
+
 struct StructInfo<'a> {
     name: String,
     body: Option<&'a Vec<Token>>,
@@ -2827,7 +3392,7 @@ fn validate_struct_for_stage(
 }
 
 
-fn parse_function(iter: &mut TokenIter, current: &Token, custom_types: &HashSet<String>, defined_functions: &HashSet<String>) -> Result<FunctionInfo, String> {
+fn parse_function(iter: &mut TokenIter, current: &Token, custom_types: &HashSet<String>, defined_functions: &HashSet<String>, src: &str) -> Result<FunctionInfo, String> {
     let name_token = iter.expect_identifier(None, Some("name"))?;
     let name = name_token.to_string();
 
@@ -2844,13 +3409,13 @@ fn parse_function(iter: &mut TokenIter, current: &Token, custom_types: &HashSet<
         let modifier = iter.expect_keyword(None, None).ok().map(|token| token.to_string());
 
         if let Some(ref modifier) = modifier && !["in", "out", "inout"].contains(&modifier.as_str()) {
-            return Err(format_error(iter.get_line(current.global_line - 1).unwrap_or(""), current, "Expected 'in', 'out' or 'inout' or parameter name"));
+            return Err(format_error(iter.get_line(current.global_line).unwrap_or(""), current, "Expected 'in', 'out' or 'inout' or parameter name"));
         }
 
         let type_name = iter.expect_identifier(None, Some("parameter type"))?.to_string();
 
         if !is_type(&type_name, &custom_types) {
-            return Err(format_error(iter.get_line(current.global_line - 1).unwrap_or(""), current, &format!("Unknown type '{}'", type_name)));
+            return Err(format_error(iter.get_line(current.global_line).unwrap_or(""), current, &format!("Unknown type '{}'", type_name)));
         }
 
         let name = iter.expect_identifier(None, Some("parameter name"))?.to_string();
@@ -2875,14 +3440,30 @@ fn parse_function(iter: &mut TokenIter, current: &Token, custom_types: &HashSet<
 
     if body_token.is_ok() {
         if defined_functions.contains(&name) {
-            return Err(format_error(iter.get_line(current.global_line - 1).unwrap_or(""), current, &format!("function '{}' is already defined", name)));
+            return Err(format_error(iter.get_line(current.global_line).unwrap_or(""), current, &format!("function '{}' is already defined", name)));
         }
     }
+
+    let body = if body_token.is_ok() {
+        Some(body_token.and_then(|token| {
+            let res = parse_function_body(token.1, &custom_types, src);
+            if res.is_err() {
+                return Err(res.err().unwrap());
+            }
+            let res = res.unwrap();
+            let x = res.statements.iter().map(|stmt| {
+                format!("   {}", stmt.to_string())
+            }).collect::<Vec<String>>().join("\n");
+            Ok(format!("\n{}\n", x))
+        })?)
+    } else {
+        None
+    };
 
     Ok(FunctionInfo {
         name,
         parameters,
-        body: body_token.ok().map(|token| token.0.to_string()),
+        body,
     })
 }
 
@@ -2998,7 +3579,7 @@ fn parse_stage1(tokens: Vec<Token>, original_src: &str) -> Result<ParseResult, S
             },
             TokenKind::Identifier(func_type) if func_type == "void" || (!BindingType::is_binding_type(func_type) && is_type(func_type, &custom_types)) => {
 
-                let result = parse_function(&mut iter, &token, &custom_types, &defined_structs)?;
+                let result = parse_function(&mut iter, &token, &custom_types, &defined_structs, &original_src)?;
 
                 if let Some((input_stage, output_stage)) = get_shader_stage_from_function_name(&result.name) {
                     if custom_types.contains(func_type) {
@@ -3009,6 +3590,10 @@ fn parse_stage1(tokens: Vec<Token>, original_src: &str) -> Result<ParseResult, S
                         if custom_types.contains(&param.type_name) {
                             validate_struct_for_stage(&param.type_name, &struct_body_results, input_stage, &src_split, &token)?;
                         }
+                    }
+                } else {
+                    if let Some(struct_body_result) = struct_body_results.get(func_type.as_str()) && struct_body_result.denied_stages != ShaderStageFlags::from(ShaderStageFlag::None){
+                        return Err(format_error(src_split[token.global_line - 1], token, &format!("Function '{}' is not a shader entry point (stage) and therefore may not use a struct with semantics", result.name)));
                     }
                 }
 
@@ -3558,14 +4143,6 @@ fn preprocess_old(original_path: &std::path::PathBuf, include_paths: &Vec<&str>)
     }
 
     Ok(out)
-}
-
-fn stage1_tokens(path: &std::path::PathBuf, include_paths: &Vec<&str>) -> Result<Vec<Token>, String> {
-    let src = preprocess_old(path, include_paths)?;
-
-    let tokens = tokenize_old(src.as_str())?;
-
-    Ok(tokens)
 }
 
 trait BindingAssigner {
