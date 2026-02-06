@@ -1,909 +1,13 @@
 use std::{collections::{HashMap, HashSet}, fmt, ops::{BitAnd, BitOr, Index, Not}, path::PathBuf, sync::OnceLock};
 
-#[derive(Debug, Clone)]
-pub enum PreprocessorKind {
-    Define(String),
-    Undefine(String),
-    Line((u32, Option<String>)),
-    If(String),
-    Ifdef(String),
-    Ifndef(String),
-    Elif(String),
-    Else,
-    EndIf,
-    Unknown(String),
-}
-
-impl PreprocessorKind {
-    pub fn to_string(&self) -> String {
-        match self {
-            PreprocessorKind::Define(s) => format!("#define {}", s.clone()),
-            PreprocessorKind::Undefine(s) => format!("#undef {}", s.clone()),
-            PreprocessorKind::Line(s) => format!("#line {} {}", s.0, s.1.clone().unwrap_or_default()).trim().to_string(),
-            PreprocessorKind::If(s) => format!("#if {}", s.clone()),
-            PreprocessorKind::Ifdef(s) => format!("#ifdef {}", s.clone()),
-            PreprocessorKind::Ifndef(s) => format!("#ifndef {}", s.clone()),
-            PreprocessorKind::Elif(s) => format!("#elif {}", s.clone()),
-            PreprocessorKind::Else => "else".to_string(),
-            PreprocessorKind::EndIf => "endif".to_string(),
-            PreprocessorKind::Unknown(s) => s.clone(),
-        }
-    }
-
-    pub fn length(&self) -> usize {
-        match self {
-            PreprocessorKind::Define(s) => s.len(),
-            PreprocessorKind::Undefine(s) => s.len(),
-            PreprocessorKind::Line(s) => (f64::log10(f64::max(1f64, s.0 as f64)) + 1.0) as usize + if s.1.is_some() { s.1.as_ref().unwrap().len() + 1 } else { 0 },
-            PreprocessorKind::If(s) => s.len(),
-            PreprocessorKind::Ifdef(s) => s.len(),
-            PreprocessorKind::Ifndef(s) => s.len(),
-            PreprocessorKind::Elif(s) => s.len(),
-            PreprocessorKind::Else => 0,
-            PreprocessorKind::EndIf => 0,
-            PreprocessorKind::Unknown(s) => s.len(),
-        }
-    }
-}
-
-impl PartialEq for PreprocessorKind {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (PreprocessorKind::Define(s1), PreprocessorKind::Define(s2)) => s1 == s2,
-            (PreprocessorKind::Undefine(s1), PreprocessorKind::Undefine(s2)) => s1 == s2,
-            (PreprocessorKind::Line(s1), PreprocessorKind::Line(s2)) => s1 == s2,
-            (PreprocessorKind::If(s1), PreprocessorKind::If(s2)) => s1 == s2,
-            (PreprocessorKind::Ifdef(s1), PreprocessorKind::Ifdef(s2)) => s1 == s2,
-            (PreprocessorKind::Ifndef(s1), PreprocessorKind::Ifndef(s2)) => s1 == s2,
-            (PreprocessorKind::Elif(s1), PreprocessorKind::Elif(s2)) => s1 == s2,
-            (PreprocessorKind::Else, PreprocessorKind::Else) => true,
-            (PreprocessorKind::EndIf, PreprocessorKind::EndIf) => true,
-            (PreprocessorKind::Unknown(s1), PreprocessorKind::Unknown(s2)) => s1 == s2,
-            _ => false,
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum OperatorKind {
-    // arithmnentic
-    Plus, // +
-    Minus, // -
-    Mul, // *
-    Div, // /
-    Mod, // %
-
-    // comparison
-    Eq, // ==
-    NotEq, // !=
-    Less, // <
-    LessEq, // <=
-    Greater, // >
-    GreaterEq, // >=
-
-    // logical
-    And, // &&
-    Or, // ||
-    Not, // !
-
-    // assignment
-    Assign, // =
-    AddAssign, // +=
-    SubAssign, // -=
-    MulAssign, // *=
-    DivAssign, // /=
-    ModAssign, // %=
-
-    // bitwise
-    BitAnd, // &
-    BitOr, // |
-    BitXor, // ^
-    ShiftL, // <<
-    ShiftR, // >>
-    
-    // incremnet / decrement
-    Inc, // ++
-    Dec, // --
-    
-    Unknown(String),
-}
-
-impl OperatorKind {
-    pub fn to_string(&self) -> String { self.to_str().to_string() }
-    pub fn to_str(&self) -> &str {
-        match self {
-
-            // arithmnentic
-            OperatorKind::Plus => "+",
-            OperatorKind::Minus => "-",
-            OperatorKind::Mul => "*",
-            OperatorKind::Div => "/",
-            OperatorKind::Mod => "%",
-
-            // comparison
-            OperatorKind::Eq => "==",
-            OperatorKind::NotEq => "!=",
-            OperatorKind::Less => "<",
-            OperatorKind::LessEq => "<=",
-            OperatorKind::Greater => ">",
-            OperatorKind::GreaterEq => ">=",
-
-            // logical
-            OperatorKind::And => "&&",
-            OperatorKind::Or => "||",
-            OperatorKind::Not => "!",
-
-            // assignment
-            OperatorKind::Assign => "=",
-            OperatorKind::AddAssign => "+=",
-            OperatorKind::SubAssign => "-=",
-            OperatorKind::MulAssign => "*=",
-            OperatorKind::DivAssign => "/=",
-            OperatorKind::ModAssign => "%=",
-
-            // bitwise
-            OperatorKind::BitAnd => "&",
-            OperatorKind::BitOr => "|",
-            OperatorKind::BitXor => "^",
-            OperatorKind::ShiftL => "<<",
-            OperatorKind::ShiftR => ">>",
-
-            // incremnet / decrement
-            OperatorKind::Inc => "++",
-            OperatorKind::Dec => "--",
-
-            OperatorKind::Unknown(s) => s.as_str(),
-        }
-    }
-
-    pub fn all() -> &'static [OperatorKind] {
-        &[
-            OperatorKind::Plus,
-            OperatorKind::Minus,
-            OperatorKind::Mul,
-            OperatorKind::Div,
-            OperatorKind::Mod,
-
-            OperatorKind::Eq,
-            OperatorKind::NotEq,
-            OperatorKind::Less,
-            OperatorKind::LessEq,
-            OperatorKind::Greater,
-            OperatorKind::GreaterEq,
-
-            OperatorKind::And,
-            OperatorKind::Or,
-            OperatorKind::Not,
-
-            OperatorKind::Assign,
-            OperatorKind::AddAssign,
-            OperatorKind::SubAssign,
-            OperatorKind::MulAssign,
-            OperatorKind::DivAssign,
-            OperatorKind::ModAssign,
-
-            OperatorKind::BitAnd,
-            OperatorKind::BitOr,
-            OperatorKind::BitXor,
-            OperatorKind::ShiftL,
-            OperatorKind::ShiftR,
-            
-            OperatorKind::Inc,
-            OperatorKind::Dec,
-        ]
-    }
-
-    pub fn from(s: &str) -> OperatorKind {
-        match s {
-            // arithmnentic
-            "+" => OperatorKind::Plus,
-            "-" => OperatorKind::Minus,
-            "*" => OperatorKind::Mul,
-            "/" => OperatorKind::Div,
-            "%" => OperatorKind::Mod,
-
-            // comparison
-            "==" => OperatorKind::Eq,
-            "!=" => OperatorKind::NotEq,
-            "<" => OperatorKind::Less,
-            "<=" => OperatorKind::LessEq,
-            ">" => OperatorKind::Greater,
-            ">=" => OperatorKind::GreaterEq,
-
-            // logical
-            "&&" => OperatorKind::And,
-            "||" => OperatorKind::Or,
-            "!" => OperatorKind::Not,
-
-            // assignment
-            "=" => OperatorKind::Assign,
-            "+=" => OperatorKind::AddAssign,
-            "-=" => OperatorKind::SubAssign,
-            "*=" => OperatorKind::MulAssign,
-            "/=" => OperatorKind::DivAssign,
-            "%=" => OperatorKind::ModAssign,
-
-            // bitwise
-            "&" => OperatorKind::BitAnd,
-            "|" => OperatorKind::BitOr,
-            "^" => OperatorKind::BitXor,
-            "<<" => OperatorKind::ShiftL,
-            ">>" => OperatorKind::ShiftR,
-    
-            // incremnet / decrement
-            "++" => OperatorKind::Inc,
-            "--" => OperatorKind::Dec,
-            _    => OperatorKind::Unknown(s.to_string()),
-        }
-    }
-
-    pub fn length(&self) -> usize {
-        self.to_str().len()
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum TokenKind {
-    Keyword(String),
-    Identifier(String),
-    OldCodeBlock(String),
-    CodeBlock(Vec<Token>),
-    Literal(String),
-    Integer(String),
-
-    Preprocessor(PreprocessorKind),
-    Import,
-    Implements,
-    Export,
-    Binding,
-    Type,
-    Space,
-
-    // For macro preprocessor only
-    Whitespace(String),
-    LineComment(String),
-    BlockComment(String),
-
-    NoRequiredDefineStart,
-    NoRequiredDefineEnd,
-
-    Symbol(char),
-    Operator(OperatorKind),
-    Terminator(char),
-
-    Unknown(String),
-}
-
-impl TokenKind {
-    pub fn to_string(&self) -> String {
-        match self {
-            TokenKind::Keyword(s) => s.clone(),
-            TokenKind::Identifier(s) => s.clone(),
-            TokenKind::CodeBlock(tokens) => {
-                let mut s = String::new();
-                for token in tokens {
-                    match token.kind {
-                        TokenKind::Terminator(';') => s.push_str(";\n"),
-                        _ => s.push_str(&(token.to_string() + " ")),
-                    }
-                }
-                s
-            },
-            TokenKind::OldCodeBlock(s) => s.clone(),
-            TokenKind::Literal(s) => s.clone(),
-            TokenKind::Integer(s) => s.clone(),
-            TokenKind::Preprocessor(s) => s.to_string().clone(),
-            TokenKind::Import => "import".to_string(),
-            TokenKind::Implements => "implements".to_string(),
-            TokenKind::Export => "export".to_string(),
-            TokenKind::Binding => "binding".to_string(),
-            TokenKind::Type => "type".to_string(),
-            TokenKind::Space => " ".to_string(),
-            TokenKind::Whitespace(s) => s.clone(),
-            TokenKind::LineComment(s) => s.clone(),
-            TokenKind::BlockComment(s) => s.clone(),
-            TokenKind::NoRequiredDefineStart => "@no_required_define_start".to_string(),
-            TokenKind::NoRequiredDefineEnd => "@no_required_define_end".to_string(),
-            TokenKind::Operator(s) => s.to_string(),
-            TokenKind::Symbol(c) | TokenKind::Terminator(c) =>
-            {
-                c.to_string()
-            },
-            TokenKind::Unknown(s) => s.clone(),
-        }
-    }
-
-    pub fn len(&self) -> usize {
-        match self {
-            TokenKind::Keyword(s) => s.len(),
-            TokenKind::Identifier(s) => s.len(),
-            TokenKind::OldCodeBlock(s) => s.len(),
-            TokenKind::CodeBlock(tokens) => {
-                let mut len = 0;
-                for token in tokens {
-                    if token.kind == TokenKind::Terminator(';') {
-                        len += 2;
-                    } else {
-                        len += token.len() + 1;
-                    }
-                }
-                len
-            },
-            TokenKind::Literal(s) => s.len(),
-            TokenKind::Integer(s) => s.len(),
-            TokenKind::Preprocessor(s) => s.length(),
-            TokenKind::Import => "@import".len(),
-            TokenKind::Implements => "@implements".len(),
-            TokenKind::Export => "@export".len(),
-            TokenKind::Binding => "@binding".len(),
-            TokenKind::Type => "@type".len(),
-            TokenKind::Space => " ".len(),
-            TokenKind::Whitespace(s) => s.len(),
-            TokenKind::LineComment(s) => s.len(),
-            TokenKind::BlockComment(s) => s.len(),
-            TokenKind::NoRequiredDefineStart => "@no_required_define_start".len(),
-            TokenKind::NoRequiredDefineEnd => "@no_required_define_end".len(),
-            TokenKind::Symbol(_) | TokenKind::Operator(_) | TokenKind::Terminator(_) => 1,
-            TokenKind::Unknown(s) => s.len(),
-        }
-    }
-
-    pub fn variant(&self) -> &'static str {
-        match self {
-            TokenKind::Keyword(_) => "Keyword",
-            TokenKind::Identifier(_) => "Identifier",
-            TokenKind::OldCodeBlock(_) => "CodeBlock",
-            TokenKind::CodeBlock(_) => "CodeBlock",
-            TokenKind::Literal(_) => "Literal",
-            TokenKind::Integer(_) => "Integer",
-            TokenKind::Preprocessor(_) => "Preprocessor",
-            TokenKind::Import => "Import",
-            TokenKind::Implements => "Implements",
-            TokenKind::Export => "Export",
-            TokenKind::Binding => "Binding",
-            TokenKind::Type => "Type",
-            TokenKind::Space => "Space",
-            TokenKind::Whitespace(_) => "Whitespace",
-            TokenKind::LineComment(_) => "LineComment",
-            TokenKind::BlockComment(_) => "BlockComment",
-            TokenKind::NoRequiredDefineStart => "NoRequiredDefineStart",
-            TokenKind::NoRequiredDefineEnd => "NoRequiredDefineEnd",
-            TokenKind::Symbol(_) => "Symbol",
-            TokenKind::Operator(_) => "Operator",
-            TokenKind::Terminator(_) => "Terminator",
-            TokenKind::Unknown(_) => "Unknown",
-        }
-    }
-}
-
-impl PartialEq for TokenKind 
-{
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (TokenKind::Keyword(s1), TokenKind::Keyword(s2)) => s1 == s2,
-            (TokenKind::Identifier(s1), TokenKind::Identifier(s2)) => s1 == s2,
-            (TokenKind::OldCodeBlock(s1), TokenKind::OldCodeBlock(s2)) => s1 == s2,
-            (TokenKind::Literal(s1), TokenKind::Literal(s2)) => s1 == s2,
-            (TokenKind::Integer(s1), TokenKind::Integer(s2)) => s1 == s2,
-            (TokenKind::Preprocessor(s1), TokenKind::Preprocessor(s2)) => s1 == s2,
-            (TokenKind::Import, TokenKind::Import) => true,
-            (TokenKind::Implements, TokenKind::Implements) => true,
-            (TokenKind::Export, TokenKind::Export) => true,
-            (TokenKind::Binding, TokenKind::Binding) => true,
-            (TokenKind::Type, TokenKind::Type) => true,
-            (TokenKind::Space, TokenKind::Space) => true,
-            (TokenKind::Whitespace(s1), TokenKind::Whitespace(s2)) => s1 == s2,
-            (TokenKind::LineComment(s1), TokenKind::LineComment(s2)) => s1 == s2,
-            (TokenKind::BlockComment(s1), TokenKind::BlockComment(s2)) => s1 == s2,
-            (TokenKind::NoRequiredDefineStart, TokenKind::NoRequiredDefineStart) => true,
-            (TokenKind::NoRequiredDefineEnd, TokenKind::NoRequiredDefineEnd) => true,
-            (TokenKind::Symbol(c1), TokenKind::Symbol(c2)) => c1 == c2,
-            (TokenKind::Operator(c1), TokenKind::Operator(c2)) => c1 == c2,
-            (TokenKind::Terminator(c1), TokenKind::Terminator(c2)) => c1 == c2,
-            _ => false,
-        }
-    }
-}
-
-impl fmt::Display for TokenKind {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.to_string().as_str())
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Token {
-    pub kind: TokenKind,
-    pub global_line: usize,
-    pub line: usize,
-    pub column: usize,
-    pub path: String,
-}
-
-impl Token {
-    pub fn new(kind: TokenKind, global_line: usize, line: usize, column: usize, path: String) -> Token {
-        Token {
-            kind,
-            global_line,
-            line,
-            column,
-            path,
-        }
-    }
-
-    pub fn to_string(&self) -> String {
-        self.kind.to_string()
-    }
-
-    pub fn len(&self) -> usize {
-        self.kind.len()
-    }
-}
-
-struct TokenIter<'a> {
-    iter: std::iter::Peekable<std::slice::Iter<'a, Token>>,
-    current: Option<&'a Token>,
-    original: Vec<&'a str>,
-}
-
-impl<'a> TokenIter<'a> {
-    pub fn new(iter: std::slice::Iter<'a, Token>, original: &'a str) -> TokenIter<'a> {
-        TokenIter { iter: iter.peekable(), current: None, original: original.split_terminator('\n').collect() }
-    }
-
-    pub fn get_line(&self, line: usize) -> Option<&'a str> {
-        if line > self.original.len() {
-            return None;
-        }
-
-        Some(self.original[line - 1])
-    }
-
-    pub fn get_current_line(&self) -> Option<&'a str> {
-        self.get_line(self.current.unwrap().line)
-    }
-
-    pub fn next(&mut self) -> Option<&'a Token> {
-        self.iter.next().and_then(|token| {
-            self.current = Some(token);
-            Some(token)
-        })
-    }
-
-    pub fn skip_while(&mut self, kind: TokenKind) -> Option<&'a Token> {
-        let mut token = None;
-        
-        while self.iter.peek().is_some() && self.iter.peek().unwrap().kind == kind {
-            token = self.next();
-        }
-
-        token
-    }
-
-    pub fn collect_while(&mut self, condition: impl Fn(&Token) -> bool) -> Vec<&'a Token> {
-        let mut tokens = Vec::new();
-        
-        while self.iter.peek().is_some() && condition(self.iter.peek().unwrap()) {
-            tokens.push(self.next().unwrap());
-        }
-
-        tokens
-    }
-
-    pub fn collect_string_while(&mut self, condition: impl Fn(&Token) -> bool) -> String {
-        let mut string = String::new();
-
-        while self.iter.peek().is_some() && condition(self.iter.peek().unwrap()) {
-            string.push_str(&self.next().unwrap().to_string());
-        }
-
-        string
-    }
-
-    #[allow(unused)]
-    pub fn peek(&mut self) -> Option<&&'a Token> {
-        self.iter.peek()
-    }
-
-    #[allow(unused)]
-    pub fn expect_next_token(&mut self, error_expected: Option<&str>) -> Result<&'a Token, String>
-    {
-        let token = self.next().ok_or(format!("Expected {}, found end of file", error_expected.unwrap_or("token")))?;
-
-        Ok(token)
-    }
-        
-    pub fn expect_identifier(&mut self, expected: Option<&str>, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or(format!("Expected {}, found end of file", error_expected.unwrap_or("identifier")))?;
-        
-        match &token.kind {
-            TokenKind::Identifier(s) => {
-                if expected.is_some() {
-                    let unwrap = expected.unwrap();
-                    if s == unwrap {
-                        Ok(self.next().unwrap())
-                    } else {
-                        Err(format_error(self.original[token.global_line - 1], token, format!("Expected {} but found {}", unwrap, s).as_str()))
-                    }
-                } else {
-                    Ok(self.next().unwrap())
-                }
-            },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or("identifier"), token.kind).as_str()))
-        }
-    }
-
-    pub fn expect_oldbody(&mut self, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected body but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::OldCodeBlock(_) => { Ok(self.next().unwrap()) },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or("body"), token.kind).as_str())),
-        }
-    }
-
-    pub fn expect_body(&mut self, error_expected: Option<&str>) -> Result<(&'a Token, &'a Vec<Token>), String> {
-        let token = self.iter.peek().ok_or("Expected body but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::CodeBlock(body) => { Ok((self.next().unwrap(), body)) },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or("body"), token.kind).as_str())),
-        }
-    }
-
-    pub fn expect_whitespace(&mut self, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected whitespace but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::Whitespace(_) => { Ok(self.next().unwrap()) },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or("whitespace"), token.kind).as_str())),
-        }
-    }
-
-    pub fn expect_binding_marker(&mut self, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected binding marker but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::Binding => { Ok(self.next().unwrap()) },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or("binding marker"), token.kind).as_str())),
-        }
-    }
-
-    pub fn expect_space_marker(&mut self, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected space marker but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::Space => { Ok(self.next().unwrap()) },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or("space marker"), token.kind).as_str())),
-        }
-    }
-
-    pub fn expect_import_marker(&mut self, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected import marker but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::Import => { Ok(self.next().unwrap()) },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or("import marker"), token.kind).as_str())),
-        }
-    }
-
-    pub fn expect_implements_marker(&mut self, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected implements marker but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::Implements => { Ok(self.next().unwrap()) },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or("implements marker"), token.kind).as_str())),
-        }
-    }
-
-    pub fn expect_keyword(&mut self, expected: Option<&str>, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected keyword but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::Keyword(_) => {
-                if expected.is_some() {
-                    let unwrap = expected.unwrap();
-                    if token.kind == TokenKind::Keyword(unwrap.to_string()) {
-                        Ok(self.next().unwrap())
-                    } else {
-                        Err(format_error(self.original[token.global_line - 1], token, format!("Expected {} but found {}", error_expected.unwrap_or(format!("'{}'", unwrap).as_str()), token.kind).as_str()))
-                    }
-                } else {
-                    Ok(self.next().unwrap())
-                }
-            },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or(expected.and_then(|c| Some(format!("'{}'", c))).unwrap_or("keyword".to_string()).as_str()), format!("'{}'", token.kind)).as_str())),
-        }
-    }
-
-    pub fn expect_literal(&mut self, expected: Option<&str>, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected \"\" but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::Literal(_) => {
-                if expected.is_some() {
-                    let unwrap = expected.unwrap();
-                    if token.kind == TokenKind::Import {
-                        Ok(self.next().unwrap())
-                    } else {
-                        Err(format_error(self.original[token.global_line - 1], token, format!("Expected {} but found {}", error_expected.unwrap_or(format!("'{}'", unwrap).as_str()), token.kind).as_str()))
-                    }
-                } else {
-                    Ok(self.next().unwrap())
-                }
-            },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or(expected.and_then(|c| Some(format!("'{}'", c))).unwrap_or("\"\"".to_string()).as_str()), format!("'{}'", token.kind)).as_str())),
-        }
-    }
-
-    pub fn expect_operator(&mut self, expected: Option<OperatorKind>, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected operator but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::Operator(_) => {
-                if expected.is_some() {
-                    let unwrap = expected.unwrap();
-                    if token.kind == TokenKind::Operator(unwrap.clone()) {
-                        Ok(self.next().unwrap())
-                    } else {
-                        Err(format_error(self.original[token.global_line - 1], token, format!("Expected {} but found {}", error_expected.unwrap_or(format!("'{}'", unwrap.to_string()).as_str()), token.kind).as_str()))
-                    }
-                } else {
-                    Ok(self.next().unwrap())
-                }
-            },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or(expected.and_then(|c| Some(format!("'{}'", c.clone().to_str()))).unwrap_or("\"\"".to_string()).as_str()), format!("'{}'", token.kind)).as_str())),
-        }
-    }
-
-    pub fn expect_integer(&mut self, expected: Option<&str>, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected \"\" but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::Integer(_) => {
-                if expected.is_some() {
-                    let unwrap = expected.unwrap();
-                    if token.kind == TokenKind::Integer(unwrap.parse().unwrap()) {
-                        Ok(self.next().unwrap())
-                    } else {
-                        Err(format_error(self.original[token.global_line - 1], token, format!("Expected {} but found {}", error_expected.unwrap_or(format!("'{}'", unwrap).as_str()), token.kind).as_str()))
-                    }
-                } else {
-                    Ok(self.next().unwrap())
-                }
-            },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or(expected.and_then(|c| Some(format!("'{}'", c))).unwrap_or("\"\"".to_string()).as_str()), format!("'{}'", token.kind)).as_str())),
-        }
-    }
-
-    pub fn expect_pontosveso(&mut self) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected ';' but found end of file".to_string())?;
-
-        match &token.kind {
-            TokenKind::Terminator(';') => {
-                Ok(self.skip_while(TokenKind::Terminator(';')).unwrap())
-            },
-            _ => Err(format_error(self.original[token.global_line - 1], token, "Expected ';', found {}")),
-        }
-    }
-
-    pub fn expect_terminator(&mut self, expected: Option<char>, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected terminator but found end of file".to_string())?;
-
-        match &token.kind {
-            TokenKind::Terminator(_) => {
-                if expected.is_some() {
-                    let unwrap = expected.unwrap();
-                    if token.kind == TokenKind::Terminator(unwrap) {
-                        Ok(self.next().unwrap())
-                    } else {
-                        let line = self.original[token.global_line - 1];
-
-                        if self.current.is_some() && token.line != self.current.unwrap().line
-                        {
-                            let prev_line = self.original[self.current.unwrap().global_line - 1];
-                            Err(format_multi_error(prev_line, line, self.current.unwrap(), token, format!("Expected {} but found {}", error_expected.unwrap_or(format!("'{}'", unwrap).replace('\n', "\\n").as_str()), token.kind).as_str()))
-                        } else {
-                            Err(format_error(line, token, format!("Expected {} but found {}", error_expected.unwrap_or(format!("'{}'", unwrap).as_str()), token.kind).as_str()))
-                        }
-
-                    }
-                } else {
-                    Ok(self.next().unwrap())
-                }
-            },
-            _ => {
-                let line = self.original[token.global_line - 1];
-
-                if self.current.is_some() && token.line != self.current.unwrap().line
-                {
-                    let prev_line = self.original[self.current.unwrap().global_line - 1];
-                    Err(format_multi_error(prev_line, line, self.current.unwrap(), token, format!("Expected {}, found {}", error_expected.unwrap_or(expected.and_then(|c| Some(format!("'{}'", c))).unwrap_or("terminator".to_string()).replace('\n', "\\n").as_str()), format!("'{}'", token.kind)).as_str()))
-                } else {
-                    Err(format_error(line, token, format!("Expected {}, found {}", error_expected.unwrap_or(expected.and_then(|c| Some(format!("'{}'", c))).unwrap_or("terminator".to_string()).as_str()), format!("'{}'", token.kind)).as_str()))
-                }
-            }
-        }
-    }
-
-    pub fn expect_symbol(&mut self, expected: Option<char>, error_expected: Option<&str>) -> Result<&'a Token, String> {
-        let token = self.iter.peek().ok_or("Expected symbol but found end of file".to_string())?;
-        
-        match &token.kind {
-            TokenKind::Symbol(_) => {
-                if expected.is_some() {
-                    let unwrap = expected.unwrap();
-                    if token.kind == TokenKind::Symbol(unwrap) {
-                        Ok(self.next().unwrap())
-                    } else {
-                        Err(format_error(self.original[token.global_line - 1], token, format!("Expected {} but found {}", error_expected.unwrap_or(format!("'{}'", unwrap).as_str()), token.kind).as_str()))
-                    }
-                } else {
-                    Ok(self.next().unwrap())
-                }
-            },
-            _ => Err(format_error(self.original[token.global_line - 1], token, format!("Expected {}, found {}", error_expected.unwrap_or(expected.and_then(|c| Some(format!("'{}'", c))).unwrap_or("symbol".to_string()).as_str()), format!("'{}'", token.kind)).as_str())),
-        }
-    }
-}
-
-struct CharIter<'a> {
-    // input: &'a str,
-    iter: std::iter::Peekable<std::str::Chars<'a>>,
-    line: usize,
-    column: usize,
-}
-
-impl<'a> CharIter<'a> {
-    fn new(input: &'a str) -> CharIter<'a> {
-        CharIter { iter: input.chars().peekable(), line: 1, column: 0 }
-    }
-
-    fn peek(&mut self) -> Option<&char> {
-        self.iter.peek()
-    }
-
-    fn collect_while<F>(&mut self, condition: F) -> String where F: Fn(char) -> bool {
-        let mut s = String::new();
-        while let Some(c) = self.peek() {
-            if condition(*c) {
-                s.push(self.next().unwrap());
-            } else {
-                break;
-            }
-        }
-        s
-    }
-
-    fn skip_while(&mut self, condition: fn(char) -> bool) -> &mut CharIter<'a> {
-        while let Some(c) = self.peek() {
-            if condition(*c) {
-                self.next();
-            } else {
-                break;
-            }
-        }
-        self
-    }
-
-    fn collect_while_current_and_previous(&mut self, prev_condition: fn(char) -> bool, condition: fn(char) -> bool) -> String {
-        let mut s = String::new();
-        let mut prev = '\0';
-        while let Some(c) = self.peek() {
-            if condition(*c) && prev_condition(prev) {
-                s.push(*c);
-                prev = *c;
-                self.next();
-            } else {
-                break;
-            }
-        }
-        s
-    }
-
-    fn collect_while_not_escaped(&mut self, condition: fn(char) -> bool) -> String {
-        let mut s = String::new();
-        let mut escaped = false;
-
-        print!("COLLECT: ");
-
-        while let Some(c) = self.peek() {
-            if condition(*c) || escaped {
-                escaped = !escaped && *c == '\\'; // if the previous character was not escape character then attempt to escape
-                // print!("{} {} | ", c, if escaped { 1 } else { 0 });
-                if !escaped { s.push(*c); } // if not esacped, push the character
-                self.next();
-            } else {
-                break;
-            }
-        }
-        println!("\n");
-        s
-    }
-
-    fn next_if(&mut self, condition: fn(char) -> bool) -> Option<char> {
-        match self.iter.peek() {
-            Some(c) => {
-                if condition(*c) {
-                    self.next()
-                } else {
-                    None
-                }
-            },
-            None => None,
-        }
-    }
-
-    fn next(&mut self) -> Option<char> {
-        if self.iter.peek().is_none() {
-            return None;
-        }
-
-        let c = self.iter.next().unwrap();
-        if c == '\n' {
-            self.line += 1;
-            self.column = 0;
-        } else {
-            self.column += 1;
-        }
-        Some(c)
-    }
-}
-
-struct TrieNode {
-    children: HashMap<char, TrieNode>,
-}
-
-impl TrieNode {
-    fn new() -> TrieNode {
-        TrieNode { children: HashMap::new() }
-    }
-
-    fn insert(&mut self, key: char) {
-        let node = self.children.entry(key).or_insert(TrieNode::new());
-    }
-
-    fn insert_str(&mut self, s: &str) {
-        let mut node = self;
-        for c in s.chars() {
-            node = node.children.entry(c).or_insert(TrieNode::new());
-        }
-    }
-
-    fn search(&self, key: char) -> Option<&TrieNode> {
-        self.children.get(&key)
-    }
-
-    fn has(&self, key: char) -> bool {
-        self.children.contains_key(&key)
-    }
-
-    fn collect(&self, iter: &mut CharIter) -> String {
-        let mut v = String::new();
-
-        let mut node = self;
-
-        loop {
-            let char = iter.peek();
-            if char.is_none() {
-                break;
-            }
-
-            if let Some(new_node) = node.search(*char.unwrap()) {
-                node = new_node;
-                v.push(iter.next().unwrap());
-            } else {
-                break;
-            }
-        }
-
-        v
-    }
-}
-
+use crate::{tokens::{operatorkind::OperatorKind, preprocessorkind::PreprocessorKind, token::{Token, TokenIter, TokenKind, format_error}}, utils::{chariter::CharIter, trienode::TrieNode}};
+
+mod tokens;
+mod utils;
+mod module;
 // inclusive
-fn preprocessor_tokenizer(input: &str, path: &str) -> Result<Vec<Token>, String> {
-    let mut tokens: Vec<Token> = Vec::new();
+fn preprocessor_tokenizer(input: &str, path: &str) -> Result<Vec<crate::tokens::token::Token>, String> {
+    let mut tokens: Vec<crate::tokens::token::Token> = Vec::new();
 
     let mut char_iter = CharIter::new(input);
 
@@ -1639,6 +743,15 @@ fn codeblock_tokenizer(input: &str, line_start: usize, line_offset: usize, curre
                     //         current_path.to_string()
                     //     ));
                     // },
+                    "if" | "else" | "for" | "while" | "do" | "switch" | "case" | "default" | "return" | "break" | "continue" => {
+                        tokens.push(Token::new(
+                            TokenKind::Keyword(identifier),
+                            global_line,
+                            line,
+                            start_column,
+                            current_path.to_string()
+                        ));
+                    }
                     _ => {
                         tokens.push(Token::new(
                             TokenKind::Identifier(identifier),
@@ -1761,7 +874,7 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
                     TokenKind::CodeBlock(codeblock_tokens),
                     iter.line,
                     iter.line - line_offset,
-                    iter.column - 1,
+                    if iter.column < 1 { 0 } else { iter.column - 1 },
                     current_path.clone()
                 ));
             },
@@ -2199,33 +1312,6 @@ fn tokenize_old(input: &str) -> Result<Vec<Token>, String> {
 
     Ok(tokens)
 }
-
-fn format_error(line: &str, token: &Token, message: &str) -> String {
-    let mut error = String::new();
-    error.push_str(&format!("In: {}:{}:{}\n", token.path, token.line, token.column + 1)); // cuz column starts at 1 by convetion in editors
-    error.push_str(&format!("Error: {} at line {} column {}\n", message, token.line, token.column + 1));
-    let line_mark = format!("{}: ", token.line);
-    error.push_str(&format!("{}\n", line_mark.clone() + line));
-    error.push_str(&format!("{}\n", " ".repeat(line_mark.len() + token.column) + "^".repeat(token.kind.len()).as_str()));
-    error
-}
-
-fn format_multi_error(prev_line: &str, line: &str, prev: &Token, token: &Token, message: &str) -> String {
-    let mut error = String::new();
-    error.push_str(&format!("In: {}:{}:{}\n", token.path, token.line, token.column + 1));
-    error.push_str(&format!("Error: {} at line {} column {}\n", message, token.line, token.column + 1));
-
-    let line_mark = format!("{}: ", prev.line);
-    error.push_str(&format!("{}\n", line_mark.clone() + prev_line));
-    error.push_str(&format!("{}\n", " ".repeat(line_mark.len() + prev.column) + "^".repeat(prev.kind.len()).as_str()));
-
-    let line_mark = format!("{}: ", token.line);
-    error.push_str(&format!("{}\n", line_mark.clone() + line));
-    error.push_str(&format!("{}\n", " ".repeat(line_mark.len() + token.column) + "^".repeat(token.kind.len()).as_str()));
-
-    error
-}
-
 // const BASE_SCALAR_TYPES: &'static [&'static str] = &["int", "uint", "dword", "half", "float", "double"];
 // const EXTENDED_SCALAR_TYPES: &'static [&'static str] = &["f16", "f32", "f64"];
 
@@ -2855,7 +1941,7 @@ fn parse_cbuffer_body(tokens: &Vec<Token>, defined_structs: &HashSet<String>, sr
     Ok(result)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum UnaryOp {
     PreIncrement,
     PreDecrement,
@@ -2868,13 +1954,18 @@ enum UnaryOp {
     Not,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum BinaryOp {
     Add,
     Sub,
     Mul,
     Div,
-    Mod,   
+    Mod,
+
+    Greater,
+    Less,
+    GreaterOrEqual,
+    LessOrEqual,
 }
 
 
@@ -2886,11 +1977,16 @@ impl BinaryOp {
             BinaryOp::Mul => "*",
             BinaryOp::Div => "/",
             BinaryOp::Mod => "%",
+
+            BinaryOp::Greater => ">",
+            BinaryOp::Less => "<",
+            BinaryOp::GreaterOrEqual => ">=",
+            BinaryOp::LessOrEqual => "<=",
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum ConstantKind {
     Int { value: String },
     Float { value: String },
@@ -2901,13 +1997,13 @@ impl ConstantKind {
     fn to_string(&self) -> String {
         match self {
             ConstantKind::Int { value } => value.clone(),
-            ConstantKind::Float { value } => value.clone(),
-            ConstantKind::Double { value } => value.clone(),
+            ConstantKind::Float { value } => format!("{}f", value.clone()),
+            ConstantKind::Double { value } => format!("{}d", value.clone()),
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum ExprKind { 
     Constant { value: ConstantKind },
     Variable { name: String, access: Option<Box<Expr>> },
@@ -2940,6 +2036,7 @@ enum ExprKind {
         expr: Box<Expr>,
         variable: String,
     },
+    Empty,
 }
 
 impl ExprKind {
@@ -2970,6 +2067,7 @@ impl ExprKind {
             ExprKind::Assignment { target, value } => format!("{} = {}", target.to_string(), value.to_string()),
             ExprKind::Group { expr } => format!("({})", expr.to_string()),
             ExprKind::Cast { expr, variable: type_name } => format!("({}){}", expr.to_string(), type_name),
+            ExprKind::Empty => "".to_string(),
         }
     }
 }
@@ -2980,7 +2078,7 @@ impl Expr {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct ExprSpan {
     path: String,
     global_line: usize,
@@ -3002,7 +2100,7 @@ impl ExprSpan {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Expr {
     span: ExprSpan,
     kind: ExprKind,
@@ -3077,10 +2175,10 @@ fn parse_primary_expression(iter: &mut TokenIter) -> Result<Expr, String> {
             
             let decimal = iter.expect_integer(None, None)?;
 
-            if iter.expect_symbol(Some('f'), None).is_ok() {
-                Expr { span: ExprSpan::new(&token), kind: ExprKind::Constant { value: ConstantKind::Float { value: format!("{}.{}f", token.to_string(), decimal.to_string()) } } }
-            } else if iter.expect_symbol(Some('d'), None).is_ok() {
-                Expr { span: ExprSpan::new(&token), kind: ExprKind::Constant { value: ConstantKind::Double { value: format!("{}.{}d", token.to_string(), decimal.to_string()) } } }
+            if iter.expect_identifier(Some("f"), None).is_ok() {
+                Expr { span: ExprSpan::new(&token), kind: ExprKind::Constant { value: ConstantKind::Float { value: format!("{}.{}", token.to_string(), decimal.to_string()) } } }
+            } else if iter.expect_identifier(Some("d"), None).is_ok() {
+                Expr { span: ExprSpan::new(&token), kind: ExprKind::Constant { value: ConstantKind::Double { value: format!("{}.{}", token.to_string(), decimal.to_string()) } } }
             } else {
                 Expr { span: ExprSpan::new(&token), kind: ExprKind::Constant { value: ConstantKind::Float { value: format!("{}.{}", token.to_string(), decimal.to_string()) } } }
             }
@@ -3223,7 +2321,7 @@ fn parse_expression(iter: &mut TokenIter, end_char: &'static [char], consume_end
         return Err(
             op.unwrap_err() +
             "\nBecause of: " +
-            &format_error(iter.get_line(fk_tk.global_line).unwrap_or(""), &fk_tk, &format!("Expected valid operator, but found '{}'", fk_tk.to_string()))
+            &format_error(iter.get_line(fk_tk.global_line).unwrap_or(""), &fk_tk, &format!("Expected valid operator or terminator after '{}'", fk_str.chars().last().unwrap().to_string()))
         );
     }
 
@@ -3246,20 +2344,41 @@ fn parse_expression(iter: &mut TokenIter, end_char: &'static [char], consume_end
         TokenKind::Operator(OperatorKind::Assign) => {
             Ok(Expr { span: ExprSpan::new(&op), kind: ExprKind::Assignment { target: Box::new(lh), value: Box::new(rh) } })
         }
+        TokenKind::Operator(OperatorKind::Greater) => {
+            Ok(Expr { span: ExprSpan::new(&op), kind: ExprKind::Binary { op: BinaryOp::Greater, left: Box::new(lh), right: Box::new(rh) } })
+        }
+        TokenKind::Operator(OperatorKind::Less) => {
+            Ok(Expr { span: ExprSpan::new(&op), kind: ExprKind::Binary { op: BinaryOp::Less, left: Box::new(lh), right: Box::new(rh) } })
+        }
+        TokenKind::Operator(OperatorKind::GreaterEq) => {
+            Ok(Expr { span: ExprSpan::new(&op), kind: ExprKind::Binary { op: BinaryOp::GreaterOrEqual, left: Box::new(lh), right: Box::new(rh) } })
+        }
+        TokenKind::Operator(OperatorKind::LessEq) => {
+            Ok(Expr { span: ExprSpan::new(&op), kind: ExprKind::Binary { op: BinaryOp::LessOrEqual, left: Box::new(lh), right: Box::new(rh) } })
+        }
         // TODO: implement other operators
         _ => return Err(format_error(iter.get_line(op.global_line).unwrap_or(""), op, &format!("Expected valid operator, but found '{}'", op.to_string()))),
     }
 
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Statement {
+    Condition { condition: Expr, true_body: Vec<Statement>, false_body: Option<Vec<Statement>>, depth: usize },
+    Block { body: Vec<Statement>, depth: usize },
     VariableDeclaration { name: String, type_name: String, value: Option<Expr> },
     Expression(Expr),
     Return { expr: Option<Expr> },
 }
 
 impl Statement {
+    fn is_condition(&self) -> bool {
+        match self {
+            Statement::Condition { .. } => true,
+            _ => false,
+        }
+    }
+
     fn to_string(&self) -> String {
         match self {
             Statement::VariableDeclaration { name, type_name, value } => {
@@ -3277,6 +2396,30 @@ impl Statement {
                     "return;".to_string()
                 }
             },
+            Statement::Condition { condition, true_body, false_body, depth } => {
+                if let Some(false_body) = false_body {
+                    if false_body.len() == 1 && false_body[0].is_condition() {
+                        // Should fall in place
+                        format!("if ({}) {{\n{}\n{}}} else {}", condition.to_string(),
+                            true_body.iter().map(|stmt| format!("{}{}", "   ".repeat(*depth), stmt.to_string())).collect::<Vec<_>>().join("\n"), 
+                            "   ".repeat(usize::max(1usize, *depth) - 1),
+                            false_body[0].to_string(),
+                        )
+                    } else {
+                        format!("if ({}) {{\n{}\n{}}} else {{\n{}\n{}}}", condition.to_string(),
+                            true_body.iter().map(|stmt| format!("{}   {}", "   ".repeat(*depth), stmt.to_string())).collect::<Vec<_>>().join("\n"), 
+                            "   ".repeat(*depth),
+                            false_body.iter().map(|stmt| format!("{}   {}", "   ".repeat(*depth), stmt.to_string())).collect::<Vec<_>>().join("\n"),
+                            "   ".repeat(*depth)
+                        )
+                    }
+                } else {
+                    format!("if ({}) {{\n{}\n{}}}", condition.to_string(), true_body.iter().map(|stmt| format!("{}   {}", "   ".repeat(*depth), stmt.to_string())).collect::<Vec<_>>().join("\n"), "   ".repeat(*depth))
+                }
+            },
+            Statement::Block { body, depth } => {
+                format!("{{\n{}\n{}}}", body.iter().map(|stmt| format!("{}   {}", "   ".repeat(*depth), stmt.to_string())).collect::<Vec<_>>().join("\n"), "   ".repeat(*depth))
+            },
         }
     }
 }
@@ -3286,39 +2429,314 @@ struct FunctionBody {
     statements: Vec<Statement>,
 }
 
+// fn parse_function_statement(iter: &mut TokenIter, defined_structs: &HashSet<String>, src: &str) -> Result<Statement, String> {
+//     let token = iter.peek().map_or(Err("Expected statement, got end of block!"), |t| Ok(t))?;
+//     match &token.kind {
+//         TokenKind::Identifier(identifier) => {
+//             match identifier.as_str() {
+//                 _ if is_type(identifier, &defined_structs) => {
+//                     iter.next();
+//                     let name = iter.expect_identifier(None, Some("name"))?;
+//                     if iter.expect_pontosveso().is_ok() {
+                        
+//                         return Ok(Statement::VariableDeclaration { name: name.to_string(), type_name: identifier.to_string(), value: None });
+//                     } else {
+//                         iter.expect_operator(Some(OperatorKind::Assign), None)?;
+//                         let value = parse_expression(&mut iter, &[';'], true)?;
+//                         return Ok(Statement::VariableDeclaration { name: name.to_string(), type_name: identifier.to_string(), value: Some(value) });
+//                     }
+//                 },
+//                 _ => {
+//                     let expr = parse_expression(&mut iter, &[';'], true)?;
+//                     return Ok(Statement::Expression(expr));
+//                 }
+//             }
+//         },
+//         TokenKind::Keyword(keyword) => {
+//             match keyword.as_str() {
+//                 "return" => {
+//                     iter.next();
+//                     let expr = parse_expression(&mut iter, &[';'], true)?;
+//                     return Ok(Statement::Return { expr: Some(expr) });
+//                 }
+//                 "if" => {
+//                     iter.expect_symbol(Some('('), None)?;
+
+//                     let condition = parse_expression(&mut iter, &[')'], true)?;
+
+//                     if iter.expect_symbol(Some('{'), None).is_err() {
+//                         let true_body = parse_function_statement(&mut iter, defined_structs, src)?;
+//                         if iter.expect_keyword(Some("else"), None).is_ok() {
+//                             let false_body = parse_function_statement(&mut iter, defined_structs, src)?;
+//                             return Ok(Statement::Condition { condition, true_body, false_body: Some(false_body) });
+//                         } else {
+//                              return Ok(Statement::Condition { condition, true_body, false_body: None });
+//                         }
+//                     } else {
+                        
+//                     }
+
+//                 },
+//                 _ => return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Expected type name")),
+//             }
+//         },
+//         _ => return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Expected type name")),
+//     }
+// }
+
+enum BlockStack {
+    Condition { body: *mut Vec<Statement>, stmt: *mut Statement, single: bool },
+    Block { body: *mut Vec<Statement> },
+}
+
 fn parse_function_body(tokens: &Vec<Token>, defined_structs: &HashSet<String>, src: &str) -> Result<FunctionBody, String> {
     let mut result = FunctionBody { statements: Vec::new() };
     let mut iter = TokenIter::new(tokens.iter(), src);
+
+    let mut block_stack = Vec::new();
+
+    fn add_statement<'a>(result: &'a mut FunctionBody, statement: Statement, block_stack: *mut Vec<BlockStack>) -> &'a mut Statement
+    {
+        match unsafe { (*block_stack).last_mut() } {
+            Some(BlockStack::Condition { body, stmt, single }) => {
+                unsafe {
+                    if *single && !(*(*body)).is_empty() {
+                        (*block_stack).pop();
+                    }
+                }
+            },
+            _ => {}
+        }
+
+        match unsafe { (*block_stack).last_mut() } {
+            Some(BlockStack::Condition { body, .. }) => {
+                unsafe {
+                    (*(*body)).push(statement);
+                    (*(*body)).last_mut().unwrap()
+                }
+            },
+            Some(BlockStack::Block { body }) => {
+                unsafe {
+                    (*(*body)).push(statement);
+                    (*(*body)).last_mut().unwrap()
+                }
+            },
+            _ => {
+                result.statements.push(statement);
+                result.statements.last_mut().unwrap()
+            }
+        }
+    }
 
     while let Some(&token) = iter.peek() { // must not consume it right away in thuis case
         match &token.kind {
             TokenKind::Identifier(identifier) => {
                 match identifier.as_str() {
-                    "return" => {
-                        iter.next();
-                        let expr = parse_expression(&mut iter, &[';'], true)?;
-                        result.statements.push(Statement::Return { expr: Some(expr) });
-                    },
                     _ if is_type(identifier, &defined_structs) => {
                         iter.next();
                         let name = iter.expect_identifier(None, Some("name"))?;
                         if iter.expect_pontosveso().is_ok() {
                             
-                            result.statements.push(Statement::VariableDeclaration { name: name.to_string(), type_name: identifier.to_string(), value: None });
+                            add_statement(&mut result, Statement::VariableDeclaration { name: name.to_string(), type_name: identifier.to_string(), value: None }, &mut block_stack);
                         } else {
                             iter.expect_operator(Some(OperatorKind::Assign), None)?;
                             let value = parse_expression(&mut iter, &[';'], true)?;
-                            result.statements.push(Statement::VariableDeclaration { name: name.to_string(), type_name: identifier.to_string(), value: Some(value) });
+                            add_statement(&mut result, Statement::VariableDeclaration { name: name.to_string(), type_name: identifier.to_string(), value: Some(value) }, &mut block_stack);
                         }
                     },
                     _ => {
                         let expr = parse_expression(&mut iter, &[';'], true)?;
-                        result.statements.push(Statement::Expression(expr));
+                        add_statement(&mut result, Statement::Expression(expr), &mut block_stack);
                     }
                 }
             },
-            _ => return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Expected type name")),
+            TokenKind::Symbol(symbol) => {
+                iter.next();
+                match symbol {
+                    '{' => {
+                        let added = add_statement(&mut result, Statement::Block { body: Vec::new(), depth: block_stack.len() + 1 }, &mut block_stack);
+                    
+                        match added {
+                            Statement::Block { body, .. } => {
+                                block_stack.push(BlockStack::Block { body: body });
+                            },
+                            _ => {
+                                panic!("Bad statement");
+                            }
+                        }
+                    }
+                    '}' => {
+
+                        // check if current block is condition
+
+                        if block_stack.last().is_none() {
+                            return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Unexpected }"));
+                        }
+
+                        match block_stack.last().unwrap() {
+                            BlockStack::Block { body } => {
+                                block_stack.pop();
+                            },
+                            BlockStack::Condition { body, .. } => {
+                                match iter.peek() {
+                                    Some(&Token { kind: TokenKind::Keyword(keyword), .. }) if keyword == "else" => {
+                                        // dont do anything, let it continue parsing since else will be handled down the chain
+                                    },
+                                    _ => {
+                                        block_stack.pop();
+                                    }
+                                }
+                            },
+                            _ => {
+                                return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Unexpected }"));
+                            }
+                        }
+                    }
+                    _ => {
+                        return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Expected type name or keyword"));
+                    }
+                }
+            },
+            TokenKind::Keyword(keyword) => {
+                iter.next();
+                match keyword.as_str() {
+                    "return" => {
+                        let expr = parse_expression(&mut iter, &[';'], true)?;
+                        add_statement(&mut result, Statement::Return { expr: Some(expr) }, &mut block_stack);
+                    }
+                    "if" => {
+                        iter.expect_symbol(Some('('), None)?;
+                        let condition = parse_expression(&mut iter, &[')'], true)?;
+
+                        let has_body = iter.expect_symbol(Some('{'), None).is_ok();
+
+                        // since if its false its not codeblock so we can assume 0
+                        // condition_stack.push((condition, has_body, if has_body { __block_stack.len() - 1 } else { 0 }));
+
+
+                        let added = add_statement(&mut result, Statement::Condition { condition, true_body: Vec::new(), false_body: None, depth: block_stack.len() + 1 }, &mut block_stack);
+
+                        match added {
+                            Statement::Condition { true_body, .. } => {
+                                block_stack.push(BlockStack::Condition { body: true_body, stmt: added, single: !has_body });
+                            },
+                            _ => {
+                                panic!("Bad statement");
+                            }
+                        }
+                    }
+                    "else" => {
+                        if block_stack.is_empty() {
+                            return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Unexpected else"));
+                        }
+
+                        match block_stack.last().unwrap() {
+                            BlockStack::Condition { stmt, .. } => {
+                                // check if the last condition was already an ending else
+
+                                match unsafe { &(*(*stmt)) } {
+                                    // If last condition has no false body it means that final else was not called yet
+                                    Statement::Condition { false_body, .. } if false_body.is_none() => { },
+                                    // Otherwise it was and should be an error
+                                    _ => {
+                                        return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Unexpected else"));
+                                    }
+                                }
+                            },
+                            _ => {
+                                return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Unexpected else"));
+                            }
+                        }
+
+
+                        let mut condition = None;
+
+                        if iter.expect_keyword(Some("if"), None).is_ok() {
+                            iter.expect_symbol(Some('('), None)?;
+                            condition = Some(parse_expression(&mut iter, &[')'], true)?);
+                        }
+
+                        let has_body = iter.expect_symbol(Some('{'), None).is_ok();
+
+                        let stack_len = block_stack.len();
+                        match block_stack.last_mut().unwrap() {
+                            BlockStack::Condition { body, stmt, single } => {
+                                // add new statement inside if its else if
+
+                                if let Some(condition) = condition {
+                                    // } else if
+                                    match unsafe { &mut (*(*stmt)) } {
+                                        Statement::Condition { false_body, .. } => {
+                                            // create new if inside false body
+                                            *false_body = Some(vec![Statement::Condition { condition, true_body: Vec::new(), false_body: None, depth: stack_len }]);
+                                            *single = !has_body;
+
+                                            // access false body
+                                            match *false_body {
+                                                Some(ref mut f_body) => {
+                                                    // set the new if statement as current for the block_stack (statement_stack)
+                                                    *stmt = f_body.last_mut().unwrap();
+
+                                                    // access the new inner statement
+                                                    match unsafe { &mut (*(*stmt)) } {
+                                                        Statement::Condition { true_body, .. } => {
+                                                            // set the current body for pushing to the true body of the new inner if statement
+                                                            *body = true_body;
+                                                        },
+                                                        _ => {
+                                                            panic!("Bad statement");
+                                                        }
+                                                    }
+
+                                                },
+                                                None => {
+                                                    panic!("Bad statement");
+                                                }
+                                            }
+
+                                        },
+                                        _ => {
+                                            panic!("Bad statement");
+                                        }
+                                    }
+                                } else {
+                                    // } else
+                                    match unsafe { &mut (*(*stmt)) } {
+                                        Statement::Condition { false_body, .. } => {
+                                            *false_body = Some(Vec::new());
+                                            *single = !has_body;
+
+                                            match *false_body {
+                                                Some(ref mut f_body) => {
+                                                    (*body) = f_body;
+                                                },
+                                                None => {
+                                                    panic!("Bad statement");
+                                                }
+                                            }
+
+                                        },
+                                        _ => {
+                                            panic!("Bad statement");
+                                        }
+                                    }
+                                }
+                            },
+                            _ => {
+                                panic!("Bad statement");
+                            }
+                        }
+
+                    }
+                    _ => return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Expected type name or keyword")),
+                }
+            },
+            _ => return Err(format_error(iter.get_line(token.global_line).unwrap_or(""), token, "Expected type name or keyword")),
         }
+    }
+
+    if block_stack.len() != 0 {
+        return Err(format_error(iter.get_line(iter.current.unwrap().global_line).unwrap_or(""), iter.current.unwrap(), "Expected closing brace"));
     }
 
     Ok(result)
@@ -4405,7 +3823,7 @@ fn parse_stage2_late(src: &str, api: GraphicsAPI) -> Result<String, String> {
                                 if !last_set_name.is_empty() {
                                     if current_last_set_name != last_set_name {
                                         current_last_set_name = last_set_name.clone();
-                                        out.push_str(&format!("// INCLUDE \"{}\"\n", last_set_name));
+                                        out.push_str(&format!("// INCLUDE \"{}\" \n", last_set_name));
                                     }
                                 }
                             },
