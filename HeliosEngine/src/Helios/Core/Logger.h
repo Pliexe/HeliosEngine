@@ -24,7 +24,7 @@
 			std::string str = (std::string("kdialog --error \"") + message + "\"");
 			system(str.c_str());
 		} else if (has_zenity) {
-			std::string str = (std::string("zenity --error --text=\"") + message + "\"");
+			std::string str = (std::string("zenity --no-markup --error --text=\"") + message + "\"");
 			system(str.c_str());
 		} else {
 			std::cerr << "Critical Error: " << message << std::endl;
