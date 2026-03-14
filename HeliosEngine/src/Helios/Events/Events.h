@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Event.h"
+#include "Helios/Logger/Logger.h"
 
 namespace Helios
 {
@@ -21,4 +22,15 @@ namespace Helios
 		uint32_t m_Width, m_Height;
 	};
 
+	class LogEvent : public Event
+	{
+		public:
+			LogEvent(Logger::LogLevel level, std::string_view message) : m_Level(level), m_Message(message) { }
+			EVENT_TYPE(Log)
+			[[nodiscard]] Logger::LogLevel GetLevel() const { return m_Level; }
+			[[nodiscard]] std::string_view GetMessage() const { return m_Message; }
+		private:
+			std::string_view m_Message;
+			Logger::LogLevel m_Level;
+	};
 }

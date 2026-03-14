@@ -13,6 +13,8 @@ namespace Helios
 		SceneEntityCreated = 20, SceneEntityDestroyed,
 
 		BehaviourEnable = 100, BehaviourDisable,
+
+		Log = 200,
 	};
 
 	class Event
