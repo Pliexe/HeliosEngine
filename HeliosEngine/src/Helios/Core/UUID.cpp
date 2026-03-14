@@ -14,8 +14,15 @@ namespace Helios
 			std::memcpy(&m_UUID[i * 8], &random, sizeof(uint64_t));
 		}
 
+		// Why am I doing this?
 		m_UUID[6] = (m_UUID[6] & 0x0F) | 0x40; // Set version bits (4)
 		m_UUID[8] = (m_UUID[8] & 0x3F) | 0x80; // Set variant bits (10)
+	}
+
+	UUID::UUID(uint64 low64, uint64 high64)
+	{
+		std::memcpy(m_UUID, &low64, sizeof(uint64));
+		std::memcpy(m_UUID + 8, &high64, sizeof(uint64));
 	}
 
 	UUID::UUID(std::uint8_t data[16])
@@ -28,7 +35,7 @@ namespace Helios
 		return std::memcmp(m_UUID, other.m_UUID, 16) == 0;
 	}
 
-	std::string UUID::toString() const
+	std::string UUID::to_string() const
 	{
 		std::stringstream ss;
 		ss << std::hex << std::setfill('0');
@@ -38,6 +45,18 @@ namespace Helios
 			ss << std::setw(2) << static_cast<unsigned>(m_UUID[i]);
 			if (i == 3 || i == 5 || i == 7 || i == 9)
 				ss << '-';
+		}
+		return ss.str();
+	}
+
+	std::string UUID::to_binary_string() const
+	{
+		std::stringstream ss;
+		ss << std::hex << std::setfill('0');
+
+		for (int i = 0; i < 16; i++)
+		{
+			ss << std::setw(2) << static_cast<unsigned>(m_UUID[i]);
 		}
 		return ss.str();
 	}
@@ -52,7 +71,7 @@ namespace Helios
 
 	UUID UUID::fromString(const std::string& string)
 	{
-		UUID uuid;
+		UUID uuid(0u, 0u);
 
 		for (int i = 0, j = 0; i < string.size(); i++) {
 			if (string[i] == '-') {
@@ -73,5 +92,10 @@ namespace Helios
 		}
 
 		return uuid;
+	}
+
+	UUID UUID::fromHalfs(uint64 low64, uint64 high64)
+	{
+		return UUID(low64, high64);
 	}
 }

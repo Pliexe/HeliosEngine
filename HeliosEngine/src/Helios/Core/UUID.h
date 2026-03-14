@@ -11,6 +11,8 @@ namespace Helios
 
 		UUID();
 
+		UUID(uint64 low64, uint64 high64);
+
 		UUID(const UUID& other) = default;
 		UUID& operator=(const UUID& other) = default;
 		UUID(std::uint8_t data[16]);
@@ -18,11 +20,15 @@ namespace Helios
 		bool operator==(const UUID& other) const;
 		operator uint8_t* () { return m_UUID; }
 
-		[[nodiscard]] std::string toString() const;
+		[[nodiscard]] std::string to_string() const;
+		[[nodiscard]] std::string to_binary_string() const;
 
 		size_t hash() const;
 
 		static UUID fromString(const std::string& string);
+		static UUID fromHalfs(uint64 low64, uint64 high64);
+
+		static UUID zero() { return UUID(0, 0); }
 
 		bool operator<(const UUID& other) const
 		{
