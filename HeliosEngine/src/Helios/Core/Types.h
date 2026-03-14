@@ -18,11 +18,18 @@ typedef std::size_t size_t;
 // * std::shared_ptr wrapper
 namespace Helios {
 
+    // template <typename T>
+    // using Unique = std::unique_ptr<T>;
+    // template <typename T, typename ... Args>
+    // constexpr Unique<T> CreateUnique(Args&& ... args) { return std::make_unique<T>(std::forward<Args>(args)...); }
+    
     template <typename T>
     using Unique = std::unique_ptr<T>;
-    template <typename T, typename ... Args>
-    constexpr Unique<T> CreateUnique(Args&& ... args) { return std::make_unique<T>(std::forward<Args>(args)...); }
+    template <typename T>
+    constexpr Unique<T> CreateUnique(auto&& ...args) { return std::make_unique<T>(std::forward<decltype(args)>(args)...); }
     
+
+
 // #define ENABLE_DEBUG_REF
 #ifdef ENABLE_DEBUG_REF
     template<typename T>
